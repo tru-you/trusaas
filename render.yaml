@@ -11,6 +11,7 @@
 #   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
 #   trusaas-trade.onrender.com    → TruTrade + TruValue  (trutrade) → trade.tru-saas.com
 #                                   (renamed from trusaas-value 2026-07-31; old service discontinued, domain repointed)
+#   trusaas-arbitrage.onrender.com → TruRadar (packages/tru-arbitrage) → radar.tru-saas.com
 #
 # TruFlow Lite (the old separate codebase) retired 2026-07-25. The current
 # TruFlow Light console is a static client served by trusaas-premium at
@@ -311,6 +312,11 @@ services:
       # vehicle is removed). Falls back to https://lens.tru-saas.com.
       - key: TRULENS_URL
         value: https://lens.tru-saas.com
+      # TruRadar origin — the master-admin TruRadar tab proxies dealer
+      # provisioning to the radar's registry through this URL with the sync
+      # key. Falls back to https://trusaas-arbitrage.onrender.com.
+      - key: TRU_RADAR_URL
+        value: https://trusaas-arbitrage.onrender.com
       # Set once, at first boot on a fresh disk, to choose the master admin code
       # instead of reading a generated one out of the service log. Ignored
       # afterwards — rotate through /api/auth/codes/rotate.
@@ -437,8 +443,12 @@ services:
       - key: SCRAPER_SERVICE_URLS
         sync: false
 
-  # ── 7. TruArbitrage — Multi-Source Vehicle Arbitrage & Floorplan Radar ─────
+  # ── 7. TruRadar (TruArbitrage) — Vehicle Sourcing Radar ──────────────────
   #   trusaas-arbitrage.onrender.com  →  packages/tru-arbitrage
+  #   Standalone buy-radar: confidence-gated classifieds + dealer-SERP deals,
+  #   own JWT dealer auth, per-dealer data isolation, webhook-only alerts.
+  #   (FB Marketplace lane retired 2026-08-28; own-stock gate dormant for the
+  #   future Flow bolt-on.)
   - type: web
     name: trusaas-arbitrage
     runtime: node
@@ -462,10 +472,21 @@ services:
         value: "4500"
       - key: DATA_DIR
         value: /var/data
+      # REQUIRED. Without it the dealer JWT layer falls back to a constant and
+      # tokens are forgeable. Set the value in the Render dashboard.
+      - key: JWT_SECRET
+        sync: false
+      # Shared secret with TruFlow — gates the dealer-registry admin routes and
+      # the surgical TU valuation backstop (deducts the right dealer's bundle).
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
+      # Prospects demo the radar too (same doctrine as Lens/Inspect).
+      - key: DEMO_ENABLED
+        value: "1"
+      - key: FLOW_PREMIUM_URL
+        value: https://premium.tru-saas.com
       - key: BRIGHTDATA_API_KEY
         sync: false
-      - key: BRIGHTDATA_DATASET_ID
-        value: gd_lvt9iwuh6fbcwmx1a
       - key: BRIGHTDATA_UNLOCKER_ZONE
         value: tds2
       # Cloudflare-bypass switch. The free crawler is blocked on Cars.co.za/AutoTrader
@@ -483,14 +504,21 @@ services:
         sync: false
       - key: SERP_PROVIDER
         value: brightdata
+      # Zone name as created in the BrightData dashboard (SERP API type).
       - key: SERP_ZONE
-        value: serp
+        value: radar
       - key: GEMINI_API_KEY
         sync: false
       - key: MIN_ARBITRAGE_MARGIN
-        value: "25000"
-      - key: DEFAULT_RECON_BUFFER
-        value: "8500"
+        value: "10000"
+      # Dynamic recon — pct × market retail clamped to [floor, cap]
+      - key: RECON_PCT
+        value: "0.03"
+      - key: RECON_FLOOR
+        value: "5000"
+      - key: RECON_CAP
+        value: "30000"
       - key: STALE_FLOORPLAN_DAYS
         value: "40"
+
 

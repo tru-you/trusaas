@@ -9,6 +9,27 @@ interface DatabaseSchema {
   trackedVehicles: Record<string, TrackedInventoryVehicle>;
   deals: Record<string, ArbitrageDeal>;
   dealerSubscriptions: Record<string, DealerBuyBox>;
+  /* SERP dealer-domain discovery index — GLOBAL search infrastructure, not
+   * tenant data. Deals/tracked stay slug-scoped; this just remembers which
+   * independent dealer sites the discovery matrix has met so later scans can
+   * deep-hit their stock. */
+  discoveredDomains: Record<string, { domain: string; discoveredAt: string }>;
+}
+
+const EMPTY_SCHEMA = (): DatabaseSchema => ({
+  trackedVehicles: {},
+  deals: {},
+  dealerSubscriptions: {},
+  discoveredDomains: {},
+});
+
+/* Per-dealer isolation: every record key is `${dealerSlug}:${id}`. The dealer's
+ * slug rides on their JWT (evidence, not a client claim), so one yard can never
+ * read another's deals, tracked stock, or buy-boxes. A demo token's slug is its
+ * own unique `demo-<hex>` uid, so demo sessions are isolated from each other
+ * and from every real dealer. */
+function tenantKey(dealerSlug: string, id: string): string {
+  return `${dealerSlug}:${id}`;
 }
 
 export class ArbitrageDatabase {
@@ -36,20 +57,20 @@ export class ArbitrageDatabase {
     } catch (err) {
       console.warn('[db] Could not load database file, starting fresh:', err);
     }
-    return {
-      trackedVehicles: {},
-      deals: {},
-      dealerSubscriptions: this.getDefaultSubscriptions(),
-    };
+    return EMPTY_SCHEMA();
   }
 
-  /** One-time cleanup of legacy/polluted state. Run on every load, idempotent. */
+  /** One-time cleanup of legacy/polluted state. Run on every load, idempotent.
+   *  1) Mock fixtures (fb_item_* / cars_item_* rawIds, "/mock" images) pollute
+   *     real results and are stripped wherever they surface.
+   *  2) Pre-tenant keys (no `:` separator) belong to the old flat schema — all
+   *     demo/mock data from before per-dealer isolation — and are dropped.
+   *  3) Deals are deduped by their (already tenant-scoped) key; a re-ingested
+   *     car must update its deal row, never append a duplicate. */
   private migrate(data: DatabaseSchema): DatabaseSchema {
     let changed = false;
 
-    // A listing is "mock" if its payload obviously came from the SA mock fixtures
-    // (fb_item_* / cars_item_* / at_item_* / serp_dealer_* / gumtree_* rawIds, or
-    // image URLs containing "/mock"). These pollute real results and must go.
+    const isTenantKey = (key: string) => typeof key === 'string' && key.includes(':');
     const isMockRawId = (rawId: string) =>
       /^(fb_item_|cars_item_|at_item_|serp_dealer_|gumtree_|fb_item_golf_)/i.test(rawId || '');
     const isMockImages = (images?: string[]) => Array.isArray(images) && images.some((i) => i.includes('mock'));
@@ -57,29 +78,34 @@ export class ArbitrageDatabase {
 
     const keptTracked: DatabaseSchema['trackedVehicles'] = {};
     for (const [k, v] of Object.entries(data.trackedVehicles || {})) {
+      if (!isTenantKey(k)) { changed = true; continue; }
       if (isMockVehicle(v)) { changed = true; continue; }
       keptTracked[k] = v;
     }
 
-    // Rebuild deals: drop mock vehicles, then dedupe by fingerprint (keep newest — a
-    // re-ingested car must update its deal row, never append a duplicate like the old
-    // saveDeal did).
     const keptDeals: DatabaseSchema['deals'] = {};
-    for (const deal of Object.values(data.deals || {})) {
+    for (const [k, deal] of Object.entries(data.deals || {})) {
+      if (!isTenantKey(k)) { changed = true; continue; }
       if (isMockVehicle(deal.vehicle as { rawId?: string; images?: string[] })) { changed = true; continue; }
-      const key = deal.fingerprint || deal.id;
-      const existing = keptDeals[key];
+      const existing = keptDeals[k];
       if (!existing || (deal.detectedAt || '') >= (existing.detectedAt || '')) {
-        keptDeals[key] = deal;
+        keptDeals[k] = deal;
         if (existing) changed = true;
       }
+    }
+
+    const keptSubs: DatabaseSchema['dealerSubscriptions'] = {};
+    for (const [k, sub] of Object.entries(data.dealerSubscriptions || {})) {
+      if (!isTenantKey(k)) { changed = true; continue; }
+      keptSubs[k] = sub;
     }
 
     if (changed) {
       const out: DatabaseSchema = {
         trackedVehicles: keptTracked,
         deals: keptDeals,
-        dealerSubscriptions: data.dealerSubscriptions || this.getDefaultSubscriptions(),
+        dealerSubscriptions: keptSubs,
+        discoveredDomains: data.discoveredDomains || {},
       };
       this.data = out;
       this.saveSync();
@@ -136,28 +162,21 @@ export class ArbitrageDatabase {
     }
   }
 
-  private getDefaultSubscriptions(): Record<string, DealerBuyBox> {
-    return {
-      'sub_demo_gauteng': {
-        id: 'sub_demo_gauteng',
-        dealerName: 'Apex Auto Motors (Demo)',
-        contactNumber: '+27821234567',
-        provinces: ['Gauteng', 'Johannesburg', 'Pretoria', 'Randburg', 'Sandton', 'Centurion'],
-        allowedMakes: ['Volkswagen', 'Toyota', 'Ford', 'Hyundai', 'Suzuki'],
-        maxPrice: 300000,
-        maxMileageKm: 160000,
-        minNetMargin: 25000,
-        active: true,
-      },
-    };
-  }
+  // --- Tracked Inventory Operations (tenant-scoped) ---
 
-  // --- Tracked Inventory Operations ---
-
-  public upsertTrackedVehicle(vehicle: NormalizedVehicle): TrackedInventoryVehicle {
-    const fingerprint = generateVehicleFingerprint(vehicle);
+  public upsertTrackedVehicle(vehicle: NormalizedVehicle, dealerSlug: string, firstSeenAtOverride?: string): TrackedInventoryVehicle {
+    const fingerprint = generateVehicleFingerprint(vehicle, dealerSlug);
+    const key = tenantKey(dealerSlug, fingerprint);
     const now = new Date().toISOString();
-    const existing = this.data.trackedVehicles[fingerprint];
+    const existing = this.data.trackedVehicles[key];
+
+    // A structured feed's own timestamp (e.g. Flow stock updatedAt) seeds
+    // firstSeenAt so days-on-market reflects real sitting time from scan one —
+    // otherwise a first-ever scan reads as 0 days for every vehicle.
+    const seedFirstSeen =
+      firstSeenAtOverride && !isNaN(Date.parse(firstSeenAtOverride))
+        ? new Date(firstSeenAtOverride).toISOString()
+        : now;
 
     if (!existing) {
       const newRecord: TrackedInventoryVehicle = {
@@ -174,17 +193,17 @@ export class ArbitrageDatabase {
         sellerId: vehicle.sellerId,
         sellerName: vehicle.sellerName,
         images: vehicle.images,
-        firstSeenAt: now,
+        firstSeenAt: seedFirstSeen,
         lastSeenAt: now,
-        daysOnMarket: 0,
+        daysOnMarket: Math.max(0, Math.floor((Date.now() - Date.parse(seedFirstSeen)) / (1000 * 60 * 60 * 24))),
         originalPrice: vehicle.askingPrice,
         currentPrice: vehicle.askingPrice,
         totalPriceDrop: 0,
-        priceHistory: [{ price: vehicle.askingPrice, timestamp: now }],
+        priceHistory: [{ price: vehicle.askingPrice, timestamp: seedFirstSeen }],
         urgencyScore: 0,
         status: 'active',
       };
-      this.data.trackedVehicles[fingerprint] = newRecord;
+      this.data.trackedVehicles[key] = newRecord;
       this.markDirty();
       return newRecord;
     }
@@ -221,21 +240,34 @@ export class ArbitrageDatabase {
       location: vehicle.location || existing.location,
     };
 
-    this.data.trackedVehicles[fingerprint] = updatedRecord;
+    this.data.trackedVehicles[key] = updatedRecord;
     this.markDirty();
     return updatedRecord;
   }
 
-  public getTrackedVehicle(fingerprint: string): TrackedInventoryVehicle | null {
-    return this.data.trackedVehicles[fingerprint] || null;
+  public getTrackedVehicle(fingerprint: string, dealerSlug: string): TrackedInventoryVehicle | null {
+    return this.data.trackedVehicles[tenantKey(dealerSlug, fingerprint)] || null;
   }
 
-  // --- Arbitrage Deals Operations ---
+  public getTrackedVehicles(filter?: { dealerSlug?: string; minDom?: number }): TrackedInventoryVehicle[] {
+    let list = Object.entries(this.data.trackedVehicles);
+    if (filter?.dealerSlug) {
+      list = list.filter(([k]) => k.startsWith(`${filter.dealerSlug}:`));
+    }
+    let rows = list.map(([, v]) => v);
+    if (filter?.minDom !== undefined) {
+      rows = rows.filter((t) => t.daysOnMarket >= filter.minDom!);
+    }
+    return rows;
+  }
 
-  public saveDeal(deal: ArbitrageDeal): void {
-    // Upsert by fingerprint: re-ingesting the same vehicle must update the existing
-    // deal (fresh detection time, latest margin), never append a duplicate row.
-    const key = deal.fingerprint || deal.id;
+  // --- Arbitrage Deals Operations (tenant-scoped) ---
+
+  public saveDeal(deal: ArbitrageDeal, dealerSlug: string): void {
+    // Upsert by tenant+fingerprint: re-ingesting the same vehicle must update
+    // the existing deal (fresh detection time, latest margin), never append a
+    // duplicate row.
+    const key = tenantKey(dealerSlug, deal.fingerprint || deal.id);
     const existing = this.data.deals[key];
 
     if (existing) {
@@ -256,40 +288,100 @@ export class ArbitrageDatabase {
     this.markDirty();
   }
 
-  public getDeals(filter?: { status?: string; minMargin?: number }): ArbitrageDeal[] {
-    let list = Object.values(this.data.deals);
+  public getDeals(filter?: { dealerSlug?: string; status?: string; minMargin?: number; source?: string; dealCategory?: string }): ArbitrageDeal[] {
+    let entries = Object.entries(this.data.deals);
+    if (filter?.dealerSlug) {
+      entries = entries.filter(([k]) => k.startsWith(`${filter.dealerSlug}:`));
+    }
+    let list = entries.map(([, d]) => d);
     if (filter?.status) {
       list = list.filter((d) => d.status === filter.status);
     }
     if (filter?.minMargin) {
       list = list.filter((d) => d.projectedNetMargin >= filter.minMargin!);
     }
+    if (filter?.source) {
+      list = list.filter((d) => d.source === filter.source);
+    }
+    if (filter?.dealCategory) {
+      list = list.filter((d) => d.dealCategory === filter.dealCategory);
+    }
     return list.sort((a, b) => b.projectedNetMargin - a.projectedNetMargin);
   }
 
-  // --- Subscriptions / Buy-Boxes Operations ---
+  public updateDealStatus(dealId: string, dealerSlug: string, status: ArbitrageDeal['status']): ArbitrageDeal | null {
+    const prefix = `${dealerSlug}:`;
+    for (const [k, d] of Object.entries(this.data.deals)) {
+      if (k.startsWith(prefix) && d.id === dealId) {
+        const updated = { ...d, status };
+        this.data.deals[k] = updated;
+        this.markDirty();
+        return updated;
+      }
+    }
+    return null;
+  }
 
-  public getSubscriptions(activeOnly = true): DealerBuyBox[] {
-    const list = Object.values(this.data.dealerSubscriptions);
+  /** Attach the seller-offer workflow to a deal (tenant-scoped). Regenerating
+   *  an offer replaces the previous OTP — only the newest is valid. */
+  public attachOffer(dealId: string, dealerSlug: string, offer: { offerText: string; offerOtp: string; offerOtpExpiresAt: string }): ArbitrageDeal | null {
+    const prefix = `${dealerSlug}:`;
+    for (const [k, d] of Object.entries(this.data.deals)) {
+      if (k.startsWith(prefix) && d.id === dealId) {
+        const updated: ArbitrageDeal = { ...d, ...offer, offeredAt: new Date().toISOString() };
+        this.data.deals[k] = updated;
+        this.markDirty();
+        return updated;
+      }
+    }
+    return null;
+  }
+
+  // --- Subscriptions / Buy-Boxes Operations (tenant-scoped) ---
+
+  public getSubscriptions(dealerSlug: string, activeOnly = true): DealerBuyBox[] {
+    const prefix = `${dealerSlug}:`;
+    const list = Object.entries(this.data.dealerSubscriptions)
+      .filter(([k]) => k.startsWith(prefix))
+      .map(([, s]) => s);
     return activeOnly ? list.filter((s) => s.active) : list;
   }
 
-  public saveSubscription(sub: DealerBuyBox): void {
-    this.data.dealerSubscriptions[sub.id] = sub;
+  public saveSubscription(dealerSlug: string, sub: DealerBuyBox): void {
+    this.data.dealerSubscriptions[tenantKey(dealerSlug, sub.id)] = sub;
     this.markDirty();
   }
 
-  public clearAll(): void {
-    this.data = { trackedVehicles: {}, deals: {}, dealerSubscriptions: this.getDefaultSubscriptions() };
-    this.markDirty();
-  }
-
-  public getTrackedVehicles(filter?: { minDom?: number }): TrackedInventoryVehicle[] {
-    let list = Object.values(this.data.trackedVehicles);
-    if (filter?.minDom !== undefined) {
-      list = list.filter((t) => t.daysOnMarket >= filter.minDom!);
+  /** Clear data. With a slug: wipes only that tenant (dealer-initiated reset).
+   *  Without: wipes everything (admin maintenance). The SERP discovery index
+   *  survives a tenant reset — it belongs to the market, not the dealer. */
+  public clearAll(dealerSlug?: string): void {
+    if (!dealerSlug) {
+      this.data = EMPTY_SCHEMA();
+      this.markDirty();
+      return;
     }
-    return list;
+    const prefix = `${dealerSlug}:`;
+    for (const map of [this.data.trackedVehicles, this.data.deals, this.data.dealerSubscriptions] as Array<Record<string, unknown>>) {
+      for (const k of Object.keys(map)) {
+        if (k.startsWith(prefix)) delete map[k];
+      }
+    }
+    this.markDirty();
+  }
+
+  // --- SERP dealer-domain discovery index (global) ---
+
+  public recordSerpDomain(domain: string, discoveredAt: string): void {
+    if (!domain) return;
+    if (!this.data.discoveredDomains) this.data.discoveredDomains = {};
+    if (this.data.discoveredDomains[domain]) return;
+    this.data.discoveredDomains[domain] = { domain, discoveredAt };
+    this.markDirty();
+  }
+
+  public getSerpDomains(): string[] {
+    return Object.keys(this.data.discoveredDomains || {});
   }
 }
 

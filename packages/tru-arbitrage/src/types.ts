@@ -1,6 +1,6 @@
-export type ListingSource = 'facebook' | 'cars_co_za' | 'autotrader' | 'gumtree' | 'webuycars' | 'dealer_direct';
+export type ListingSource = 'facebook' | 'cars_co_za' | 'autotrader' | 'gumtree' | 'webuycars' | 'dealer_direct' | 'flow_stock';
 
-export type DealCategory = 'underpriced_arbitrage' | 'stale_floorplan_distress' | 'price_drop_velocity';
+export type DealCategory = 'underpriced_arbitrage' | 'stale_floorplan_distress' | 'price_drop_velocity' | 'overpriced_stale_stock';
 
 export interface RawFbListing {
   id?: string;
@@ -20,6 +20,13 @@ export interface RawFbListing {
   date_posted?: string;
   scraped_at?: string;
   days_listed?: number;
+  /* Typed fields from structured feeds (Flow's public stock feed). Absent for
+   * scraped classifieds, where these are parsed from title/description. */
+  year?: number;
+  make?: string;
+  model?: string;
+  trim?: string;
+  mileage?: number;
 }
 
 export interface NormalizedVehicle {
@@ -47,6 +54,9 @@ export interface ValuationComp {
   price: number;
   km?: number;
   source?: string;
+  /** Listing URL where the extractor could capture one — cheapest-in-country
+   *  results deep-link so the dealer can go straight to the listing. */
+  url?: string;
 }
 
 export interface ValuationResult {
@@ -56,6 +66,8 @@ export interface ValuationResult {
   fallbackRequired?: boolean;
   mileageAdjusted: boolean;
   sampleMedianKm: number | null;
+  /** 0–1 confidence in the valuation (sample size + price-band tightness). Alerts below CONFIDENCE_FLOOR never fire. */
+  confidence: number;
   sources: Array<{ name: string; count: number; avg: number | null }>;
 }
 
@@ -106,10 +118,19 @@ export interface ArbitrageDeal {
   projectedNetMargin: number;
   marginPercentage: number;
   sampleCompsCount: number;
+  /** 0–1 valuation confidence at detection time (see ValuationResult). */
+  confidence: number;
   daysOnMarket: number;
   urgencyScore: number;
   detectedAt: string;
   status: 'new' | 'alerted' | 'claimed' | 'archived';
+  /** Seller-offer workflow (desktop management): generated offer text + a
+   *  6-digit OTP the seller can verify when the dealer makes contact.
+   *  OTP lives 15 minutes; regenerating replaces it. */
+  offerText?: string;
+  offerOtp?: string;
+  offerOtpExpiresAt?: string;
+  offeredAt?: string;
 }
 
 export interface DealerBuyBox {
@@ -134,5 +155,6 @@ export interface IngestionBatchResult {
   trackedUpdated: number;
   arbitrageDealsFound: number;
   staleDealsFound: number;
+  overpricedStockFound: number;
   alertsDispatched: number;
 }

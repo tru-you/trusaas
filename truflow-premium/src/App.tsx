@@ -1801,6 +1801,77 @@ export default function App() {
               );
             })()}
 
+            {/* Stock needing action — the money-bleed list. Overview's stats
+                count aged stock; this surfaces the actual UNITS so the dealer
+                principal can take the action in one click. Flagged:
+                stale (40+ days held — the floorplan-distress convention) and/or
+                overpriced (asking 10%+ over the dealer's own market benchmark,
+                truPrice). Worst-first: critical age, then age, then over-by. */}
+            {(() => {
+              const STALE_STOCK_DAYS = 40;
+              const OVERPRICED_PCT = 0.10;
+              const flagged = state.vehicles
+                .filter((v) => v.status !== "SOLD" && !v.archivedAt)
+                .map((v: any) => {
+                  const days = stockAge(v);
+                  const tp = Number(v.truPrice) || 0;
+                  const overBy = tp > 0 && (v.retailPrice || 0) > tp * (1 + OVERPRICED_PCT)
+                    ? Math.round((v.retailPrice || 0) - tp)
+                    : 0;
+                  return { v, days, overBy, sev: days >= 60 ? 2 : days >= STALE_STOCK_DAYS ? 1 : 0 };
+                })
+                .filter((f) => f.sev > 0 || f.overBy > 0)
+                .sort((a, b) => (b.sev - a.sev) || (b.days - a.days) || (b.overBy - a.overBy));
+              const shown = flagged.slice(0, 6);
+              const rest = flagged.length - shown.length;
+              if (flagged.length === 0) return null;
+              return (
+                <div className="card">
+                  <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
+                    <h3 className="font-semibold text-[16px]">Stock needing action</h3>
+                    <button onClick={() => navigateTo("stock_health")} className="btn btn-secondary btn-sm">Stock health</button>
+                  </div>
+                  <div className="card-body p-0 overflow-x-auto">
+                    <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[640px]">
+                      <thead>
+                        <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
+                          <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Vehicle</th>
+                          <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Signal</th>
+                          <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Asking</th>
+                          <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {shown.map((f) => (
+                          <tr key={f.v.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
+                            <td className="py-3 px-4">
+                              <div className="font-medium text-[color:var(--white)]">{f.v.year} {f.v.make} {f.v.model}</div>
+                              <div className="text-[11px] text-[color:var(--muted)]">{f.v.trim ? `${f.v.trim} • ` : ""}Stock {f.v.stockNumber}</div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-mono border ${f.days >= 60 ? "bg-[rgba(184,106,106,0.12)] text-[#B86A6A] border-[rgba(184,106,106,0.25)]" : "bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border-[rgba(245,158,11,0.3)]"}`}>{f.days}d held</span>
+                              {f.overBy > 0 && (
+                                <span className="ml-1.5 inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-mono bg-[rgba(184,106,106,0.12)] text-[#B86A6A] border border-[rgba(184,106,106,0.25)]">R{f.overBy.toLocaleString()} over mkt</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 font-mono text-[color:var(--white)]">R {(f.v.retailPrice || 0).toLocaleString()}</td>
+                            <td className="py-3 px-4 text-right">
+                              <button onClick={() => setSelectedDetailVehicle(f.v)} className="btn btn-secondary btn-sm">Reprice</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {rest > 0 && (
+                      <div className="px-4 py-2.5 text-[12px] text-[color:var(--muted)] border-t border-white/5">
+                        {rest} more — full list in <button onClick={() => navigateTo("stock_health")} className="underline hover:text-[color:var(--white)]">Stock health</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Leads — highest priority, what needs attention now */}
             <div className="card">
               <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">

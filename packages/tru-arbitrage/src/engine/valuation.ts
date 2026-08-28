@@ -1,6 +1,8 @@
 import * as cheerio from 'cheerio';
+import axios from 'axios';
 import { ValuationComp, ValuationResult } from '../types';
 import { adjustForMileage, robustAverage, median } from './mileage';
+import { calculateValuationConfidence } from './confidence';
 import { CONFIG } from '../config';
 import { fetchHtmlWithFallback } from './fetch-html';
 
@@ -59,6 +61,7 @@ export function extractJsonLdComps(html: string): ValuationComp[] {
           price: Math.round(price),
           km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
           source: 'json-ld',
+          url: typeof node.url === 'string' ? node.url : undefined,
         });
       }
     } catch {}
@@ -80,17 +83,19 @@ export function extractNextDataComps(html: string, _make: string, _model: string
       json?.props?.pageProps?.searchResults?.listings ||
       [];
 
-    for (const item of listings) {
-      const price = cleanNumber(item.price || item.priceValue);
-      if (!price || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) continue;
+      for (const item of listings) {
+        const price = cleanNumber(item.price || item.priceValue);
+        if (!price || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) continue;
 
-      const km = cleanNumber(item.mileage);
-      out.push({
-        price: Math.round(price),
-        km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
-        source: 'next-data',
-      });
-    }
+        const km = cleanNumber(item.mileage);
+        const rawUrl = typeof item.url === 'string' ? item.url : undefined;
+        out.push({
+          price: Math.round(price),
+          km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
+          source: 'next-data',
+          url: rawUrl && !rawUrl.startsWith('http') ? `https://www.cars.co.za${rawUrl}` : rawUrl,
+        });
+      }
   } catch {}
 
   return out;
@@ -147,7 +152,7 @@ function modelCore(text: string): string {
  *  we extract the engine displacement token (e.g. "1.9") and boost comps that
  *  match it. If enough trim-matched comps exist (≥3), we use ONLY those —
  *  preventing higher-spec variants from inflating the average. */
-export function extractCardComps(html: string, make: string, model: string, year: number, trim?: string): ValuationComp[] {
+export function extractCardComps(html: string, make: string, model: string, year: number, trim?: string, baseUrl?: string): ValuationComp[] {
   const $ = cheerio.load(html);
   const out: ValuationComp[] = [];
   const trimMatched: ValuationComp[] = [];
@@ -193,10 +198,21 @@ export function extractCardComps(html: string, make: string, model: string, year
     if (seen.has(key)) return;
     seen.add(key);
 
+    // Deep-link where the card is an anchor — resolves relative hrefs against
+    // the page the comps came from.
+    let url: string | undefined;
+    const href = $c.attr('href');
+    if (href && baseUrl) {
+      try { url = new URL(href, baseUrl).toString(); } catch { url = undefined; }
+    } else if (href && href.startsWith('http')) {
+      url = href;
+    }
+
     const comp: ValuationComp = {
       price: Math.round(price),
       km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
       source: 'card',
+      url,
     };
     out.push(comp);
 
@@ -229,19 +245,40 @@ function filterPriceBand(comps: ValuationComp[]): ValuationComp[] {
   return filtered.length >= 3 ? filtered : comps;
 }
 
-export async function fetchLiveMarketValuation(
-  make: string,
-  model: string,
-  year: number,
-  mileageKm: number | null,
-  trim?: string
-): Promise<ValuationResult> {
-  const key = cacheKey(make, model, year) + (trim ? `|${trim.toLowerCase()}` : '');
-  const cached = cacheGet(key);
-  if (cached) {
-    return cached;
+/** Surgical TransUnion backstop — called ONLY when free-comp confidence sits
+ *  below the floor. Mirrors the Lens/Inspect proxy pattern: chargeable calls
+ *  relay to Flow's internal route over x-tru-sync-key; Flow unreachable or no
+ *  key -> null, fail closed (honest no-valuation, never an invented price).
+ *  dealershipId (the dealer's slug from their JWT) is REQUIRED by Flow's
+ *  internal route — the deduction lands on THAT dealer's bundle, never the
+ *  platform pool. */
+async function tuValuationBackstop(mmCode: string, year: number, mileageKm: number | null, dealershipId?: string): Promise<number | null> {
+  if (!CONFIG.TRUFLOW_SYNC_KEY || !mmCode || !dealershipId) return null;
+  try {
+    const res = await axios.post(
+      `${CONFIG.FLOW_PREMIUM_URL}/api/internal/imagin8/valuation`,
+      { mmCode, year, mileage: mileageKm ?? undefined, dealershipId },
+      {
+        headers: { 'x-tru-sync-key': CONFIG.TRUFLOW_SYNC_KEY, 'Content-Type': 'application/json' },
+        timeout: CONFIG.SCRAPER_TIMEOUT_MS,
+      }
+    );
+    const raw = res.data?.mmRetail ?? res.data?.averageRetailPrice ?? res.data?.retail;
+    const price = typeof raw === 'string' ? parseFloat(String(raw).replace(/[^\d.]/g, '')) : Number(raw);
+    return Number.isFinite(price) && price > 0 ? Math.round(price) : null;
+  } catch (err: any) {
+    console.warn(`[valuation] TU backstop unavailable (${err?.message || err}) — thin comps stay unalerted`);
+    return null;
   }
+}
 
+interface GatheredComps {
+  dedupedComps: ValuationComp[];
+  sourcesOutput: Array<{ name: string; count: number; avg: number | null }>;
+}
+
+/** Fetch raw comps from the classifieds targets (no aggregate math). */
+async function gatherComps(make: string, model: string, year: number, trim?: string): Promise<GatheredComps> {
   const allComps: ValuationComp[] = [];
   const sourcesOutput: Array<{ name: string; count: number; avg: number | null }> = [];
 
@@ -263,7 +300,7 @@ export async function fetchLiveMarketValuation(
         if (html) {
           const nextData = extractNextDataComps(html, make, model);
           const jsonLd = extractJsonLdComps(html);
-          const card = extractCardComps(html, make, model, year, trim);
+          const card = extractCardComps(html, make, model, year, trim, target.url);
           const css = extractCssComps(html);
 
           // Prefer the RICHEST extraction, not the first non-empty. Autotrader's
@@ -297,12 +334,91 @@ export async function fetchLiveMarketValuation(
     return true;
   });
 
+  return { dedupedComps, sourcesOutput };
+}
+
+// Comp-list cache — the cheapest-in-country lookup consumes the same sample as
+// the aggregate valuation, so both share the TTL window.
+const MAX_COMPS_CACHE = 100;
+const compsCache = new Map<string, { comps: ValuationComp[]; ts: number }>();
+
+function compsCacheGet(key: string): ValuationComp[] | null {
+  const e = compsCache.get(key);
+  if (!e) return null;
+  if (Date.now() - e.ts > CONFIG.SCRAPER_CACHE_TTL_MS) {
+    compsCache.delete(key);
+    return null;
+  }
+  return e.comps;
+}
+
+function compsCacheSet(key: string, comps: ValuationComp[]): void {
+  if (compsCache.size >= MAX_COMPS_CACHE) {
+    const oldest = compsCache.keys().next().value;
+    if (oldest) compsCache.delete(oldest);
+  }
+  compsCache.set(key, { comps, ts: Date.now() });
+}
+
+/** Live comps for a vehicle, CHEAPEST FIRST — the price-check lookup.
+ *  Same sample as the aggregate valuation (band-filtered), returned as a
+ *  ranked list so a dealer sourcing a specific car sees every live asking
+ *  price in the country, lowest first.
+ *
+ *  opts.skipTuBackstop — the lookup never spends TU: TransUnion is the BOOK
+ *  (modelled retail/trade), not live market asking prices. It can anchor the
+ *  margin-gate average but it can never fill a "cheapest live listings" list.
+ *  Thin comps here are an honest "not enough live listings", not a TU figure. */
+export async function fetchLiveComps(
+  make: string,
+  model: string,
+  year: number,
+  mileageKm: number | null,
+  trim?: string,
+  mmCode?: string,
+  dealershipId?: string,
+  opts?: { skipTuBackstop?: boolean }
+): Promise<{ valuation: ValuationResult; comps: ValuationComp[] }> {
+  const key = cacheKey(make, model, year) + (trim ? `|${trim.toLowerCase()}` : '');
+  const cachedV = cacheGet(key);
+  const cachedC = compsCacheGet(key);
+  if (cachedV && cachedC) {
+    return { valuation: cachedV, comps: cachedC };
+  }
+
+  const { dedupedComps, sourcesOutput } = await gatherComps(make, model, year, trim);
+
   // Filter outlier-priced variants (e.g. base 1.9 vs top 3.0 V6) around the median
   const bandedComps = filterPriceBand(dedupedComps);
 
-  let adjustedComps = adjustForMileage(bandedComps, mileageKm);
-  let avg = robustAverage(adjustedComps);
+  const adjustedComps = adjustForMileage(bandedComps, mileageKm);
+  const avg = robustAverage(adjustedComps);
   const kmValues = bandedComps.map((c) => c.km).filter((k): k is number => typeof k === 'number');
+
+  // The moat: score the sample. Below the floor, the ONLY way a vehicle gets a
+  // price that can alert is the surgical TU backstop — never an invented comp.
+  // The price-check lookup skips it (TU is the book, not live asking prices).
+  let confidence = calculateValuationConfidence(bandedComps, dedupedComps.length);
+
+  if ((!avg || confidence < CONFIG.CONFIDENCE_FLOOR) && mmCode && !opts?.skipTuBackstop) {
+    const tuPrice = await tuValuationBackstop(mmCode, year, mileageKm, dealershipId);
+    if (tuPrice) {
+      console.log(`[valuation] TU backstop engaged for ${make} ${model} ${year} (comps: ${dedupedComps.length}, conf ${confidence.toFixed(2)}) -> R${tuPrice.toLocaleString()}`);
+      const result: ValuationResult = {
+        averageRetailPrice: tuPrice,
+        listingsFound: Math.max(1, dedupedComps.length),
+        fallbackRequired: false,
+        mileageAdjusted: false,
+        sampleMedianKm: median(kmValues),
+        confidence: 0.8, // TransUnion is authoritative for the exact variant
+        sources: [...sourcesOutput, { name: 'TransUnion', count: 1, avg: tuPrice }],
+      };
+      cacheSet(key, result);
+      const comps = [...bandedComps].sort((a, b) => a.price - b.price);
+      compsCacheSet(key, comps);
+      return { valuation: result, comps };
+    }
+  }
 
   // Matches the source scraper contract (truflow-premium/src/lib/scraper.ts):
   // when the free crawler finds zero live comps we return an honest null, never an
@@ -315,10 +431,12 @@ export async function fetchLiveMarketValuation(
       fallbackRequired: true,
       mileageAdjusted: false,
       sampleMedianKm: null,
+      confidence: 0,
       sources: sourcesOutput,
     };
     cacheSet(key, result);
-    return result;
+    compsCacheSet(key, []);
+    return { valuation: result, comps: [] };
   }
 
   const result: ValuationResult = {
@@ -327,9 +445,25 @@ export async function fetchLiveMarketValuation(
     fallbackRequired: false,
     mileageAdjusted: !!mileageKm && mileageKm > 0 && kmValues.length > 0,
     sampleMedianKm: median(kmValues) || (mileageKm ? Math.round(mileageKm * 1.05) : 110000),
+    confidence,
     sources: sourcesOutput,
   };
 
   cacheSet(key, result);
-  return result;
+  const comps = [...bandedComps].sort((a, b) => a.price - b.price);
+  compsCacheSet(key, comps);
+  return { valuation: result, comps };
+}
+
+export async function fetchLiveMarketValuation(
+  make: string,
+  model: string,
+  year: number,
+  mileageKm: number | null,
+  trim?: string,
+  mmCode?: string,
+  dealershipId?: string
+): Promise<ValuationResult> {
+  const { valuation } = await fetchLiveComps(make, model, year, mileageKm, trim, mmCode, dealershipId);
+  return valuation;
 }

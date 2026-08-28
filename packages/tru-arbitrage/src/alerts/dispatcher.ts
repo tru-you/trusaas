@@ -1,19 +1,21 @@
 import axios from 'axios';
 import { ArbitrageDeal, DealerBuyBox } from '../types';
-import { formatDealerWhatsAppAlert, formatSellerOfferTemplate } from './whatsapp';
+import { formatDealAlertText, formatSellerOfferTemplate } from './alert-text';
 
 export function matchesBuyBox(deal: ArbitrageDeal, buyBox: DealerBuyBox): boolean {
   if (!buyBox.active) return false;
 
   const v = deal.vehicle;
 
-  // 1. Margin threshold check
-  if (deal.projectedNetMargin < buyBox.minNetMargin) {
+  // 1. Margin threshold check — My Stock alerts carry a NEGATIVE margin
+  //    (the over-market exposure), so compare against the buy-box floor only
+  //    for buy-side deals.
+  if (deal.dealCategory !== 'overpriced_stale_stock' && deal.projectedNetMargin < buyBox.minNetMargin) {
     return false;
   }
 
-  // 2. Max Price check
-  if (deal.askingPrice > buyBox.maxPrice) {
+  // 2. Max Price check (buy side only — own stock has no buy-box price ceiling)
+  if (deal.dealCategory !== 'overpriced_stale_stock' && deal.askingPrice > buyBox.maxPrice) {
     return false;
   }
 
@@ -28,8 +30,8 @@ export function matchesBuyBox(deal: ArbitrageDeal, buyBox: DealerBuyBox): boolea
     if (!makeMatch) return false;
   }
 
-  // 5. Location / Province check
-  if (buyBox.provinces && buyBox.provinces.length > 0) {
+  // 5. Location / Province check — own stock always matches (it's theirs)
+  if (deal.dealCategory !== 'overpriced_stale_stock' && buyBox.provinces && buyBox.provinces.length > 0) {
     const loc = (v.location || '').toLowerCase();
     const provinceMatch = buyBox.provinces.some((p) => loc.includes(p.toLowerCase()));
     if (!provinceMatch && !loc.includes('south africa')) {
@@ -40,18 +42,19 @@ export function matchesBuyBox(deal: ArbitrageDeal, buyBox: DealerBuyBox): boolea
   return true;
 }
 
+/** Webhook-only dispatch. Alerts reach the dealer's own system (their Flow
+ *  instance, CRM, or anything that speaks HTTP) — no channel is owned here. */
 export async function dispatchDealAlerts(deal: ArbitrageDeal, subscriptions: DealerBuyBox[]): Promise<number> {
   let alertCount = 0;
 
   for (const sub of subscriptions) {
     if (!matchesBuyBox(deal, sub)) continue;
 
-    const message = formatDealerWhatsAppAlert(deal, sub);
+    const alertText = formatDealAlertText(deal, sub);
     const offerTemplate = formatSellerOfferTemplate(deal, sub.dealerName);
 
-    console.log(`\n📢 [ALERT -> ${sub.dealerName} (${sub.contactNumber})]:\n${message}`);
+    console.log(`📢 [ALERT -> ${sub.dealerName}] ${deal.vehicle.year} ${deal.vehicle.make} ${deal.vehicle.model} — ${deal.dealCategory}${sub.webhookUrl ? '' : ' (no webhook configured)'}`);
 
-    // If dealer has a configured webhook URL, POST payload
     if (sub.webhookUrl) {
       try {
         await axios.post(
@@ -60,7 +63,7 @@ export async function dispatchDealAlerts(deal: ArbitrageDeal, subscriptions: Dea
             event: 'arbitrage_deal_matched',
             deal,
             dealer: { id: sub.id, name: sub.dealerName },
-            whatsappMessage: message,
+            alertText,
             suggestedOffer: offerTemplate,
           },
           { timeout: 5000 }

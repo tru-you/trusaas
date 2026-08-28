@@ -1,0 +1,276 @@
+/* ============================================================================
+   TruRadar brand tokens — verbatim suite copy.
+   Source of truth: packages/tokens/tru-tokens.css (L1→L2) + truinspect/src/brand.css
+   (semantic type/depth). Edit the canonical files, copy across. The system in
+   one line: near-black, one cyan accent, warm off-white at four opacities,
+   Inter at generous sizes in mid weights, no uppercase.
+   ========================================================================== */
+
+:root, [data-app="truradar"] {
+  /* ---------- L1 · PRIMITIVES (packages/tokens/tru-tokens.css) ---------- */
+  --tru-ink-900: #06080D;
+  --tru-ink-800: #0D1117;
+  --tru-ink-700: #161B22;
+  --tru-ink-600: #21262D;
+  --tru-ink-500: #30363D;
+  --tru-ink-300: #6E7681;
+  --tru-ink-100: #B1BAC4;
+  --tru-paper:      #E8EAE6;
+  --tru-paper-pure: #FFFFFF;
+
+  --tru-cyan-300: #7FF0EA;
+  --tru-cyan-400: #4FE3DC;
+  --tru-cyan-500: #3ECFC8;
+  --tru-cyan-600: #06B6D4;
+  --tru-cyan-700: #0891B2;
+  --tru-cyan-800: #22807C;
+
+  --tru-amber-500: #F59E0B;
+  --tru-red-500:   #EF4444;
+  --tru-green-500: #10B981;
+
+  --tru-cyan-300-rgb: 127 240 234;
+  --tru-cyan-400-rgb: 79 227 220;
+  --tru-paper-rgb:    232 234 230;
+  --tru-ink-900-rgb:  6 8 13;
+
+  /* ---------- L2 · SEMANTIC (components consume these only) ---------- */
+  --bg-base:       var(--tru-ink-900);
+  --bg-raised:     var(--tru-ink-800);
+  --bg-overlay:    var(--tru-ink-700);
+  --bg-inset:      var(--tru-ink-600);
+  --border-subtle: var(--tru-ink-500);
+  --border-strong: var(--tru-ink-300);
+
+  --text-primary:   var(--tru-paper);
+  --text-secondary: var(--tru-ink-100);
+  --text-muted:     var(--tru-ink-300);
+  --text-on-accent: var(--tru-ink-900);
+
+  --accent:         var(--tru-cyan-400);
+  --accent-hover:   var(--tru-cyan-500);
+  --accent-rgb:     var(--tru-cyan-400-rgb);
+  --accent-surface: rgb(var(--accent-rgb) / 0.10);
+  --accent-border:  rgb(var(--accent-rgb) / 0.35);
+  --focus-ring:     var(--tru-cyan-400);
+
+  --state-attention: var(--tru-amber-500);
+  --state-error:     var(--tru-red-500);
+  --state-success:   var(--tru-green-500);
+
+  /* brand.css semantic layer */
+  --ink:        var(--tru-ink-900);
+  --ink-2:      var(--tru-ink-800);
+  --glass:      rgba(232, 234, 230, 0.055);
+  --glass-line: rgba(232, 234, 230, 0.14);
+
+  --white:      var(--tru-paper);
+  --white-dim:  rgba(232, 234, 230, 0.72);
+  --muted:      rgba(232, 234, 230, 0.55);
+  --faint:      rgba(232, 234, 230, 0.32);
+
+  --cyan:       var(--tru-cyan-400);
+  --cyan-bright:var(--tru-cyan-300);
+  --cyan-soft:  rgba(79, 227, 220, 0.35);
+  --cyan-faint: rgba(79, 227, 220, 0.08);
+
+  --danger:     #B86A6A;
+  --warning:    rgba(232, 234, 230, 0.55);
+  --amber:      var(--tru-amber-500);
+
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Type scale — 12px is the floor. No uppercase in body copy. */
+  --t-micro: 12px;
+  --t-small: 13px;
+  --t-body:  15px;
+  --t-lead:  17px;
+  --t-h3:    20px;
+  --t-h2:    28px;
+
+  --w-regular:  400;
+  --w-medium:   500;
+  --w-semibold: 600;
+
+  --track-h2: -0.015em;
+  --track-h3: -0.01em;
+
+  --shadow-card:  0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
+  --shadow-lift:  0 1px 0 rgba(232,234,230,0.09) inset, 0 26px 50px -28px rgba(0,0,0,0.9);
+  --shadow-modal: 0 40px 90px -40px rgba(0,0,0,0.95);
+
+  --r-sm:   8px;
+  --r-card: 18px;
+  --r-pill: 100px;
+
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+html { background: var(--bg-base); }
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+::selection { background: var(--accent); color: var(--text-on-accent); }
+
+/* Focus is always visible — keyboard users navigate this app. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------- Surfaces ---------- */
+.tru-panel {
+  background: var(--bg-raised);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+}
+.tru-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+.tru-card:hover { border-color: var(--cyan-soft); transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+.glass-nav {
+  background: rgba(6, 8, 13, 0.85);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-bottom: 1px solid var(--glass-line);
+}
+
+/* ---------- Buttons — TruInspect .btn-primary on-fill pattern ----------
+   Cyan fill carries ink text (cyan/white fails contrast). 3D press = a hard
+   ink under-shadow that collapses on :active. Min touch target 44px. */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px; min-height: 44px;
+  background: var(--tru-cyan-400);
+  color: var(--text-on-accent);
+  border: none; border-radius: 12px;
+  font-family: var(--mono); font-weight: 600; font-size: var(--t-small);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 0 var(--tru-ink-900), 0 10px 22px -8px rgba(0,0,0,0.95);
+  transition: background 120ms ease, transform 90ms ease, box-shadow 90ms ease;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 0 var(--tru-ink-900), 0 2px 6px -3px rgba(0,0,0,0.9); }
+.btn-primary:disabled { background: var(--glass); color: var(--faint); box-shadow: none; transform: none; cursor: not-allowed; }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px; min-height: 44px;
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  border: none; border-radius: 12px;
+  font-family: var(--mono); font-weight: 500; font-size: var(--t-small);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(232,234,230,0.10), 0 4px 0 var(--tru-ink-900), 0 8px 18px -8px rgba(0,0,0,0.95);
+  transition: background 120ms ease, transform 90ms ease;
+}
+.btn-secondary:hover { background: var(--bg-inset); }
+.btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tru-ink-900); }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 14px; min-height: 44px;
+  background: transparent; color: var(--white-dim);
+  border: none; border-radius: 12px;
+  font-weight: 500; font-size: var(--t-small); cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.btn-ghost:hover { background: var(--glass); color: var(--white); }
+
+.btn-danger {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px; min-height: 44px;
+  background: rgba(184, 106, 106, 0.12); color: var(--danger);
+  border: 1px solid rgba(184, 106, 106, 0.25); border-radius: 12px;
+  font-weight: 500; font-size: var(--t-small); cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.btn-danger:hover { background: rgba(184, 106, 106, 0.20); border-color: rgba(184, 106, 106, 0.40); }
+
+/* ---------- Inputs ---------- */
+.tru-input {
+  min-height: 44px;
+  background: rgba(232, 234, 230, 0.04);
+  border: 1px solid var(--glass-line);
+  border-radius: 12px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  color: var(--text-primary);
+  font-size: var(--t-small);
+  font-family: var(--sans);
+  padding: 0 12px;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+.tru-input::placeholder { color: var(--faint); }
+.tru-input:focus { border-color: var(--accent); }
+select.tru-input { font-family: var(--mono); }
+.tru-label { font-size: var(--t-micro); font-weight: 500; color: var(--muted); display: block; margin-bottom: 6px; }
+
+/* ---------- Chips / status ---------- */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--mono); font-size: var(--t-micro); font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 10px; border-radius: 8px; border: 1px solid var(--glass-line);
+  color: var(--white-dim); background: var(--glass);
+}
+.chip-accent { color: var(--accent); background: var(--accent-surface); border-color: var(--accent-border); }
+.chip-attention { color: var(--state-attention); background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.30); }
+.chip-danger { color: var(--danger); background: rgba(184,106,106,0.12); border-color: rgba(184,106,106,0.25); }
+.chip-claimed { color: var(--accent); background: var(--accent-surface); border-color: var(--accent-border); }
+
+/* ---------- Bottom nav (mobile — TruInspect .tl-bottomnav pattern) ---------- */
+.tl-bottomnav {
+  display: flex; align-items: stretch; gap: 4px;
+  padding: 6px 8px max(6px, env(safe-area-inset-bottom, 0px));
+  background: rgba(6, 8, 13, 0.92);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-top: 1px solid var(--glass-line);
+}
+.tl-bottomnav button {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 52px; min-width: 48px;
+  background: transparent; border: none; border-radius: 10px;
+  color: var(--muted); font-family: var(--mono); font-size: var(--t-micro); cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.tl-bottomnav button:hover { background: var(--glass); }
+.tl-bottomnav button[aria-current="page"] { color: var(--accent); background: var(--accent-surface); }
+
+/* ---------- Shells ---------- */
+#mBottomNav { display: none; }
+.m-only { display: none !important; }
+
+@media (max-width: 1023px) {
+  .d-only { display: none !important; }
+  .m-only { display: block !important; }
+  #mBottomNav { display: flex; }
+  body { padding-bottom: 76px; } /* bottom nav never obscures content */
+  .tru-card:hover { transform: none; }
+}
+
+/* ---------- Misc ---------- */
+.radar-pulse { animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse-glow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.9); } }
+.font-mono-code { font-family: var(--mono); }
+.icon { width: 16px; height: 16px; flex-shrink: 0; }
+.icon-lg { width: 20px; height: 20px; flex-shrink: 0; }

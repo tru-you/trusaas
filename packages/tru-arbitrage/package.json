@@ -1,14 +1,14 @@
 {
-  "name": "@trusaas/tru-arbitrage",
+  "name": "@trusaas/tru-radar",
   "version": "1.0.0",
   "private": true,
-  "description": "Standalone Facebook Marketplace Vehicle Arbitrage and Days-on-Market (DOM) SaaS Engine for TruSaaS.",
+  "description": "TruRadar — standalone vehicle sourcing radar: confidence-gated deal discovery across SA classifieds and dealer sites, priced against live market comps.",
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.cjs",
     "test": "tsx tests/arbitrage.test.ts",
-    "ingest:mock": "tsx src/index.ts --mock",
+    "scan:cli": "tsx src/index.ts",
     "build": "esbuild src/server.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/server.cjs"
 
   },

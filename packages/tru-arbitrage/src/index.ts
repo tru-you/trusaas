@@ -2,13 +2,14 @@ import { EventEmitter } from 'events';
 import { RawFbListing, IngestionBatchResult, ArbitrageDeal } from './types';
 import { normalizeListing } from './normalizer/gemini-extractor';
 import { fetchLiveMarketValuation } from './engine/valuation';
-import { evaluateArbitrageOpportunity } from './engine/arbitrage';
+import { evaluateArbitrageOpportunity, evaluateOverpricedStock } from './engine/arbitrage';
 import { matchVariant } from './engine/tu-matcher';
 import { db } from './storage/db';
 import { dispatchDealAlerts } from './alerts/dispatcher';
-import { fetchFacebookMarketplaceListings } from './ingestion/brightdata';
 import { fetchAllClassifiedsNewest } from './ingestion/cars-autotrader';
 import { fetchDealerWebsitesViaSerp } from './ingestion/serp';
+import { fetchFlowStockBySlugs } from './ingestion/flow-stock';
+import { dealerRegistry } from './auth/dealers';
 
 export class ScanProgress extends EventEmitter {
   scanId: string;
@@ -20,6 +21,7 @@ export class ScanProgress extends EventEmitter {
 
 export async function processListingBatch(
   rawListings: RawFbListing[],
+  dealerSlug: string,
   emitter?: ScanProgress
 ): Promise<IngestionBatchResult> {
   const CONCURRENCY = 5;
@@ -30,6 +32,7 @@ export async function processListingBatch(
     trackedUpdated: 0,
     arbitrageDealsFound: 0,
     staleDealsFound: 0,
+    overpricedStockFound: 0,
     alertsDispatched: 0,
   };
   const alertedFingerprints = new Set<string>(); // dedup alerts
@@ -53,17 +56,30 @@ export async function processListingBatch(
       console.log(`[tu-match] ${normalized.title} → ${tuMatch.variant} (${tuMatch.mmCode}, ${tuMatch.cc}cc, ${tuMatch.kw}kW, new R${tuMatch.newListPrice?.toLocaleString()}, score ${tuMatch.matchScore.toFixed(2)})`);
     }
 
-    // 3. Track
-    const tracked = db.upsertTrackedVehicle(normalized);
+    // 3. Track (tenant-scoped — this dealer's DOM/price history).
+    // DOM seeds from the strongest date signal each source carries:
+    //  - dealer_direct (Flow stock): daysInInventory — the DMS's own days-held,
+    //    i.e. the real "dealer has held it long" statistic.
+    //  - classifieds: the listing's own date where the source exposes one
+    //    (Cars.co.za createdDate) — a seller whose ad has run long is motivated.
+    //  - everything else: engine-first-seen (no date available; honest default).
+    let firstSeenOverride: string | undefined = raw.date_posted;
+    if (normalized.source === 'dealer_direct' && typeof raw.days_listed === 'number' && raw.days_listed >= 0) {
+      firstSeenOverride = new Date(Date.now() - raw.days_listed * 86400000).toISOString();
+    }
+    const tracked = db.upsertTrackedVehicle(normalized, dealerSlug, firstSeenOverride);
     result.trackedUpdated++;
 
-    // 4. Valuate
+    // 4. Valuate (mmCode enables the surgical TU backstop when comps are thin;
+    // the dealer's slug scopes the chargeable deduction to THEIR bundle)
     const valuation = await fetchLiveMarketValuation(
       normalized.make,
       normalized.model,
       normalized.year,
       normalized.mileageKm,
-      normalized.trim
+      normalized.trim,
+      tuMatch?.mmCode,
+      dealerSlug
     );
 
     // Sanity cap: if TU gives us a new list price, the average retail should never
@@ -78,26 +94,32 @@ export async function processListingBatch(
       return;
     }
 
-    // 4. Evaluate arbitrage
-    const deal = evaluateArbitrageOpportunity(normalized, valuation, tracked);
+    // 4. Evaluate — the dealer's own stock gets the inverted gate (overpriced +
+    // stale), everything else gets the buy gate (underpriced / distress).
+    const isMyStock = normalized.source === 'flow_stock';
+    const deal = isMyStock
+      ? evaluateOverpricedStock(normalized, valuation, tracked)
+      : evaluateArbitrageOpportunity(normalized, valuation, tracked);
     if (!deal) {
       processed++;
-      emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: 'below_margin' });
+      emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: isMyStock ? 'healthy_stock' : 'below_margin' });
       return;
     }
 
-    db.saveDeal(deal);
+    db.saveDeal(deal, dealerSlug);
     if (deal.dealCategory === 'stale_floorplan_distress') {
       result.staleDealsFound++;
+    } else if (deal.dealCategory === 'overpriced_stale_stock') {
+      result.overpricedStockFound++;
     } else {
       result.arbitrageDealsFound++;
     }
     emitter?.emit('deal_found', deal);
 
-    // 5. Dispatch alerts (with dedup)
+    // 5. Dispatch alerts (with dedup) — this dealer's active buy-boxes only
     if (!alertedFingerprints.has(deal.fingerprint)) {
       alertedFingerprints.add(deal.fingerprint);
-      const subs = db.getSubscriptions(true);
+      const subs = db.getSubscriptions(dealerSlug, true);
       const alerts = await dispatchDealAlerts(deal, subs);
       result.alertsDispatched += alerts;
     }
@@ -132,21 +154,45 @@ export async function processListingBatch(
   return result;
 }
 
-export async function runFullMultiSourceScan(emitter?: ScanProgress): Promise<IngestionBatchResult> {
-  console.log('\n🌐 [TruArbitrage Multi-Source Radar] Initiating Scan across all platforms...');
-  emitter?.emit('phase', { phase: 'ingestion', message: 'Fetching from Facebook Marketplace...' });
+export async function runFullMultiSourceScan(dealerSlug: string, emitter?: ScanProgress): Promise<IngestionBatchResult> {
+  console.log(`\n🌐 [TruArbitrage Multi-Source Radar] Initiating Scan for ${dealerSlug}...`);
+  emitter?.emit('phase', { phase: 'ingestion', message: 'Fetching from classifieds, dealer SERP and Flow stock...' });
 
-  const [fbListings, classifiedListings, serpListings] = await Promise.all([
-    fetchFacebookMarketplaceListings({ useMockIfNoKey: true }).catch((err: any) => { emitter?.emit('error', { source: 'facebook', message: err?.message }); return []; }),
+  const [classifiedListings, serpListings] = await Promise.all([
     fetchAllClassifiedsNewest().catch((err: any) => { emitter?.emit('error', { source: 'cars_autotrader', message: err?.message }); return []; }),
-    fetchDealerWebsitesViaSerp().catch((err: any) => { emitter?.emit('error', { source: 'serp', message: err?.message }); return []; }),
+    // The dealer's own site domain is excluded — their stock in their own
+    // radar is noise, not a market deal.
+    fetchDealerWebsitesViaSerp([dealerRegistry.getDealer(dealerSlug)?.websiteDomain || '']).catch((err: any) => { emitter?.emit('error', { source: 'serp', message: err?.message }); return []; }),
+    // Flow-stock lane deliberately NOT in the market scan: the dealer's own
+    // stock is Flow's domain (Stock-needing-action panel there), and scanning
+    // it here burns scraper calls on data the buy radar never shows. The lane
+    // stays alive for the Flow bolt-on via POST /api/mystock/scan.
   ]);
 
-  const allRaw = [...fbListings, ...classifiedListings, ...serpListings];
-  console.log(`📦 Loaded ${allRaw.length} listings (FB: ${fbListings.length}, Cars/AT: ${classifiedListings.length}, SERP Dealer Sites: ${serpListings.length})`);
+  const allRaw = [...classifiedListings, ...serpListings];
+  console.log(`📦 Loaded ${allRaw.length} listings (Cars/AT: ${classifiedListings.length}, SERP Dealer Sites: ${serpListings.length})`);
 
   emitter?.emit('phase', { phase: 'processing', message: `Processing ${allRaw.length} listings...` });
-  const result = await processListingBatch(allRaw, emitter);
+  const result = await processListingBatch(allRaw, dealerSlug, emitter);
+
+  emitter?.emit('complete', result);
+  return result;
+}
+
+/** My-Stock-only scan — the dealer's own Flow feed, no classifieds. Light and
+ *  fast, so it can run on a tighter cadence than the full multi-source radar. */
+export async function runMyStockScan(dealerSlug: string, emitter?: ScanProgress): Promise<IngestionBatchResult> {
+  console.log(`\n📦 [TruArbitrage My-Stock Scan] Repricing ${dealerSlug}'s published stock...`);
+  emitter?.emit('phase', { phase: 'ingestion', message: 'Fetching Flow stock feed...' });
+
+  const flowStockListings = await fetchFlowStockBySlugs([dealerSlug]).catch((err: any) => {
+    emitter?.emit('error', { source: 'flow_stock', message: err?.message });
+    return [];
+  });
+  console.log(`📦 Loaded ${flowStockListings.length} vehicles from Flow stock feed`);
+
+  emitter?.emit('phase', { phase: 'processing', message: `Processing ${flowStockListings.length} vehicles...` });
+  const result = await processListingBatch(flowStockListings, dealerSlug, emitter);
 
   emitter?.emit('complete', result);
   return result;
@@ -155,7 +201,9 @@ export async function runFullMultiSourceScan(emitter?: ScanProgress): Promise<In
 // CLI Execution runner
 async function main() {
   try {
-    const metrics = await runFullMultiSourceScan();
+    // CLI runs are dev/admin operations — scoped under the 'cli' tenant so they
+    // never pollute a real dealer's partition. Data lands in 'cli:*' keys.
+    const metrics = await runFullMultiSourceScan('cli');
 
     console.log('\n📊 [MULTI-SOURCE INGESTION METRICS SUMMARY]');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

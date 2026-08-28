@@ -42,12 +42,30 @@ export interface ResolvedVariant {
 
 let catalogue: Record<string, TuVariant[]> | null = null;
 
+/** Resolve tu-variants.json across run modes:
+ *  - bundled dist/server.cjs → __dirname = <pkg>/dist, data at ../data
+ *  - tsx dev (src/engine)    → __dirname = <pkg>/src/engine, data at ../../data
+ *  - odd cwd runs            → <cwd>/data
+ *  The catalogue silently loading empty disabled TU matching AND the
+ *  new-list-price cap in dev — this resolver is what makes it impossible. */
+function resolveCataloguePath(): string | null {
+  const candidates = [
+    path.join(__dirname, '..', 'data', 'tu-variants.json'),
+    path.join(__dirname, '..', '..', 'data', 'tu-variants.json'),
+    path.join(process.cwd(), 'data', 'tu-variants.json'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return null;
+}
+
 function loadCatalogue(): Record<string, TuVariant[]> {
   if (catalogue) return catalogue;
 
-  const dataPath = path.join(__dirname, '..', 'data', 'tu-variants.json');
-  if (!fs.existsSync(dataPath)) {
-    console.warn('[tu-matcher] tu-variants.json not found at', dataPath);
+  const dataPath = resolveCataloguePath();
+  if (!dataPath) {
+    console.warn('[tu-matcher] tu-variants.json not found in any known location — TU matching disabled');
     catalogue = {};
     return catalogue;
   }
@@ -55,7 +73,7 @@ function loadCatalogue(): Record<string, TuVariant[]> {
   try {
     catalogue = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
     const totalVariants = Object.values(catalogue!).reduce((sum, arr) => sum + arr.length, 0);
-    console.log(`[tu-matcher] Loaded ${totalVariants} variants across ${Object.keys(catalogue!).length} makes`);
+    console.log(`[tu-matcher] Loaded ${totalVariants} variants across ${Object.keys(catalogue!).length} makes (${dataPath})`);
   } catch (err: any) {
     console.error('[tu-matcher] Failed to load tu-variants.json:', err?.message);
     catalogue = {};
@@ -82,6 +100,40 @@ function tokenOverlap(needleTokens: string[], haystackNorm: string): number {
 function extractDisplacement(s: string): string | null {
   const m = s.match(/\b(\d\.\d)\b/);
   return m ? m[1] : null;
+}
+
+/** All makes in the static catalogue (dropdown source — free, local, no API). */
+export function listMakes(): string[] {
+  const cat = loadCatalogue();
+  return Object.keys(cat).sort();
+}
+
+/** Models for one make, from the static catalogue (title-cased for the UI). */
+export function listModels(make: string): string[] {
+  const cat = loadCatalogue();
+  const variants = cat[String(make || '').toUpperCase()] || [];
+  const models = new Set<string>();
+  for (const v of variants) {
+    if (v.md) models.add(v.md);
+  }
+  return Array.from(models).sort();
+}
+
+/** "MERCEDES-BENZ" -> "Mercedes-Benz", "BMW" -> "BMW", "POLO" -> "Polo".
+ *  Short tokens (≤3 chars) stay uppercase — they're acronyms, not words. */
+export function titleCaseVehicle(s: string): string {
+  return String(s || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) =>
+      word
+        .split('-')
+        .map((part) =>
+          part.length <= 3 ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+        )
+        .join('-')
+    )
+    .join(' ');
 }
 
 /**

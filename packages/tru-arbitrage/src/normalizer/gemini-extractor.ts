@@ -2,6 +2,7 @@ import axios from 'axios';
 import { RawFbListing, NormalizedVehicle } from '../types';
 import { CONFIG } from '../config';
 import { normalizeViaRegex } from './regex-fastpath';
+import { normalizeViaNativeScraper } from './native-scraper';
 import { CANONICAL_MAKES } from './make-aliases';
 
 interface GeminiVehicleJson {
@@ -97,6 +98,10 @@ ${combined}`;
 }
 
 export async function normalizeListing(raw: RawFbListing): Promise<NormalizedVehicle | null> {
+  // 0. Native structured feed (Flow stock) — typed fields, zero heuristics, zero cost
+  const nativeResult = normalizeViaNativeScraper(raw);
+  if (nativeResult) return nativeResult;
+
   // 1. Fast Regex (0ms, $0)
   const regexResult = normalizeViaRegex(raw);
   if (regexResult && regexResult.confidence >= 0.9) {

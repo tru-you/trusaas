@@ -1,524 +1,548 @@
 <!doctype html>
-<html lang="en-ZA" class="dark" data-app="truarbitrage">
+<html lang="en-ZA" class="dark" data-app="truradar">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
-  <title>TruArbitrage — Dealer Sourcing & Floorplan Distress Radar</title>
-  <meta name="description" content="Multi-source vehicle arbitrage, private-to-dealer deal flow, and Days-on-Market distress radar for South African dealerships.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>TruRadar — Vehicle Sourcing Radar</title>
+  <meta name="description" content="Confidence-gated vehicle sourcing radar for South African dealers. Underpriced and distress stock from classifieds and dealer sites, priced against live market comps.">
   <meta name="theme-color" content="#06080D">
   <meta name="color-scheme" content="dark">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/brand.css">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Inter"', 'system-ui', 'sans-serif'],
-            mono: ['"IBM Plex Mono"', 'monospace']
-          },
-          colors: {
-            tru: {
-              night: '#06080D',
-              surface: '#0D1117',
-              panel: '#161B22',
-              cyan: '#4FE3DC',
-              cyanDark: '#22807C',
-              emerald: '#10B981',
-              amber: '#F59E0B'
-            }
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    :root {
-      --bg: #06080D;
-      --surface: #0D1117;
-      --panel: #161B22;
-      --cyan: #4FE3DC;
-      --cyan-dark: #22807C;
-      --cyan-soft: rgba(79, 227, 220, 0.35);
-      --cyan-faint: rgba(79, 227, 220, 0.08);
-      --border: rgba(232, 234, 230, 0.14);
-      --white: #E8EAE6;
-      --white-dim: rgba(232, 234, 230, 0.72);
-      --muted: rgba(232, 234, 230, 0.55);
-      --faint: rgba(232, 234, 230, 0.32);
-      --danger: #B86A6A;
-      --shadow-card: 0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
-      --shadow-lift: 0 1px 0 rgba(232,234,230,0.09) inset, 0 26px 50px -28px rgba(0,0,0,0.9);
-      --shadow-modal: 0 40px 90px -40px rgba(0,0,0,0.95);
-      --r-card: 18px;
-      --r-sm: 8px;
+    /* Page-specific layout only — tokens and components live in brand.css */
+    .view { display: contents; }
+    .m-view { display: contents; }
+    #viewAccount { display: none; } /* desktop: account lives in the header */
+    @media (max-width: 1023px) {
+      .m-view { display: none; }
+      .m-view.m-active { display: block; }
     }
-    body {
-      background-color: var(--bg);
-      color: var(--white);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      font-size: 15px;
-      line-height: 1.55;
-      -webkit-font-smoothing: antialiased;
+    .stat-tile { background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--r-sm); padding: 12px 14px; }
+    .stat-label { font-size: var(--t-micro); color: var(--muted); font-family: var(--mono); }
+    .stat-value { font-size: var(--t-h3); font-weight: var(--w-semibold); color: var(--white); margin-top: 2px; font-family: var(--mono); }
+    .otp-big {
+      font-family: var(--mono); font-size: 34px; font-weight: 600; letter-spacing: 0.35em;
+      color: var(--accent); background: var(--accent-surface);
+      border: 1px solid var(--accent-border); border-radius: 12px;
+      padding: 14px 10px 14px 22px; text-align: center; user-select: all;
     }
-    .font-mono-code { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
-    .glass-nav {
-      background: rgba(6, 8, 13, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
+    .offer-text {
+      white-space: pre-wrap; font-size: var(--t-small); line-height: 1.6;
+      background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--r-sm);
+      padding: 12px 14px; max-height: 220px; overflow-y: auto; user-select: all;
     }
-    .tru-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-card);
-      box-shadow: var(--shadow-card);
-    }
-    .tru-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-card);
-      box-shadow: var(--shadow-card);
-      transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
-    }
-    .tru-card:hover {
-      border-color: var(--cyan-soft);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lift);
-    }
-    /* 3D Sculpted Buttons — identical to TruInspect .tl-btn-3d / .btn-primary */
-    .tru-btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 18px;
-      background: #3ECFC8;
-      color: #06080D;
-      border: none;
-      border-radius: 12px;
-      font-family: 'IBM Plex Mono', ui-monospace, monospace;
-      font-weight: 600;
-      font-size: 13px;
-      text-shadow: none;
-      cursor: pointer;
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.28),
-        0 5px 0 #22807C,
-        0 10px 22px -8px rgba(0, 0, 0, 0.95);
-      transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
-    }
-    .tru-btn-primary:hover { background: #4FE3DC; }
-    .tru-btn-primary:active {
-      transform: translateY(4px);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), 0 1px 0 #22807C, 0 2px 6px -3px rgba(0,0,0,0.9);
-    }
-    .tru-btn-primary:disabled {
-      background: rgba(232, 234, 230, 0.08);
-      color: var(--faint);
-      box-shadow: none;
-      transform: none;
-      cursor: not-allowed;
-    }
-    /* Secondary — identical to TruInspect .tru-btn-secondary */
-    .tru-btn-secondary {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 18px;
-      background: #161B22;
-      color: var(--white);
-      border: none;
-      border-radius: 12px;
-      font-family: 'IBM Plex Mono', ui-monospace, monospace;
-      font-weight: 500;
-      font-size: 13px;
-      cursor: pointer;
-      box-shadow:
-        inset 0 1px 0 rgba(232, 234, 230, 0.10),
-        0 4px 0 #06080D,
-        0 8px 18px -8px rgba(0, 0, 0, 0.95);
-      transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
-    }
-    .tru-btn-secondary:hover { background: #21262D; }
-    .tru-btn-secondary:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #06080D, 0 2px 6px -3px rgba(0,0,0,0.9);
-    }
-    /* Ghost — identical to TruInspect .tru-btn-ghost */
-    .tru-btn-ghost {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 18px;
-      background: transparent;
-      color: var(--white-dim);
-      border: none;
-      border-radius: 12px;
-      font-weight: 500;
-      font-size: 13px;
-      cursor: pointer;
-      transition: background 120ms ease, color 120ms ease;
-    }
-    .tru-btn-ghost:hover { background: rgba(232, 234, 230, 0.06); color: var(--white); }
-    /* Danger button — for reset */
-    .tru-btn-danger {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 18px;
-      background: rgba(184, 106, 106, 0.12);
-      color: var(--danger);
-      border: 1px solid rgba(184, 106, 106, 0.25);
-      border-radius: 12px;
-      font-weight: 500;
-      font-size: 13px;
-      cursor: pointer;
-      transition: background 120ms ease, border-color 120ms ease;
-    }
-    .tru-btn-danger:hover { background: rgba(184, 106, 106, 0.20); border-color: rgba(184, 106, 106, 0.40); }
-    /* Recessed Inputs — identical to TruInspect .ti-input */
-    .tru-input {
-      height: 40px;
-      background: rgba(232, 234, 230, 0.04);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
-      color: var(--white);
-      font-size: 13px;
-      padding: 0 12px;
-      outline: none;
-      transition: border-color 120ms ease;
-    }
-    .tru-input::placeholder { color: var(--faint); }
-    .tru-input:focus { border-color: var(--cyan); }
-    /* Labels — identical to TruInspect .ti-field-label */
-    .tru-label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 6px;
-    }
-    /* Stat tile — identical to TruInspect .ti-stat */
-    .tru-stat {
-      background: rgba(232, 234, 230, 0.055);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 12px 14px;
-    }
-    .tru-stat-label { font-size: 12px; color: var(--muted); }
-    .tru-stat-value { font-size: 20px; font-weight: 600; color: var(--white); margin-top: 2px; }
-    .radar-pulse {
-      animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    @keyframes pulse-glow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.9); }
-    }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal { width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .scanlog { max-height: 128px; overflow-y: auto; }
+    .deals-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 768px) { .deals-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1280px) { .deals-grid { grid-template-columns: repeat(3, 1fr); } }
+    .finbox { border-radius: 12px; padding: 12px 14px; margin-top: 14px; border: 1px solid var(--glass-line); background: var(--bg-base); display: grid; gap: 6px; }
+    .finrow { display: flex; align-items: center; justify-content: space-between; font-size: var(--t-small); }
+    .finlabel { color: var(--muted); }
+    details.mfilters > summary { list-style: none; cursor: pointer; }
+    details.mfilters > summary::-webkit-details-marker { display: none; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+<body class="min-h-screen flex flex-col antialiased">
 
-  <!-- TruSaaS Header Bar -->
-  <header class="sticky top-0 z-50 glass-nav px-6 py-4">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      
-      <!-- Brand Logo -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: #3ECFC8; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 #22807C, 0 6px 14px -4px rgba(0,0,0,0.9);">
-          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
+  <!-- SVG icon sprite — Lucide paths, no emoji anywhere -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke-linecap="round"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" stroke-linecap="round"/><circle cx="12" cy="7" r="4"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" stroke-linecap="round"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6" stroke-linecap="round"/><path d="M10 14 21 3" stroke-linecap="round"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke-linecap="round"/></symbol>
+      <symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4" stroke-linecap="round"/></symbol>
+      <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" stroke-linecap="round"/><path d="m6 6 12 12" stroke-linecap="round"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round"/><path d="M21 3v5h-5" stroke-linecap="round"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round"/><path d="M3 21v-5h5" stroke-linecap="round"/></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" stroke-linecap="round"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18" stroke-linecap="round"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" stroke-linecap="round"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke-linecap="round"/></symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke-linecap="round"/><polyline points="16 17 21 12 16 7" stroke-linecap="round"/><line x1="21" x2="9" y1="12" y2="12" stroke-linecap="round"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- ══════════ LOGIN OVERLAY ══════════ -->
+  <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background: var(--bg-base)">
+    <div class="tru-panel p-8 w-full max-w-sm">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: var(--accent); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 var(--tru-ink-900);">
+          <svg class="icon-lg" style="color: var(--text-on-accent)" fill="none" stroke="currentColor" stroke-width="2.5"><use href="#i-zap"/></svg>
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xl font-semibold tracking-tight" style="color: var(--white)">Tru<span style="color: var(--cyan)" class="font-semibold">Arbitrage</span></span>
-            <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider bg-cyan-500/10 text-tru-cyan border border-cyan-500/30 px-2 py-0.5 rounded-md">Live Radar</span>
-          </div>
-          <p class="text-xs font-medium" style="color: var(--muted)">Dealer Sourcing & Floorplan Distress Radar • South Africa</p>
+          <span class="text-xl font-semibold tracking-tight">Tru<span style="color: var(--accent)">Radar</span></span>
+          <p class="text-[12px]" style="color: var(--muted)">Vehicle sourcing radar • South Africa</p>
         </div>
       </div>
-
-      <!-- Live Actions -->
-      <div class="flex items-center gap-3">
-        <button onclick="triggerScan()" id="scanBtn" class="tru-btn-primary">
-          <span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span>
-          <span>Scan All Platforms</span>
-        </button>
-        <button onclick="openBuyBoxModal()" class="tru-btn-secondary">
-          ⚙️ Buy-Box
-        </button>
-        <button onclick="resetData()" class="tru-btn-danger" title="Clear all deals and tracked vehicles">
-          🗑️ Reset
-        </button>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- Hero Metrics Bar -->
-  <section class="max-w-7xl mx-auto w-full px-6 pt-8 pb-4">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Total Profit Identified</span>
-        <div class="font-mono-code text-2xl font-semibold text-tru-emerald mt-1" id="statTotalProfit">R0</div>
-        <span class="text-xs mt-1 block" style="color: var(--muted)">Net margin after recon buffer</span>
-      </div>
-      <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Active High-Margin Deals</span>
-        <div class="font-mono-code text-2xl font-semibold mt-1" style="color: var(--white)" id="statActiveDeals">0</div>
-        <span class="text-xs mt-1 block" style="color: var(--cyan)">Net profit &ge; R15,000</span>
-      </div>
-      <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Avg Net Margin / Deal</span>
-        <div class="font-mono-code text-2xl font-semibold text-tru-cyan mt-1" id="statAvgMargin">R0</div>
-        <span class="text-xs mt-1 block" style="color: var(--muted)">Across qualified stock</span>
-      </div>
-      <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Stale Floorplan Distress</span>
-        <div class="font-mono-code text-2xl font-semibold text-tru-amber mt-1" id="statDesperateSellers">0</div>
-        <span class="text-xs mt-1 block" style="color: var(--amber)">&ge; 40d on floor or price dropped</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Filter & Search Toolbar -->
-  <section class="max-w-7xl mx-auto w-full px-6 py-4">
-    <div class="tru-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3 flex-wrap flex-1">
-        <div class="relative min-w-[180px] flex-1 max-w-xs">
-          <input type="text" id="filterSearch" oninput="renderDeals()" placeholder="Search make, model, dealer, city..." class="tru-input w-full pl-8 pr-3 font-sans min-w-[180px] flex-1 max-w-xs">
-          <span class="absolute left-2.5 top-2.5 text-xs" style="color: var(--muted)">🔍</span>
-        </div>
-        <select id="filterMinMargin" onchange="renderDeals()" class="tru-input font-mono-code">
-          <option value="15000">Min Net: R15k</option>
-          <option value="10000">Min Net: R10k</option>
-          <option value="25000">Min Net: R25k</option>
-          <option value="35000">Min Net: R35k</option>
-          <option value="0">All Margins</option>
-        </select>
-        <select id="filterSource" onchange="renderDeals()" class="tru-input font-mono-code">
-          <option value="ALL">All Platforms</option>
-          <option value="facebook">Facebook Marketplace</option>
-          <option value="cars_co_za">Cars.co.za</option>
-          <option value="autotrader">AutoTrader SA</option>
-          <option value="dealer_direct">Dealer Sites (Google SERP)</option>
-          <option value="gumtree">Gumtree</option>
-        </select>
-
-        <select id="filterCategory" onchange="renderDeals()" class="tru-input font-mono-code">
-          <option value="ALL">All Deal Types</option>
-          <option value="underpriced_arbitrage">⚡ Underpriced Bargains</option>
-          <option value="stale_floorplan_distress">🔥 Stale Floorplan (&ge;40d)</option>
-          <option value="price_drop_velocity">📉 Major Price Drops</option>
-        </select>
-        <select id="filterProvince" onchange="renderDeals()" class="tru-input font-mono-code">
-          <option value="ALL">All Provinces</option>
-          <option value="Gauteng">Gauteng (JHB / PTA)</option>
-          <option value="Western Cape">Western Cape (CPT)</option>
-          <option value="KwaZulu-Natal">KwaZulu-Natal (DBN)</option>
-        </select>
-        <select id="filterMake" onchange="renderDeals()" class="tru-input font-mono-code">
-          <option value="ALL">All Makes</option>
-        </select>
-        <select id="filterSort" onchange="renderDeals()" class="tru-input font-mono-code">
-          <option value="profit_desc">Highest Net Margin</option>
-          <option value="dom_desc">Oldest on Floor (DOM)</option>
-          <option value="price_asc">Lowest Asking Price</option>
-        </select>
-      </div>
-      <div class="font-mono-code text-xs font-semibold whitespace-nowrap" style="color: var(--muted)">
-        Showing <span id="dealCountBadge" class="text-tru-cyan font-semibold">0</span> qualified opportunities
-      </div>
-    </div>
-  </section>
-
-  <!-- Scan Progress Panel -->
-  <section id="scanProgress" class="hidden max-w-7xl mx-auto w-full px-6 py-2">
-    <div class="tru-panel p-4 rounded-2xl">
-      <div class="flex items-center gap-3">
-        <span class="radar-pulse w-3 h-3 rounded-full" style="background: var(--cyan)"></span>
-        <span id="scanPhase" class="text-sm font-medium" style="color: var(--white)">Scanning platforms...</span>
-      </div>
-      <div class="mt-2 rounded-xl h-2 overflow-hidden" style="background: var(--bg)">
-        <div id="scanBar" class="h-full rounded-xl transition-all duration-300" style="width: 0%; background: var(--cyan)"></div>
-      </div>
-      <div id="scanLog" class="mt-3 max-h-32 overflow-y-auto text-xs font-mono-code space-y-1" style="color: var(--muted)"></div>
-    </div>
-  </section>
-
-  <!-- Live Arbitrage Cards Grid -->
-  <main class="max-w-7xl mx-auto w-full px-6 py-4 flex-1">
-    <div id="dealsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Injected via JavaScript -->
-    </div>
-    
-    <!-- Empty State -->
-    <div id="emptyState" class="hidden tru-panel p-12 rounded-3xl text-center max-w-lg mx-auto my-12">
-      <div class="w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto mb-4 text-2xl" style="background: var(--bg); border-color: var(--border)">🚗</div>
-      <h3 class="text-lg font-semibold" style="color: var(--white)">No Arbitrage Deals Match Your Filter</h3>
-      <p class="text-sm mt-2" style="color: var(--muted)">Try clearing your filters or click below to trigger a fresh multi-source scan.</p>
-      <div class="flex justify-center gap-3 mt-6">
-        <button onclick="resetFilters()" class="tru-btn-secondary">Reset Filters</button>
-        <button onclick="triggerScan()" class="tru-btn-primary">Scan All Platforms</button>
-      </div>
-    </div>
-  </main>
-
-  <!-- Buy-Box Modal -->
-  <div id="buyBoxModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="tru-panel p-6 rounded-3xl max-w-lg w-full shadow-2xl">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold flex items-center gap-2" style="color: var(--white)">
-          <span>Dealer Buy-Box Settings</span>
-          <span class="font-mono-code text-[10px] bg-cyan-500/10 text-tru-cyan border border-cyan-500/20 px-2 py-0.5 rounded">Preferences</span>
-        </h2>
-        <button onclick="closeBuyBoxModal()" class="text-xl hover:opacity-80" style="color: var(--muted)">&times;</button>
-      </div>
-      <p class="text-xs mb-6" style="color: var(--muted)">Configure the exact types of private & wholesale stock you want pushed to your WhatsApp and dashboard.</p>
-      
+      <p class="text-[13px] mb-6" style="color: var(--muted)">Sign in with your dealership slug and access code.</p>
       <div class="space-y-4">
         <div>
-          <label class="tru-label">Dealership Name</label>
-          <input type="text" id="bbDealerName" value="Apex Auto Motors" class="tru-input w-full font-sans">
+          <label class="tru-label" for="loginSlug">Dealership slug</label>
+          <input type="text" id="loginSlug" placeholder="e.g. apex-motors" class="tru-input w-full font-mono-code" autocomplete="username">
         </div>
         <div>
-          <label class="tru-label">WhatsApp Phone Number for Alerts</label>
-          <input type="text" id="bbPhone" value="+27821234567" class="tru-input w-full font-mono-code">
+          <label class="tru-label" for="loginCode">Access code</label>
+          <input type="password" id="loginCode" placeholder="••••••••" class="tru-input w-full font-mono-code" autocomplete="current-password">
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="tru-label">Minimum Net Margin (ZAR)</label>
-            <input type="number" id="bbMinMargin" value="25000" class="tru-input w-full font-mono-code">
-          </div>
-          <div>
-            <label class="tru-label">Maximum Price Ceiling (ZAR)</label>
-            <input type="number" id="bbMaxPrice" value="350000" class="tru-input w-full font-mono-code">
-          </div>
-        </div>
-        <div>
-          <label class="tru-label">Target Provinces / Cities</label>
-          <input type="text" id="bbProvinces" value="Gauteng, Western Cape, KwaZulu-Natal" class="tru-input w-full font-sans">
-        </div>
-      </div>
-
-      <div class="mt-6 flex justify-end gap-3">
-        <button onclick="closeBuyBoxModal()" class="tru-btn-ghost">Cancel</button>
-        <button onclick="saveBuyBoxSettings()" class="tru-btn-primary">Save Buy-Box</button>
+        <div id="loginError" class="hidden text-[13px]" style="color: var(--danger)" role="alert"></div>
+        <button onclick="doFormLogin()" id="loginBtn" class="btn-primary w-full">Sign in</button>
+        <button onclick="doDemoLogin()" class="btn-ghost w-full text-[13px]">Try demo (24h)</button>
       </div>
     </div>
   </div>
 
+  <!-- ══════════ APP ══════════ -->
+  <div id="appShell" class="hidden min-h-screen flex flex-col">
+
+    <!-- Header (both shells) -->
+    <header class="sticky top-0 z-50 glass-nav px-4 md:px-6 py-3 md:py-4">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background: var(--accent); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 var(--tru-ink-900);">
+            <svg class="icon-lg" style="color: var(--text-on-accent)" fill="none" stroke="currentColor" stroke-width="2.5"><use href="#i-zap"/></svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-semibold tracking-tight">Tru<span style="color: var(--accent)">Radar</span></span>
+              <span class="hidden md:inline chip chip-accent">Sourcing Radar</span>
+            </div>
+            <p class="text-[12px] font-medium truncate" style="color: var(--muted)" id="headerDealerName">—</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="triggerScan()" id="scanBtn" class="btn-primary">
+            <span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span>
+            <span>Scan Market</span>
+          </button>
+          <button onclick="openBuyBoxModal()" class="btn-secondary" title="Deal criteria + webhook" aria-label="Buy-Box settings"><svg class="icon"><use href="#i-sliders"/></svg></button>
+          <button onclick="resetData()" class="btn-danger hidden md:inline-flex" title="Clear this dealer's deals and tracked vehicles" aria-label="Reset data"><svg class="icon"><use href="#i-trash"/></svg></button>
+          <button onclick="logout()" class="btn-ghost hidden md:inline-flex">Sign out</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto w-full px-4 md:px-6 flex-1 w-full">
+
+      <!-- ═══ VIEW: SEARCH (mobile) / Price Check (desktop) ═══ -->
+      <section id="viewSearch" class="view m-view pt-6 pb-2">
+        <div class="tru-panel p-5">
+          <div onclick="togglePriceCheck()" role="button" tabindex="0" aria-expanded="true" class="flex items-center justify-between gap-3 flex-wrap cursor-pointer select-none" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();togglePriceCheck();}">
+            <h2 class="font-semibold text-[17px]">Price check — cheapest in the country</h2>
+            <span class="chip chip-accent">pick a car, see every live asking price <svg class="icon" style="width:14px;height:14px"><use href="#i-chev" id="lookupChevronUse"/></svg></span>
+          </div>
+          <div id="lookupPanel">
+            <p class="text-[13px] mt-2 mb-4" style="color: var(--muted)">Every live asking price in South Africa, cheapest first.</p>
+            <div class="flex items-end gap-3 flex-wrap">
+              <label class="flex flex-col gap-1 w-48">
+                <span class="tru-label">Make</span>
+                <select id="lookupMake" onchange="onLookupMakeChange()" class="tru-input"><option value="">Loading…</option></select>
+              </label>
+              <label class="flex flex-col gap-1 w-56">
+                <span class="tru-label">Model</span>
+                <select id="lookupModel" class="tru-input"><option value="">Pick a make first</option></select>
+              </label>
+              <label class="flex flex-col gap-1 w-28">
+                <span class="tru-label">Year</span>
+                <input type="number" id="lookupYear" min="1990" max="2027" placeholder="2019" class="tru-input font-mono-code">
+              </label>
+              <button onclick="doPriceCheck()" id="lookupBtn" class="btn-primary">Find cheapest</button>
+            </div>
+            <div id="lookupSummary" class="hidden mt-4 font-mono-code text-[13px]" style="color: var(--white-dim)"></div>
+            <div id="lookupResults" class="hidden mt-3 overflow-x-auto">
+              <table class="w-full text-[13px] text-left border-collapse min-w-[520px]">
+                <thead>
+                  <tr style="color: var(--muted)" class="border-b">
+                    <th class="py-2 px-2 font-medium font-mono-code">Price</th>
+                    <th class="py-2 px-2 font-medium font-mono-code">Mileage</th>
+                    <th class="py-2 px-2 font-medium font-mono-code">Source</th>
+                    <th class="py-2 px-2 font-medium font-mono-code">Listing</th>
+                  </tr>
+                </thead>
+                <tbody id="lookupBody"></tbody>
+              </table>
+            </div>
+            <div id="lookupError" class="hidden mt-3 text-[13px]" style="color: var(--danger)" role="alert"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ VIEW: DEALS ═══ -->
+      <section id="viewDeals" class="view m-view pt-6 pb-4">
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div class="tru-panel p-4">
+            <span class="stat-label">Profit identified</span>
+            <div class="stat-value" style="color: var(--accent)" id="statTotalProfit">R0</div>
+            <span class="text-[12px] mt-1 block" style="color: var(--muted)">Net margin on qualified deals</span>
+          </div>
+          <div class="tru-panel p-4">
+            <span class="stat-label">Active deals</span>
+            <div class="stat-value" id="statActiveDeals">0</div>
+            <span class="text-[12px] mt-1 block" style="color: var(--muted)">Confidence-gated opportunities</span>
+          </div>
+          <div class="tru-panel p-4">
+            <span class="stat-label">Avg net margin</span>
+            <div class="stat-value" id="statAvgMargin">R0</div>
+            <span class="text-[12px] mt-1 block" style="color: var(--muted)">After dynamic recon</span>
+          </div>
+          <div class="tru-panel p-4">
+            <span class="stat-label">Motivated sellers</span>
+            <div class="stat-value" style="color: var(--state-attention)" id="statDistress">0</div>
+            <span class="text-[12px] mt-1 block" style="color: var(--muted)">40d+ listed or heavy price cuts</span>
+          </div>
+        </div>
+
+        <!-- Scan progress -->
+        <section id="scanProgress" class="hidden mt-4">
+          <div class="tru-panel p-4">
+            <div class="flex items-center gap-3">
+              <span class="radar-pulse w-3 h-3 rounded-full" style="background: var(--accent)"></span>
+              <span id="scanPhase" class="text-[13px] font-medium" style="color: var(--white)">Scanning market…</span>
+            </div>
+            <div class="mt-2 rounded-xl h-2 overflow-hidden" style="background: var(--bg-base)">
+              <div id="scanBar" class="h-full rounded-xl transition-all duration-300" style="width: 0%; background: var(--accent)"></div>
+            </div>
+            <div id="scanLog" class="scanlog mt-3 text-[12px] font-mono-code space-y-1" style="color: var(--muted)"></div>
+          </div>
+        </section>
+
+        <!-- Filters (desktop bar / mobile collapsible) -->
+        <div class="tru-panel p-4 mt-4 d-only">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2 flex-wrap flex-1">
+              <input type="text" id="filterSearch" oninput="renderDeals()" placeholder="Search make, model, year — e.g. 2018 mercedes c220" class="tru-input w-64" aria-label="Search deals">
+              <select id="filterMinMargin" onchange="renderDeals()" class="tru-input" aria-label="Minimum net margin">
+                <option value="10000">Min Net: R10k</option><option value="15000">Min Net: R15k</option>
+                <option value="25000">Min Net: R25k</option><option value="0">All Margins</option>
+              </select>
+              <select id="filterSource" onchange="renderDeals()" class="tru-input" aria-label="Source platform">
+                <option value="ALL">All Platforms</option><option value="cars_co_za">Cars.co.za</option>
+                <option value="autotrader">AutoTrader SA</option><option value="dealer_direct">Dealer Sites (SERP)</option>
+              </select>
+              <select id="filterCategory" onchange="renderDeals()" class="tru-input" aria-label="Deal type">
+                <option value="ALL">All Deal Types</option><option value="underpriced_arbitrage">Underpriced</option>
+                <option value="stale_floorplan_distress">Stale Floorplan</option><option value="price_drop_velocity">Price Drops</option>
+              </select>
+              <select id="filterMake" onchange="renderDeals()" class="tru-input" aria-label="Make"><option value="ALL">All Makes</option></select>
+              <select id="filterSort" onchange="renderDeals()" class="tru-input" aria-label="Sort">
+                <option value="profit_desc">Highest Net Margin</option><option value="dom_desc">Longest Listed</option>
+                <option value="price_asc">Lowest Asking</option><option value="conf_desc">Highest Confidence</option>
+              </select>
+              <select id="filterStatus" onchange="renderDeals()" class="tru-input" aria-label="Status">
+                <option value="open">Open</option><option value="claimed">Claimed</option><option value="ALL">All Statuses</option>
+              </select>
+            </div>
+            <div class="font-mono-code text-[12px] font-semibold whitespace-nowrap" style="color: var(--muted)">
+              <span id="dealCountBadge" style="color: var(--accent)">0</span> opportunities
+            </div>
+          </div>
+        </div>
+        <details class="mfilters m-only tru-panel p-4 mt-4">
+          <summary class="flex items-center justify-between font-medium text-[15px]">
+            <span class="flex items-center gap-2"><svg class="icon"><use href="#i-sliders"/></svg> Filters & sort</span>
+            <span class="font-mono-code text-[12px]" style="color: var(--muted)"><span id="dealCountBadgeM">0</span> deals</span>
+          </summary>
+          <div class="grid grid-cols-2 gap-2 mt-4">
+            <input type="text" id="filterSearchM" oninput="renderDeals()" placeholder="Search…" class="tru-input col-span-2" aria-label="Search deals">
+            <select id="filterMinMarginM" onchange="renderDeals()" class="tru-input" aria-label="Minimum net margin">
+              <option value="10000">Min R10k</option><option value="0">All margins</option>
+            </select>
+            <select id="filterCategoryM" onchange="renderDeals()" class="tru-input" aria-label="Deal type">
+              <option value="ALL">All types</option><option value="underpriced_arbitrage">Underpriced</option>
+              <option value="stale_floorplan_distress">Stale</option><option value="price_drop_velocity">Price drops</option>
+            </select>
+            <select id="filterSourceM" onchange="renderDeals()" class="tru-input col-span-2" aria-label="Source platform">
+              <option value="ALL">All platforms</option><option value="cars_co_za">Cars.co.za</option>
+              <option value="autotrader">AutoTrader</option><option value="dealer_direct">Dealer sites</option>
+            </select>
+            <select id="filterStatusM" onchange="renderDeals()" class="tru-input" aria-label="Status">
+              <option value="open">Open</option><option value="claimed">Claimed</option><option value="ALL">All</option>
+            </select>
+            <select id="filterSortM" onchange="renderDeals()" class="tru-input" aria-label="Sort">
+              <option value="profit_desc">Best margin</option><option value="price_asc">Cheapest</option>
+              <option value="conf_desc">Most confident</option>
+            </select>
+          </div>
+        </details>
+
+        <!-- Deals grid (one grid — the shell adapts its columns) -->
+        <div id="dealsGrid" class="deals-grid mt-4"></div>
+
+        <div id="emptyState" class="hidden tru-panel p-12 text-center max-w-lg mx-auto my-12">
+          <div class="w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto mb-4" style="border-color: var(--glass-line)">
+            <svg class="icon-lg" style="width:28px;height:28px;color: var(--muted)"><use href="#i-search"/></svg>
+          </div>
+          <h3 class="text-[17px] font-semibold">No deals match your filters</h3>
+          <p class="text-[13px] mt-2" style="color: var(--muted)">Only confidence-backed opportunities land here. Clear the filters or run a fresh market scan.</p>
+          <div class="flex justify-center gap-3 mt-6 flex-wrap">
+            <button onclick="resetFilters()" class="btn-secondary">Reset filters</button>
+            <button onclick="triggerScan()" class="btn-primary">Scan Market</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ VIEW: ACCOUNT (mobile) — desktop uses the header buttons ═══ -->
+      <section id="viewAccount" class="view m-view pt-6 pb-4">
+        <div class="tru-panel p-5 m-only">
+          <h2 class="font-semibold text-[17px] mb-1">Account</h2>
+          <p class="text-[13px] mb-5" style="color: var(--muted)" id="accountDealerLine">—</p>
+          <div class="grid gap-2">
+            <button onclick="openBuyBoxModal()" class="btn-secondary w-full justify-start"><svg class="icon"><use href="#i-sliders"/></svg> Buy-Box — deal criteria & webhook</button>
+            <button onclick="triggerScan()" class="btn-secondary w-full justify-start"><svg class="icon"><use href="#i-refresh"/></svg> Run a market scan now</button>
+            <button onclick="resetData()" class="btn-danger w-full justify-start"><svg class="icon"><use href="#i-trash"/></svg> Clear my deals & tracked stock</button>
+            <button onclick="logout()" class="btn-ghost w-full justify-start"><svg class="icon"><use href="#i-logout"/></svg> Sign out</button>
+          </div>
+          <p class="text-[12px] mt-5" style="color: var(--faint)">TruRadar sources stock from public classifieds and dealer sites. Every alert is confidence-gated — TransUnion book values never fill deal lists.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ══════════ OFFER / OTP MODAL ══════════ -->
+  <div id="offerModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="offerTitle">
+    <div class="modal tru-panel p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="offerTitle" class="text-[17px] font-semibold">Make an offer</h2>
+        <button onclick="closeOfferModal()" class="btn-ghost" style="min-height:44px;min-width:44px;padding:0" aria-label="Close"><svg class="icon-lg"><use href="#i-x"/></svg></button>
+      </div>
+      <div id="offerBody"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ BUY-BOX MODAL ══════════ -->
+  <div id="buyBoxModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="bbTitle">
+    <div class="modal tru-panel p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="bbTitle" class="text-[17px] font-semibold">Buy-Box — deal criteria</h2>
+        <button onclick="closeBuyBoxModal()" class="btn-ghost" style="min-height:44px;min-width:44px;padding:0" aria-label="Close"><svg class="icon-lg"><use href="#i-x"/></svg></button>
+      </div>
+      <p class="text-[13px] mb-6" style="color: var(--muted)">Deals matching these criteria land on your dashboard and POST to your webhook the moment they're detected.</p>
+      <div class="space-y-4">
+        <div><label class="tru-label" for="bbDealerName">Dealership name</label><input type="text" id="bbDealerName" class="tru-input w-full"></div>
+        <div><label class="tru-label" for="bbPhone">Contact number (rides on the webhook payload)</label><input type="text" id="bbPhone" placeholder="+27…" class="tru-input w-full font-mono-code"></div>
+        <div><label class="tru-label" for="bbWebhook">Webhook URL — deals POST here as JSON</label><input type="text" id="bbWebhook" placeholder="https://…" class="tru-input w-full font-mono-code"></div>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="tru-label" for="bbMinMargin">Min net margin (ZAR)</label><input type="number" id="bbMinMargin" value="25000" class="tru-input w-full font-mono-code"></div>
+          <div><label class="tru-label" for="bbMaxPrice">Max price ceiling (ZAR)</label><input type="number" id="bbMaxPrice" value="350000" class="tru-input w-full font-mono-code"></div>
+        </div>
+        <div><label class="tru-label" for="bbProvinces">Target provinces / cities</label><input type="text" id="bbProvinces" value="Gauteng, Western Cape, KwaZulu-Natal" class="tru-input w-full"></div>
+      </div>
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="closeBuyBoxModal()" class="btn-ghost">Cancel</button>
+        <button onclick="saveBuyBoxSettings()" class="btn-primary">Save Buy-Box</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ MOBILE BOTTOM NAV ══════════ -->
+  <nav id="mBottomNav" class="tl-bottomnav fixed bottom-0 inset-x-0 z-50" aria-label="Sections">
+    <button data-mview="viewSearch" onclick="setMobileView('viewSearch')" aria-current="page">
+      <svg class="icon-lg"><use href="#i-search"/></svg> Search
+    </button>
+    <button data-mview="viewDeals" onclick="setMobileView('viewDeals')">
+      <svg class="icon-lg"><use href="#i-list"/></svg> Deals
+    </button>
+    <button data-mview="viewAccount" onclick="setMobileView('viewAccount')">
+      <svg class="icon-lg"><use href="#i-user"/></svg> Account
+    </button>
+  </nav>
+
   <script>
+    // ── Auth ──────────────────────────────────────────────────────────────
+    const auth = {
+      get token() { return localStorage.getItem('ta_token') || ''; },
+      get slug() { return localStorage.getItem('ta_slug') || ''; },
+      get name() { return localStorage.getItem('ta_name') || ''; },
+      set(t, slug, name) { localStorage.setItem('ta_token', t); localStorage.setItem('ta_slug', slug || ''); localStorage.setItem('ta_name', name || slug || ''); },
+      clear() { localStorage.removeItem('ta_token'); localStorage.removeItem('ta_slug'); localStorage.removeItem('ta_name'); },
+      headers() { return { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` }; }
+    };
     let allDeals = [];
 
-    const PROVINCE_MAP = {
-      'Gauteng': ['gauteng', 'johannesburg', 'jhb', 'pretoria', 'pta', 'randburg', 'centurion', 'sandton', 'boksburg', 'midrand', 'roodepoort', 'soweto', 'kempton'],
-      'Western Cape': ['western cape', 'cape town', 'cpt', 'bellville', 'stellenbosch', 'somerset', 'paarl', 'george'],
-      'KwaZulu-Natal': ['kwazulu', 'natal', 'kzn', 'durban', 'dbn', 'umhlanga', 'pinetown', 'pietermaritzburg']
-    };
+    (function boot() {
+      if (!auth.token) { document.getElementById('loginOverlay').style.display = 'flex'; return; }
+      showApp();
+    })();
 
-    const SOURCE_BADGES = {
-      'facebook': { label: 'FB Marketplace', color: 'bg-blue-500/10 border-blue-500/30 text-blue-400', icon: '🔵' },
-      'cars_co_za': { label: 'Cars.co.za', color: 'bg-red-500/10 border-red-500/30 text-red-400', icon: '🔴' },
-      'autotrader': { label: 'AutoTrader SA', color: 'bg-amber-500/10 border-amber-500/30 text-amber-400', icon: '🟡' },
-      'dealer_direct': { label: 'Dealer Website (SERP)', color: 'bg-purple-500/10 border-purple-500/30 text-purple-400', icon: '🟣' },
-      'gumtree': { label: 'Gumtree Private', color: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400', icon: '🟢' },
-      'webuycars': { label: 'WeBuyCars', color: 'bg-cyan-500/10 border-cyan-500/30 text-tru-cyan', icon: '💎' },
-    };
+    function showApp() {
+      document.getElementById('loginOverlay').style.display = 'none';
+      document.getElementById('appShell').classList.remove('hidden');
+      document.getElementById('headerDealerName').textContent = `${auth.name || auth.slug} • sourcing radar`;
+      document.getElementById('accountDealerLine').textContent = `${auth.name || auth.slug} (${auth.slug})`;
+      loadDeals();
+      loadBuyBox();
+      loadLookupMakes();
+    }
+    function authFailed() { auth.clear(); location.reload(); }
 
+    async function doLogin(endpoint, body) {
+      const btn = document.getElementById('loginBtn');
+      const errEl = document.getElementById('loginError');
+      errEl.classList.add('hidden');
+      try {
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || `Sign-in failed (${res.status})`); }
+        const data = await res.json();
+        auth.set(data.token, data.dealerSlug || data.uid, data.dealerName || 'Demo Yard');
+        showApp();
+      } catch (err) {
+        errEl.textContent = err.message; errEl.classList.remove('hidden');
+        if (btn) { btn.disabled = false; btn.textContent = 'Sign in'; }
+      }
+    }
+    async function doFormLogin() {
+      const slug = document.getElementById('loginSlug').value.trim();
+      const code = document.getElementById('loginCode').value;
+      const errEl = document.getElementById('loginError');
+      if (!slug || !code) { errEl.textContent = 'Dealership slug and access code are required.'; errEl.classList.remove('hidden'); return; }
+      await doLogin('/api/auth/login', { dealerSlug: slug, accessCode: code });
+    }
+    async function doDemoLogin() { await doLogin('/api/auth/demo', {}); }
+    function logout() { auth.clear(); location.reload(); }
+
+    document.getElementById('loginCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') doFormLogin(); });
+    document.getElementById('loginSlug').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('loginCode').focus(); });
+
+    // ── Mobile views ──────────────────────────────────────────────────────
+    function setMobileView(id) {
+      document.querySelectorAll('.m-view').forEach(v => v.classList.remove('m-active'));
+      document.getElementById(id).classList.add('m-active');
+      document.querySelectorAll('#mBottomNav button').forEach(b => {
+        const on = b.dataset.mview === id;
+        if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      });
+      window.scrollTo({ top: 0 });
+    }
+
+    // ── Deals ─────────────────────────────────────────────────────────────
     async function loadDeals() {
       try {
-        const res = await fetch('/api/deals');
+        const res = await fetch('/api/deals', { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
         const data = await res.json();
         allDeals = data.deals || [];
-        console.log('Loaded multi-source deals:', allDeals);
-
         populateMakeFilter();
         renderDeals();
         updateStats();
-      } catch (err) {
-        console.error('Failed to load deals:', err);
-      }
+      } catch (err) { console.error('Failed to load deals:', err); }
+    }
+
+    async function loadBuyBox() {
+      try {
+        const res = await fetch('/api/buybox', { headers: auth.headers() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const sub = (data.subscriptions || [])[0];
+        if (!sub) return;
+        document.getElementById('bbDealerName').value = sub.dealerName || '';
+        document.getElementById('bbPhone').value = sub.contactNumber || '';
+        document.getElementById('bbWebhook').value = sub.webhookUrl || '';
+        document.getElementById('bbMinMargin').value = sub.minNetMargin || 25000;
+        document.getElementById('bbMaxPrice').value = sub.maxPrice || 350000;
+        document.getElementById('bbProvinces').value = (sub.provinces || []).join(', ');
+      } catch {}
     }
 
     function populateMakeFilter() {
-      const select = document.getElementById('filterMake');
-      const current = select.value;
       const makes = new Set();
-      
-      allDeals.forEach(d => {
-        const make = d.vehicle?.make || d.make;
-        if (make) makes.add(make);
-      });
-
-      select.innerHTML = '<option value="ALL">All Makes</option>' + 
-        Array.from(makes).sort().map(m => `<option value="${m}">${m}</option>`).join('');
-      
-      if (makes.has(current)) select.value = current;
+      allDeals.forEach(d => { const m = d.vehicle?.make; if (m) makes.add(m); });
+      const opts = '<option value="ALL">All Makes</option>' + Array.from(makes).sort().map(m => `<option value="${m}">${m}</option>`).join('');
+      for (const id of ['filterMake', 'filterMakeM']) {
+        const sel = document.getElementById(id);
+        if (!sel) continue;
+        const cur = sel.value;
+        sel.innerHTML = opts;
+        if (makes.has(cur)) sel.value = cur;
+      }
     }
 
     function updateStats() {
-      const totalProfit = allDeals.reduce((sum, d) => sum + (d.projectedNetMargin || 0), 0);
-      const avgMargin = allDeals.length ? Math.round(totalProfit / allDeals.length) : 0;
-      const staleDistress = allDeals.filter(d => (d.daysOnMarket || 0) >= 40 || d.dealCategory === 'stale_floorplan_distress' || (d.urgencyScore || 0) >= 40).length;
-
+      const open = allDeals.filter(d => d.status !== 'archived');
+      const totalProfit = open.reduce((s, d) => s + Math.max(0, d.projectedNetMargin || 0), 0);
+      const avgMargin = open.length ? Math.round(totalProfit / open.length) : 0;
+      const distress = open.filter(d => (d.daysOnMarket || 0) >= 40 || d.dealCategory === 'stale_floorplan_distress' || d.dealCategory === 'price_drop_velocity').length;
       document.getElementById('statTotalProfit').textContent = `R${totalProfit.toLocaleString('en-ZA')}`;
-      document.getElementById('statActiveDeals').textContent = allDeals.length;
+      document.getElementById('statActiveDeals').textContent = open.length;
       document.getElementById('statAvgMargin').textContent = `R${avgMargin.toLocaleString('en-ZA')}`;
-      document.getElementById('statDesperateSellers').textContent = staleDistress;
+      document.getElementById('statDistress').textContent = distress;
     }
 
     function resetFilters() {
-      document.getElementById('filterSearch').value = '';
-      document.getElementById('filterSource').value = 'ALL';
-      document.getElementById('filterCategory').value = 'ALL';
-      document.getElementById('filterProvince').value = 'ALL';
-      document.getElementById('filterMake').value = 'ALL';
-      document.getElementById('filterSort').value = 'profit_desc';
+      const defaults = { filterSearch: '', filterMinMargin: '10000', filterSource: 'ALL', filterCategory: 'ALL', filterMake: 'ALL', filterSort: 'profit_desc', filterStatus: 'open' };
+      for (const base of FILTER_BASES) {
+        const a = document.getElementById(base);
+        const b = document.getElementById(base + 'M');
+        if (a) a.value = defaults[base] ?? a.value;
+        if (b) b.value = defaults[base] ?? b.value;
+      }
       renderDeals();
     }
 
-    function renderDeals() {
-      const search = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
-      const minMargin = Number(document.getElementById('filterMinMargin')?.value || 0);
-      const source = document.getElementById('filterSource')?.value || 'ALL';
-      const category = document.getElementById('filterCategory')?.value || 'ALL';
-      const province = document.getElementById('filterProvince')?.value || 'ALL';
-      const make = document.getElementById('filterMake')?.value || 'ALL';
-      const sort = document.getElementById('filterSort')?.value || 'profit_desc';
+    // ── Filters — ONE source of truth, two mirrors ────────────────────────
+    // Desktop bar and mobile details use mirrored inputs; every change writes
+    // BOTH, so a hidden stale input can never override what the dealer typed.
+    const FILTER_BASES = ['filterSearch', 'filterMinMargin', 'filterSource', 'filterCategory', 'filterMake', 'filterSort', 'filterStatus'];
+    function bindFilterPair(base) {
+      const a = document.getElementById(base);
+      const b = document.getElementById(base + 'M');
+      if (!a || !b) return;
+      for (const el of [a, b]) {
+        el.addEventListener('input', () => { a.value = el.value; b.value = el.value; renderDeals(); });
+        el.addEventListener('change', () => { a.value = el.value; b.value = el.value; renderDeals(); });
+      }
+    }
+    FILTER_BASES.forEach(bindFilterPair);
 
+    function filterVals() {
+      const g = (id) => document.getElementById(id)?.value;
+      return {
+        search: (g('filterSearch') || '').toLowerCase().trim(),
+        minMargin: Number(g('filterMinMargin') || 0),
+        source: g('filterSource') || 'ALL',
+        category: g('filterCategory') || 'ALL',
+        make: g('filterMake') || 'ALL',
+        sort: g('filterSort') || 'profit_desc',
+        status: g('filterStatus') || 'open'
+      };
+    }
+
+    function renderDeals() {
+      const f = filterVals();
       let filtered = allDeals.filter(deal => {
         const v = deal.vehicle || deal;
-        const loc = (v.location || '').toLowerCase();
-        const vehicleMake = (v.make || '').toLowerCase();
-        const vehicleSource = deal.source || v.source || 'facebook';
+        const vehicleSource = deal.source || v.source || '';
         const dealCat = deal.dealCategory || 'underpriced_arbitrage';
-        const fullTitle = `${v.year || ''} ${v.make || ''} ${v.model || ''} ${v.sellerName || ''} ${v.location || ''}`.toLowerCase();
-
-        // 1. Min Margin filter
-        if (minMargin > 0 && (deal.projectedNetMargin || 0) < minMargin && dealCat !== 'stale_floorplan_distress') return false;
-
-        // 2. Keyword search
-        if (search && !fullTitle.includes(search)) return false;
-
-        // 3. Source platform filter
-        if (source !== 'ALL' && vehicleSource !== source) return false;
-        if (category !== 'ALL' && dealCat !== category) return false;
-
-
-        if (province !== 'ALL') {
-          const keywords = PROVINCE_MAP[province] || [province.toLowerCase()];
-          const matchedProvince = keywords.some(kw => loc.includes(kw));
-          if (!matchedProvince && !loc.includes('south africa') && loc !== '') return false;
+        if (vehicleSource === 'flow_stock') return false;
+        if (f.status === 'open' && !['new', 'alerted'].includes(deal.status || 'new')) return false;
+        if (f.status === 'claimed' && (deal.status || 'new') !== 'claimed') return false;
+        if (f.search) {
+          const hay = `${v.year || ''} ${v.make || ''} ${v.model || ''} ${v.trim || ''} ${v.sellerName || ''} ${v.location || ''}`.toLowerCase().replace(/[-]/g, ' ');
+          if (!f.search.split(/\s+/).filter(Boolean).every(t => hay.includes(t.replace(/-/g, ' ')))) return false;
         }
-
-        if (make !== 'ALL' && vehicleMake !== make.toLowerCase()) return false;
-
+        if (f.minMargin > 0 && (deal.projectedNetMargin || 0) < f.minMargin && dealCat === 'underpriced_arbitrage') return false;
+        if (f.source !== 'ALL' && vehicleSource !== f.source) return false;
+        if (f.category !== 'ALL' && dealCat !== f.category) return false;
+        if (f.make !== 'ALL' && (v.make || '').toLowerCase() !== f.make.toLowerCase()) return false;
         return true;
       });
 
-      if (sort === 'profit_desc') filtered.sort((a, b) => (b.projectedNetMargin || 0) - (a.projectedNetMargin || 0));
-      if (sort === 'dom_desc') filtered.sort((a, b) => (b.daysOnMarket || 0) - (a.daysOnMarket || 0));
-      if (sort === 'price_asc') filtered.sort((a, b) => (a.askingPrice || 0) - (b.askingPrice || 0));
+      if (f.sort === 'profit_desc') filtered.sort((a, b) => (b.projectedNetMargin || 0) - (a.projectedNetMargin || 0));
+      if (f.sort === 'dom_desc') filtered.sort((a, b) => (b.daysOnMarket || 0) - (a.daysOnMarket || 0));
+      if (f.sort === 'price_asc') filtered.sort((a, b) => (a.askingPrice || 0) - (b.askingPrice || 0));
+      if (f.sort === 'conf_desc') filtered.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
 
       document.getElementById('dealCountBadge').textContent = filtered.length;
+      const bm = document.getElementById('dealCountBadgeM'); if (bm) bm.textContent = filtered.length;
       const grid = document.getElementById('dealsGrid');
       const empty = document.getElementById('emptyState');
 
@@ -527,174 +551,154 @@
         empty.classList.remove('hidden');
         return;
       }
-
       empty.classList.add('hidden');
-      grid.innerHTML = filtered.map(deal => {
+
+      const SOURCE_BADGES = {
+        'cars_co_za':   { label: 'Cars.co.za',        color: 'chip-danger' },
+        'autotrader':   { label: 'AutoTrader SA',     color: 'chip-attention' },
+        'dealer_direct':{ label: 'Dealer Site (SERP)', color: 'chip' },
+        'webuycars':    { label: 'WeBuyCars',          color: 'chip-accent' },
+      };
+
+      const html = filtered.map(deal => {
         const v = deal.vehicle || deal;
         const kmText = v.mileageKm ? `${v.mileageKm.toLocaleString('en-ZA')} km` : 'Unspecified km';
-        const netProfit = (deal.projectedNetMargin || 0).toLocaleString('en-ZA');
+        const isProfit = (deal.projectedNetMargin || 0) > 0;
+        const netProfit = Math.abs(deal.projectedNetMargin || 0).toLocaleString('en-ZA');
         const retail = (deal.marketRetailPrice || 0).toLocaleString('en-ZA');
         const asking = (deal.askingPrice || 0).toLocaleString('en-ZA');
-        const daysOnMarket = deal.daysOnMarket || 0;
-        const dealSource = deal.source || v.source || 'facebook';
-        const srcBadge = SOURCE_BADGES[dealSource] || SOURCE_BADGES.facebook;
-        const isDealerStock = dealSource === 'cars_co_za' || dealSource === 'autotrader' || dealSource === 'dealer_direct';
+        const days = deal.daysOnMarket || 0;
+        const src = SOURCE_BADGES[deal.source] || SOURCE_BADGES.dealer_direct;
+        const claimed = (deal.status || 'new') === 'claimed';
+        const pct = Math.round((deal.confidence || 0) * 100);
 
-        let categoryTag = '⚡ UNDERPRICED ARBITRAGE';
-        let categoryClass = 'bg-cyan-500/10 border-cyan-500/30 text-tru-cyan';
-        if (deal.dealCategory === 'stale_floorplan_distress' || daysOnMarket >= 40) {
-          categoryTag = `🔥 STALE FLOORPLAN (${daysOnMarket}d)`;
-          categoryClass = 'bg-amber-500/10 border-amber-500/30 text-tru-amber';
-        } else if (deal.dealCategory === 'price_drop_velocity') {
-          categoryTag = '📉 MAJOR PRICE CUT';
-          categoryClass = 'bg-purple-500/10 border-purple-500/30 text-purple-400';
-        }
-
-        const offerAmount = Math.round((deal.askingPrice || 100000) * 0.93);
-        const offerText = encodeURIComponent(
-          isDealerStock
-            ? `Hi ${v.sellerName || 'Trade Desk'}, following up on your ${v.year} ${v.make} ${v.model} listed on your floor. Can you do a dealer wholesale trade release at R${offerAmount.toLocaleString('en-ZA')} on floorplan settlement? Instant payment available today.`
-            : `Hi ${v.sellerName || 'there'}, I saw your ${v.year} ${v.make} ${v.model} listed for R${asking}. We can make an immediate cash offer of R${offerAmount.toLocaleString('en-ZA')} with instant EFT and handle all paperwork today. Are you free for an inspection?`
-        );
+        let catTag = 'Underpriced', catCls = 'chip-accent';
+        if (deal.dealCategory === 'stale_floorplan_distress') { catTag = `Stale floorplan · ${days}d`; catCls = 'chip-attention'; }
+        else if (deal.dealCategory === 'price_drop_velocity') { catTag = 'Major price cut'; catCls = 'chip'; }
 
         return `
-          <div class="tru-card p-5 flex flex-col justify-between relative overflow-hidden">
-            
-            <!-- Badges -->
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="font-mono-code text-[10px] font-semibold uppercase px-2.5 py-1 rounded-md border ${srcBadge.color}">
-                ${srcBadge.icon} ${srcBadge.label}
-              </span>
-              <span class="font-mono-code text-[10px] font-semibold uppercase px-2.5 py-1 rounded-md border ${categoryClass}">
-                ${categoryTag}
-              </span>
+          <div class="tru-card p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+              <span class="chip ${src.color}">${src.label}</span>
+              <span class="chip ${catCls}">${catTag}</span>
             </div>
-
             <div>
-              <div class="text-xs font-semibold" style="color: var(--muted)">${v.location || 'South Africa'} • <span class="font-medium" style="color: var(--white-dim)">${v.sellerName || 'Direct Seller'}</span></div>
-              <h3 class="text-lg font-semibold mt-1 pr-4" style="color: var(--white)">${v.year} ${v.make} ${v.model}</h3>
-              <p class="text-xs mt-0.5" style="color: var(--muted)">${v.trim || 'Verified Private Listing'} • <span class="font-mono-code" style="color: var(--white-dim)">${kmText}</span></p>
-
-              <!-- Financial Box -->
-              <div class="rounded-xl p-3.5 mt-4 border space-y-2" style="background: var(--bg); border-color: var(--border)">
-                <div class="flex items-center justify-between text-xs font-sans">
-                  <span style="color: var(--muted)">Listed Asking Price:</span>
-                  <span class="font-mono-code font-semibold" style="color: var(--white)">R${asking}</span>
+              <div class="text-[12px]" style="color: var(--muted)">${v.location || 'South Africa'} • <span style="color: var(--white-dim)">${v.sellerName || 'Direct seller'}</span></div>
+              <h3 class="text-[17px] font-semibold mt-1">${v.year} ${v.make} ${v.model}</h3>
+              <p class="text-[12px] mt-0.5" style="color: var(--muted)">${v.trim || 'Market listing'} • <span class="font-mono-code" style="color: var(--white-dim)">${kmText}</span></p>
+              <div class="finbox">
+                <div class="finrow"><span class="finlabel">Listed asking</span><span class="font-mono-code font-semibold">R${asking}</span></div>
+                <div class="finrow"><span class="finlabel">Live market retail</span><span class="font-mono-code" style="color: var(--white-dim)">R${retail}</span></div>
+                <div class="finrow"><span class="finlabel">Recon buffer</span><span class="font-mono-code" style="color: var(--muted)">-R${(deal.reconBuffer || 0).toLocaleString('en-ZA')}</span></div>
+                <div class="finrow" style="border-top: 1px solid var(--glass-line); padding-top: 8px;">
+                  <span class="font-mono-code text-[12px] font-semibold uppercase tracking-wider" style="color: ${isProfit ? 'var(--accent)' : 'var(--muted)'}">${isProfit ? 'Est. net profit' : 'Net position'}</span>
+                  <span class="font-mono-code text-[17px] font-semibold" style="color: ${isProfit ? 'var(--accent)' : 'var(--danger)'}">${isProfit ? '+' : '-'}R${netProfit}</span>
                 </div>
-                <div class="flex items-center justify-between text-xs font-sans">
-                  <span style="color: var(--muted)">Live Market Retail:</span>
-                  <span class="font-mono-code font-semibold" style="color: var(--white-dim)">R${retail}</span>
-                </div>
-                <div class="flex items-center justify-between text-xs font-sans">
-                  <span style="color: var(--muted)">Recon & Floor Buffer:</span>
-                  <span class="font-mono-code font-medium" style="color: var(--muted)">-R${(deal.reconBuffer || 8500).toLocaleString('en-ZA')}</span>
-                </div>
-                <div class="border-t pt-2 flex items-center justify-between" style="border-color: var(--border)">
-                  <span class="font-mono-code text-[11px] font-semibold text-tru-emerald uppercase tracking-wider">Estimated Net Profit:</span>
-                  <span class="font-mono-code text-base font-semibold text-tru-emerald">+R${netProfit}</span>
+                <div class="finrow text-[12px]">
+                  <span class="finlabel">${days}d listed • ${deal.sampleCompsCount || 0} comps</span>
+                  <span class="chip ${pct >= 80 ? 'chip-accent' : 'chip-attention'}" title="Valuation confidence (sample size + price-band tightness)"><svg class="icon" style="width:12px;height:12px"><use href="#i-shield"/></svg> ${pct}% conf</span>
                 </div>
               </div>
             </div>
-
-            <!-- Action Buttons -->
-            <div class="mt-5 pt-3 border-t flex items-center gap-2" style="border-color: var(--border)">
-              <a href="https://wa.me/?text=${offerText}" target="_blank" class="tru-btn-primary flex-1 justify-center text-center">
-                ${isDealerStock ? '🤝 1-Click Trade Offer' : '💬 1-Click Cash Offer'}
-              </a>
-              <a href="${v.url || '#'}" target="_blank" class="tru-btn-secondary">
-                View ↗
-              </a>
+            <div class="mt-4 pt-3 flex items-center gap-2 flex-wrap" style="border-top: 1px solid var(--glass-line)">
+              ${claimed
+                ? '<span class="chip chip-claimed" style="padding:10px 14px">Claimed</span>'
+                : `<button onclick="setDealStatus('${deal.id}','claimed')" class="btn-primary flex-1">Claim deal</button>`}
+              <a href="${v.url || '#'}" target="_blank" rel="noopener" class="btn-secondary" aria-label="View listing"><svg class="icon"><use href="#i-external"/></svg></a>
+              <button onclick="makeOffer('${deal.id}')" class="btn-secondary" title="Generate offer + OTP">Make offer</button>
+              <button onclick="setDealStatus('${deal.id}','archived')" class="btn-ghost" title="Archive" aria-label="Archive deal" style="color: var(--muted)"><svg class="icon"><use href="#i-archive"/></svg></button>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
+      grid.innerHTML = html;
     }
 
+    async function setDealStatus(id, status) {
+      try {
+        const res = await fetch(`/api/deals/${id}`, { method: 'PUT', headers: auth.headers(), body: JSON.stringify({ status }) });
+        if (res.status === 401) return authFailed();
+        if (res.ok) { const local = allDeals.find(d => d.id === id); if (local) local.status = status; renderDeals(); updateStats(); }
+      } catch (err) { console.error('Status update failed:', err); }
+    }
+
+    // ── Offer + OTP ───────────────────────────────────────────────────────
+    async function makeOffer(id) {
+      const deal = allDeals.find(d => d.id === id);
+      if (!deal) return;
+      const v = deal.vehicle || {};
+      try {
+        const res = await fetch(`/api/deals/${id}/offer`, { method: 'POST', headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Offer failed (${res.status})`);
+        document.getElementById('offerBody').innerHTML = `
+          <p class="text-[13px] mb-4" style="color: var(--muted)">
+            ${v.year} ${v.make} ${v.model} — asking R${(deal.askingPrice || 0).toLocaleString('en-ZA')}.
+            The OTP verifies your offer when the seller picks up the phone. Valid for 15 minutes; regenerating replaces it.
+          </p>
+          <div class="mb-4">
+            <div class="tru-label">One-time PIN — give this to the seller</div>
+            <div class="otp-big" id="otpValue">${data.otp}</div>
+            <button onclick="copyText('${data.otp}','otpCopyBtn')" class="btn-secondary w-full mt-2" id="otpCopyBtn"><svg class="icon"><use href="#i-copy"/></svg> Copy OTP</button>
+          </div>
+          <div class="mb-4">
+            <div class="tru-label">Offer message — ready to send</div>
+            <div class="offer-text" id="offerTextValue">${(data.offerText || '').replace(/</g,'&lt;')}</div>
+            <button onclick="copyText(${JSON.stringify(data.offerText).replace(/"/g,'&quot;')},'offerCopyBtn')" class="btn-secondary w-full mt-2" id="offerCopyBtn"><svg class="icon"><use href="#i-copy"/></svg> Copy message</button>
+          </div>
+          <p class="text-[12px]" style="color: var(--faint)"><svg class="icon" style="width:12px;height:12px;vertical-align:-2px"><use href="#i-clock"/></svg> Expires ${new Date(data.expiresAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}</p>`;
+        document.getElementById('offerModal').classList.remove('hidden');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+    function closeOfferModal() { document.getElementById('offerModal').classList.add('hidden'); }
+    async function copyText(text, btnId) {
+      try { await navigator.clipboard.writeText(text); const b = document.getElementById(btnId); if (b) { const old = b.innerHTML; b.innerHTML = '<svg class="icon"><use href="#i-check"/></svg> Copied'; setTimeout(() => b.innerHTML = old, 1600); } } catch {}
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { closeOfferModal(); closeBuyBoxModal(); }
+    });
+
+    // ── Scan ──────────────────────────────────────────────────────────────
     async function triggerScan() {
       const btn = document.getElementById('scanBtn');
       const progress = document.getElementById('scanProgress');
-      const phaseEl = document.getElementById('scanPhase');
-      const barEl = document.getElementById('scanBar');
-      const logEl = document.getElementById('scanLog');
-      
       btn.disabled = true;
-      btn.innerHTML = '<span class="radar-pulse w-2 h-2 rounded-full bg-slate-950"></span><span>SCANNING...</span>';
+      btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>SCANNING…</span>';
       progress.classList.remove('hidden');
-      logEl.innerHTML = '';
-      barEl.style.width = '0%';
-      
+      document.getElementById('scanLog').innerHTML = '';
+      document.getElementById('scanBar').style.width = '0%';
+      if (window.innerWidth < 1024) setMobileView('viewDeals');
       try {
-        const res = await fetch('/api/ingest/trigger', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ limit: 20 })
-        });
+        const res = await fetch('/api/ingest/trigger', { method: 'POST', headers: auth.headers(), body: '{}' });
+        if (res.status === 401) return authFailed();
         const { scanId } = await res.json();
-        
-        const source = new EventSource(`/api/scan/${scanId}/events`);
-        
-        source.addEventListener('phase', (e) => {
-          const data = JSON.parse(e.data);
-          phaseEl.textContent = data.message || data.phase;
-          addLog(`📡 ${data.message || data.phase}`);
-        });
-        
+        const source = new EventSource(`/api/scan/${scanId}/events?token=${encodeURIComponent(auth.token)}`);
+        source.addEventListener('phase', (e) => { const d = JSON.parse(e.data); document.getElementById('scanPhase').textContent = d.message || d.phase; addLog(`● ${d.message || d.phase}`); });
         source.addEventListener('progress', (e) => {
-          const data = JSON.parse(e.data);
-          const pct = Math.round((data.current / data.total) * 100);
-          barEl.style.width = `${pct}%`;
-          phaseEl.textContent = `Processing ${data.current}/${data.total}: ${data.vehicle || ''}`;
-          if (data.status === 'error') {
-            addLog(`❌ Error: ${data.error}`, true);
-          }
+          const d = JSON.parse(e.data);
+          document.getElementById('scanBar').style.width = `${d.total ? Math.round((d.current / d.total) * 100) : 0}%`;
+          document.getElementById('scanPhase').textContent = `Processing ${d.current}/${d.total}: ${d.vehicle || ''}`;
+          if (d.status === 'error') addLog(`Error: ${d.error || 'source failed'}`, true);
         });
-        
-        source.addEventListener('deal_found', (e) => {
-          const deal = JSON.parse(e.data);
-          addLog(`✅ Deal found: ${deal.vehicle?.year} ${deal.vehicle?.make} ${deal.vehicle?.model} — +R${(deal.projectedNetMargin || 0).toLocaleString('en-ZA')}`);
-          // Reload deals to show the new one
-          loadDeals();
-        });
-        
-        source.addEventListener('error', (e) => {
-          if (e.data) {
-            const data = JSON.parse(e.data);
-            addLog(`⚠️ ${data.source || 'Source'}: ${data.message}`, true);
-          }
-        });
-        
+        source.addEventListener('deal_found', (e) => { const d = JSON.parse(e.data); const v = d.vehicle || {}; addLog(`+ Deal: ${v.year} ${v.make} ${v.model} — R${Math.abs(d.projectedNetMargin || 0).toLocaleString('en-ZA')}`); loadDeals(); });
+        source.addEventListener('error', (e) => { if (e.data) { const d = JSON.parse(e.data); addLog(`! ${d.source || 'Source'}: ${d.message}`, true); } });
         source.addEventListener('complete', (e) => {
-          const data = JSON.parse(e.data);
-          addLog(`🎉 Scan complete — ${data.arbitrageDealsFound || 0} deals found, ${data.alertsDispatched || 0} alerts sent`);
-          barEl.style.width = '100%';
-          phaseEl.textContent = 'Scan complete';
-          source.close();
-          loadDeals();
-          
-          setTimeout(() => {
-            progress.classList.add('hidden');
-            btn.disabled = false;
-            btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span><span>SCAN ALL PLATFORMS</span>';
-          }, 3000);
+          const d = JSON.parse(e.data);
+          addLog(`Done — ${d.arbitrageDealsFound || 0} deals, ${d.overpricedStockFound || 0} own-stock flags, ${d.alertsDispatched || 0} webhook alerts`);
+          document.getElementById('scanBar').style.width = '100%';
+          document.getElementById('scanPhase').textContent = 'Scan complete';
+          source.close(); loadDeals();
+          setTimeout(() => { progress.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scan Market</span>'; }, 3000);
         });
-        
-        // Handle SSE connection error
-        source.onerror = () => {
-          source.close();
-          addLog('⚠️ Connection lost — refreshing deals...', true);
-          loadDeals();
-          btn.disabled = false;
-          btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span><span>SCAN ALL PLATFORMS</span>';
-        };
-        
+        source.onerror = () => { source.close(); addLog('Live connection lost — refreshing…', true); loadDeals(); btn.disabled = false; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scan Market</span>'; };
       } catch (err) {
         console.error('Scan error:', err);
-        btn.disabled = false;
-        btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span><span>SCAN ALL PLATFORMS</span>';
+        btn.disabled = false; btn.textContent = 'Scan Market';
         progress.classList.add('hidden');
       }
     }
-
     function addLog(msg, isError = false) {
       const logEl = document.getElementById('scanLog');
       const line = document.createElement('div');
@@ -704,47 +708,107 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
 
-    function openBuyBoxModal() {
-      document.getElementById('buyBoxModal').classList.remove('hidden');
+    // ── Price check ───────────────────────────────────────────────────────
+    function togglePriceCheck() {
+      const panel = document.getElementById('lookupPanel');
+      const use = document.getElementById('lookupChevronUse');
+      const header = panel.parentElement.querySelector('[role="button"]');
+      const open = panel.classList.toggle('hidden') === false;
+      use.setAttribute('href', open ? '#i-chev' : '#i-chev');
+      header.setAttribute('aria-expanded', String(open));
+      header.querySelector('svg').style.transform = open ? 'rotate(0deg)' : 'rotate(-90deg)';
+      if (open && document.getElementById('lookupMake').options.length <= 1) loadLookupMakes();
     }
-
-    function closeBuyBoxModal() {
-      document.getElementById('buyBoxModal').classList.add('hidden');
+    function tc(s) {
+      return String(s || '').split(/\s+/).filter(Boolean).map(w =>
+        w.split('-').map(p => p.length <= 3 ? p.toUpperCase() : p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('-')).join(' ');
     }
-
-    async function saveBuyBoxSettings() {
-      const dealerName = document.getElementById('bbDealerName').value;
-      const contactNumber = document.getElementById('bbPhone').value;
-      const minNetMargin = Number(document.getElementById('bbMinMargin').value);
-      const maxPrice = Number(document.getElementById('bbMaxPrice').value);
-      const provinces = document.getElementById('bbProvinces').value.split(',').map(s => s.trim());
-
-      await fetch('/api/buybox', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dealerName, contactNumber, minNetMargin, maxPrice, provinces })
-      });
-
-      closeBuyBoxModal();
-      alert('Buy-Box filters saved!');
-    }
-
-    async function resetData() {
-      if (!confirm('Clear all deals and tracked vehicles? This cannot be undone.')) return;
+    async function loadLookupMakes() {
       try {
-        const res = await fetch('/api/deals/reset', { method: 'DELETE' });
-        if (res.ok) {
-          loadDeals();
-        } else {
-          alert('Reset failed — try again.');
+        const res = await fetch('/api/lookup/makes', { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        const sel = document.getElementById('lookupMake');
+        sel.innerHTML = '<option value="">Pick a make…</option>' + (data.makes || []).map(m => `<option value="${m}">${tc(m)}</option>`).join('');
+      } catch {}
+    }
+    async function onLookupMakeChange() {
+      const make = document.getElementById('lookupMake').value;
+      const modelSel = document.getElementById('lookupModel');
+      if (!make) { modelSel.innerHTML = '<option value="">Pick a make first</option>'; return; }
+      modelSel.innerHTML = '<option value="">Loading…</option>';
+      try {
+        const res = await fetch(`/api/lookup/models?make=${encodeURIComponent(make)}`, { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        modelSel.innerHTML = '<option value="">Pick a model…</option>' + (data.models || []).map(m => `<option value="${m}">${tc(m)}</option>`).join('');
+      } catch { modelSel.innerHTML = '<option value="">Failed to load</option>'; }
+    }
+    async function doPriceCheck() {
+      const make = document.getElementById('lookupMake').value;
+      const model = document.getElementById('lookupModel').value;
+      const year = Number(document.getElementById('lookupYear').value);
+      const btn = document.getElementById('lookupBtn');
+      const errEl = document.getElementById('lookupError');
+      const summaryEl = document.getElementById('lookupSummary');
+      const resultsEl = document.getElementById('lookupResults');
+      errEl.classList.add('hidden'); summaryEl.classList.add('hidden'); resultsEl.classList.add('hidden');
+      if (!make || !model || !year) { errEl.textContent = 'Pick a make, a model and a year.'; errEl.classList.remove('hidden'); return; }
+      btn.disabled = true; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scanning…</span>';
+      try {
+        const res = await fetch(`/api/lookup/cheapest?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`, { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Lookup failed (${res.status})`);
+        const m = data.market || {};
+        const comps = data.comps || [];
+        const confPct = Math.round((m.confidence || 0) * 100);
+        summaryEl.innerHTML = `Market average: <span style="color: var(--accent)">R${(m.averageRetailPrice || 0).toLocaleString('en-ZA')}</span> · ${m.listingsFound || 0} live comps · confidence <span style="color: ${confPct >= 80 ? 'var(--accent)' : 'var(--state-attention)'}">${confPct}%</span>` +
+          (comps.length ? ` · cheapest now: <span style="color: var(--white)">R${comps[0].price.toLocaleString('en-ZA')}</span>` : ' · no live listings found');
+        summaryEl.classList.remove('hidden');
+        if (comps.length) {
+          document.getElementById('lookupBody').innerHTML = comps.map((c, i) => `
+            <tr class="border-b" style="border-color: var(--glass-line)">
+              <td class="py-2 px-2 font-mono-code font-semibold" style="color: ${i === 0 ? 'var(--accent)' : 'var(--white)'}">R${c.price.toLocaleString('en-ZA')}</td>
+              <td class="py-2 px-2 font-mono-code" style="color: var(--muted)">${c.km ? c.km.toLocaleString('en-ZA') + ' km' : '—'}</td>
+              <td class="py-2 px-2 font-mono-code text-[12px]" style="color: var(--muted)">${c.source || '—'}</td>
+              <td class="py-2 px-2">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="underline flex items-center gap-1" style="color: var(--accent)"><svg class="icon" style="width:12px;height:12px"><use href="#i-external"/></svg>view</a>` : '<span style="color: var(--faint)">—</span>'}</td>
+            </tr>`).join('');
+          resultsEl.classList.remove('hidden');
         }
-      } catch (err) {
-        alert('Reset failed — server unreachable.');
-      }
+      } catch (err) { errEl.textContent = err.message; errEl.classList.remove('hidden'); }
+      finally { btn.disabled = false; btn.textContent = 'Find cheapest'; }
     }
 
-    // Auto-load on boot
-    loadDeals();
+    // ── Buy-box / reset ───────────────────────────────────────────────────
+    function openBuyBoxModal() { document.getElementById('buyBoxModal').classList.remove('hidden'); }
+    function closeBuyBoxModal() { document.getElementById('buyBoxModal').classList.add('hidden'); }
+    async function saveBuyBoxSettings() {
+      const payload = {
+        dealerName: document.getElementById('bbDealerName').value,
+        contactNumber: document.getElementById('bbPhone').value,
+        webhookUrl: document.getElementById('bbWebhook').value.trim() || undefined,
+        minNetMargin: Number(document.getElementById('bbMinMargin').value),
+        maxPrice: Number(document.getElementById('bbMaxPrice').value),
+        provinces: document.getElementById('bbProvinces').value.split(',').map(s => s.trim()).filter(Boolean)
+      };
+      try {
+        const res = await fetch('/api/buybox', { method: 'POST', headers: auth.headers(), body: JSON.stringify(payload) });
+        if (res.status === 401) return authFailed();
+        if (res.ok) { closeBuyBoxModal(); loadBuyBox(); } else { const d = await res.json().catch(() => ({})); alert(d.error || 'Save failed.'); }
+      } catch { alert('Save failed — server unreachable.'); }
+    }
+    async function resetData() {
+      if (!confirm('Clear ALL deals and tracked vehicles for your dealership? This cannot be undone.')) return;
+      try {
+        const res = await fetch('/api/deals/reset', { method: 'DELETE', headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        if (res.ok) loadDeals(); else alert('Reset failed — try again.');
+      } catch { alert('Reset failed — server unreachable.'); }
+    }
+
+    // Mobile default view: Search is the vision
+    if (window.innerWidth < 1024) setMobileView('viewSearch');
   </script>
 </body>
 </html>

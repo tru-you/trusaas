@@ -132,6 +132,19 @@ A market-agnostic valuation engine lives in **`packages/market-scraper/`** — b
 
 **Caveats for other markets:** the US/UK `classifieds` URLs + CSS selectors are best-effort and should be retuned against live markup; both sites (Autotrader.com/Cars.com, AutoTrader.co.uk/Parkers) **403 plain HTTP**, so they need the Bright Data Unlocker/worker to return data. Housing (`housingZa`) is verified working — Private Property + Property24 both load at `/for-sale` and return real ZAR prices on plain HTTP.
 
+### TruRadar — standalone vehicle sourcing radar (2026-08-28, packages/tru-arbitrage)
+
+`packages/tru-arbitrage` (package `@trusaas/tru-radar`, dashboard brand **TruRadar**) is a STANDALONE buy-radar SaaS — NOT part of the dealer DMS stack. One job: surface confidence-gated underpriced/distress vehicle deals from SA classifieds (Cars.co.za, AutoTrader) + dealer sites (SERP), priced against live market comps. **No My Stock tab in the product** — the dealer's own stock is Flow's domain (Flow's Overview carries the "Stock needing action" panel: stale ≥40d and/or 10%+ over the dealer's `truPrice` benchmark, one-click reprice).
+
+- **Auth**: own JWT layer (`src/auth/`), dealer registry `DATA_DIR/dealers.json` (sha256-hashed access codes), `POST /api/auth/login` `{dealerSlug, accessCode}`, demo tokens per-uid. **Per-dealer isolation**: every store key is `${dealerSlug}:${id}` (`src/storage/db.ts`).
+- **Confidence layer (the moat)**: `src/engine/confidence.ts` scores valuations (sample size + price-band tightness, cap 0.95); alerts below `CONFIDENCE_FLOOR` (0.6) never fire. **One gated call only**: TU valuation backstop via Flow's `POST /api/internal/imagin8/valuation` (x-tru-sync-key) — fires only when comps are thin, carries the dealer's slug so Flow deducts THAT dealer's bundle, fails closed.
+- **Gates**: buy gate `evaluateArbitrageOpportunity` (underpriced/distress/price-drop); dormant own-stock gate `evaluateOverpricedStock` (AND: over-market AND stale) for the future Flow bolt-on — `flow_stock` ListingSource + `/api/mystock/scan` stay alive for it but are not in the UI.
+- **Dynamic recon**: `calculateReconBuffer` = clamp(3% × marketRetail, R5k floor, R30k cap) — no flat recon. `MIN_ARBITRAGE_MARGIN=10000`.
+- **Retired**: FB Marketplace lane (`brightdata.ts`, `mock-payloads.ts`, WhatsApp alerts) — webhook-only dispatch via `src/alerts/` (`formatDealAlertText`, `formatSellerOfferTemplate`).
+- **Flow ↔ radar**: Flow's public feed `GET /api/public/stock?dealer=<slug>` now exposes `dateAcquired` + live-derived `daysInInventory` (the stored field is write-once — derive from dateAcquired like App.tsx does). Master-admin provisioning: TruRadar tab in DealershipAdmin → Flow proxies `PUT /api/internal/truradar/dealers/:slug` to the radar's registry with the sync key (sync key never touches the browser). `TRU_RADAR_URL` env on premium.
+- **Deploy**: Render service `trusaas-arbitrage` (render.yaml §7) — `JWT_SECRET` + `TRUFLOW_SYNC_KEY` must be set in the dashboard (tokens forgeable without JWT_SECRET). Domain radar.tru-saas.com planned.
+- **Tests**: `npm test` (12 suites, no network). Browser-verified live: real scan surfaced 3 deals / R193k identified; dashboard login/demo/claim/session-persist all pass.
+
 ### Inspector e-sign on all three reports (2026-08-24)
 
 All three dealer-facing reports now carry a drawn signature:
