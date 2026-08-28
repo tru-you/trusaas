@@ -10,7 +10,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -18,16 +18,16 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Inter Tight"', 'system-ui', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace']
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace']
           },
           colors: {
             tru: {
               night: '#06080D',
-              surface: '#0B0F17',
-              panel: '#111722',
-              cyan: '#00E0F5',
-              cyanDark: '#07889B',
+              surface: '#0D1117',
+              panel: '#161B22',
+              cyan: '#4FE3DC',
+              cyanDark: '#22807C',
               emerald: '#10B981',
               amber: '#F59E0B'
             }
@@ -39,21 +39,24 @@
   <style>
     :root {
       --bg: #06080D;
-      --surface: #0B0F17;
-      --panel: #111722;
-      --cyan: #00E0F5;
-      --cyan-dark: #07889B;
+      --surface: #0D1117;
+      --panel: #161B22;
+      --cyan: #4FE3DC;
+      --cyan-dark: #22807C;
       --emerald: #10B981;
       --amber: #F59E0B;
-      --border: rgba(255, 255, 255, 0.08);
+      --border: rgba(232, 234, 230, 0.14);
+      --white: #E8EAE6;
+      --white-dim: rgba(232, 234, 230, 0.72);
+      --muted: rgba(232, 234, 230, 0.55);
     }
     body {
       background-color: var(--bg);
-      color: #F3F4F6;
-      font-family: 'Inter Tight', system-ui, sans-serif;
+      color: var(--white);
+      font-family: 'Inter', system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
-    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .font-mono-code { font-family: 'IBM Plex Mono', monospace; }
     .glass-nav {
       background: rgba(6, 8, 13, 0.85);
       backdrop-filter: blur(20px);
@@ -64,14 +67,108 @@
       border: 1px solid var(--border);
     }
     .tru-card {
-      background: var(--panel);
+      background: var(--surface);
       border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .tru-card:hover {
-      border-color: rgba(0, 224, 245, 0.4);
+      border-color: rgba(79, 227, 220, 0.35);
       transform: translateY(-2px);
-      box-shadow: 0 12px 30px -10px rgba(0, 224, 245, 0.15);
+      box-shadow: 0 1px 0 rgba(232,234,230,0.06) inset, 0 24px 50px -20px rgba(0,0,0,0.9);
+    }
+    /* 3D Sculpted Buttons */
+    .tru-btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      background: #3ECFC8;
+      color: #06080D;
+      border: none;
+      border-radius: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.28),
+        0 5px 0 #22807C,
+        0 10px 22px -8px rgba(0, 0, 0, 0.95);
+      transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
+    }
+    .tru-btn-primary:hover { background: #4FE3DC; }
+    .tru-btn-primary:active {
+      transform: translateY(4px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), 0 1px 0 #22807C, 0 2px 6px -3px rgba(0,0,0,0.9);
+    }
+    .tru-btn-primary:disabled {
+      background: rgba(232, 234, 230, 0.08);
+      color: rgba(232, 234, 230, 0.32);
+      box-shadow: none;
+      transform: none;
+      cursor: not-allowed;
+    }
+    .tru-btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      background: #161B22;
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow:
+        inset 0 1px 0 rgba(232, 234, 230, 0.10),
+        0 4px 0 #06080D,
+        0 8px 18px -8px rgba(0, 0, 0, 0.95);
+      transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
+    }
+    .tru-btn-secondary:hover { background: #1C2129; }
+    .tru-btn-secondary:active {
+      transform: translateY(3px);
+      box-shadow: inset 0 1px 0 rgba(232,234,230,0.08), 0 1px 0 #06080D, 0 2px 6px -3px rgba(0,0,0,0.9);
+    }
+    .tru-btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      background: transparent;
+      color: var(--white-dim);
+      border: none;
+      border-radius: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .tru-btn-ghost:hover { background: rgba(232, 234, 230, 0.06); }
+    /* Recessed Inputs */
+    .tru-input {
+      height: 40px;
+      background: rgba(232, 234, 230, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+      color: var(--white);
+      font-size: 13px;
+      padding: 0 12px;
+      outline: none;
+      transition: border-color 120ms ease;
+    }
+    .tru-input:focus { border-color: var(--cyan); }
+    .tru-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--white-dim);
+      display: block;
+      margin-bottom: 4px;
     }
     .radar-pulse {
       animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -90,27 +187,27 @@
       
       <!-- Brand Logo -->
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-700 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-300/30">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: #3ECFC8; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 #22807C, 0 6px 14px -4px rgba(0,0,0,0.9);">
           <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-xl font-extrabold tracking-tight text-white">Tru<span class="text-tru-cyan font-black">Arbitrage</span></span>
-            <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-tru-cyan border border-cyan-500/30 px-2 py-0.5 rounded-md">Live Radar</span>
+            <span class="text-xl font-semibold tracking-tight" style="color: var(--white)">Tru<span style="color: var(--cyan)" class="font-semibold">Arbitrage</span></span>
+            <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider bg-cyan-500/10 text-tru-cyan border border-cyan-500/30 px-2 py-0.5 rounded-md">Live Radar</span>
           </div>
-          <p class="text-xs text-slate-400 font-medium">Dealer Sourcing & Floorplan Distress Radar • South Africa</p>
+          <p class="text-xs font-medium" style="color: var(--muted)">Dealer Sourcing & Floorplan Distress Radar • South Africa</p>
         </div>
       </div>
 
       <!-- Live Actions -->
       <div class="flex items-center gap-3">
-        <button onclick="triggerScan()" id="scanBtn" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 text-slate-950 font-bold text-xs font-mono-code shadow-lg shadow-cyan-500/25 transition">
+        <button onclick="triggerScan()" id="scanBtn" class="tru-btn-primary">
           <span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span>
           <span>SCAN ALL PLATFORMS</span>
         </button>
-        <button onclick="openBuyBoxModal()" class="px-4 py-2.5 rounded-xl tru-panel hover:bg-slate-800 text-slate-200 text-xs font-semibold font-mono-code transition border border-white/10">
+        <button onclick="openBuyBoxModal()" class="tru-btn-secondary">
           ⚙️ BUY-BOX SETTINGS
         </button>
       </div>
@@ -122,24 +219,24 @@
   <section class="max-w-7xl mx-auto w-full px-6 pt-8 pb-4">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Profit Identified</span>
-        <div class="font-mono-code text-2xl font-black text-tru-emerald mt-1" id="statTotalProfit">R0</div>
-        <span class="text-xs text-slate-500 mt-1 block">Net margin after recon buffer</span>
+        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Total Profit Identified</span>
+        <div class="font-mono-code text-2xl font-semibold text-tru-emerald mt-1" id="statTotalProfit">R0</div>
+        <span class="text-xs mt-1 block" style="color: var(--muted)">Net margin after recon buffer</span>
       </div>
       <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Active High-Margin Deals</span>
-        <div class="font-mono-code text-2xl font-black text-white mt-1" id="statActiveDeals">0</div>
-        <span class="text-xs text-cyan-400/80 mt-1 block">Net profit &ge; R15,000</span>
+        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Active High-Margin Deals</span>
+        <div class="font-mono-code text-2xl font-semibold mt-1" style="color: var(--white)" id="statActiveDeals">0</div>
+        <span class="text-xs mt-1 block" style="color: var(--cyan)">Net profit &ge; R15,000</span>
       </div>
       <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Avg Net Margin / Deal</span>
-        <div class="font-mono-code text-2xl font-black text-tru-cyan mt-1" id="statAvgMargin">R0</div>
-        <span class="text-xs text-slate-500 mt-1 block">Across qualified stock</span>
+        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Avg Net Margin / Deal</span>
+        <div class="font-mono-code text-2xl font-semibold text-tru-cyan mt-1" id="statAvgMargin">R0</div>
+        <span class="text-xs mt-1 block" style="color: var(--muted)">Across qualified stock</span>
       </div>
       <div class="tru-panel p-5 rounded-2xl">
-        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Stale Floorplan Distress</span>
-        <div class="font-mono-code text-2xl font-black text-tru-amber mt-1" id="statDesperateSellers">0</div>
-        <span class="text-xs text-amber-400/80 mt-1 block">&ge; 40d on floor or price dropped</span>
+        <span class="font-mono-code text-[10px] font-semibold uppercase tracking-wider" style="color: var(--muted)">Stale Floorplan Distress</span>
+        <div class="font-mono-code text-2xl font-semibold text-tru-amber mt-1" id="statDesperateSellers">0</div>
+        <span class="text-xs mt-1 block" style="color: var(--amber)">&ge; 40d on floor or price dropped</span>
       </div>
     </div>
   </section>
@@ -149,17 +246,17 @@
     <div class="tru-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3 flex-wrap flex-1">
         <div class="relative min-w-[180px] flex-1 max-w-xs">
-          <input type="text" id="filterSearch" oninput="renderDeals()" placeholder="Search make, model, dealer, city..." class="w-full bg-[#080C14] border border-white/10 text-xs rounded-xl pl-8 pr-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-sans">
-          <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+          <input type="text" id="filterSearch" oninput="renderDeals()" placeholder="Search make, model, dealer, city..." class="tru-input w-full pl-8 pr-3 font-sans min-w-[180px] flex-1 max-w-xs">
+          <span class="absolute left-2.5 top-2.5 text-xs" style="color: var(--muted)">🔍</span>
         </div>
-        <select id="filterMinMargin" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+        <select id="filterMinMargin" onchange="renderDeals()" class="tru-input font-mono-code">
           <option value="15000">Min Net: R15k</option>
           <option value="10000">Min Net: R10k</option>
           <option value="25000">Min Net: R25k</option>
           <option value="35000">Min Net: R35k</option>
           <option value="0">All Margins</option>
         </select>
-        <select id="filterSource" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+        <select id="filterSource" onchange="renderDeals()" class="tru-input font-mono-code">
           <option value="ALL">All Platforms</option>
           <option value="facebook">Facebook Marketplace</option>
           <option value="cars_co_za">Cars.co.za</option>
@@ -168,30 +265,44 @@
           <option value="gumtree">Gumtree</option>
         </select>
 
-        <select id="filterCategory" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+        <select id="filterCategory" onchange="renderDeals()" class="tru-input font-mono-code">
           <option value="ALL">All Deal Types</option>
           <option value="underpriced_arbitrage">⚡ Underpriced Bargains</option>
           <option value="stale_floorplan_distress">🔥 Stale Floorplan (&ge;40d)</option>
           <option value="price_drop_velocity">📉 Major Price Drops</option>
         </select>
-        <select id="filterProvince" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+        <select id="filterProvince" onchange="renderDeals()" class="tru-input font-mono-code">
           <option value="ALL">All Provinces</option>
           <option value="Gauteng">Gauteng (JHB / PTA)</option>
           <option value="Western Cape">Western Cape (CPT)</option>
           <option value="KwaZulu-Natal">KwaZulu-Natal (DBN)</option>
         </select>
-        <select id="filterMake" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+        <select id="filterMake" onchange="renderDeals()" class="tru-input font-mono-code">
           <option value="ALL">All Makes</option>
         </select>
-        <select id="filterSort" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+        <select id="filterSort" onchange="renderDeals()" class="tru-input font-mono-code">
           <option value="profit_desc">Highest Net Margin</option>
           <option value="dom_desc">Oldest on Floor (DOM)</option>
           <option value="price_asc">Lowest Asking Price</option>
         </select>
       </div>
-      <div class="font-mono-code text-xs text-slate-400 font-semibold whitespace-nowrap">
-        Showing <span id="dealCountBadge" class="text-tru-cyan font-bold">0</span> qualified opportunities
+      <div class="font-mono-code text-xs font-semibold whitespace-nowrap" style="color: var(--muted)">
+        Showing <span id="dealCountBadge" class="text-tru-cyan font-semibold">0</span> qualified opportunities
       </div>
+    </div>
+  </section>
+
+  <!-- Scan Progress Panel -->
+  <section id="scanProgress" class="hidden max-w-7xl mx-auto w-full px-6 py-2">
+    <div class="tru-panel p-4 rounded-2xl">
+      <div class="flex items-center gap-3">
+        <span class="radar-pulse w-3 h-3 rounded-full" style="background: var(--cyan)"></span>
+        <span id="scanPhase" class="text-sm font-medium" style="color: var(--white)">Scanning platforms...</span>
+      </div>
+      <div class="mt-2 rounded-xl h-2 overflow-hidden" style="background: var(--bg)">
+        <div id="scanBar" class="h-full rounded-xl transition-all duration-300" style="width: 0%; background: var(--cyan)"></div>
+      </div>
+      <div id="scanLog" class="mt-3 max-h-32 overflow-y-auto text-xs font-mono-code space-y-1" style="color: var(--muted)"></div>
     </div>
   </section>
 
@@ -203,56 +314,56 @@
     
     <!-- Empty State -->
     <div id="emptyState" class="hidden tru-panel p-12 rounded-3xl text-center max-w-lg mx-auto my-12">
-      <div class="w-16 h-16 rounded-2xl bg-[#080C14] border border-white/10 flex items-center justify-center mx-auto mb-4 text-2xl">🚗</div>
-      <h3 class="text-lg font-bold text-white">No Arbitrage Deals Match Your Filter</h3>
-      <p class="text-sm text-slate-400 mt-2">Try clearing your filters or click below to trigger a fresh multi-source scan.</p>
+      <div class="w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto mb-4 text-2xl" style="background: var(--bg); border-color: var(--border)">🚗</div>
+      <h3 class="text-lg font-semibold" style="color: var(--white)">No Arbitrage Deals Match Your Filter</h3>
+      <p class="text-sm mt-2" style="color: var(--muted)">Try clearing your filters or click below to trigger a fresh multi-source scan.</p>
       <div class="flex justify-center gap-3 mt-6">
-        <button onclick="resetFilters()" class="px-4 py-2 rounded-xl tru-panel hover:bg-slate-800 text-slate-300 text-xs font-mono-code font-semibold">Reset Filters</button>
-        <button onclick="triggerScan()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:brightness-110 text-slate-950 font-mono-code font-bold text-xs">Scan All Platforms</button>
+        <button onclick="resetFilters()" class="tru-btn-secondary">Reset Filters</button>
+        <button onclick="triggerScan()" class="tru-btn-primary">Scan All Platforms</button>
       </div>
     </div>
   </main>
 
   <!-- Buy-Box Modal -->
   <div id="buyBoxModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="tru-panel p-6 rounded-3xl max-w-lg w-full border border-cyan-500/20 shadow-2xl">
+    <div class="tru-panel p-6 rounded-3xl max-w-lg w-full shadow-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <h2 class="text-lg font-semibold flex items-center gap-2" style="color: var(--white)">
           <span>Dealer Buy-Box Settings</span>
           <span class="font-mono-code text-[10px] bg-cyan-500/10 text-tru-cyan border border-cyan-500/20 px-2 py-0.5 rounded">Preferences</span>
         </h2>
-        <button onclick="closeBuyBoxModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+        <button onclick="closeBuyBoxModal()" class="text-xl hover:opacity-80" style="color: var(--muted)">&times;</button>
       </div>
-      <p class="text-xs text-slate-400 mb-6">Configure the exact types of private & wholesale stock you want pushed to your WhatsApp and dashboard.</p>
+      <p class="text-xs mb-6" style="color: var(--muted)">Configure the exact types of private & wholesale stock you want pushed to your WhatsApp and dashboard.</p>
       
       <div class="space-y-4">
         <div>
-          <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Dealership Name</label>
-          <input type="text" id="bbDealerName" value="Apex Auto Motors" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-sans">
+          <label class="tru-label">Dealership Name</label>
+          <input type="text" id="bbDealerName" value="Apex Auto Motors" class="tru-input w-full font-sans">
         </div>
         <div>
-          <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">WhatsApp Phone Number for Alerts</label>
-          <input type="text" id="bbPhone" value="+27821234567" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-mono-code">
+          <label class="tru-label">WhatsApp Phone Number for Alerts</label>
+          <input type="text" id="bbPhone" value="+27821234567" class="tru-input w-full font-mono-code">
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Minimum Net Margin (ZAR)</label>
-            <input type="number" id="bbMinMargin" value="25000" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-mono-code">
+            <label class="tru-label">Minimum Net Margin (ZAR)</label>
+            <input type="number" id="bbMinMargin" value="25000" class="tru-input w-full font-mono-code">
           </div>
           <div>
-            <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Maximum Price Ceiling (ZAR)</label>
-            <input type="number" id="bbMaxPrice" value="350000" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-mono-code">
+            <label class="tru-label">Maximum Price Ceiling (ZAR)</label>
+            <input type="number" id="bbMaxPrice" value="350000" class="tru-input w-full font-mono-code">
           </div>
         </div>
         <div>
-          <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Target Provinces / Cities</label>
-          <input type="text" id="bbProvinces" value="Gauteng, Western Cape, KwaZulu-Natal" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-sans">
+          <label class="tru-label">Target Provinces / Cities</label>
+          <input type="text" id="bbProvinces" value="Gauteng, Western Cape, KwaZulu-Natal" class="tru-input w-full font-sans">
         </div>
       </div>
 
       <div class="mt-6 flex justify-end gap-3">
-        <button onclick="closeBuyBoxModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-mono-code font-medium">Cancel</button>
-        <button onclick="saveBuyBoxSettings()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:brightness-110 text-slate-950 text-xs font-mono-code font-bold">Save Buy-Box</button>
+        <button onclick="closeBuyBoxModal()" class="tru-btn-ghost">Cancel</button>
+        <button onclick="saveBuyBoxSettings()" class="tru-btn-primary">Save Buy-Box</button>
       </div>
     </div>
   </div>
@@ -410,50 +521,50 @@
         );
 
         return `
-          <div class="tru-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+          <div class="tru-card p-5 flex flex-col justify-between relative overflow-hidden">
             
             <!-- Badges -->
             <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="font-mono-code text-[10px] font-bold uppercase px-2.5 py-1 rounded-md border ${srcBadge.color}">
+              <span class="font-mono-code text-[10px] font-semibold uppercase px-2.5 py-1 rounded-md border ${srcBadge.color}">
                 ${srcBadge.icon} ${srcBadge.label}
               </span>
-              <span class="font-mono-code text-[10px] font-bold uppercase px-2.5 py-1 rounded-md border ${categoryClass}">
+              <span class="font-mono-code text-[10px] font-semibold uppercase px-2.5 py-1 rounded-md border ${categoryClass}">
                 ${categoryTag}
               </span>
             </div>
 
             <div>
-              <div class="text-xs font-semibold text-slate-400">${v.location || 'South Africa'} • <span class="text-slate-300 font-medium">${v.sellerName || 'Direct Seller'}</span></div>
-              <h3 class="text-lg font-bold text-white mt-1 pr-4">${v.year} ${v.make} ${v.model}</h3>
-              <p class="text-xs text-slate-400 mt-0.5">${v.trim || 'Verified Private Listing'} • <span class="font-mono-code text-slate-300">${kmText}</span></p>
+              <div class="text-xs font-semibold" style="color: var(--muted)">${v.location || 'South Africa'} • <span class="font-medium" style="color: var(--white-dim)">${v.sellerName || 'Direct Seller'}</span></div>
+              <h3 class="text-lg font-semibold mt-1 pr-4" style="color: var(--white)">${v.year} ${v.make} ${v.model}</h3>
+              <p class="text-xs mt-0.5" style="color: var(--muted)">${v.trim || 'Verified Private Listing'} • <span class="font-mono-code" style="color: var(--white-dim)">${kmText}</span></p>
 
               <!-- Financial Box -->
-              <div class="bg-[#080C14] rounded-xl p-3.5 mt-4 border border-white/5 space-y-2">
+              <div class="rounded-xl p-3.5 mt-4 border space-y-2" style="background: var(--bg); border-color: var(--border)">
                 <div class="flex items-center justify-between text-xs font-sans">
-                  <span class="text-slate-400">Listed Asking Price:</span>
-                  <span class="font-mono-code font-bold text-white">R${asking}</span>
+                  <span style="color: var(--muted)">Listed Asking Price:</span>
+                  <span class="font-mono-code font-semibold" style="color: var(--white)">R${asking}</span>
                 </div>
                 <div class="flex items-center justify-between text-xs font-sans">
-                  <span class="text-slate-400">Live Market Retail:</span>
-                  <span class="font-mono-code font-bold text-slate-300">R${retail}</span>
+                  <span style="color: var(--muted)">Live Market Retail:</span>
+                  <span class="font-mono-code font-semibold" style="color: var(--white-dim)">R${retail}</span>
                 </div>
                 <div class="flex items-center justify-between text-xs font-sans">
-                  <span class="text-slate-400">Recon & Floor Buffer:</span>
-                  <span class="font-mono-code text-slate-400 font-medium">-R${(deal.reconBuffer || 8500).toLocaleString('en-ZA')}</span>
+                  <span style="color: var(--muted)">Recon & Floor Buffer:</span>
+                  <span class="font-mono-code font-medium" style="color: var(--muted)">-R${(deal.reconBuffer || 8500).toLocaleString('en-ZA')}</span>
                 </div>
-                <div class="border-t border-white/10 pt-2 flex items-center justify-between">
-                  <span class="font-mono-code text-[11px] font-extrabold text-tru-emerald uppercase tracking-wider">Estimated Net Profit:</span>
-                  <span class="font-mono-code text-base font-black text-tru-emerald">+R${netProfit}</span>
+                <div class="border-t pt-2 flex items-center justify-between" style="border-color: var(--border)">
+                  <span class="font-mono-code text-[11px] font-semibold text-tru-emerald uppercase tracking-wider">Estimated Net Profit:</span>
+                  <span class="font-mono-code text-base font-semibold text-tru-emerald">+R${netProfit}</span>
                 </div>
               </div>
             </div>
 
             <!-- Action Buttons -->
-            <div class="mt-5 pt-3 border-t border-white/5 flex items-center gap-2">
-              <a href="https://wa.me/?text=${offerText}" target="_blank" class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:brightness-110 text-slate-950 font-mono-code font-bold text-xs shadow-md transition">
+            <div class="mt-5 pt-3 border-t flex items-center gap-2" style="border-color: var(--border)">
+              <a href="https://wa.me/?text=${offerText}" target="_blank" class="tru-btn-primary flex-1 justify-center text-center">
                 ${isDealerStock ? '🤝 1-Click Trade Offer' : '💬 1-Click Cash Offer'}
               </a>
-              <a href="${v.url || '#'}" target="_blank" class="px-3.5 py-2.5 rounded-xl tru-panel hover:bg-slate-800 text-slate-300 text-xs font-mono-code font-semibold transition border border-white/10">
+              <a href="${v.url || '#'}" target="_blank" class="tru-btn-secondary">
                 View ↗
               </a>
             </div>
@@ -464,22 +575,96 @@
 
     async function triggerScan() {
       const btn = document.getElementById('scanBtn');
+      const progress = document.getElementById('scanProgress');
+      const phaseEl = document.getElementById('scanPhase');
+      const barEl = document.getElementById('scanBar');
+      const logEl = document.getElementById('scanLog');
+      
       btn.disabled = true;
-      btn.innerHTML = '<span class="font-mono-code">SCANNING PLATFORMS...</span>';
-
+      btn.innerHTML = '<span class="radar-pulse w-2 h-2 rounded-full bg-slate-950"></span><span>SCANNING...</span>';
+      progress.classList.remove('hidden');
+      logEl.innerHTML = '';
+      barEl.style.width = '0%';
+      
       try {
-        await fetch('/api/ingest/trigger', {
+        const res = await fetch('/api/ingest/trigger', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ limit: 20 })
         });
-        await loadDeals();
+        const { scanId } = await res.json();
+        
+        const source = new EventSource(`/api/scan/${scanId}/events`);
+        
+        source.addEventListener('phase', (e) => {
+          const data = JSON.parse(e.data);
+          phaseEl.textContent = data.message || data.phase;
+          addLog(`📡 ${data.message || data.phase}`);
+        });
+        
+        source.addEventListener('progress', (e) => {
+          const data = JSON.parse(e.data);
+          const pct = Math.round((data.current / data.total) * 100);
+          barEl.style.width = `${pct}%`;
+          phaseEl.textContent = `Processing ${data.current}/${data.total}: ${data.vehicle || ''}`;
+          if (data.status === 'error') {
+            addLog(`❌ Error: ${data.error}`, true);
+          }
+        });
+        
+        source.addEventListener('deal_found', (e) => {
+          const deal = JSON.parse(e.data);
+          addLog(`✅ Deal found: ${deal.vehicle?.year} ${deal.vehicle?.make} ${deal.vehicle?.model} — +R${(deal.projectedNetMargin || 0).toLocaleString('en-ZA')}`);
+          // Reload deals to show the new one
+          loadDeals();
+        });
+        
+        source.addEventListener('error', (e) => {
+          if (e.data) {
+            const data = JSON.parse(e.data);
+            addLog(`⚠️ ${data.source || 'Source'}: ${data.message}`, true);
+          }
+        });
+        
+        source.addEventListener('complete', (e) => {
+          const data = JSON.parse(e.data);
+          addLog(`🎉 Scan complete — ${data.arbitrageDealsFound || 0} deals found, ${data.alertsDispatched || 0} alerts sent`);
+          barEl.style.width = '100%';
+          phaseEl.textContent = 'Scan complete';
+          source.close();
+          loadDeals();
+          
+          setTimeout(() => {
+            progress.classList.add('hidden');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span><span>SCAN ALL PLATFORMS</span>';
+          }, 3000);
+        });
+        
+        // Handle SSE connection error
+        source.onerror = () => {
+          source.close();
+          addLog('⚠️ Connection lost — refreshing deals...', true);
+          loadDeals();
+          btn.disabled = false;
+          btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span><span>SCAN ALL PLATFORMS</span>';
+        };
+        
       } catch (err) {
         console.error('Scan error:', err);
-      } finally {
         btn.disabled = false;
         btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span><span>SCAN ALL PLATFORMS</span>';
+        progress.classList.add('hidden');
       }
+    }
+
+    function addLog(msg, isError = false) {
+      const logEl = document.getElementById('scanLog');
+      const line = document.createElement('div');
+      line.textContent = msg;
+      if (isError) line.style.color = '#B86A6A';
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
     }
 
     function openBuyBoxModal() {
