@@ -86,7 +86,7 @@ export async function fetchFacebookMarketplaceListings(
 
 async function pollSnapshotResults(snapshotId: string, apiKey: string): Promise<RawFbListing[]> {
   const pollUrl = `https://api.brightdata.com/datasets/v3/snapshot/${encodeURIComponent(snapshotId)}?format=json`;
-  const maxAttempts = 24; // 24 * 5s = 120s max wait
+  const maxAttempts = 6; // 6 * 5s = 30s max wait
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await sleep(5000);
@@ -115,7 +115,7 @@ async function pollSnapshotResults(snapshotId: string, apiKey: string): Promise<
     }
   }
 
-  console.warn(`[brightdata] Snapshot ${snapshotId} still processing in background.`);
+  console.warn(`[brightdata] Snapshot ${snapshotId} still running after 30s — will arrive via webhook when ready.`);
   return [];
 }
 

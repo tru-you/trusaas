@@ -72,12 +72,7 @@ app.get('/api/deals', (req: Request, res: Response) => {
 // 4. Tracked Inventory (Days on Market & Aging)
 app.get('/api/tracked', (req: Request, res: Response) => {
   const minDom = req.query.minDom ? Number(req.query.minDom) : undefined;
-  const raw = Object.values((db as any).data.trackedVehicles || {});
-  let tracked = raw as any[];
-
-  if (minDom !== undefined) {
-    tracked = tracked.filter((t) => t.daysOnMarket >= minDom);
-  }
+  const tracked = db.getTrackedVehicles(minDom !== undefined ? { minDom } : undefined);
 
   res.json({ total: tracked.length, tracked });
 });

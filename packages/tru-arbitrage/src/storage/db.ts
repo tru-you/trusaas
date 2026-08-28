@@ -1,4 +1,5 @@
 import fs from 'fs';
+import fsp from 'fs/promises';
 import path from 'path';
 import { TrackedInventoryVehicle, ArbitrageDeal, DealerBuyBox, NormalizedVehicle } from '../types';
 import { generateVehicleFingerprint, calculateUrgencyScore } from '../engine/arbitrage';
@@ -13,6 +14,8 @@ interface DatabaseSchema {
 export class ArbitrageDatabase {
   private filePath: string;
   private data: DatabaseSchema;
+  private dirty = false;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(customPath?: string) {
     const dir = customPath ? path.dirname(customPath) : CONFIG.DATA_DIR;
@@ -79,19 +82,57 @@ export class ArbitrageDatabase {
         dealerSubscriptions: data.dealerSubscriptions || this.getDefaultSubscriptions(),
       };
       this.data = out;
-      this.save();
+      this.saveSync();
       return out;
     }
     return data;
   }
 
-  private save(): void {
+  private saveSync(): void {
     try {
       const tempPath = `${this.filePath}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(this.data, null, 2), 'utf-8');
       fs.renameSync(tempPath, this.filePath);
     } catch (err) {
       console.error('[db] Failed to save database file:', err);
+    }
+  }
+
+  private markDirty(): void {
+    this.dirty = true;
+    if (!this.saveTimer) {
+      this.saveTimer = setTimeout(() => {
+        this.saveTimer = null;
+        this.flushToDisk().catch((err) =>
+          console.error('[db] Background flush failed:', err)
+        );
+      }, 2000);
+      // Don't keep the process alive just for a deferred write
+      if (this.saveTimer && typeof this.saveTimer === 'object' && 'unref' in this.saveTimer) {
+        this.saveTimer.unref();
+      }
+    }
+  }
+
+  private async flushToDisk(): Promise<void> {
+    if (!this.dirty) return;
+    try {
+      const tempPath = `${this.filePath}.tmp`;
+      await fsp.writeFile(tempPath, JSON.stringify(this.data, null, 2), 'utf-8');
+      await fsp.rename(tempPath, this.filePath);
+      this.dirty = false;
+    } catch (err) {
+      console.error('[db] Failed to flush database file:', err);
+    }
+  }
+
+  public async flush(): Promise<void> {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = null;
+    }
+    if (this.dirty) {
+      await this.flushToDisk();
     }
   }
 
@@ -144,9 +185,8 @@ export class ArbitrageDatabase {
         status: 'active',
       };
       this.data.trackedVehicles[fingerprint] = newRecord;
-      this.save();
+      this.markDirty();
       return newRecord;
-
     }
 
     // Existing vehicle found -> update DOM and price tracking
@@ -182,7 +222,7 @@ export class ArbitrageDatabase {
     };
 
     this.data.trackedVehicles[fingerprint] = updatedRecord;
-    this.save();
+    this.markDirty();
     return updatedRecord;
   }
 
@@ -213,7 +253,7 @@ export class ArbitrageDatabase {
     } else {
       this.data.deals[key] = deal;
     }
-    this.save();
+    this.markDirty();
   }
 
   public getDeals(filter?: { status?: string; minMargin?: number }): ArbitrageDeal[] {
@@ -236,13 +276,25 @@ export class ArbitrageDatabase {
 
   public saveSubscription(sub: DealerBuyBox): void {
     this.data.dealerSubscriptions[sub.id] = sub;
-    this.save();
+    this.markDirty();
   }
 
   public clearAll(): void {
     this.data = { trackedVehicles: {}, deals: {}, dealerSubscriptions: this.getDefaultSubscriptions() };
-    this.save();
+    this.markDirty();
+  }
+
+  public getTrackedVehicles(filter?: { minDom?: number }): TrackedInventoryVehicle[] {
+    let list = Object.values(this.data.trackedVehicles);
+    if (filter?.minDom !== undefined) {
+      list = list.filter((t) => t.daysOnMarket >= filter.minDom!);
+    }
+    return list;
   }
 }
 
 export const db = new ArbitrageDatabase();
+
+process.on('beforeExit', () => db.flush());
+process.on('SIGINT', () => { db.flush().then(() => process.exit(0)); });
+process.on('SIGTERM', () => { db.flush().then(() => process.exit(0)); });

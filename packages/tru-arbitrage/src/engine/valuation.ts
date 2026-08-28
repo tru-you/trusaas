@@ -1,28 +1,30 @@
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { ValuationComp, ValuationResult } from '../types';
 import { adjustForMileage, robustAverage, median } from './mileage';
 import { CONFIG } from '../config';
+import { fetchHtmlWithFallback } from './fetch-html';
 
+const MAX_CACHE_SIZE = 200;
 const cache = new Map<string, { data: ValuationResult; ts: number }>();
 
-const WORKER_URLS = (
-  process.env.SCRAPER_SERVICE_URLS ||
-  process.env.SCRAPER_SERVICE_URL ||
-  process.env.TRUCRM_SCRAPER_URL ||
-  ''
-)
-  .split(',')
-  .map((u) => u.trim())
-  .filter(Boolean);
+function cacheGet(key: string): ValuationResult | null {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CONFIG.SCRAPER_CACHE_TTL_MS) {
+    cache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
 
-const DEFAULT_HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-  'Accept-Language': 'en-ZA,en;q=0.9',
-  'Cache-Control': 'no-cache',
-};
+function cacheSet(key: string, data: ValuationResult): void {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    // Delete oldest entry
+    const oldest = cache.keys().next().value;
+    if (oldest) cache.delete(oldest);
+  }
+  cache.set(key, { data, ts: Date.now() });
+}
 
 function cacheKey(make: string, model: string, year: number | string): string {
   return `${make.toLowerCase()}|${model.toLowerCase()}|${year}`;
@@ -32,75 +34,6 @@ function cleanNumber(v: unknown): number | null {
   if (v == null) return null;
   const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^\d.]/g, ''));
   return Number.isFinite(n) ? n : null;
-}
-
-let workerIndex = 0;
-
-async function renderViaHeadlessWorker(url: string): Promise<string | null> {
-  if (WORKER_URLS.length === 0) return null;
-  for (let attempt = 0; attempt < WORKER_URLS.length; attempt++) {
-    const worker = WORKER_URLS[workerIndex++ % WORKER_URLS.length];
-    try {
-      const res = await axios.post(
-        `${worker.replace(/\/$/, '')}/scrape`,
-        { url },
-        { headers: { 'Content-Type': 'application/json' }, timeout: 25000 }
-      );
-      if (res.data?.ok && typeof res.data?.html === 'string') {
-        return res.data.html;
-      }
-    } catch (err: any) {
-      console.warn(`[valuation] Headless worker ${worker} failed on ${url}:`, err?.message || err);
-    }
-  }
-  return null;
-}
-
-async function fetchHtml(url: string): Promise<string | null> {
-  // 0. Try remote headless render worker first (Cloudflare bypass)
-  const workerHtml = await renderViaHeadlessWorker(url);
-  if (workerHtml && workerHtml.length > 200) return workerHtml;
-
-  try {
-    const res = await axios.get(url, { headers: DEFAULT_HEADERS, timeout: CONFIG.SCRAPER_TIMEOUT_MS });
-    if (res.status === 200 && typeof res.data === 'string') return res.data;
-  } catch (err: any) {
-    if (CONFIG.SCRAPER_UNLOCKER_ENABLED || CONFIG.BRIGHTDATA_API_KEY) {
-      try {
-        const bdRes = await axios.post(
-          'https://api.brightdata.com/request',
-          { zone: CONFIG.BRIGHTDATA_UNLOCKER_ZONE, url, format: 'raw', country: 'za' },
-          {
-            headers: {
-              Authorization: `Bearer ${CONFIG.BRIGHTDATA_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            timeout: 25000,
-          }
-        );
-        if (bdRes.status === 200) {
-          const raw = bdRes.data;
-          if (typeof raw === 'string') {
-            if (raw.startsWith('{') || raw.startsWith('[')) {
-              try {
-                const parsed = JSON.parse(raw);
-                return parsed?.body ?? parsed?.html ?? parsed?.result ?? raw;
-              } catch {
-                return raw;
-              }
-            }
-            return raw;
-          }
-          if (raw && typeof raw === 'object') {
-            return raw.body ?? raw.html ?? raw.result ?? JSON.stringify(raw);
-          }
-        }
-      } catch (bdErr: any) {
-        // Unlocker failed
-      }
-    }
-  }
-  return null;
 }
 
 export function extractJsonLdComps(html: string): ValuationComp[] {
@@ -268,9 +201,9 @@ export async function fetchLiveMarketValuation(
   mileageKm: number | null
 ): Promise<ValuationResult> {
   const key = cacheKey(make, model, year);
-  const cached = cache.get(key);
-  if (cached && Date.now() - cached.ts < CONFIG.SCRAPER_CACHE_TTL_MS) {
-    return cached.data;
+  const cached = cacheGet(key);
+  if (cached) {
+    return cached;
   }
 
   const allComps: ValuationComp[] = [];
@@ -290,7 +223,7 @@ export async function fetchLiveMarketValuation(
   await Promise.all(
     targets.map(async (target) => {
       try {
-        const html = await fetchHtml(target.url);
+        const html = await fetchHtmlWithFallback(target.url);
         if (html) {
           const nextData = extractNextDataComps(html, make, model);
           const jsonLd = extractJsonLdComps(html);
@@ -345,7 +278,7 @@ export async function fetchLiveMarketValuation(
       sampleMedianKm: null,
       sources: sourcesOutput,
     };
-    cache.set(key, { data: result, ts: Date.now() });
+    cacheSet(key, result);
     return result;
   }
 
@@ -358,6 +291,6 @@ export async function fetchLiveMarketValuation(
     sources: sourcesOutput,
   };
 
-  cache.set(key, { data: result, ts: Date.now() });
+  cacheSet(key, result);
   return result;
 }

@@ -60,6 +60,9 @@ export async function fetchDealerWebsitesViaSerp(query?: string): Promise<RawFbL
 
       if (!price || !link || link.includes('google.') || link.includes('youtube.')) continue;
 
+      let hostname = 'unknown';
+      try { hostname = new URL(link).hostname.replace('www.', ''); } catch {}
+
       out.push({
         id: `serp_${Buffer.from(link).toString('base64').slice(0, 16)}`,
         source: 'dealer_direct',
@@ -70,13 +73,14 @@ export async function fetchDealerWebsitesViaSerp(query?: string): Promise<RawFbL
         price,
         currency: 'ZAR',
         location: snippet.includes('Cape Town') ? 'Cape Town' : snippet.includes('Pretoria') ? 'Pretoria' : 'Johannesburg, Gauteng',
-        seller_name: new URL(link).hostname.replace('www.', ''),
+        seller_name: hostname,
         images: [],
         date_posted: new Date().toISOString(),
       });
     }
   } catch (err: any) {
-    console.warn('[serp-ingestion] Google SERP query failed:', err?.message || err);
+    const detail = err?.response?.data ? JSON.stringify(err.response.data) : (err?.message || err);
+    console.warn('[serp-ingestion] Google SERP query failed:', detail);
   }
 
   return out;
