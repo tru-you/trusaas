@@ -3,9 +3,8 @@ import cors from 'cors';
 import path from 'path';
 import { CONFIG } from './config';
 import { db } from './storage/db';
-import { processListingBatch } from './index';
-import { fetchFacebookMarketplaceListings } from './ingestion/brightdata';
-import { DealerBuyBox } from './types';
+import { processListingBatch, runFullMultiSourceScan, ScanProgress } from './index';
+import { DealerBuyBox, IngestionBatchResult } from './types';
 
 const app = express();
 
@@ -39,15 +38,87 @@ app.post('/api/ingest/webhook', async (req: Request, res: Response) => {
   }
 });
 
-// 2. Trigger Ingestion Run (Multi-Source: Facebook, Cars.co.za, AutoTrader, Google SERP)
-app.post('/api/ingest/trigger', async (_req: Request, res: Response) => {
-  try {
-    const { runFullMultiSourceScan } = await import('./index');
-    const result = await runFullMultiSourceScan();
-    return res.json({ success: true, metrics: result });
-  } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Failed to trigger multi-source ingestion.' });
+// Scan state tracking for non-blocking pipeline + SSE
+interface ScanState {
+  id: string;
+  status: 'running' | 'complete' | 'error';
+  result?: IngestionBatchResult;
+  error?: string;
+  emitter: ScanProgress;
+}
+const scans = new Map<string, ScanState>();
+
+// 2. Trigger Ingestion Run (Non-blocking — returns scanId for SSE subscription)
+app.post('/api/ingest/trigger', (_req: Request, res: Response) => {
+  const scanId = `scan_${Date.now()}`;
+  const emitter = new ScanProgress(scanId);
+  const state: ScanState = { id: scanId, status: 'running', emitter };
+  scans.set(scanId, state);
+
+  // Fire and forget — process in background
+  runFullMultiSourceScan(emitter)
+    .then(result => { state.status = 'complete'; state.result = result; })
+    .catch(err => { state.status = 'error'; state.error = err?.message || String(err); });
+
+  res.json({ scanId, status: 'started' });
+});
+
+// 2b. SSE endpoint — stream live scan progress events
+app.get('/api/scan/:id/events', (req: Request, res: Response) => {
+  const state = scans.get(req.params.id);
+  if (!state) return res.status(404).json({ error: 'Scan not found' });
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+
+  const send = (event: string, data: any) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  // If already complete, send result and close
+  if (state.status === 'complete') {
+    send('complete', state.result);
+    res.end();
+    return;
   }
+  if (state.status === 'error') {
+    send('error', { message: state.error });
+    res.end();
+    return;
+  }
+
+  // Subscribe to live events
+  const onPhase = (data: any) => send('phase', data);
+  const onProgress = (data: any) => send('progress', data);
+  const onDeal = (data: any) => send('deal_found', data);
+  const onError = (data: any) => send('error', data);
+  const onComplete = (data: any) => { send('complete', data); res.end(); };
+
+  state.emitter.on('phase', onPhase);
+  state.emitter.on('progress', onProgress);
+  state.emitter.on('deal_found', onDeal);
+  state.emitter.on('error', onError);
+  state.emitter.on('complete', onComplete);
+
+  // Cleanup on client disconnect
+  req.on('close', () => {
+    state.emitter.off('phase', onPhase);
+    state.emitter.off('progress', onProgress);
+    state.emitter.off('deal_found', onDeal);
+    state.emitter.off('error', onError);
+    state.emitter.off('complete', onComplete);
+  });
+});
+
+// 2c. Poll fallback — check scan status without SSE
+app.get('/api/scan/:id/status', (req: Request, res: Response) => {
+  const state = scans.get(req.params.id);
+  if (!state) return res.status(404).json({ error: 'Scan not found' });
+  res.json({ id: state.id, status: state.status, result: state.result, error: state.error });
 });
 
 // 3. Active Arbitrage & Stale Floorplan Deals Feed
@@ -72,12 +143,7 @@ app.get('/api/deals', (req: Request, res: Response) => {
 // 4. Tracked Inventory (Days on Market & Aging)
 app.get('/api/tracked', (req: Request, res: Response) => {
   const minDom = req.query.minDom ? Number(req.query.minDom) : undefined;
-  const raw = Object.values((db as any).data.trackedVehicles || {});
-  let tracked = raw as any[];
-
-  if (minDom !== undefined) {
-    tracked = tracked.filter((t) => t.daysOnMarket >= minDom);
-  }
+  const tracked = db.getTrackedVehicles(minDom !== undefined ? { minDom } : undefined);
 
   res.json({ total: tracked.length, tracked });
 });

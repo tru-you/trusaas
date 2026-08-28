@@ -1,27 +1,7 @@
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { RawFbListing } from '../types';
 import { CONFIG } from '../config';
-
-const DEFAULT_HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-  'Accept-Language': 'en-ZA,en;q=0.9',
-  'Cache-Control': 'no-cache',
-};
-
-const WORKER_URLS = (
-  process.env.SCRAPER_SERVICE_URLS ||
-  process.env.SCRAPER_SERVICE_URL ||
-  process.env.TRUCRM_SCRAPER_URL ||
-  ''
-)
-  .split(',')
-  .map((u) => u.trim())
-  .filter(Boolean);
-
-let workerIndex = 0;
+import { fetchHtmlWithFallback } from '../engine/fetch-html';
 
 function num(v: unknown): number | null {
   if (v == null) return null;
@@ -29,80 +9,11 @@ function num(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-async function renderViaHeadlessWorker(url: string): Promise<string | null> {
-  if (WORKER_URLS.length === 0) return null;
-  for (let attempt = 0; attempt < WORKER_URLS.length; attempt++) {
-    const worker = WORKER_URLS[workerIndex++ % WORKER_URLS.length];
-    try {
-      const res = await axios.post(
-        `${worker.replace(/\/$/, '')}/scrape`,
-        { url },
-        { headers: { 'Content-Type': 'application/json' }, timeout: 25000 }
-      );
-      if (res.data?.ok && typeof res.data?.html === 'string') {
-        return res.data.html;
-      }
-    } catch (err: any) {
-      console.warn(`[ingestion] Headless worker ${worker} failed on ${url}:`, err?.message || err);
-    }
-  }
-  return null;
-}
-
-async function fetchPageWithUnlockerFallback(url: string): Promise<string | null> {
-  // 1. Try headless worker first if available
-  const workerHtml = await renderViaHeadlessWorker(url);
-  if (workerHtml && workerHtml.length > 200) return workerHtml;
-
-  // 2. Try direct HTTP
-  try {
-    const res = await axios.get(url, { headers: DEFAULT_HEADERS, timeout: CONFIG.SCRAPER_TIMEOUT_MS });
-    if (res.status === 200 && typeof res.data === 'string') return res.data;
-  } catch (err: any) {
-    // 3. Fallback to Bright Data Web Unlocker if enabled
-    if (CONFIG.SCRAPER_UNLOCKER_ENABLED || CONFIG.BRIGHTDATA_API_KEY) {
-      try {
-        const bdRes = await axios.post(
-          'https://api.brightdata.com/request',
-          { zone: CONFIG.BRIGHTDATA_UNLOCKER_ZONE, url, format: 'raw', country: 'za' },
-          {
-            headers: {
-              Authorization: `Bearer ${CONFIG.BRIGHTDATA_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            timeout: 25000,
-          }
-        );
-        if (bdRes.status === 200) {
-          const raw = bdRes.data;
-          if (typeof raw === 'string') {
-            if (raw.startsWith('{') || raw.startsWith('[')) {
-              try {
-                const parsed = JSON.parse(raw);
-                return parsed?.body ?? parsed?.html ?? parsed?.result ?? raw;
-              } catch {
-                return raw;
-              }
-            }
-            return raw;
-          }
-          if (raw && typeof raw === 'object') {
-            return raw.body ?? raw.html ?? raw.result ?? JSON.stringify(raw);
-          }
-        }
-      } catch (bdErr: any) {
-        console.warn(`[ingestion] Bright Data Unlocker failed on ${url} (Zone: ${CONFIG.BRIGHTDATA_UNLOCKER_ZONE}):`, bdErr?.response?.data || bdErr?.message || bdErr);
-      }
-    }
-  }
-  return null;
-}
-
 export async function fetchCarsCoZaNewest(): Promise<RawFbListing[]> {
   const url = 'https://www.cars.co.za/usedcars/?P=1&sort=date_desc';
   const out: RawFbListing[] = [];
 
-  const html = await fetchPageWithUnlockerFallback(url);
+  const html = await fetchHtmlWithFallback(url);
   if (!html) return out;
 
   const $ = cheerio.load(html);
@@ -120,7 +31,7 @@ export async function fetchCarsCoZaNewest(): Promise<RawFbListing[]> {
         if (!price || price < CONFIG.MIN_VEHICLE_PRICE) continue;
 
         out.push({
-          id: `cars_${item.id || item.vehicleId || Math.random()}`,
+          id: `cars_${item.id || item.vehicleId || Buffer.from(item.url || url).toString('base64').slice(0, 16)}`,
           source: 'cars_co_za',
           url: item.url ? (item.url.startsWith('http') ? item.url : `https://www.cars.co.za${item.url}`) : url,
           title: `${item.year || ''} ${item.make || ''} ${item.model || ''} ${item.variant || ''}`.trim(),
@@ -144,7 +55,7 @@ export async function fetchAutoTraderNewest(): Promise<RawFbListing[]> {
   const url = 'https://www.autotrader.co.za/cars-for-sale?sort=Date_Descending';
   const out: RawFbListing[] = [];
 
-  const html = await fetchPageWithUnlockerFallback(url);
+  const html = await fetchHtmlWithFallback(url);
   if (!html) return out;
 
   const $ = cheerio.load(html);
@@ -161,7 +72,7 @@ export async function fetchAutoTraderNewest(): Promise<RawFbListing[]> {
 
         const odo = num(node.mileageFromOdometer?.value ?? node.mileageFromOdometer);
         out.push({
-          id: `at_${node.identifier || Math.random()}`,
+          id: `at_${node.identifier || Buffer.from(node.url || '').toString('base64').slice(0, 16)}`,
           source: 'autotrader',
           url: node.url || url,
           title: node.name || `${node.vehicleModelDate || ''} ${node.brand?.name || ''} ${node.model || ''}`,

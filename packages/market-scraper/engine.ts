@@ -46,7 +46,7 @@ export interface ValuationResult {
   searchUrl?: string;
   carsUrl?: string;
   sources: SourceResult[];
-  /** Currency symbol of the market the estimate is in (R, $, £). */
+  /** Currency symbol of the market the estimate is in (R, $, Â£). */
   currency?: string;
   mileageAdjusted?: boolean;
   sampleMedianKm?: number | null;
@@ -115,7 +115,7 @@ export interface MarketConfig {
   secondarySourceName?: string;
   /** Override the listing-title matcher. Cars default to make/model/year
    *  matching; housing supplies its own (address/area/bedrooms, no year tilt). */
-  titleMatch?: (title: string, make: string, model: string, year: string, match?: string) => boolean;
+  titleMatch?: (title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number }) => boolean;
 }
 
 export interface FetchValuationOptions {
@@ -276,12 +276,13 @@ function makeVariants(make: string): string[] {
 
 const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
 
-function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string): boolean {
+function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number }): boolean {
   const t = String(title || "");
   const y = parseInt(String(year), 10);
+  const tolerance = opts?.yearTolerance ?? YEAR_TOLERANCE;
   if (Number.isFinite(y) && y >= 1990 && y <= 2100) {
     const ym = t.match(/\b(?:19|20)\d{2}\b/);
-    if (ym && Math.abs(parseInt(ym[0], 10) - y) > YEAR_TOLERANCE) return false;
+    if (ym && Math.abs(parseInt(ym[0], 10) - y) > tolerance) return false;
   }
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), "i").test(t));
   const q = modelCore(model);
@@ -520,30 +521,43 @@ function htmlToListings(html: string, selectors: string[], cfg: MarketConfig): L
   return extractPrices(html, selectors, cfg).map((price) => ({ price }));
 }
 
-function yearTolerant(cfg: MarketConfig, title: string, make: string, model: string, year: string, match?: string): boolean {
+function yearTolerant(cfg: MarketConfig, title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number }): boolean {
   const fn = cfg.titleMatch || titleMentionsVehicle;
-  return fn(title, make, model, year, match);
+  return fn(title, make, model, year, match, opts);
 }
 
 export function extractCardListings(html: string, make: string, model: string, year: string, cfg: MarketConfig): Listing[] {
   const $ = cheerio.load(html);
   const out: Listing[] = [];
   const seen = new Set<string>();
-  $('a[class*="result-tile"]').each((_, el) => {
+
+  const selectCards = () => {
+    const anchors = $('a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"], a[class*="VehicleCard"]');
+    if (anchors.length) return anchors;
+    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="listing-card"]');
+  };
+  const cards = selectCards();
+
+  cards.each((_, el) => {
     const $c = $(el);
-    const titleEl = $c.find('[class*="highlight-title"], [class*="result-title"], h2, h3').first();
-    const title = (titleEl.length ? titleEl.text() : $c.text()).replace(/\s+/g, " ").trim();
-    if (!yearTolerant(cfg, title, make, model, year)) return;
+    const cardText = $c.text().replace(/\s+/g, " ").trim();
+    if (cardText.length < 8) return;
+
+    if (!yearTolerant(cfg, cardText, make, model, year, undefined, { yearTolerance: 2 })) return;
+
     const priceEl = $c.find('[class^="e-price__"], [class*="price"]').first();
-    const price = priceEl.length ? num(priceEl.text()) : priceFromText($c.text(), cfg);
+    const price = priceEl.length ? num(priceEl.text()) : priceFromText(cardText, cfg);
     if (price == null || price < cfg.minPrice || price > cfg.maxPrice) return;
-    const kmMatch = $c.text().match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);
+
+    const kmMatch = cardText.match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);
     const km = kmMatch ? num(kmMatch[1]) : undefined;
     const key = `${Math.round(price)}|${km ?? ""}`;
     if (seen.has(key)) return;
     seen.add(key);
+
     out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
   });
+
   return out;
 }
 

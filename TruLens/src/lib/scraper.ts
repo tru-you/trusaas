@@ -383,7 +383,11 @@ export function extractCardListings(html: string, make: string, model: string, y
     // still names the vehicle.
     if (!titleMentionsVehicle(cardText, make, model, year, undefined, { yearTolerance: 2 })) return;
 
-    const price = priceFromText(cardText);
+    // Targeted price element first (precise), regex fallback (broad). Using
+    // priceFromText alone on the full card text grabs the first R-prefixed
+    // number, which can be the mileage ("R 95 000 km") rather than the price.
+    const priceEl = $c.find('[class^="e-price__"], [class*="price"]').first();
+    const price = priceEl.length ? num(priceEl.text()) : priceFromText(cardText);
     if (price == null || price < MIN_PRICE || price > MAX_PRICE) return;
 
     const kmMatch = cardText.match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);

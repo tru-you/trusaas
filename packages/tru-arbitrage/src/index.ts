@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { RawFbListing, IngestionBatchResult, ArbitrageDeal } from './types';
 import { normalizeListing } from './normalizer/gemini-extractor';
 import { fetchLiveMarketValuation } from './engine/valuation';
@@ -8,7 +9,19 @@ import { fetchFacebookMarketplaceListings } from './ingestion/brightdata';
 import { fetchAllClassifiedsNewest } from './ingestion/cars-autotrader';
 import { fetchDealerWebsitesViaSerp } from './ingestion/serp';
 
-export async function processListingBatch(rawListings: RawFbListing[]): Promise<IngestionBatchResult> {
+export class ScanProgress extends EventEmitter {
+  scanId: string;
+  constructor(scanId: string) {
+    super();
+    this.scanId = scanId;
+  }
+}
+
+export async function processListingBatch(
+  rawListings: RawFbListing[],
+  emitter?: ScanProgress
+): Promise<IngestionBatchResult> {
+  const CONCURRENCY = 5;
   const result: IngestionBatchResult = {
     totalRaw: rawListings.length,
     validNormalized: 0,
@@ -18,82 +31,108 @@ export async function processListingBatch(rawListings: RawFbListing[]): Promise<
     staleDealsFound: 0,
     alertsDispatched: 0,
   };
+  const alertedFingerprints = new Set<string>(); // dedup alerts
+  let processed = 0;
 
-  const subscriptions = db.getSubscriptions(true);
-
-  for (const raw of rawListings) {
+  // Process one listing (the inner body of the old for-loop)
+  async function processOne(raw: RawFbListing): Promise<void> {
     // 1. Normalize
     const normalized = await normalizeListing(raw);
-    if (!normalized) {
-      result.filteredOut++;
-      continue;
+    if (!normalized) { result.filteredOut++; return; }
+    if (normalized.isDamagedOrSalvage || normalized.isWantedAd || normalized.confidence < 0.7) {
+      result.filteredOut++; return;
     }
-
-    // 2. Filter damage / wanted ads
-    if (normalized.isDamagedOrSalvage || normalized.isWantedAd) {
-      result.filteredOut++;
-      continue;
-    }
-
     result.validNormalized++;
 
-    // 3. Upsert into Tracked Inventory (Days on Market & Price Velocity)
+    // 2. Track
     const tracked = db.upsertTrackedVehicle(normalized);
     result.trackedUpdated++;
 
-    // 4. Run Live Market Valuation Benchmark
+    // 3. Valuate
     const valuation = await fetchLiveMarketValuation(
       normalized.make,
       normalized.model,
       normalized.year,
       normalized.mileageKm
     );
-
-    if (!valuation.averageRetailPrice) {
-      // Caller decision: no live market benchmark → cannot price a dip, so we
-      // cannot responsibly flag an opportunity. Log it (not silently) and skip.
-      console.log(
-        `[ingest] Skipping ${normalized.year} ${normalized.make} ${normalized.model} — ` +
-        `no live comps (fallbackRequired=${valuation.fallbackRequired === true})`
-      );
-      continue;
+    if (!valuation || !valuation.averageRetailPrice) {
+      processed++;
+      emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: 'no_comps' });
+      return;
     }
 
-    // 5. Evaluate Arbitrage / Stale Floorplan Opportunity
+    // 4. Evaluate arbitrage
     const deal = evaluateArbitrageOpportunity(normalized, valuation, tracked);
     if (!deal) {
-      continue;
+      processed++;
+      emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: 'below_margin' });
+      return;
     }
 
+    db.saveDeal(deal);
     if (deal.dealCategory === 'stale_floorplan_distress') {
       result.staleDealsFound++;
     } else {
       result.arbitrageDealsFound++;
     }
+    emitter?.emit('deal_found', deal);
 
-    db.saveDeal(deal);
+    // 5. Dispatch alerts (with dedup)
+    if (!alertedFingerprints.has(deal.fingerprint)) {
+      alertedFingerprints.add(deal.fingerprint);
+      const subs = db.getSubscriptions(true);
+      const alerts = await dispatchDealAlerts(deal, subs);
+      result.alertsDispatched += alerts;
+    }
 
-    // 6. Match and Dispatch Buy-Box Alerts
-    const alerts = await dispatchDealAlerts(deal, subscriptions);
-    result.alertsDispatched += alerts;
+    processed++;
+    emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: 'deal_found' });
   }
+
+  // Concurrent pool: process CONCURRENCY items at a time
+  const queue = [...rawListings];
+  const workers: Promise<void>[] = [];
+  for (let i = 0; i < Math.min(CONCURRENCY, queue.length); i++) {
+    workers.push((async () => {
+      while (queue.length > 0) {
+        const item = queue.shift()!;
+        try {
+          await processOne(item);
+        } catch (err: any) {
+          console.warn('[pipeline] Error processing listing:', err?.message || err);
+          result.filteredOut++;
+          processed++;
+          emitter?.emit('progress', { current: processed, total: rawListings.length, status: 'error', error: err?.message });
+        }
+      }
+    })());
+  }
+  await Promise.all(workers);
+
+  // Flush DB after batch
+  await db.flush();
 
   return result;
 }
 
-export async function runFullMultiSourceScan(): Promise<IngestionBatchResult> {
+export async function runFullMultiSourceScan(emitter?: ScanProgress): Promise<IngestionBatchResult> {
   console.log('\n🌐 [TruArbitrage Multi-Source Radar] Initiating Scan across all platforms...');
+  emitter?.emit('phase', { phase: 'ingestion', message: 'Fetching from Facebook Marketplace...' });
 
   const [fbListings, classifiedListings, serpListings] = await Promise.all([
-    fetchFacebookMarketplaceListings({ useMockIfNoKey: true }).catch(() => []),
-    fetchAllClassifiedsNewest().catch(() => []),
-    fetchDealerWebsitesViaSerp().catch(() => []),
+    fetchFacebookMarketplaceListings({ useMockIfNoKey: true }).catch((err: any) => { emitter?.emit('error', { source: 'facebook', message: err?.message }); return []; }),
+    fetchAllClassifiedsNewest().catch((err: any) => { emitter?.emit('error', { source: 'cars_autotrader', message: err?.message }); return []; }),
+    fetchDealerWebsitesViaSerp().catch((err: any) => { emitter?.emit('error', { source: 'serp', message: err?.message }); return []; }),
   ]);
 
   const allRaw = [...fbListings, ...classifiedListings, ...serpListings];
   console.log(`📦 Loaded ${allRaw.length} listings (FB: ${fbListings.length}, Cars/AT: ${classifiedListings.length}, SERP Dealer Sites: ${serpListings.length})`);
 
-  return processListingBatch(allRaw);
+  emitter?.emit('phase', { phase: 'processing', message: `Processing ${allRaw.length} listings...` });
+  const result = await processListingBatch(allRaw, emitter);
+
+  emitter?.emit('complete', result);
+  return result;
 }
 
 // CLI Execution runner
