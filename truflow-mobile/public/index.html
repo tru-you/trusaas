@@ -535,6 +535,7 @@ button,input,textarea{font-family:inherit;}
       <div class="h-hi">Account</div>
       <div class="card acct">
         <div class="who"><div class="big" id="acctInit">TF</div><div><div style="font-weight:600;font-size:16px" id="acctName">Dealer</div><div id="acctCode" style="font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted);margin-top:3px"></div></div></div>
+        <div class="rowlink" id="dmsRow" style="cursor:default"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--cyan)"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>Flow DMS<span id="dmsState" style="margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted)">…</span></div>
         <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--cyan)"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>Support<span style="margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted)">WhatsApp</span></div>
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</div>
       </div>
@@ -629,7 +630,7 @@ button,input,textarea{font-family:inherit;}
 (function(){
   "use strict";
   var API="", TOKEN="", AUTH=null, cachedLeads=[], cachedStock=[], cachedTasks=[];
-  var DEALER_SITE="", mvCache={}, curTaskId=null;
+  var DEALER_SITE="", DMS_CONNECTED=null, PROFILE_RESOLVED=false, mvCache={}, curTaskId=null;
   /* ── Hub links: sibling app origins ──
      Both TruLens and TruInspect accept the /?stock=STK-123 deep-link contract
      (search + highlight + banner, built for Flow). Prod domains are fixed;
@@ -953,6 +954,16 @@ button,input,textarea{font-family:inherit;}
     });
     $("#scroll").scrollTop=0;
     if(tab==="activity")renderActivity();
+    if(tab==="acct")ensureDealerProfile(updateDmsRow);
+  }
+  /* Account screen reads the DMS fact out loud: the owner's entitlements
+     decision, shown back to the dealer and to whoever answers the support
+     WhatsApp. Unresolved (demo, or no dealership record) shows a quiet dash. */
+  function updateDmsRow(){
+    var st=$("#dmsState");if(!st)return;
+    if(DMS_CONNECTED===null){st.textContent="—";st.style.color="var(--muted)";return;}
+    st.textContent=DMS_CONNECTED?"Connected":"Standalone";
+    st.style.color=DMS_CONNECTED?"var(--cyan)":"var(--muted)";
   }
   Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){t.addEventListener("click",function(){go(t.getAttribute("data-tab"));});});
   Array.prototype.forEach.call(document.querySelectorAll("[data-go]"),function(g){g.addEventListener("click",function(){go(g.getAttribute("data-go"));});});
@@ -1468,22 +1479,33 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
     return h;
   }
 
-  /* ── Share this car (deep link mirrors the tru-share widget URL contract) ── */
-  // The dealer's own site URL comes out of the authed /api/state bootstrap
-  // (dealerships ride along unscoped there). Fetched lazily — only when a
-  // published car is first shared — and cached for the session.
-  function ensureDealerSite(cb){
-    if(DEALER_SITE){cb();return;}
-    if(!AUTH||!AUTH.dealershipId){cb();return;}
+  /* ── Share this car + DMS status (deep link mirrors the tru-share widget URL contract) ── */
+  // The dealer's own site URL and DMS provisioning come out of the authed
+  // /api/state bootstrap (dealerships ride along unscoped there). Fetched
+  // lazily — only when first needed — and cached for the session.
+  //
+  // "DMS connected" is not a field of its own: it IS the products entitlement
+  // the owner manages in DealershipAdmin. "flow" or "flow-lite" present means
+  // the dealer runs the DMS; a lens/inspect-only yard is standalone. Legacy
+  // records were backfilled with every product, so they read as connected
+  // until the entitlements are pruned — that is the truth, not a default.
+  function ensureDealerProfile(cb){
+    if(PROFILE_RESOLVED){if(cb)cb();return;}
+    if(!AUTH||!AUTH.dealershipId){PROFILE_RESOLVED=true;if(cb)cb();return;}
     api("GET","/api/state").then(function(s){
       var arr=(s&&s.dealerships)||[];
       for(var i=0;i<arr.length;i++){
-        if(arr[i]&&arr[i].id===AUTH.dealershipId){DEALER_SITE=((arr[i].websiteUrl||"")+"").replace(/\/+$/,"");break;}
+        if(arr[i]&&arr[i].id===AUTH.dealershipId){
+          DEALER_SITE=((arr[i].websiteUrl||"")+"").replace(/\/+$/,"");
+          var p=Array.isArray(arr[i].products)?arr[i].products:[];
+          DMS_CONNECTED=p.indexOf("flow")>=0||p.indexOf("flow-lite")>=0;
+          break;
+        }
       }
-    }).catch(function(){}).then(cb);
+    }).catch(function(){}).then(function(){PROFILE_RESOLVED=true;if(cb)cb();});
   }
   function shareVehicle(v){
-    ensureDealerSite(function(){
+    ensureDealerProfile(function(){
       var name=[v.year,v.make,v.model,v.trim].filter(Boolean).join(" ").replace(/\s+/g," ").trim()||"This car";
       var head=name+(vPrice(v)?" — "+money(vPrice(v)):"");
       var spec=[v.mileage?Number(v.mileage).toLocaleString("en-ZA")+" km":"",v.transmission||"",v.fuelType||""].filter(Boolean).join(" · ");
