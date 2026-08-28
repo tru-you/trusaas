@@ -480,9 +480,20 @@ button,input,textarea{font-family:inherit;}
 .vhero .hubshoot{position:relative;z-index:2;margin-top:10px;display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.03em;color:var(--cyan);background:rgba(6,8,13,.55);border:1px solid var(--glass-line2);border-radius:var(--r-pill);padding:6px 12px;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .vhero .hubshoot:active{transform:scale(.97);}
 
-/* ── v1.4 · Sold capture ── */
-.sold-block .btn-primary{width:100%;margin-top:10px;}
-.sold-cancel{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted);cursor:pointer;}
+/* ── v1.4 · Sold capture ──
+   Choice controls mirror the live sibling apps (Inspect's pickers): 44px tap
+   targets, glass fill + border, cyan on-state — never a native select, which
+   renders as a bare system text block inside the sheet. */
+.sold-block .lbl{margin-top:16px;}
+.sold-choice{display:flex;flex-wrap:wrap;gap:8px;}
+.sold-choice button{min-height:44px;padding:10px 14px;border-radius:var(--r);background:var(--ink-3);border:1px solid var(--border);color:var(--paper);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.sold-choice button.on{border-color:var(--cyan-soft);background:var(--cyan-faint);}
+.sold-block .field{margin-top:12px;}
+.sold-buyerrow{display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:var(--r);background:var(--ink-3);border:1px solid var(--border);margin-top:12px;}
+.sold-buyerrow .a{font-weight:600;font-size:14.5px;flex:1;color:var(--muted);}
+.sold-buyerrow b{font-weight:600;font-size:14.5px;}
+.sold-block .btn-primary{width:100%;margin-top:14px;}
+.sold-cancel{display:block;text-align:center;margin-top:12px;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted);cursor:pointer;}
 .sold-cancel:active{color:var(--paper);}
 </style>
 </head>
@@ -1102,13 +1113,22 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       if($("#soldBlock"))return;
       var opens=openLeadsOf(cv);
       var blk=document.createElement("div");blk.id="soldBlock";blk.className="sold-block";
-      var html='<div class="lbl" style="margin-top:14px">Sold — the deal</div>';
-      if(opens.length>1){
-        html+='<div class="field"><label>Which enquiry closed?</label><select id="soldDeal">';
-        opens.forEach(function(l,i){var n=((l.firstName||"")+" "+(l.lastName||"")).trim()||"Enquiry";html+='<option value="'+esc(l.id)+'"'+(i===0?" selected":"")+'>'+esc(n)+" · "+esc(l.source||"")+'</option>';});
-        html+='<option value="__new">New buyer — no enquiry on file</option></select></div>';
+      var html='<div class="lbl">Sold — the deal</div>';
+      var multi=opens.length>1;
+      if(multi){
+        /* Choice chips, not a native select — the sibling apps render every
+           choice as a 44px tap target, and a bare system dropdown reads as a
+           text block pasted into the sheet. */
+        html+='<div class="sold-choice">';
+        opens.forEach(function(l){var n=((l.firstName||"")+" "+(l.lastName||"")).trim()||"Enquiry";html+='<button type="button" data-id="'+esc(l.id)+'" aria-pressed="false">'+esc(n)+'</button>';});
+        html+='<button type="button" data-id="__new" aria-pressed="false">New buyer</button></div>';
+        html+='<div class="sold-buyerrow" id="soldBuyerRow"><span class="a">Buyer</span><b>'+esc(((opens[0].firstName||"")+" "+(opens[0].lastName||"")).trim()||"Enquiry")+'</b></div>';
+        html+='<div class="field" id="soldNewRow" style="display:none"><label>Buyer name</label><input type="text" id="soldBuyer" placeholder="Who bought it?"></div>';
+      } else if(opens.length===1){
+        html+='<div class="sold-buyerrow" id="soldBuyerRow"><span class="a">Buyer</span><b>'+esc(((opens[0].firstName||"")+" "+(opens[0].lastName||"")).trim()||"Enquiry")+'</b><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">'+esc(opens[0].source||"enquiry")+'</span></div>';
+      } else {
+        html+='<div class="field"><label>Buyer name</label><input type="text" id="soldBuyer" placeholder="Who bought it?"></div>';
       }
-      html+='<div class="field"><label>'+(opens.length?'Buyer':'Buyer name')+'</label><input type="text" id="soldBuyer" value="'+(opens.length?esc(((opens[0].firstName||"")+" "+(opens[0].lastName||"")).trim()):"")+'" placeholder="Who bought it?"></div>';
       html+='<div class="field"><label>Agreed price (R)</label><input inputmode="numeric" value="'+(vPrice(cv)||"")+'" id="soldPrice"></div>';
       html+='<div class="field"><label>Note (optional)</label><input type="text" id="soldNote" placeholder="e.g. Deposit paid, collects Friday"></div>';
       html+='<button type="button" class="btn-primary" id="soldConfirm">Confirm sale</button>';
@@ -1119,30 +1139,52 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       blk.scrollIntoView({block:"center",behavior:"smooth"});
       $("#soldCancel").addEventListener("click",function(){blk.remove();});
       $("#soldCancel").addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();blk.remove();}});
-      var sel=$("#soldDeal");
-      if(sel)sel.addEventListener("change",function(){
-        for(var i=0;i<opens.length;i++){if(opens[i].id===sel.value){$("#soldBuyer").value=((opens[i].firstName||"")+" "+(opens[i].lastName||"")).trim();break;}}
-        if(sel.value==="__new")$("#soldBuyer").value="";
-      });
+      if(multi){
+        var chips=blk.querySelectorAll(".sold-choice button");
+        var sync=function(){
+          var onId=null;
+          Array.prototype.forEach.call(chips,function(c){
+            var on=c.getAttribute("data-id")===soldSel;
+            c.classList.toggle("on",on);c.setAttribute("aria-pressed",on?"true":"false");
+            if(on)onId=c.getAttribute("data-id");
+          });
+          var isNew=onId==="__new";
+          var row=$("#soldBuyerRow"),inp=$("#soldNewRow");
+          if(row)row.style.display=isNew?"none":"";
+          if(inp)inp.style.display=isNew?"":"none";
+          if(!isNew){for(var i=0;i<opens.length;i++){if(opens[i].id===onId){row.innerHTML='<span class="a">Buyer</span><b>'+esc(((opens[i].firstName||"")+" "+(opens[i].lastName||"")).trim()||"Enquiry")+'</b>';break;}}}
+          else if(inp)$("#soldBuyer").focus();
+        };
+        var soldSel=opens.length?opens[0].id:"__new";
+        Array.prototype.forEach.call(chips,function(c){
+          c.addEventListener("click",function(){soldSel=c.getAttribute("data-id");sync();});
+        });
+        blk.setAttribute("data-sel",soldSel);
+        blk._soldSel=function(){return soldSel;};
+        sync();
+      }
       $("#soldConfirm").addEventListener("click",function(){confirmSale(blk);});
     }
     function confirmSale(blk){
       var cv=curVeh();if(!cv)return;
-      var buyer=($("#soldBuyer").value||"").trim();
-      if(!buyer){toast("Who bought it?");$("#soldBuyer").focus();return;}
+      var opens=openLeadsOf(cv),target=null,buyer="";
+      var selId=blk._soldSel?blk._soldSel():null;
+      if(opens.length===1){target=opens[0];}
+      else if(selId&&selId!=="__new"){for(var i=0;i<opens.length;i++){if(opens[i].id===selId){target=opens[i];break;}}}
+      if(target){buyer=((target.firstName||"")+" "+(target.lastName||"")).trim()||"Enquiry";}
+      else{
+        buyer=($("#soldBuyer").value||"").trim();
+        if(!buyer){toast("Who bought it?");$("#soldBuyer").focus();return;}
+      }
       var price=parseInt(($("#soldPrice").value||""),10)||0;
       var note=($("#soldNote").value||"").trim();
       var parts=buyer.split(/\s+/),first=parts.shift()||"Anonymous",last=parts.join(" ")||"Lead";
       var btn=$("#soldConfirm");btn.disabled=true;btn.textContent="Recording…";
-      var opens=openLeadsOf(cv),target=null;
-      var sel=$("#soldDeal");
-      if(sel&&sel.value!=="__new"){for(var i=0;i<opens.length;i++){if(opens[i].id===sel.value){target=opens[i];break;}}}
       var journey=(target&&target.journey?target.journey.slice():[]);
       journey.push({time:stampNow(),at:new Date().toISOString(),action:"Note",detail:"Sold — agreed "+(price?money(price):"price on file")+(note?" · "+note:"")});
       var fail=function(msg){btn.disabled=false;btn.textContent="Confirm sale";toast(msg,true);};
       var closeLead=function(id){
         var upd={status:"Closed Won",sellingPrice:price||undefined,soldPrice:price||undefined,soldDate:todayISO(),lastContactedAt:todayISO(),journey:journey};
-        if(target&&target.id===id){upd.firstName=first;upd.lastName=last;}
         api("PUT","/api/leads/"+id,upd).then(function(res){
           if(res&&res.lead)updateLeadCache(res.lead);
           // Stamp the archive field the activity feed reads; the sale transition
