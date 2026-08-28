@@ -43,42 +43,54 @@
       --panel: #161B22;
       --cyan: #4FE3DC;
       --cyan-dark: #22807C;
-      --emerald: #10B981;
-      --amber: #F59E0B;
+      --cyan-soft: rgba(79, 227, 220, 0.35);
+      --cyan-faint: rgba(79, 227, 220, 0.08);
       --border: rgba(232, 234, 230, 0.14);
       --white: #E8EAE6;
       --white-dim: rgba(232, 234, 230, 0.72);
       --muted: rgba(232, 234, 230, 0.55);
+      --faint: rgba(232, 234, 230, 0.32);
+      --danger: #B86A6A;
+      --shadow-card: 0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
+      --shadow-lift: 0 1px 0 rgba(232,234,230,0.09) inset, 0 26px 50px -28px rgba(0,0,0,0.9);
+      --shadow-modal: 0 40px 90px -40px rgba(0,0,0,0.95);
+      --r-card: 18px;
+      --r-sm: 8px;
     }
     body {
       background-color: var(--bg);
       color: var(--white);
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
     }
-    .font-mono-code { font-family: 'IBM Plex Mono', monospace; }
+    .font-mono-code { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
     .glass-nav {
       background: rgba(6, 8, 13, 0.85);
       backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
     .tru-panel {
       background: var(--surface);
       border: 1px solid var(--border);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow-card);
     }
     .tru-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow-card);
+      transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
     }
     .tru-card:hover {
-      border-color: rgba(79, 227, 220, 0.35);
+      border-color: var(--cyan-soft);
       transform: translateY(-2px);
-      box-shadow: 0 1px 0 rgba(232,234,230,0.06) inset, 0 24px 50px -20px rgba(0,0,0,0.9);
+      box-shadow: var(--shadow-lift);
     }
-    /* 3D Sculpted Buttons */
+    /* 3D Sculpted Buttons — identical to TruInspect .tl-btn-3d / .btn-primary */
     .tru-btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 10px 18px;
@@ -86,11 +98,10 @@
       color: #06080D;
       border: none;
       border-radius: 12px;
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
       font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
+      font-size: 13px;
+      text-shadow: none;
       cursor: pointer;
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.28),
@@ -105,11 +116,12 @@
     }
     .tru-btn-primary:disabled {
       background: rgba(232, 234, 230, 0.08);
-      color: rgba(232, 234, 230, 0.32);
+      color: var(--faint);
       box-shadow: none;
       transform: none;
       cursor: not-allowed;
     }
+    /* Secondary — identical to TruInspect .tru-btn-secondary */
     .tru-btn-secondary {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 10px 18px;
@@ -117,9 +129,9 @@
       color: var(--white);
       border: none;
       border-radius: 12px;
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
       font-weight: 500;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       box-shadow:
         inset 0 1px 0 rgba(232, 234, 230, 0.10),
@@ -127,11 +139,12 @@
         0 8px 18px -8px rgba(0, 0, 0, 0.95);
       transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
     }
-    .tru-btn-secondary:hover { background: #1C2129; }
+    .tru-btn-secondary:hover { background: #21262D; }
     .tru-btn-secondary:active {
       transform: translateY(3px);
-      box-shadow: inset 0 1px 0 rgba(232,234,230,0.08), 0 1px 0 #06080D, 0 2px 6px -3px rgba(0,0,0,0.9);
+      box-shadow: 0 1px 0 #06080D, 0 2px 6px -3px rgba(0,0,0,0.9);
     }
+    /* Ghost — identical to TruInspect .tru-btn-ghost */
     .tru-btn-ghost {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 10px 18px;
@@ -139,14 +152,27 @@
       color: var(--white-dim);
       border: none;
       border-radius: 12px;
-      font-family: 'IBM Plex Mono', monospace;
       font-weight: 500;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
-      transition: background 120ms ease;
+      transition: background 120ms ease, color 120ms ease;
     }
-    .tru-btn-ghost:hover { background: rgba(232, 234, 230, 0.06); }
-    /* Recessed Inputs */
+    .tru-btn-ghost:hover { background: rgba(232, 234, 230, 0.06); color: var(--white); }
+    /* Danger button — for reset */
+    .tru-btn-danger {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      background: rgba(184, 106, 106, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(184, 106, 106, 0.25);
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+    .tru-btn-danger:hover { background: rgba(184, 106, 106, 0.20); border-color: rgba(184, 106, 106, 0.40); }
+    /* Recessed Inputs — identical to TruInspect .ti-input */
     .tru-input {
       height: 40px;
       background: rgba(232, 234, 230, 0.04);
@@ -159,17 +185,25 @@
       outline: none;
       transition: border-color 120ms ease;
     }
+    .tru-input::placeholder { color: var(--faint); }
     .tru-input:focus { border-color: var(--cyan); }
+    /* Labels — identical to TruInspect .ti-field-label */
     .tru-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--white-dim);
+      color: var(--muted);
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
+    /* Stat tile — identical to TruInspect .ti-stat */
+    .tru-stat {
+      background: rgba(232, 234, 230, 0.055);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 12px 14px;
+    }
+    .tru-stat-label { font-size: 12px; color: var(--muted); }
+    .tru-stat-value { font-size: 20px; font-weight: 600; color: var(--white); margin-top: 2px; }
     .radar-pulse {
       animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
@@ -205,10 +239,13 @@
       <div class="flex items-center gap-3">
         <button onclick="triggerScan()" id="scanBtn" class="tru-btn-primary">
           <span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span>
-          <span>SCAN ALL PLATFORMS</span>
+          <span>Scan All Platforms</span>
         </button>
         <button onclick="openBuyBoxModal()" class="tru-btn-secondary">
-          ⚙️ BUY-BOX SETTINGS
+          ⚙️ Buy-Box
+        </button>
+        <button onclick="resetData()" class="tru-btn-danger" title="Clear all deals and tracked vehicles">
+          🗑️ Reset
         </button>
       </div>
 
@@ -690,6 +727,20 @@
 
       closeBuyBoxModal();
       alert('Buy-Box filters saved!');
+    }
+
+    async function resetData() {
+      if (!confirm('Clear all deals and tracked vehicles? This cannot be undone.')) return;
+      try {
+        const res = await fetch('/api/deals/reset', { method: 'DELETE' });
+        if (res.ok) {
+          loadDeals();
+        } else {
+          alert('Reset failed — try again.');
+        }
+      } catch (err) {
+        alert('Reset failed — server unreachable.');
+      }
     }
 
     // Auto-load on boot

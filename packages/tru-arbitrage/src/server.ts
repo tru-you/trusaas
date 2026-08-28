@@ -139,7 +139,12 @@ app.get('/api/deals', (req: Request, res: Response) => {
   res.json({ total: deals.length, deals });
 });
 
-
+// 3b. Reset — clear all deals + tracked vehicles
+app.delete('/api/deals/reset', async (_req: Request, res: Response) => {
+  db.clearAll();
+  await db.flush();
+  res.json({ success: true, message: 'All deals and tracked vehicles cleared.' });
+});
 // 4. Tracked Inventory (Days on Market & Aging)
 app.get('/api/tracked', (req: Request, res: Response) => {
   const minDom = req.query.minDom ? Number(req.query.minDom) : undefined;
