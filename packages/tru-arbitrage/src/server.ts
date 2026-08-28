@@ -17,7 +17,7 @@ const app = express();
 
 if (!HAS_REAL_TOKEN_SECRET) {
   console.warn(
-    '\n⚠️  [TruArbitrage] No JWT_SECRET or TRUFLOW_SYNC_KEY configured.\n' +
+    '\n⚠️  [TruRadar] No JWT_SECRET or TRUFLOW_SYNC_KEY configured.\n' +
     '   Token signing falls back to a constant — tokens are forgeable.\n' +
     '   Set JWT_SECRET before anything real runs on this instance.\n'
   );
@@ -32,7 +32,7 @@ app.use(express.static(publicDir));
 
 // Health Check
 app.get(['/health', '/api/health'], (_req: Request, res: Response) => {
-  res.json({ status: 'ok', service: 'TruArbitrage Engine', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', service: 'TruRadar Engine', timestamp: new Date().toISOString() });
 });
 
 // ── Auth (standalone dealer JWT layer) ─────────────────────────────────────
@@ -340,7 +340,40 @@ app.post('/api/buybox', requireAuth, (req: Request, res: Response) => {
 
 export function startServer(port = CONFIG.PORT) {
   return app.listen(port, () => {
-    console.log(`🚀 [TruArbitrage SaaS Engine] Listening on port ${port}`);
+    console.log(`🚀 [TruRadar Engine] Listening on port ${port}`);
+
+    // ── Auto-scan scheduler ──────────────────────────────────────────────
+    if (CONFIG.AUTO_SCAN_ENABLED) {
+      let autoScanRunning = false;
+      const intervalHrs = (CONFIG.SCAN_INTERVAL_MS / 3600000).toFixed(1);
+      console.log(`📡 [auto-scan] Scheduled every ${intervalHrs}h for all active dealers`);
+
+      const runAutoScan = async () => {
+        if (autoScanRunning) {
+          console.log('[auto-scan] Skipping — previous scan still running');
+          return;
+        }
+        autoScanRunning = true;
+        const dealers = dealerRegistry.listDealers().filter(d => d.active);
+        console.log(`[auto-scan] Starting scan for ${dealers.length} active dealer(s)`);
+        for (const dealer of dealers) {
+          try {
+            const emitter = new ScanProgress(`auto-${dealer.slug}-${Date.now()}`);
+            await runFullMultiSourceScan(emitter, dealer.slug);
+            await db.flush();
+            console.log(`[auto-scan] Completed: ${dealer.slug}`);
+          } catch (err: any) {
+            console.warn(`[auto-scan] Failed for ${dealer.slug}:`, err?.message || err);
+          }
+        }
+        autoScanRunning = false;
+        console.log('[auto-scan] Cycle complete');
+      };
+
+      setInterval(runAutoScan, CONFIG.SCAN_INTERVAL_MS);
+      // Also run first scan 30s after boot (let the server warm up)
+      setTimeout(runAutoScan, 30_000);
+    }
   });
 }
 
@@ -349,4 +382,3 @@ if (process.argv[1]?.includes('server')) {
 }
 
 export default app;
-

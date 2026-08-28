@@ -73,4 +73,8 @@ export const CONFIG = {
   SCRAPER_TIMEOUT_MS: Number(process.env.SCRAPER_TIMEOUT_MS) || 15000,
   SCRAPER_CACHE_TTL_MS: Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1000,
   DATA_DIR: process.env.DATA_DIR || './data',
+
+  // Auto-scan schedule
+  AUTO_SCAN_ENABLED: process.env.AUTO_SCAN_ENABLED !== '0',
+  SCAN_INTERVAL_MS: Number(process.env.SCAN_INTERVAL_MS) || 4 * 60 * 60 * 1000, // 4 hours
 };

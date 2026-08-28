@@ -586,6 +586,7 @@
               <div class="text-[12px]" style="color: var(--muted)">${v.location || 'South Africa'} • <span style="color: var(--white-dim)">${v.sellerName || 'Direct seller'}</span></div>
               <h3 class="text-[17px] font-semibold mt-1">${v.year} ${v.make} ${v.model}</h3>
               <p class="text-[12px] mt-0.5" style="color: var(--muted)">${v.trim || 'Market listing'} • <span class="font-mono-code" style="color: var(--white-dim)">${kmText}</span></p>
+              ${deal.tuSpecs ? `<p class="text-[11px] mt-1 font-mono-code" style="color: var(--cyan-soft)">${(deal.tuSpecs.cc/1000).toFixed(1)}L ${deal.tuSpecs.fuelType === 'D' ? 'Diesel' : 'Petrol'} · ${deal.tuSpecs.kw}kW${deal.tuSpecs.bodyType ? ' · '+deal.tuSpecs.bodyType : ''}${deal.tuSpecs.axle && deal.tuSpecs.axle !== '-' ? ' · '+deal.tuSpecs.axle : ''}</p>` : ''}
               <div class="finbox">
                 <div class="finrow"><span class="finlabel">Listed asking</span><span class="font-mono-code font-semibold">R${asking}</span></div>
                 <div class="finrow"><span class="finlabel">Live market retail</span><span class="font-mono-code" style="color: var(--white-dim)">R${retail}</span></div>

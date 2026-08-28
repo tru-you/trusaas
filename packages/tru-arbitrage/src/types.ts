@@ -131,6 +131,9 @@ export interface ArbitrageDeal {
   offerOtp?: string;
   offerOtpExpiresAt?: string;
   offeredAt?: string;
+  /** TransUnion variant match — resolved from the local static data file */
+  mmCode?: string;
+  tuSpecs?: { cc: number; kw: number; fuelType: string; bodyType: string; axle: string; variant: string };
 }
 
 export interface DealerBuyBox {

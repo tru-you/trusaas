@@ -106,6 +106,19 @@ export async function processListingBatch(
       return;
     }
 
+    // Attach TU specs from the local variant match (no API cost)
+    if (tuMatch) {
+      deal.mmCode = tuMatch.mmCode;
+      deal.tuSpecs = {
+        cc: tuMatch.cc,
+        kw: tuMatch.kw,
+        fuelType: tuMatch.fuelType,
+        bodyType: tuMatch.bodyType,
+        axle: tuMatch.axle,
+        variant: tuMatch.variant,
+      };
+    }
+
     db.saveDeal(deal, dealerSlug);
     if (deal.dealCategory === 'stale_floorplan_distress') {
       result.staleDealsFound++;
