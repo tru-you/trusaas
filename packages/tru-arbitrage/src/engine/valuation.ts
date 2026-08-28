@@ -141,14 +141,23 @@ function modelCore(text: string): string {
  *  by card-container class fragments and read price/km/year from the card text
  *  via regex, so the exact markup namespace doesn't matter. Only cards whose
  *  title names the queried make/model within the year tolerance count, so other
- *  models on the same page can't skew the sample. */
-export function extractCardComps(html: string, make: string, model: string, year: number): ValuationComp[] {
+ *  models on the same page can't skew the sample.
+ *
+ *  Trim-aware filtering: when a trim string is provided (e.g. "1.9", "3.0 V6"),
+ *  we extract the engine displacement token (e.g. "1.9") and boost comps that
+ *  match it. If enough trim-matched comps exist (≥3), we use ONLY those —
+ *  preventing higher-spec variants from inflating the average. */
+export function extractCardComps(html: string, make: string, model: string, year: number, trim?: string): ValuationComp[] {
   const $ = cheerio.load(html);
   const out: ValuationComp[] = [];
+  const trimMatched: ValuationComp[] = [];
   const seen = new Set<string>();
   const yearTol = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
   const makeKey = make.toLowerCase();
   const modelKey = modelCore(model);
+
+  // Extract engine displacement from trim for variant filtering (e.g. "1.9" from "1.9 TD")
+  const trimDisplacement = trim ? trim.match(/\b(\d\.\d)\b/)?.[1] : null;
 
   const pickCards = () => {
     const tiles = $('a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"]');
@@ -184,23 +193,50 @@ export function extractCardComps(html: string, make: string, model: string, year
     if (seen.has(key)) return;
     seen.add(key);
 
-    out.push({
+    const comp: ValuationComp = {
       price: Math.round(price),
       km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
       source: 'card',
-    });
+    };
+    out.push(comp);
+
+    // Check if this comp matches our trim/engine displacement
+    if (trimDisplacement && lower.includes(trimDisplacement)) {
+      trimMatched.push(comp);
+    }
   });
 
+  // If we have enough trim-matched comps, prefer them to avoid variant skew
+  // (e.g. D-Max 1.9 comps only, not mixed with 3.0 V6 X-Rider)
+  if (trimMatched.length >= 3) {
+    return trimMatched;
+  }
+
   return out;
+}
+
+/** Filter comps to a price band around the median — reject comps more than
+ *  50% above or below median price. This prevents higher-spec variants that
+ *  slip through make/model matching from inflating the average. */
+function filterPriceBand(comps: ValuationComp[]): ValuationComp[] {
+  if (comps.length < 4) return comps;
+  const prices = comps.map(c => c.price).sort((a, b) => a - b);
+  const med = prices[Math.floor(prices.length / 2)];
+  const lo = med * 0.5;
+  const hi = med * 1.5;
+  const filtered = comps.filter(c => c.price >= lo && c.price <= hi);
+  // Only use filtered if it didn't remove too many (keep at least 3)
+  return filtered.length >= 3 ? filtered : comps;
 }
 
 export async function fetchLiveMarketValuation(
   make: string,
   model: string,
   year: number,
-  mileageKm: number | null
+  mileageKm: number | null,
+  trim?: string
 ): Promise<ValuationResult> {
-  const key = cacheKey(make, model, year);
+  const key = cacheKey(make, model, year) + (trim ? `|${trim.toLowerCase()}` : '');
   const cached = cacheGet(key);
   if (cached) {
     return cached;
@@ -227,7 +263,7 @@ export async function fetchLiveMarketValuation(
         if (html) {
           const nextData = extractNextDataComps(html, make, model);
           const jsonLd = extractJsonLdComps(html);
-          const card = extractCardComps(html, make, model, year);
+          const card = extractCardComps(html, make, model, year, trim);
           const css = extractCssComps(html);
 
           // Prefer the RICHEST extraction, not the first non-empty. Autotrader's
@@ -261,9 +297,12 @@ export async function fetchLiveMarketValuation(
     return true;
   });
 
-  let adjustedComps = adjustForMileage(dedupedComps, mileageKm);
+  // Filter outlier-priced variants (e.g. base 1.9 vs top 3.0 V6) around the median
+  const bandedComps = filterPriceBand(dedupedComps);
+
+  let adjustedComps = adjustForMileage(bandedComps, mileageKm);
   let avg = robustAverage(adjustedComps);
-  const kmValues = dedupedComps.map((c) => c.km).filter((k): k is number => typeof k === 'number');
+  const kmValues = bandedComps.map((c) => c.km).filter((k): k is number => typeof k === 'number');
 
   // Matches the source scraper contract (truflow-premium/src/lib/scraper.ts):
   // when the free crawler finds zero live comps we return an honest null, never an

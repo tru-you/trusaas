@@ -53,7 +53,8 @@ export async function processListingBatch(
       normalized.make,
       normalized.model,
       normalized.year,
-      normalized.mileageKm
+      normalized.mileageKm,
+      normalized.trim
     );
     if (!valuation || !valuation.averageRetailPrice) {
       processed++;
