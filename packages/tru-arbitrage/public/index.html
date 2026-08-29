@@ -144,7 +144,8 @@
             <span>Scan Market</span>
           </button>
           <button onclick="openBuyBoxModal()" class="btn-secondary" title="Deal criteria + webhook" aria-label="Buy-Box settings"><svg class="icon"><use href="#i-sliders"/></svg></button>
-          <button onclick="resetData()" class="btn-danger hidden md:inline-flex" title="Clear this dealer's deals and tracked vehicles" aria-label="Reset data"><svg class="icon"><use href="#i-trash"/></svg></button>
+            <button onclick="resetData()" class="btn-danger hidden md:inline-flex" title="Clear this dealer's deals and tracked vehicles" aria-label="Reset data"><svg class="icon"><use href="#i-trash"/></svg></button>
+            <span id="resetError" class="hidden text-[12px] ml-2" style="color: var(--state-error)" role="alert"></span>
           <button onclick="logout()" class="btn-ghost hidden md:inline-flex">Sign out</button>
         </div>
       </div>
@@ -155,7 +156,7 @@
       <!-- ═══ VIEW: SEARCH (mobile) / Price Check (desktop) ═══ -->
       <section id="viewSearch" class="view m-view pt-6 pb-2">
         <div class="tru-panel p-5">
-          <div onclick="togglePriceCheck()" role="button" tabindex="0" aria-expanded="true" class="flex items-center justify-between gap-3 flex-wrap cursor-pointer select-none" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();togglePriceCheck();}">
+          <div onclick="togglePriceCheck()" role="button" tabindex="0" aria-expanded="true" class="flex items-center justify-between gap-3 flex-wrap cursor-pointer select-none">
             <h2 class="font-semibold text-[17px]">Price check — cheapest in the country</h2>
             <span class="chip chip-accent">pick a car, see every live asking price <svg class="icon" style="width:14px;height:14px"><use href="#i-chev" id="lookupChevronUse"/></svg></span>
           </div>
@@ -178,6 +179,14 @@
             </div>
             <div id="lookupSummary" class="hidden mt-4 font-mono-code text-[13px]" style="color: var(--white-dim)"></div>
             <div id="lookupResults" class="hidden mt-3 overflow-x-auto">
+              <div id="lookupLoading" class="hidden mt-3">
+                <div class="space-y-2">
+                  <div class="skeleton" style="height:40px"></div>
+                  <div class="skeleton" style="height:40px"></div>
+                  <div class="skeleton" style="height:40px"></div>
+                  <div class="skeleton" style="height:40px"></div>
+                </div>
+              </div>
               <table class="w-full text-[13px] text-left border-collapse min-w-[520px]">
                 <thead>
                   <tr style="color: var(--muted)" class="border-b">
@@ -297,6 +306,7 @@
 
         <!-- Deals grid (one grid — the shell adapts its columns) -->
         <div id="dealsGrid" class="deals-grid mt-4"></div>
+        <div id="dealStatusError" class="hidden text-[13px] mt-2" style="color: var(--state-error)" role="alert"></div>
 
         <div id="emptyState" class="hidden tru-panel p-12 text-center max-w-lg mx-auto my-12">
           <div class="w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto mb-4" style="border-color: var(--glass-line)">
@@ -335,6 +345,7 @@
         <h2 id="offerTitle" class="text-[17px] font-semibold">Make an offer</h2>
         <button onclick="closeOfferModal()" class="btn-ghost" style="min-height:44px;min-width:44px;padding:0" aria-label="Close"><svg class="icon-lg"><use href="#i-x"/></svg></button>
       </div>
+      <div id="offerError" class="hidden text-[13px] mb-4" style="color: var(--state-error)" role="alert"></div>
       <div id="offerBody"></div>
     </div>
   </div>
@@ -347,6 +358,7 @@
         <button onclick="closeBuyBoxModal()" class="btn-ghost" style="min-height:44px;min-width:44px;padding:0" aria-label="Close"><svg class="icon-lg"><use href="#i-x"/></svg></button>
       </div>
       <p class="text-[13px] mb-6" style="color: var(--muted)">Deals matching these criteria land on your dashboard and POST to your webhook the moment they're detected.</p>
+      <div id="buyBoxError" class="hidden text-[13px] mb-4" style="color: var(--state-error)" role="alert"></div>
       <div class="space-y-4">
         <div><label class="tru-label" for="bbDealerName">Dealership name</label><input type="text" id="bbDealerName" class="tru-input w-full"></div>
         <div><label class="tru-label" for="bbPhone">Contact number (rides on the webhook payload)</label><input type="text" id="bbPhone" placeholder="+27…" class="tru-input w-full font-mono-code"></div>
@@ -378,7 +390,23 @@
     </button>
   </nav>
 
+  <!-- Toast container -->
+  <div id="toastContainer" class="fixed bottom-20 md:bottom-6 inset-x-0 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
   <script>
+    // ── Toast ──────────────────────────────────────────────────────────────
+    function showToast(message, duration = 2400) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.classList.add('toast-out');
+        el.addEventListener('animationend', () => el.remove());
+      }, duration);
+    }
+
     // ── Auth ──────────────────────────────────────────────────────────────
     const auth = {
       get token() { return localStorage.getItem('ta_token') || ''; },
@@ -657,8 +685,18 @@
       try {
         const res = await fetch(`/api/deals/${id}`, { method: 'PUT', headers: auth.headers(), body: JSON.stringify({ status }) });
         if (res.status === 401) return authFailed();
-        if (res.ok) { const local = allDeals.find(d => d.id === id); if (local) local.status = status; renderDeals(); updateStats(); }
-      } catch (err) { console.error('Status update failed:', err); }
+        if (res.ok) {
+          const local = allDeals.find(d => d.id === id);
+          if (local) local.status = status;
+          renderDeals(); updateStats();
+          const label = status === 'claimed' ? 'Deal claimed' : 'Deal archived';
+          showToast(label);
+        }
+      } catch (err) {
+        console.error('Status update failed:', err);
+        const errEl = document.getElementById('dealStatusError');
+        if (errEl) { errEl.textContent = 'Update failed — try again.'; errEl.classList.remove('hidden'); }
+      }
     }
 
     // ── Offer + OTP ───────────────────────────────────────────────────────
@@ -687,17 +725,64 @@
             <button onclick="copyText(${JSON.stringify(data.offerText).replace(/"/g,'&quot;')},'offerCopyBtn')" class="btn-secondary w-full mt-2" id="offerCopyBtn"><svg class="icon"><use href="#i-copy"/></svg> Copy message</button>
           </div>
           <p class="text-[12px]" style="color: var(--faint)"><svg class="icon" style="width:12px;height:12px;vertical-align:-2px"><use href="#i-clock"/></svg> Expires ${new Date(data.expiresAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}</p>`;
-        document.getElementById('offerModal').classList.remove('hidden');
+        openOfferModal();
       } catch (err) {
-        alert(err.message);
+        const errEl = document.getElementById('offerError');
+        if (errEl) { errEl.textContent = err.message || 'Failed to generate offer.'; errEl.classList.remove('hidden'); }
+        console.error(err);
       }
     }
-    function closeOfferModal() { document.getElementById('offerModal').classList.add('hidden'); }
     async function copyText(text, btnId) {
       try { await navigator.clipboard.writeText(text); const b = document.getElementById(btnId); if (b) { const old = b.innerHTML; b.innerHTML = '<svg class="icon"><use href="#i-check"/></svg> Copied'; setTimeout(() => b.innerHTML = old, 1600); } } catch {}
     }
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { closeOfferModal(); closeBuyBoxModal(); }
+    });
+
+    // Focus trap for modals
+    let lastFocusedEl = null;
+    function trapFocus(modalEl, closeFn) {
+      const focusable = modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const handler = (e) => {
+        if (e.key !== 'Tab') return;
+        if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+        else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
+      };
+      modalEl.addEventListener('keydown', handler);
+      first.focus();
+    }
+    function openOfferModal() {
+      lastFocusedEl = document.activeElement;
+      document.getElementById('offerError').classList.add('hidden');
+      document.getElementById('offerModal').classList.remove('hidden');
+      trapFocus(document.getElementById('offerModal'), closeOfferModal);
+    }
+    function closeOfferModal() {
+      document.getElementById('offerModal').classList.add('hidden');
+      if (lastFocusedEl) lastFocusedEl.focus();
+    }
+    function openBuyBoxModal() {
+      lastFocusedEl = document.activeElement;
+      document.getElementById('buyBoxError').classList.add('hidden');
+      document.getElementById('buyBoxModal').classList.remove('hidden');
+      trapFocus(document.getElementById('buyBoxModal'), closeBuyBoxModal);
+    }
+    function closeBuyBoxModal() {
+      document.getElementById('buyBoxModal').classList.add('hidden');
+      if (lastFocusedEl) lastFocusedEl.focus();
+    }
+
+    // Price-check header keyboard support (replaces inline onkeydown)
+    document.addEventListener('DOMContentLoaded', () => {
+      const header = document.querySelector('#viewSearch [role="button"][aria-expanded]');
+      if (header) {
+        header.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePriceCheck(); }
+        });
+      }
     });
 
     // ── Scan ──────────────────────────────────────────────────────────────
@@ -793,14 +878,17 @@
       const errEl = document.getElementById('lookupError');
       const summaryEl = document.getElementById('lookupSummary');
       const resultsEl = document.getElementById('lookupResults');
+      const loadingEl = document.getElementById('lookupLoading');
       errEl.classList.add('hidden'); summaryEl.classList.add('hidden'); resultsEl.classList.add('hidden');
       if (!make || !model || !year) { errEl.textContent = 'Pick a make, a model and a year.'; errEl.classList.remove('hidden'); return; }
       btn.disabled = true; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scanning…</span>';
+      if (loadingEl) loadingEl.classList.remove('hidden');
       try {
         const res = await fetch(`/api/lookup/cheapest?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`, { headers: auth.headers() });
         if (res.status === 401) return authFailed();
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `Lookup failed (${res.status})`);
+        if (loadingEl) loadingEl.classList.add('hidden');
         const m = data.market || {};
         const comps = data.comps || [];
         const confPct = Math.round((m.confidence || 0) * 100);
@@ -822,8 +910,6 @@
     }
 
     // ── Buy-box / reset ───────────────────────────────────────────────────
-    function openBuyBoxModal() { document.getElementById('buyBoxModal').classList.remove('hidden'); }
-    function closeBuyBoxModal() { document.getElementById('buyBoxModal').classList.add('hidden'); }
     async function saveBuyBoxSettings() {
       const payload = {
         dealerName: document.getElementById('bbDealerName').value,
@@ -836,16 +922,26 @@
       try {
         const res = await fetch('/api/buybox', { method: 'POST', headers: auth.headers(), body: JSON.stringify(payload) });
         if (res.status === 401) return authFailed();
-        if (res.ok) { closeBuyBoxModal(); loadBuyBox(); } else { const d = await res.json().catch(() => ({})); alert(d.error || 'Save failed.'); }
-      } catch { alert('Save failed — server unreachable.'); }
+        const errEl = document.getElementById('buyBoxError');
+        if (res.ok) {
+          if (errEl) errEl.classList.add('hidden');
+          closeBuyBoxModal(); loadBuyBox();
+        } else {
+          const d = await res.json().catch(() => ({}));
+          if (errEl) { errEl.textContent = d.error || 'Save failed.'; errEl.classList.remove('hidden'); }
+        }
+      } catch {
+        const errEl = document.getElementById('buyBoxError');
+        if (errEl) { errEl.textContent = 'Save failed — server unreachable.'; errEl.classList.remove('hidden'); }
+      }
     }
     async function resetData() {
       if (!confirm('Clear ALL deals and tracked vehicles for your dealership? This cannot be undone.')) return;
       try {
         const res = await fetch('/api/deals/reset', { method: 'DELETE', headers: auth.headers() });
         if (res.status === 401) return authFailed();
-        if (res.ok) loadDeals(); else alert('Reset failed — try again.');
-      } catch { alert('Reset failed — server unreachable.'); }
+        if (res.ok) loadDeals(); else { const errEl = document.getElementById('resetError'); if (errEl) { errEl.textContent = 'Reset failed — try again.'; errEl.classList.remove('hidden'); } }
+      } catch { const errEl = document.getElementById('resetError'); if (errEl) { errEl.textContent = 'Reset failed — server unreachable.'; errEl.classList.remove('hidden'); } }
     }
 
     // Mobile default view: Search is the vision

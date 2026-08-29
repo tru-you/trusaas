@@ -274,3 +274,24 @@ select.tru-input { font-family: var(--mono); }
 .font-mono-code { font-family: var(--mono); }
 .icon { width: 16px; height: 16px; flex-shrink: 0; }
 .icon-lg { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ---------- Toast ---------- */
+#toastContainer { pointer-events: none; }
+.toast {
+  pointer-events: auto;
+  background: var(--bg-raised);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-lift);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: toast-in 200ms ease-out;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.toast.toast-out { animation: toast-out 180ms ease-in forwards; }
+@keyframes toast-out { to { opacity: 0; transform: translateY(8px); } }
