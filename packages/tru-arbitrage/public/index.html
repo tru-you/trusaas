@@ -653,13 +653,13 @@
               <div class="text-[12px]" style="color: var(--muted)">${v.location || 'South Africa'} • <span style="color: var(--white-dim)">${v.sellerName || 'Direct seller'}</span></div>
               <h3 class="text-[17px] font-semibold mt-1">${v.year} ${v.make} ${v.model}</h3>
               <p class="text-[12px] mt-0.5" style="color: var(--muted)">${v.trim || 'Market listing'} • <span class="font-mono-code" style="color: var(--white-dim)">${kmText}</span></p>
-              ${deal.tuSpecs ? `<p class="text-[11px] mt-1 font-mono-code" style="color: var(--cyan-soft)">${(deal.tuSpecs.cc/1000).toFixed(1)}L ${deal.tuSpecs.fuelType === 'D' ? 'Diesel' : 'Petrol'} · ${deal.tuSpecs.kw}kW${deal.tuSpecs.bodyType ? ' · '+deal.tuSpecs.bodyType : ''}${deal.tuSpecs.axle && deal.tuSpecs.axle !== '-' ? ' · '+deal.tuSpecs.axle : ''}</p>` : ''}
+              ${deal.tuSpecs ? `<p class="text-[12px] mt-1 font-mono-code" style="color: var(--cyan-soft)">${(deal.tuSpecs.cc/1000).toFixed(1)}L ${deal.tuSpecs.fuelType === 'D' ? 'Diesel' : 'Petrol'} · ${deal.tuSpecs.kw}kW${deal.tuSpecs.bodyType ? ' · '+deal.tuSpecs.bodyType : ''}${deal.tuSpecs.axle && deal.tuSpecs.axle !== '-' ? ' · '+deal.tuSpecs.axle : ''}</p>` : ''}
               <div class="finbox">
                 <div class="finrow"><span class="finlabel">Listed asking</span><span class="font-mono-code font-semibold">R${asking}</span></div>
                 <div class="finrow"><span class="finlabel">Live market retail</span><span class="font-mono-code" style="color: var(--white-dim)">R${retail}</span></div>
                 <div class="finrow"><span class="finlabel">Recon buffer</span><span class="font-mono-code" style="color: var(--muted)">-R${(deal.reconBuffer || 0).toLocaleString('en-ZA')}</span></div>
                 <div class="finrow" style="border-top: 1px solid var(--glass-line); padding-top: 8px;">
-                  <span class="font-mono-code text-[12px] font-semibold uppercase tracking-wider" style="color: ${isProfit ? 'var(--accent)' : 'var(--muted)'}">${isProfit ? 'Est. net profit' : 'Net position'}</span>
+                  <span class="font-mono-code text-[12px] font-semibold tracking-wider" style="color: ${isProfit ? 'var(--accent)' : 'var(--muted)'}">${isProfit ? 'Est. net profit' : 'Net position'}</span>
                   <span class="font-mono-code text-[17px] font-semibold" style="color: ${isProfit ? 'var(--accent)' : 'var(--danger)'}">${isProfit ? '+' : '-'}R${netProfit}</span>
                 </div>
                 <div class="finrow text-[12px]">
@@ -790,7 +790,7 @@
       const btn = document.getElementById('scanBtn');
       const progress = document.getElementById('scanProgress');
       btn.disabled = true;
-      btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>SCANNING…</span>';
+      btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scanning…</span>';
       progress.classList.remove('hidden');
       document.getElementById('scanLog').innerHTML = '';
       document.getElementById('scanBar').style.width = '0%';
@@ -944,8 +944,20 @@
       } catch { const errEl = document.getElementById('resetError'); if (errEl) { errEl.textContent = 'Reset failed — server unreachable.'; errEl.classList.remove('hidden'); } }
     }
 
-    // Mobile default view: Search is the vision
-    if (window.innerWidth < 1024) setMobileView('viewSearch');
+    // Mobile default view: Search is the vision. matchMedia, not a one-shot
+    // width check — a dealer resizing into phone width (or iPad split-view)
+    // would otherwise land on an empty shell, because every .m-view is
+    // display:none without .m-active. Crossing the breakpoint re-runs it.
+    const mqMobile = window.matchMedia('(max-width: 1023px)');
+    function applyShellMode() {
+      if (mqMobile.matches) {
+        if (!document.querySelector('.m-view.m-active')) setMobileView('viewSearch');
+      } else {
+        document.querySelectorAll('.m-view').forEach(v => v.classList.remove('m-active'));
+      }
+    }
+    applyShellMode();
+    mqMobile.addEventListener('change', applyShellMode);
   </script>
 </body>
 </html>

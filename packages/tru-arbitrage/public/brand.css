@@ -4,6 +4,9 @@
    (semantic type/depth). Edit the canonical files, copy across. The system in
    one line: near-black, one cyan accent, warm off-white at four opacities,
    Inter at generous sizes in mid weights, no uppercase.
+   Component layer aligned to the CURRENT suite state (TruInspect/TruLens/
+   TruFlow 2026): cyan-500 fill sculpted buttons, ink-700 raised secondary,
+   glass hairlines, dark native form controls.
    ========================================================================== */
 
 :root, [data-app="truradar"] {
@@ -115,10 +118,15 @@ body {
   font-family: var(--sans);
   font-size: var(--t-body);
   line-height: 1.55;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin: 0;
 }
 ::selection { background: var(--accent); color: var(--text-on-accent); }
+
+/* The grey flash Android/iOS paints on every tap is not ours and lands late. */
+* { -webkit-tap-highlight-color: transparent; }
 
 /* Focus is always visible — keyboard users navigate this app. */
 :focus-visible {
@@ -126,10 +134,43 @@ body {
   outline-offset: 2px;
   border-radius: 4px;
 }
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+/* Skip the ring on a cyan fill — it disappears into the button. */
+.btn-primary:focus-visible,
+.on-fill:focus-visible {
+  outline-color: var(--text-primary);
+}
+
+/* Native controls follow the OS, not the page. A <select> styled dark still
+   dropped a white popup, so its light option text vanished into it. Declaring
+   the scheme makes the browser render the popup, scrollbars, date pickers and
+   the rest to match; the option colours are belt and braces for Windows.
+   Verbatim from TruFlow — this is the white-on-white fix. */
+select option,
+select optgroup {
+  background-color: var(--bg-raised);
+  color: var(--text-primary);
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- Scrollbars — match the suite's quiet 6px track ---------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(232,234,230,0.10); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(232,234,230,0.20); }
+* { scrollbar-width: thin; scrollbar-color: rgba(232,234,230,0.14) transparent; }
+
+/* ---------- Type floor — the suite bumps anything below 12px ---------- */
+.text-\[11px\] { font-size: 12px; }
 
 /* ---------- Surfaces ---------- */
 .tru-panel {
@@ -153,37 +194,51 @@ body {
   border-bottom: 1px solid var(--glass-line);
 }
 
-/* ---------- Buttons — TruInspect .btn-primary on-fill pattern ----------
-   Cyan fill carries ink text (cyan/white fails contrast). 3D press = a hard
-   ink under-shadow that collapses on :active. Min touch target 44px. */
+/* ---------- Buttons — current suite sculpted recipe (TruInspect/TruLens) ----------
+   Cyan fill carries ink text (cyan/white fails contrast). Thickness not shine:
+   a solid darker side, one 1px top hairline, one ambient shadow — never a
+   gradient, no letterpress. Min touch target 44px. */
 .btn-primary {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px 18px; min-height: 44px;
-  background: var(--tru-cyan-400);
+  background: var(--tru-cyan-500);
   color: var(--text-on-accent);
   border: none; border-radius: 12px;
   font-family: var(--mono); font-weight: 600; font-size: var(--t-small);
-  cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 0 var(--tru-ink-900), 0 10px 22px -8px rgba(0,0,0,0.95);
+  cursor: pointer; text-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    0 5px 0 var(--tru-cyan-800),
+    0 10px 22px -8px rgba(0,0,0,0.95);
   transition: background 120ms ease, transform 90ms ease, box-shadow 90ms ease;
 }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-primary:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 0 var(--tru-ink-900), 0 2px 6px -3px rgba(0,0,0,0.9); }
-.btn-primary:disabled { background: var(--glass); color: var(--faint); box-shadow: none; transform: none; cursor: not-allowed; }
+.btn-primary:hover { background: var(--tru-cyan-400); }
+.btn-primary:active {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    0 1px 0 var(--tru-cyan-800),
+    0 2px 6px -3px rgba(0,0,0,0.9);
+}
+.btn-primary:disabled { background: rgba(232,234,230,0.08); color: var(--faint); box-shadow: none; transform: none; cursor: not-allowed; }
+.btn-primary svg { color: var(--text-on-accent); }
 
 .btn-secondary {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px 18px; min-height: 44px;
-  background: var(--bg-overlay);
+  background: var(--tru-ink-700);
   color: var(--text-primary);
   border: none; border-radius: 12px;
   font-family: var(--mono); font-weight: 500; font-size: var(--t-small);
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(232,234,230,0.10), 0 4px 0 var(--tru-ink-900), 0 8px 18px -8px rgba(0,0,0,0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(232,234,230,0.10),
+    0 4px 0 var(--tru-ink-900),
+    0 8px 18px -8px rgba(0,0,0,0.95);
   transition: background 120ms ease, transform 90ms ease;
 }
-.btn-secondary:hover { background: var(--bg-inset); }
-.btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tru-ink-900); }
+.btn-secondary:hover { background: var(--tru-ink-600); }
+.btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tru-ink-900), 0 2px 6px -3px rgba(0,0,0,0.9); }
 
 .btn-ghost {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -193,7 +248,7 @@ body {
   font-weight: 500; font-size: var(--t-small); cursor: pointer;
   transition: background 120ms ease, color 120ms ease;
 }
-.btn-ghost:hover { background: var(--glass); color: var(--white); }
+.btn-ghost:hover { background: rgba(232,234,230,0.06); color: var(--white); }
 
 .btn-danger {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -221,8 +276,16 @@ body {
 }
 .tru-input::placeholder { color: var(--faint); }
 .tru-input:focus { border-color: var(--accent); }
-select.tru-input { font-family: var(--mono); }
+.tru-input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; border-color: transparent; }
+select.tru-input { font-family: var(--mono); color-scheme: dark; }
 .tru-label { font-size: var(--t-micro); font-weight: 500; color: var(--muted); display: block; margin-bottom: 6px; }
+
+/* Popup colours belt and braces for Windows — same treatment as the suite. */
+select.tru-input option,
+select.tru-input optgroup {
+  background-color: var(--bg-raised);
+  color: var(--text-primary);
+}
 
 /* ---------- Chips / status ---------- */
 .chip {
@@ -237,14 +300,24 @@ select.tru-input { font-family: var(--mono); }
 .chip-danger { color: var(--danger); background: rgba(184,106,106,0.12); border-color: rgba(184,106,106,0.25); }
 .chip-claimed { color: var(--accent); background: var(--accent-surface); border-color: var(--accent-border); }
 
-/* ---------- Bottom nav (mobile — TruInspect .tl-bottomnav pattern) ---------- */
+/* ---------- Bottom nav (mobile — current TruInspect .tl-bottomnav recipe) ----------
+   Light on its top edge, shadow thrown upward, so the nav reads as sitting
+   over the list rather than printed on it. Fixed to the viewport here. */
 .tl-bottomnav {
   display: flex; align-items: stretch; gap: 4px;
   padding: 6px 8px max(6px, env(safe-area-inset-bottom, 0px));
-  background: rgba(6, 8, 13, 0.92);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border-top: 1px solid var(--glass-line);
+  background:
+    linear-gradient(0deg,
+      rgba(232, 234, 230, 0.05) 0%,
+      rgba(232, 234, 230, 0.018) 60%,
+      rgba(232, 234, 230, 0) 100%),
+    #0B0F17;
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  border-top: 1px solid rgba(232, 234, 230, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(232, 234, 230, 0.10),
+    0 -14px 30px -20px rgba(0, 0, 0, 0.95);
 }
 .tl-bottomnav button {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
