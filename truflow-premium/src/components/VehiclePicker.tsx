@@ -120,10 +120,17 @@ function SearchSelect({
   }, [open]);
 
   // A fixed-position menu goes stale the moment the page scrolls or resizes;
-  // closing it is simpler and less jarring than chasing the trigger.
+  // closing it is simpler and less jarring than chasing the trigger. But the
+  // menu's OWN options list also emits a scroll event (capture phase reaches
+  // window) — that one must NOT close the menu, or a long list can never be
+  // scrolled to the bottom.
   useEffect(() => {
     if (!open) return;
-    const close = () => setOpen(false);
+    const close = (e?: Event) => {
+      const t = e?.target;
+      if (t instanceof Node && dropdownRef.current?.contains(t)) return;
+      setOpen(false);
+    };
     window.addEventListener("scroll", close, true);
     window.addEventListener("resize", close);
     return () => {

@@ -74,7 +74,7 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 - Paid buttons always visible — never hidden
 - Bundles > 0: Normal active state, shows remaining count badge
 - Bundles == 0: Glassmorphic "Unlock" state with lock icon + "Premium" badge — enticing, never disabled/gray
-- Bundle storage: **ONE ledger, in Flow central only** — `truflow-premium/DATA_DIR/imagin8-bundles.json`. Lens and Inspect keep NO local ledger (2026-08-24)
+- Bundle storage: **ONE ledger, in Flow central only** — `truflow-premium/DATA_DIR/imagin8-bundles.json`, **keyed by dealership slug** (never `d.id`). `canonicalDealerSlug()` normalises admin ids, Flow token ids and Lens/Inspect slugs to the slug before any read/write; `getDealerImagin8Bundles` keeps a legacy read-fallback for pre-slug id-keyed entries. Lens and Inspect keep NO local ledger (2026-08-24; slug-keyed 2026-08-30)
 
 **Transport:** All Imagin8 calls use **GET + query string params** (not POST body). Render/Cloudflare rejects non-empty JSON POST bodies.
 
@@ -120,6 +120,19 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 ---
 
 ## 4. Recent Changes (2026-08-21)
+
+### Imagin8 ledger keyed by slug + flow-lite retired + tasks/dropdown fixes (2026-08-30)
+
+**Imagin8 bundles are now keyed by dealership slug** — the slug has always been the suite identity ("Flow is the source of truth, keyed by dealerslug"), but the ledger was being written under the dealership `d.id` by the master admin while Lens/Inspect proxies read it by slug. Two keys for one dealer: admin top-ups never unlocked the buttons in the prescribed apps. Fix (`truflow-premium/server.ts`):
+- `canonicalDealerSlug()` + `findDealerByKey()` normalise every caller's identifier (admin `d.id`, Flow token `d.id`, Lens/Inspect `slug`) to the slug before any bundle read/write.
+- `runChargedImagin8Call` resolves to slug at the top; `dealerImagin8Key`/`dealerImagin8CustomerId` match id OR slug.
+- `getDealerImagin8Bundles` keeps a legacy read-fallback for pre-slug `d.id`-keyed entries so nothing purchased is silently zeroed; writes always land under the slug.
+
+**TruFlow Light (`flow-lite`) retired** — never a product; "if you have Premium you have Mobile". Removed from `PRODUCTS` (`server.ts`), the sidebar "TruFlow Mobile" pill (`App.tsx`), the Apps toggle + info block (`DealershipAdmin.tsx`), and the `data.json` seed. Mobile auth keys off `"flow"` first (`truflow-mobile` `DMS_CONNECTED`), so premium→mobile is unaffected.
+
+**Tasks screen now renders lead to-dos** — the sidebar pill counted overdue tasks + overdue lead next-actions, but the Tasks screen only listed manual tasks, so a dealer with leads to chase saw a number and an empty screen. Added a "Lead follow-ups" card (`App.tsx`) listing new leads ("First contact owed") + open leads with a next step due today/overdue, each with a Review button.
+
+**VehiclePicker dropdown no longer closes mid-scroll** — the fixed-position menu closed on any window `scroll` (capture phase), which included its OWN options list, so a long model/variant list exited before you reached the bottom. The scroll-close now ignores scroll events originating inside the dropdown (`VehiclePicker.tsx`).
 
 ### Standalone market-scraper package (2026-08-25)
 

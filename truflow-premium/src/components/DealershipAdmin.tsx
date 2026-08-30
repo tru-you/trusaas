@@ -5,7 +5,6 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
-  ExternalLink,
   KeyRound,
   Plus,
   RefreshCw,
@@ -13,7 +12,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { authFetch } from "../lib/session";
-import { TRUFLOW_MOBILE_URL } from "../lib/ecosystem";
 import type { Dealership as FullDealership } from "../types";
 
 const DealerDetailsSettings = lazy(() => import("./DealerDetailsSettings"));
@@ -51,7 +49,6 @@ const FEED_ORIGIN = "https://flow.tru-saas.com";
 const PRODUCT_OPTIONS: Array<{ id: string; label: string; hint: string }> = [
   { id: "lens", label: "TruLens", hint: "Guided photo & video capture" },
   { id: "flow", label: "TruFlow", hint: "The DMS — stock, leads, invoicing" },
-  { id: "flow-lite", label: "TruFlow Mobile", hint: "Premium companion app — leads, stock & deals from the floor" },
   { id: "inspect", label: "TruInspect", hint: "Condition report / VIR" },
   { id: "live", label: "TruLive", hint: "Live video walkaround" },
   { id: "value", label: "TruValue", hint: "Live video trade-in appraisal" },
@@ -607,31 +604,6 @@ export default function DealershipAdmin({
                       );
                     })()}
 
-                    {/* TruFlow Mobile */}
-                    {(d.products || []).includes("flow-lite") && (
-                      <div className="flex items-center justify-between gap-3 flex-wrap rounded-lg border border-[rgba(0,136,255,0.15)] bg-[rgba(0,136,255,0.06)] px-3 py-2">
-                        <div className="min-w-0">
-                          <div className="text-[13px] font-semibold text-[color:var(--white)] flex items-center gap-1.5">
-                            <ExternalLink size={12} className="text-[#0088FF]" />
-                            TruFlow Mobile
-                          </div>
-                          <div className="text-[13px] text-[rgba(232,234,230,0.55)] font-mono break-all">
-                            {TRUFLOW_MOBILE_URL}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <CopyButton value={TRUFLOW_MOBILE_URL} label="Copy URL" />
-                          <a
-                            href={TRUFLOW_MOBILE_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn bg-[#0088FF] text-[color:var(--ink)] border border-transparent text-[13px] shrink-0 inline-flex items-center gap-1.5"
-                          >
-                            <ExternalLink size={13} /> Open
-                          </a>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>

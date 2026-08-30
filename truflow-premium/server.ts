@@ -187,14 +187,37 @@ function writeImagin8Bundles(bundles: Record<string, any>) {
   fs.writeFileSync(IMAGIN8_BUNDLES_FILE, JSON.stringify(bundles, null, 2));
 }
 
-function getDealerImagin8Bundles(dealershipId: string) {
-  const all = readImagin8Bundles();
-  return all[dealershipId] || { valuation: 0, regCheck: 0, accidentReport: 0 };
+/** The dealership whose id OR slug matches. The Imagin8 surfaces are called by
+ *  the admin (by id), by Flow dealer tokens (by id) and by the Lens/Inspect
+ *  proxies (by slug), so one lookup covers all three callers. */
+function findDealerByKey(key: string): any {
+  if (!key) return undefined;
+  return (readState().dealerships || []).find((d: any) => d.id === key || d.slug === key);
 }
 
-function setDealerImagin8Bundles(dealershipId: string, bundles: any) {
+/** Canonical Imagin8 ledger key — always the dealership slug. The slug is the
+ *  suite-wide identity ("Flow is the source of truth, keyed by dealerslug"), so
+ *  every caller's identifier is normalised to it before any read or write. */
+function canonicalDealerSlug(key: string): string {
+  if (!key) return key;
+  const d = findDealerByKey(key);
+  return d?.slug || key;
+}
+
+function getDealerImagin8Bundles(identifier: string) {
   const all = readImagin8Bundles();
-  all[dealershipId] = bundles;
+  const slug = canonicalDealerSlug(identifier);
+  if (all[slug]) return all[slug];
+  // Legacy: allocations written under the dealership id before the ledger moved
+  // to slug keys. Surfaced once so nothing already purchased is silently zeroed.
+  const legacyId = findDealerByKey(identifier)?.id;
+  if (legacyId && legacyId !== slug && all[legacyId]) return all[legacyId];
+  return { valuation: 0, regCheck: 0, accidentReport: 0 };
+}
+
+function setDealerImagin8Bundles(identifier: string, bundles: any) {
+  const all = readImagin8Bundles();
+  all[canonicalDealerSlug(identifier)] = bundles;
   writeImagin8Bundles(all);
 }
 
@@ -233,7 +256,7 @@ const DEFAULT_DEALERSHIP_ID = "d1";
  *  holding every dealer's code in plaintext on the Render dashboard — and
  *  restarting TruLens so it took effect. Once per product, per dealer, and
  *  revoking access meant editing that string and redeploying again. */
-const PRODUCTS = ["lens", "flow", "flow-lite", "inspect", "live", "value", "social"] as const;
+const PRODUCTS = ["lens", "flow", "inspect", "live", "value", "social"] as const;
 type ProductName = (typeof PRODUCTS)[number];
 
 /** Collections whose rows belong to exactly one dealership.
@@ -6553,12 +6576,12 @@ function authenticate(req: any, _res: any, next: any) {
 }
 
 function dealerImagin8Key(state: any, dealershipId: string): string | null {
-  const d = state.dealerships?.find((d: any) => d.id === dealershipId);
+  const d = state.dealerships?.find((d: any) => d.id === dealershipId || d.slug === dealershipId);
   return d?.imagin8ApiKey || null;
 }
 
 function dealerImagin8CustomerId(state: any, dealershipId: string): string | null {
-  const d = state.dealerships?.find((d: any) => d.id === dealershipId);
+  const d = state.dealerships?.find((d: any) => d.id === dealershipId || d.slug === dealershipId);
   return d?.imagin8CustomerId || null;
 }
 
@@ -6608,6 +6631,10 @@ async function runChargedImagin8Call(
   | { status: 200; body: any }
   | { status: 502; body: { error: string } }
 > {
+  // Normalise every caller's identifier (admin id, Flow token id, or Lens/Inspect
+  // slug) to the canonical slug before demo/unlimited/bundle checks — the ledger
+  // and the slug-based gates read the same key.
+  dealershipId = canonicalDealerSlug(dealershipId);
   const demo = isImagin8DemoSlug(dealershipId);
 
   // Prospect demo: simulated, 2-of-each per session, never any real credits.
@@ -6740,8 +6767,9 @@ app.all("/api/internal/imagin8/accident-report", requireSyncKey, async (req: any
 });
 
 app.get("/api/internal/imagin8/bundles", requireSyncKey, (req: any, res) => {
-  const dealershipId = String(req.query?.dealershipId || "");
+  let dealershipId = String(req.query?.dealershipId || "");
   if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
+  dealershipId = canonicalDealerSlug(dealershipId);
   if (isImagin8DemoSlug(dealershipId)) {
     return res.json({ ...premiumDemoRemaining(dealershipId), demo: true });
   }
@@ -6798,10 +6826,11 @@ app.put("/api/internal/truradar/dealers/:slug", async (req: any, res) => {
 // Bundle management. Reading your own balance is fine; CHANGING it is how a
 // dealer would mint free credits, so that is owner-only via the admin role.
 app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
-  const dealershipId = req.query?.dealershipId || req.auth?.dealershipId || "default";
-  if (req.auth?.role !== "admin" && req.auth?.dealershipId !== dealershipId) {
+  const rawId = req.query?.dealershipId || req.auth?.dealershipId || "default";
+  if (req.auth?.role !== "admin" && req.auth?.dealershipId !== rawId) {
     return res.status(403).json({ error: "You may only view your own dealership's bundles." });
   }
+  const dealershipId = canonicalDealerSlug(rawId);
   if (isImagin8DemoSlug(dealershipId)) {
     return res.json({ ...premiumDemoRemaining(req.auth?.sid || dealershipId), demo: true });
   }
@@ -6818,7 +6847,7 @@ app.post("/api/imagin8/bundles", authenticate, async (req: any, res) => {
   if (req.auth?.role !== "admin") {
     return res.status(403).json({ error: "Top-ups are managed by TruSaaS." });
   }
-  const dealershipId = req.body?.dealershipId || req.user?.dealershipId || "default";
+  const dealershipId = canonicalDealerSlug(req.body?.dealershipId || req.user?.dealershipId || "default");
   const patch = req.body?.bundles || {};
   if (isUnlimitedDealer(dealershipId)) {
     return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });

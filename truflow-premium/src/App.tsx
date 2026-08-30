@@ -124,7 +124,6 @@ import {
   copyStockBlurb,
 } from "./lib/salesShare";
 import { initGlassMotion } from "./lib/glassMotion";
-import { TRUFLOW_MOBILE_URL } from "./lib/ecosystem";
 
 /** Which dealership a newly-added vehicle belongs to — loaded from the
  *  server so every onboarded dealer appears automatically.
@@ -1541,13 +1540,7 @@ export default function App() {
                   <a href={site} target="_blank" rel="noopener noreferrer"
                      className="text-[13px] px-3 py-1 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] transition-colors">
                     Your showroom
-                  </a>
-                  {hasProduct("flow-lite") && (
-                    <a href={TRUFLOW_MOBILE_URL} target="_blank" rel="noopener noreferrer"
-                       className="text-[13px] px-3 py-1 rounded-full bg-[rgba(0,136,255,0.08)] text-[#38BDF8] border border-[rgba(0,136,255,0.2)] hover:bg-[rgba(0,136,255,0.12)] transition-colors">
-                      TruFlow Mobile
-                    </a>
-                  )}
+                   </a>
                 </div>
               </>
             );
@@ -3609,6 +3602,68 @@ export default function App() {
                 New task
               </button>
             </div>
+
+            {/* Lead follow-ups — the to-dos the sidebar pill is counting. These
+                live on leads (new, or with a next step due/overdue), not manual
+                tasks, so they render here rather than only on the Leads board. */}
+            {(() => {
+              const leadToDos = filteredLeads
+                .filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost")
+                .filter((l) => !l.lastContactedAt || leadOverdue(l) || (l.nextActionAt && isToday(l.nextActionAt)))
+                .map((l) => {
+                  const newLead = !l.lastContactedAt;
+                  const d = dueLabel(l);
+                  return {
+                    l,
+                    label: newLead ? "First contact owed" : (d?.text || "Follow up"),
+                    overdue: newLead ? true : !!d?.overdue,
+                  };
+                })
+                .sort((a, b) => (a.overdue === b.overdue ? 0 : a.overdue ? -1 : 1));
+
+              return (
+                <div className="card">
+                  <div className="card-header border-b border-white/5 px-4 py-3 flex items-center justify-between">
+                    <h3 className="font-semibold text-[16px]">Lead follow-ups</h3>
+                    <span className="text-[13px] text-[color:var(--muted)]">{leadToDos.length} to act on</span>
+                  </div>
+                  <div className="card-body p-0">
+                    {leadToDos.length === 0 ? (
+                      <p className="px-4 py-3 text-[13px] text-[rgba(232,234,230,0.55)]">No lead follow-ups due.</p>
+                    ) : (
+                      <ul className="divide-y divide-white/[0.06]">
+                        {leadToDos.map(({ l, label, overdue }) => (
+                          <li key={l.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[color:var(--glass)]">
+                            <button
+                              type="button"
+                              onClick={() => setLeadDetailId(l.id)}
+                              className="flex-1 min-w-0 text-left cursor-pointer"
+                            >
+                              <span className="font-semibold text-[13px] md:text-[15px] text-[color:var(--white)] block truncate">
+                                {l.firstName} {l.lastName}
+                              </span>
+                              <span className="text-[13px] text-[rgba(232,234,230,0.72)] block truncate">
+                                {getVehicleLabel(l.vehicleId)}
+                              </span>
+                            </button>
+                            <span className={`text-[13px] font-medium shrink-0 ${overdue ? "text-[color:var(--muted)]" : "text-[rgba(232,234,230,0.72)]"}`}>
+                              {overdue ? "● " : ""}{label}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setLeadDetailId(l.id)}
+                              className="tru-btn-ghost px-3 min-h-[36px] text-[13px] cursor-pointer shrink-0"
+                            >
+                              Review
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Checklist records */}
             <div className="card">
