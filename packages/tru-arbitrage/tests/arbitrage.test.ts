@@ -483,10 +483,12 @@ console.log('\n8. Testing Dealer Registry...');
   if (fs.existsSync(isoPath)) fs.unlinkSync(isoPath);
   const isoDb = new ArbitrageDatabase(isoPath);
 
-  // Same vehicle tracked by two dealers — fingerprints must differ per tenant
+  // Same vehicle tracked by two dealers — the fingerprint is tenant-stable
+  // (identity = make/model/year/km); isolation comes from the store's slug
+  // prefix, proven by the per-tenant counts below.
   const fpA = generateVehicleFingerprint(testVehicle, 'dealer-a');
   const fpB = generateVehicleFingerprint(testVehicle, 'dealer-b');
-  assert.notStrictEqual(fpA, fpB, 'Same car under two dealers gets distinct fingerprints');
+  assert.strictEqual(fpA, fpB, 'Fingerprint is tenant-stable (no dealerSlug salt)');
 
   isoDb.upsertTrackedVehicle(testVehicle, 'dealer-a');
   isoDb.upsertTrackedVehicle(testVehicle, 'dealer-b');
@@ -521,6 +523,71 @@ console.log('\n8. Testing Dealer Registry...');
 
   if (fs.existsSync(isoPath)) fs.unlinkSync(isoPath);
   console.log('   ✅ Per-dealer isolation: fingerprints, deals, subscriptions, reset, status all tenant-safe');
+
+  // ── 9b. Cross-Source Dedup ──
+  console.log('\n9b. Testing Cross-Source Dedup...');
+
+  const dedupPath = path.join(__dirname, 'test-dedup.json');
+  if (fs.existsSync(dedupPath)) fs.unlinkSync(dedupPath);
+  const dedupDb = new ArbitrageDatabase(dedupPath);
+
+  // Same physical car, three listings: Cars.co.za (with photos), AutoTrader
+  // (no photos), and a dealer site (different seller/url). One tracked row.
+  const carCars: NormalizedVehicle = { ...testVehicle, source: 'cars_co_za', sellerName: 'Cars Dealer', url: 'https://cars.co.za/a', rawId: 'cars_a', images: ['p1.jpg', 'p2.jpg'] };
+  const carAuto: NormalizedVehicle = { ...testVehicle, source: 'autotrader', sellerName: 'AutoTrader Dealer', url: 'https://autotrader.co.za/b', rawId: 'at_b', images: [] };
+  const carSerp: NormalizedVehicle = { ...testVehicle, source: 'dealer_direct', sellerName: 'apex-motors.co.za', url: 'https://apex-motors.co.za/c', rawId: 'serp_c', images: ['p1.jpg'] };
+
+  assert.strictEqual(generateVehicleFingerprint(carCars, 'dealer-x'), generateVehicleFingerprint(carAuto, 'dealer-x'), 'Same car dedupes across sellers/sources');
+  assert.strictEqual(generateVehicleFingerprint(carCars, 'dealer-x'), generateVehicleFingerprint(carSerp, 'dealer-x'), 'Same car dedupes to dealer-direct too');
+
+  dedupDb.upsertTrackedVehicle(carAuto, 'dealer-x'); // thin source first
+  dedupDb.upsertTrackedVehicle(carCars, 'dealer-x');  // richer source second
+  dedupDb.upsertTrackedVehicle(carSerp, 'dealer-x');
+  const merged = dedupDb.getTrackedVehicles({ dealerSlug: 'dealer-x' });
+  assert.strictEqual(merged.length, 1, 'Three sources collapse to ONE tracked row');
+  assert.strictEqual(merged[0].images.length, 2, 'Richer source (Cars.co.za, 2 photos) wins the merge');
+
+  // Deal side — same car from two sources = one deal, richer vehicle kept.
+  const dealCars = { ...deal, source: 'cars_co_za' as const, vehicle: carCars, fingerprint: generateVehicleFingerprint(carCars, 'dealer-x') };
+  const dealAuto = { ...deal, source: 'autotrader' as const, vehicle: carAuto, fingerprint: generateVehicleFingerprint(carAuto, 'dealer-x') };
+  dedupDb.saveDeal(dealAuto, 'dealer-x');
+  dedupDb.saveDeal(dealCars, 'dealer-x');
+  const mergedDeals = dedupDb.getDeals({ dealerSlug: 'dealer-x' });
+  assert.strictEqual(mergedDeals.length, 1, 'Same car from two sources = ONE deal');
+  assert.strictEqual((mergedDeals[0].vehicle.images || []).length, 2, 'Deal keeps the richer vehicle');
+
+  // Watch toggle is tenant-scoped
+  const watchFp = merged[0].fingerprint;
+  assert.strictEqual(dedupDb.toggleWatch('dealer-x', watchFp), true, 'Watch turns on');
+  assert.ok(dedupDb.getWatchedFingerprints('dealer-x').includes(watchFp), 'Watched fingerprint persists');
+  assert.strictEqual(dedupDb.getWatchedFingerprints('dealer-y').length, 0, 'Other tenant has no watches');
+  assert.strictEqual(dedupDb.toggleWatch('dealer-x', watchFp), false, 'Watch toggles off');
+
+  if (fs.existsSync(dedupPath)) fs.unlinkSync(dedupPath);
+  console.log('   ✅ Cross-source dedup: one row / one deal per car, richer source wins');
+
+  // ── 9c. Legacy-key Migration (cross-source re-key on load) ──
+  console.log('\n9c. Testing Legacy-key Migration Re-key...');
+
+  const migPath = path.join(__dirname, 'test-migrate.json');
+  // Hand-craft a legacy store: the SAME car under two OLD seller-salted keys.
+  const legacyStore = {
+    trackedVehicles: {
+      'dealer-x:LEGACYKEY_1': { ...trackedVehicle, fingerprint: 'LEGACYKEY_1', make: 'Volkswagen', model: 'Polo', year: 2017, mileageKm: 110000, images: ['a.jpg', 'b.jpg'] },
+      'dealer-x:LEGACYKEY_2': { ...trackedVehicle, fingerprint: 'LEGACYKEY_2', make: 'Volkswagen', model: 'Polo', year: 2017, mileageKm: 110000, images: [] },
+    },
+    deals: {},
+    dealerSubscriptions: {},
+    discoveredDomains: {},
+  };
+  fs.writeFileSync(migPath, JSON.stringify(legacyStore));
+  const migDb = new ArbitrageDatabase(migPath);
+  const migTracked = migDb.getTrackedVehicles({ dealerSlug: 'dealer-x' });
+  assert.strictEqual(migTracked.length, 1, 'Legacy seller-salted keys collapse to one row on load');
+  assert.strictEqual(migTracked[0].images.length, 2, 'Richer legacy row wins the migration merge');
+  assert.strictEqual(migTracked[0].fingerprint, generateVehicleFingerprint(testVehicle, 'dealer-x'), 'Row re-keyed to the cross-source fingerprint');
+  if (fs.existsSync(migPath)) fs.unlinkSync(migPath);
+  console.log('   ✅ Legacy-key migration re-keys and merges cross-source duplicates');
 
   // ── 10. SERP Discovery Helpers ──
   console.log('\n10. Testing SERP discovery helpers (city parse + dealer-domain filter)...');

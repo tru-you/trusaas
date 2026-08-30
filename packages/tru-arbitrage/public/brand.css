@@ -345,6 +345,10 @@ select.tru-input optgroup {
 .radar-pulse { animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 @keyframes pulse-glow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.9); } }
 .font-mono-code { font-family: var(--mono); }
+/* Icons are stroke-based Lucide paths — the sprite <symbol>s carry no fill/stroke,
+   so the referencing <svg> must declare them or every glyph paints solid black on
+   the dark chrome. One rule here covers every icon everywhere. */
+.icon, .icon-lg { fill: none; stroke: currentColor; stroke-width: 2; }
 .icon { width: 16px; height: 16px; flex-shrink: 0; }
 .icon-lg { width: 20px; height: 20px; flex-shrink: 0; }
 

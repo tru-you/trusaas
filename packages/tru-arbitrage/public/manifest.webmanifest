@@ -1,0 +1,42 @@
+{
+  "id": "/",
+  "name": "TruRadar — Vehicle Sourcing Radar",
+  "short_name": "TruRadar",
+  "description": "Confidence-gated vehicle sourcing radar for South African dealers. Underpriced and distress stock from classifieds and dealer sites, priced against live market comps.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "browser"
+  ],
+  "background_color": "#06080D",
+  "theme_color": "#06080D",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

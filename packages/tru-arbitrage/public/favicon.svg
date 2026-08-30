@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-label="TruFlow">
+  <!-- The mark from truflow-premium-logo.svg, squared off for use as an icon.
+       The wordmark is dropped: at 16px in a browser tab only the glyph reads.
+       Kept as SVG so it stays sharp at every size a tab, bookmark bar or
+       high-DPI display asks for — the PNGs alongside it exist only because the
+       PWA manifest and iOS require raster. -->
+  <defs>
+    <linearGradient id="tf-glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4FE3DC"/>
+      <stop offset="40%" stop-color="#4FE3DC"/>
+      <stop offset="70%" stop-color="#1466E0"/>
+      <stop offset="100%" stop-color="#15C7C0"/>
+    </linearGradient>
+    <linearGradient id="tf-glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.2)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="72" height="72" rx="16" fill="#06080D"/>
+  <circle cx="36" cy="36" r="30" fill="url(#tf-glow)" opacity="0.18"/>
+  <circle cx="36" cy="36" r="25" fill="rgba(15,24,38,0.55)" stroke="url(#tf-glow)" stroke-width="1.6"/>
+  <circle cx="36" cy="36" r="25" fill="url(#tf-glass)"/>
+  <path d="M23 36 L36 19 L49 36 L36 53 Z" fill="none" stroke="url(#tf-glow)" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M30 36 L36 28 L42 36 L36 44 Z" fill="url(#tf-glow)" opacity="0.95"/>
+  <circle cx="52" cy="36" r="3" fill="#7FF0EA"/>
+  <path d="M44.5 36 H49" stroke="#7FF0EA" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+</svg>

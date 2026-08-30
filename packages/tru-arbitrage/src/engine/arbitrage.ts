@@ -2,13 +2,22 @@ import crypto from 'crypto';
 import { NormalizedVehicle, ArbitrageDeal, TrackedInventoryVehicle, ValuationResult, DealCategory } from '../types';
 import { CONFIG } from '../config';
 
-export function generateVehicleFingerprint(vehicle: NormalizedVehicle, dealerSlug = ''): string {
-  const sellerKey = vehicle.sellerId || vehicle.sellerName || vehicle.location.toLowerCase().trim();
-  const kmBucket = vehicle.mileageKm ? Math.round(vehicle.mileageKm / 5000) * 5000 : 'nokm';
-  // dealerSlug is part of the hash input so the same car tracked by two dealers
-  // (their own stock + a market listing) never collides in the shared store.
-  const raw = `${dealerSlug}|${sellerKey}|${vehicle.make.toLowerCase()}|${vehicle.model.toLowerCase()}|${vehicle.year}|${kmBucket}`;
+/** Vehicle identity for dedup — make/model/year/km-bucket ONLY. Deliberately
+ *  omits seller, source and location: the same car listed on Cars.co.za,
+ *  AutoTrader AND a dealer site must land as ONE tracked row / ONE deal, not
+ *  three. Location is not a reliable discriminator (AutoTrader/SERP report
+ *  "South Africa" where Cars.co.za has a real city, so it would re-split the
+ *  very duplicates we're merging). Dealer isolation lives in the tenant prefix
+ *  (`${dealerSlug}:`) on the store key, never by salting this hash — so the
+ *  hash is stable across tenants. */
+export function vehicleFingerprint(make: string, model: string, year: number, mileageKm: number | null): string {
+  const kmBucket = mileageKm ? Math.round(mileageKm / 5000) * 5000 : 'nokm';
+  const raw = `${String(make || '').toLowerCase()}|${String(model || '').toLowerCase()}|${Number(year) || 0}|${kmBucket}`;
   return crypto.createHash('sha256').update(raw).digest('hex').slice(0, 24);
+}
+
+export function generateVehicleFingerprint(vehicle: NormalizedVehicle, _dealerSlug = ''): string {
+  return vehicleFingerprint(vehicle.make, vehicle.model, vehicle.year, vehicle.mileageKm);
 }
 
 export function calculateUrgencyScore(daysOnMarket: number, priceHistoryCount: number, totalPriceDrop: number, originalPrice: number): number {

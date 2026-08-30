@@ -301,12 +301,29 @@ app.post('/api/deals/:id/offer', requireAuth, async (req: Request, res: Response
   res.json({ success: true, offerText, otp, expiresAt, deal: updated });
 });
 
-// 4. Tracked Inventory (Days on Market & Aging) — scoped
+// 4. Tracked Inventory (Days on Market & Aging) — scoped. `status` filters by
+// comma-separated tracked statuses (price_dropped | stale_floorplan | delisted | active).
 app.get('/api/tracked', requireAuth, (req: Request, res: Response) => {
   const minDom = req.query.minDom ? Number(req.query.minDom) : undefined;
-  const tracked = db.getTrackedVehicles({ dealerSlug: req.user!.dealerSlug, minDom });
+  const status = typeof req.query.status === 'string' && req.query.status
+    ? req.query.status.split(',').map((s) => s.trim()).filter(Boolean)
+    : undefined;
+  const tracked = db.getTrackedVehicles({ dealerSlug: req.user!.dealerSlug, minDom, status });
 
   res.json({ total: tracked.length, tracked });
+});
+
+// 4b. Watch a tracked car (dealer-pinned) — toggle + read. Pinning a car makes
+// its price moves surface first in the watchlist.
+app.get('/api/watched', requireAuth, (req: Request, res: Response) => {
+  res.json({ watched: db.getWatchedFingerprints(req.user!.dealerSlug) });
+});
+
+app.post('/api/watched/:fingerprint', requireAuth, (req: Request, res: Response) => {
+  const fingerprint = String(req.params.fingerprint || '').trim();
+  if (!fingerprint) return res.status(400).json({ error: 'fingerprint is required' });
+  const watched = db.toggleWatch(req.user!.dealerSlug, fingerprint);
+  res.json({ success: true, watched });
 });
 
 // 5. Dealer Buy-Box Subscriptions Management — scoped
@@ -359,7 +376,7 @@ export function startServer(port = CONFIG.PORT) {
         for (const dealer of dealers) {
           try {
             const emitter = new ScanProgress(`auto-${dealer.slug}-${Date.now()}`);
-            await runFullMultiSourceScan(emitter, dealer.slug);
+            await runFullMultiSourceScan(dealer.slug, emitter);
             await db.flush();
             console.log(`[auto-scan] Completed: ${dealer.slug}`);
           } catch (err: any) {

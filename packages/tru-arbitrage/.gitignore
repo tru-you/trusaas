@@ -3,3 +3,4 @@ dist/
 .env
 data/*.json
 !data/.gitkeep
+.playwright-mcp/

@@ -7,7 +7,10 @@
   <meta name="description" content="Confidence-gated vehicle sourcing radar for South African dealers. Underpriced and distress stock from classifieds and dealer sites, priced against live market comps.">
   <meta name="theme-color" content="#06080D">
   <meta name="color-scheme" content="dark">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2306080D'/><path d='M17 5 8 18h7l-1 9 9-13h-7l1-9z' fill='%234FE3DC'/></svg>">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -65,6 +68,51 @@
       line-height: 1;
     }
     .nav-badge:empty { display: none; }
+    /* Deal / watchlist photo thumbnail */
+    .card-thumb {
+      position: relative; aspect-ratio: 16/9; overflow: hidden;
+      border-radius: 12px; background: var(--bg-inset);
+      border: 1px solid var(--glass-line); cursor: pointer;
+    }
+    .card-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .thumb-count {
+      position: absolute; bottom: 6px; right: 6px; z-index: 2;
+      background: rgba(6,8,13,0.82); color: var(--white); font-family: var(--mono);
+      font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 8px; border: 1px solid var(--glass-line);
+    }
+    /* Fullscreen photo lightbox */
+    .lightbox-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(6px);
+      z-index: 80; display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .lightbox-stage { position: relative; max-width: 100%; max-height: 100%; }
+    .lightbox-stage img { max-width: 92vw; max-height: 82vh; border-radius: 12px; object-fit: contain; }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--glass-line);
+      background: rgba(6,8,13,0.7); color: var(--white); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-nav:hover { background: rgba(6,8,13,0.9); }
+    .lightbox-prev { left: 8px; }
+    .lightbox-next { right: 8px; }
+    .lightbox-counter {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      font-family: var(--mono); font-size: var(--t-micro); color: var(--white-dim);
+      background: rgba(6,8,13,0.7); border: 1px solid var(--glass-line); border-radius: 8px; padding: 3px 10px;
+    }
+    .lightbox-close {
+      position: absolute; top: 8px; right: 8px;
+      width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--glass-line);
+      background: rgba(6,8,13,0.7); color: var(--white); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-close:hover { background: rgba(6,8,13,0.9); }
+    /* Watchlist grid reuses .deals-grid columns */
+    .watch-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 768px) { .watch-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1280px) { .watch-grid { grid-template-columns: repeat(3, 1fr); } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -81,6 +129,10 @@
       <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6" stroke-linecap="round"/><path d="M10 14 21 3" stroke-linecap="round"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke-linecap="round"/></symbol>
       <symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4" stroke-linecap="round"/></symbol>
       <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-trend" viewBox="0 0 24 24"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 17 22 17 22 11" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" stroke-linecap="round"/><path d="m6 6 12 12" stroke-linecap="round"/></symbol>
       <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke-linecap="round"/><path d="M21 3v5h-5" stroke-linecap="round"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke-linecap="round"/><path d="M3 21v-5h5" stroke-linecap="round"/></symbol>
       <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
@@ -94,14 +146,9 @@
   <!-- ══════════ LOGIN OVERLAY ══════════ -->
   <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background: var(--bg-base)">
     <div class="tru-panel p-8 w-full max-w-sm">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: var(--accent); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 var(--tru-ink-900);">
-          <svg class="icon-lg" style="color: var(--text-on-accent)" fill="none" stroke="currentColor" stroke-width="2.5"><use href="#i-zap"/></svg>
-        </div>
-        <div>
-          <span class="text-xl font-semibold tracking-tight">Tru<span style="color: var(--accent)">Radar</span></span>
-          <p class="text-[12px]" style="color: var(--muted)">Vehicle sourcing radar • South Africa</p>
-        </div>
+      <div class="flex flex-col items-center gap-3 mb-6">
+        <img src="/favicon.svg" alt="TruRadar" class="w-16 h-16" style="filter: drop-shadow(0 10px 28px rgba(79,227,220,0.28))">
+        <p class="text-[13px]" style="color: var(--muted)">Vehicle sourcing radar • South Africa</p>
       </div>
       <p class="text-[13px] mb-6" style="color: var(--muted)">Sign in with your dealership slug and access code.</p>
       <div class="space-y-4">
@@ -127,9 +174,7 @@
     <header class="sticky top-0 z-50 glass-nav px-4 md:px-6 py-3 md:py-4">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background: var(--accent); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 var(--tru-ink-900);">
-            <svg class="icon-lg" style="color: var(--text-on-accent)" fill="none" stroke="currentColor" stroke-width="2.5"><use href="#i-zap"/></svg>
-          </div>
+          <img src="/favicon.svg" alt="" class="w-10 h-10 rounded-xl shrink-0">
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <span class="text-lg font-semibold tracking-tight">Tru<span style="color: var(--accent)">Radar</span></span>
@@ -230,6 +275,7 @@
           </div>
         </div>
         <p class="text-[12px] mt-2 font-mono-code" style="color: var(--faint)" id="lastScannedLine"></p>
+        <div id="newSinceLine" class="mt-2 flex items-center gap-2 flex-wrap"></div>
 
         <!-- Scan progress -->
         <section id="scanProgress" class="hidden mt-4">
@@ -321,6 +367,60 @@
         </div>
       </section>
 
+      <!-- ═══ VIEW: WATCHLIST ═══ -->
+      <section id="viewWatch" class="view m-view pt-6 pb-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="font-semibold text-[17px]">Watchlist — price moves &amp; delisted stock</h2>
+            <p class="text-[13px] mt-1" style="color: var(--muted)">Every car the radar has seen that dropped price, sat stale, or vanished off the market — with its full price history.</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3 md:gap-4 mb-4">
+          <div class="stat-tile">
+            <span class="stat-label">Price dropped</span>
+            <div class="stat-value" style="color: var(--accent)" id="watchStatDrops">0</div>
+          </div>
+          <div class="stat-tile">
+            <span class="stat-label">Stale floorplan</span>
+            <div class="stat-value" style="color: var(--state-attention)" id="watchStatStale">0</div>
+          </div>
+          <div class="stat-tile">
+            <span class="stat-label">Delisted</span>
+            <div class="stat-value" style="color: var(--danger)" id="watchStatDelisted">0</div>
+          </div>
+        </div>
+        <div id="watchGrid" class="watch-grid"></div>
+        <div id="watchEmpty" class="hidden tru-panel p-12 text-center max-w-lg mx-auto my-12">
+          <div class="w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto mb-4" style="border-color: var(--glass-line)">
+            <svg class="icon-lg" style="width:28px;height:28px;color: var(--muted)"><use href="#i-trend"/></svg>
+          </div>
+          <h3 class="text-[17px] font-semibold">Nothing moving yet</h3>
+          <p class="text-[13px] mt-2" style="color: var(--muted)">Run a market scan. Cars that drop price, sit stale or get delisted land here so you can move before the next buyer.</p>
+          <div class="flex justify-center gap-3 mt-6">
+            <button onclick="triggerScan()" class="btn-primary">Scan Market</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ VIEW: MY STOCK ═══ -->
+      <section id="viewStock" class="view m-view pt-6 pb-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 class="font-semibold text-[17px]">My stock — reprice dead weight</h2>
+            <p class="text-[13px] mt-1" style="color: var(--muted)">Your own published Flow stock that is both overpriced vs live market AND sitting stale. Scan your yard, then reprice what's bleeding floorplan.</p>
+          </div>
+          <button onclick="triggerScan('/api/mystock/scan')" class="btn-primary">Scan my stock</button>
+        </div>
+        <div id="stockGrid" class="deals-grid"></div>
+        <div id="stockEmpty" class="hidden tru-panel p-12 text-center max-w-lg mx-auto my-12">
+          <h3 class="text-[17px] font-semibold">Nothing flagged</h3>
+          <p class="text-[13px] mt-2" style="color: var(--muted)">Scan your Flow stock. Units that are over market AND stale land here with a recommended price.</p>
+          <div class="flex justify-center gap-3 mt-6">
+            <button onclick="triggerScan('/api/mystock/scan')" class="btn-primary">Scan my stock</button>
+          </div>
+        </div>
+      </section>
+
       <!-- ═══ VIEW: ACCOUNT (mobile) — desktop uses the header buttons ═══ -->
       <section id="viewAccount" class="view m-view pt-6 pb-4">
         <div class="tru-panel p-5 m-only">
@@ -376,6 +476,17 @@
     </div>
   </div>
 
+  <!-- ══════════ PHOTO LIGHTBOX ══════════ -->
+  <div id="photoModal" class="lightbox-backdrop hidden" role="dialog" aria-modal="true" aria-label="Vehicle photos">
+    <div class="lightbox-stage">
+      <img id="photoImg" src="" alt="Vehicle photo">
+      <button onclick="lightboxPrev()" id="photoPrev" class="lightbox-nav lightbox-prev" aria-label="Previous photo"><svg class="icon-lg"><use href="#i-chev-l"/></svg></button>
+      <button onclick="lightboxNext()" id="photoNext" class="lightbox-nav lightbox-next" aria-label="Next photo"><svg class="icon-lg"><use href="#i-chev-r"/></svg></button>
+      <button onclick="closeLightbox()" class="lightbox-close" aria-label="Close"><svg class="icon-lg"><use href="#i-x"/></svg></button>
+      <span class="lightbox-counter" id="photoCounter">1 / 1</span>
+    </div>
+  </div>
+
   <!-- ══════════ MOBILE BOTTOM NAV ══════════ -->
   <nav id="mBottomNav" class="tl-bottomnav fixed bottom-0 inset-x-0 z-50" aria-label="Sections">
     <button data-mview="viewSearch" onclick="setMobileView('viewSearch')" aria-current="page">
@@ -385,6 +496,10 @@
       <span class="nav-badge" id="mNavDealCount"></span>
       <svg class="icon-lg"><use href="#i-list"/></svg> Deals
     </button>
+    <button data-mview="viewWatch" onclick="setMobileView('viewWatch')">
+      <svg class="icon-lg"><use href="#i-trend"/></svg> Watch
+    </button>
+    <button data-mview="viewStock" onclick="setMobileView('viewStock')">Stock</button>
     <button data-mview="viewAccount" onclick="setMobileView('viewAccount')">
       <svg class="icon-lg"><use href="#i-user"/></svg> Account
     </button>
@@ -417,6 +532,11 @@
       headers() { return { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` }; }
     };
     let allDeals = [];
+    let allTracked = [];
+    let lightboxImages = [];
+    let lightboxIndex = 0;
+    let lastVisit = null;
+    let watchedSet = new Set();
 
     (function boot() {
       if (!auth.token) { document.getElementById('loginOverlay').style.display = 'flex'; return; }
@@ -428,9 +548,12 @@
       document.getElementById('appShell').classList.remove('hidden');
       document.getElementById('headerDealerName').textContent = `${auth.name || auth.slug} • sourcing radar`;
       document.getElementById('accountDealerLine').textContent = `${auth.name || auth.slug} (${auth.slug})`;
+      initLastVisit();
       loadDeals();
       loadBuyBox();
       loadLookupMakes();
+      loadWatchlist();
+      loadWatched();
     }
     function authFailed() { auth.clear(); location.reload(); }
 
@@ -489,6 +612,8 @@
         populateMakeFilter();
         renderDeals();
         updateStats();
+        updateNewLine();
+        renderStock();
       } catch (err) { console.error('Failed to load deals:', err); }
     }
 
@@ -638,6 +763,10 @@
         const src = SOURCE_BADGES[deal.source] || SOURCE_BADGES.dealer_direct;
         const claimed = (deal.status || 'new') === 'claimed';
         const pct = Math.round((deal.confidence || 0) * 100);
+        const images = Array.isArray(v.images) ? v.images : [];
+        const img = images.length ? images[0] : null;
+        const isNew = lastVisit && deal.detectedAt && deal.detectedAt > lastVisit;
+        const watched = watchedSet.has(deal.fingerprint);
 
         let catTag = 'Underpriced', catCls = 'chip-accent';
         if (deal.dealCategory === 'stale_floorplan_distress') { catTag = `Stale floorplan · ${days}d`; catCls = 'chip-attention'; }
@@ -645,9 +774,12 @@
 
         return `
           <div class="tru-card p-5 flex flex-col justify-between">
-            <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+            ${img ? `<div class="card-thumb" onclick="openDealLightbox('${deal.id}')" role="button" tabindex="0" onkeydown="thumbKey(event,'${deal.id}')" aria-label="View photos"><span class="thumb-fallback"><svg class="icon-lg" style="color:var(--faint)"><use href="#i-image"/></svg></span><img src="${img}" alt="${v.year} ${v.make} ${v.model}" loading="lazy" onerror="this.remove()">${images.length > 1 ? `<span class="thumb-count">${images.length}</span>` : ''}</div>` : ''}
+            <div class="flex items-center justify-between gap-2 mb-3 flex-wrap${img ? ' mt-3' : ''}">
               <span class="chip ${src.color}">${src.label}</span>
               <span class="chip ${catCls}">${catTag}</span>
+              ${isNew ? '<span class="chip chip-accent">New</span>' : ''}
+              <button onclick="toggleWatch('${deal.fingerprint}')" class="btn-ghost" title="Pin this car to the watchlist" style="min-height:0;padding:3px 10px;font-size:12px;margin-left:auto;${watched ? 'color:var(--accent)' : ''}">${watched ? 'Watched' : 'Watch'}</button>
             </div>
             <div>
               <div class="text-[12px]" style="color: var(--muted)">${v.location || 'South Africa'} • <span style="color: var(--white-dim)">${v.sellerName || 'Direct seller'}</span></div>
@@ -688,7 +820,7 @@
         if (res.ok) {
           const local = allDeals.find(d => d.id === id);
           if (local) local.status = status;
-          renderDeals(); updateStats();
+          renderDeals(); updateStats(); updateNewLine();
           const label = status === 'claimed' ? 'Deal claimed' : 'Deal archived';
           showToast(label);
         }
@@ -736,7 +868,12 @@
       try { await navigator.clipboard.writeText(text); const b = document.getElementById(btnId); if (b) { const old = b.innerHTML; b.innerHTML = '<svg class="icon"><use href="#i-check"/></svg> Copied'; setTimeout(() => b.innerHTML = old, 1600); } } catch {}
     }
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeOfferModal(); closeBuyBoxModal(); }
+      if (e.key === 'Escape') { closeOfferModal(); closeBuyBoxModal(); closeLightbox(); }
+      const pm = document.getElementById('photoModal');
+      if (pm && !pm.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft') lightboxPrev();
+        if (e.key === 'ArrowRight') lightboxNext();
+      }
     });
 
     // Focus trap for modals
@@ -775,6 +912,184 @@
       if (lastFocusedEl) lastFocusedEl.focus();
     }
 
+    // ── Photo lightbox ────────────────────────────────────────────────────
+    function thumbKey(e, id) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDealLightbox(id); } }
+    function openDealLightbox(id) {
+      const deal = allDeals.find(d => d.id === id);
+      const imgs = deal && Array.isArray(deal.vehicle && deal.vehicle.images) ? deal.vehicle.images : [];
+      if (!imgs.length) return;
+      openLightbox(imgs, 0);
+    }
+    function openTrackedLightbox(fp) {
+      const t = allTracked.find(x => x.fingerprint === fp);
+      const imgs = t && Array.isArray(t.images) ? t.images : [];
+      if (!imgs.length) return;
+      openLightbox(imgs, 0);
+    }
+    function openLightbox(images, index) {
+      lightboxImages = images; lightboxIndex = index;
+      renderLightbox();
+      document.getElementById('photoModal').classList.remove('hidden');
+      lastFocusedEl = document.activeElement;
+      trapFocus(document.getElementById('photoModal'), closeLightbox);
+    }
+    function renderLightbox() {
+      document.getElementById('photoImg').src = lightboxImages[lightboxIndex] || '';
+      document.getElementById('photoCounter').textContent = `${lightboxIndex + 1} / ${lightboxImages.length}`;
+      document.getElementById('photoPrev').style.visibility = lightboxImages.length > 1 ? 'visible' : 'hidden';
+      document.getElementById('photoNext').style.visibility = lightboxImages.length > 1 ? 'visible' : 'hidden';
+    }
+    function lightboxPrev() { if (lightboxIndex > 0) { lightboxIndex--; renderLightbox(); } }
+    function lightboxNext() { if (lightboxIndex < lightboxImages.length - 1) { lightboxIndex++; renderLightbox(); } }
+    function closeLightbox() {
+      document.getElementById('photoModal').classList.add('hidden');
+      if (lastFocusedEl) lastFocusedEl.focus();
+    }
+
+    // ── Watchlist (tracked inventory: price drops / stale / delisted) ─────
+    async function loadWatchlist() {
+      try {
+        const res = await fetch('/api/tracked?status=price_dropped,stale_floorplan,delisted', { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        allTracked = data.tracked || [];
+        renderWatchlist();
+      } catch (err) { console.error('Failed to load watchlist:', err); }
+    }
+    function renderWatchlist() {
+      const list = allTracked.slice().sort((a, b) => {
+        const wa = watchedSet.has(a.fingerprint) ? 1 : 0;
+        const wb = watchedSet.has(b.fingerprint) ? 1 : 0;
+        if (wa !== wb) return wb - wa;
+        return (b.urgencyScore || 0) - (a.urgencyScore || 0);
+      });
+      const grid = document.getElementById('watchGrid');
+      const empty = document.getElementById('watchEmpty');
+      document.getElementById('watchStatDrops').textContent = list.filter(t => t.status === 'price_dropped').length;
+      document.getElementById('watchStatStale').textContent = list.filter(t => t.status === 'stale_floorplan').length;
+      document.getElementById('watchStatDelisted').textContent = list.filter(t => t.status === 'delisted').length;
+      if (!list.length) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      grid.innerHTML = list.map(t => {
+        const images = Array.isArray(t.images) ? t.images : [];
+        const img = images.length ? images[0] : null;
+        const drop = t.totalPriceDrop || 0;
+        const dropPct = t.originalPrice > 0 ? Math.round((drop / t.originalPrice) * 100) : 0;
+        const statusChip = t.status === 'delisted'
+          ? '<span class="chip chip-danger">Delisted</span>'
+          : t.status === 'price_dropped'
+            ? '<span class="chip chip-attention">Price dropped</span>'
+            : '<span class="chip chip-attention">Stale floorplan</span>';
+        const now = t.status === 'price_dropped' && drop > 0
+          ? `<span class="font-mono-code font-semibold" style="color: var(--accent)">R${(t.currentPrice || 0).toLocaleString('en-ZA')}</span> <span class="font-mono-code" style="text-decoration:line-through;color:var(--muted)">R${(t.originalPrice || 0).toLocaleString('en-ZA')}</span> <span class="font-mono-code" style="color: var(--accent)">-${dropPct}%</span>`
+          : `<span class="font-mono-code font-semibold" style="color: var(--white)">R${((t.currentPrice || t.originalPrice) || 0).toLocaleString('en-ZA')}</span>`;
+        const history = (t.priceHistory || []).map(p => `R${p.price.toLocaleString('en-ZA')}`).join(' → ');
+        const meta = [t.trim, t.mileageKm ? `${t.mileageKm.toLocaleString('en-ZA')} km` : null, t.location].filter(Boolean).join(' • ');
+        return `
+          <div class="tru-card p-5 flex flex-col justify-between">
+            ${img ? `<div class="card-thumb" onclick="openTrackedLightbox('${t.fingerprint}')" role="button" tabindex="0" onkeydown="thumbKey(event,'${t.fingerprint}')" aria-label="View photos"><span class="thumb-fallback"><svg class="icon-lg" style="color:var(--faint)"><use href="#i-image"/></svg></span><img src="${img}" alt="${t.year} ${t.make} ${t.model}" loading="lazy" onerror="this.remove()">${images.length > 1 ? `<span class="thumb-count">${images.length}</span>` : ''}</div>` : ''}
+            <div class="flex items-center justify-between gap-2 mb-2 flex-wrap${img ? ' mt-3' : ''}">
+              ${statusChip}
+              ${watchedSet.has(t.fingerprint) ? '<span class="chip chip-accent">Watched</span>' : ''}
+              <span class="chip">${t.daysOnMarket}d on market</span>
+            </div>
+            <div>
+              <h3 class="text-[17px] font-semibold">${t.year} ${t.make} ${t.model}</h3>
+              <p class="text-[12px] mt-0.5" style="color: var(--muted)">${meta || 'Market listing'}</p>
+              <div class="finbox">
+                <div class="finrow"><span class="finlabel">Now</span>${now}</div>
+                <div class="finrow text-[12px]"><span class="finlabel">Price history</span><span class="font-mono-code" style="color: var(--muted)">${history || '—'}</span></div>
+              </div>
+            </div>
+            <div class="mt-3 pt-3 flex items-center gap-2" style="border-top: 1px solid var(--glass-line)">
+              ${t.url ? `<a href="${t.url}" target="_blank" rel="noopener" class="btn-secondary flex-1 justify-center"><svg class="icon"><use href="#i-external"/></svg> View listing</a>` : '<span class="text-[12px]" style="color:var(--muted)">No listing URL</span>'}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Watch toggle ──────────────────────────────────────────────────────
+    async function loadWatched() {
+      try {
+        const res = await fetch('/api/watched', { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        watchedSet = new Set(data.watched || []);
+      } catch {}
+    }
+    async function toggleWatch(fp) {
+      try {
+        const res = await fetch(`/api/watched/${encodeURIComponent(fp)}`, { method: 'POST', headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        if (data.watched) watchedSet.add(fp); else watchedSet.delete(fp);
+        renderDeals(); renderWatchlist();
+      } catch {}
+    }
+
+    // ── My stock (own overpriced + stale units) ───────────────────────────
+    function renderStock() {
+      const stock = allDeals.filter(d => d.dealCategory === 'overpriced_stale_stock' || d.source === 'flow_stock');
+      const grid = document.getElementById('stockGrid');
+      const empty = document.getElementById('stockEmpty');
+      if (!grid) return;
+      if (!stock.length) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      grid.innerHTML = stock.map(d => {
+        const v = d.vehicle || d;
+        const over = Math.abs(d.projectedNetMargin || 0);
+        const overPct = Math.abs(d.marginPercentage || 0);
+        const asking = (d.askingPrice || 0).toLocaleString('en-ZA');
+        const retail = (d.marketRetailPrice || 0).toLocaleString('en-ZA');
+        return `
+          <div class="tru-card p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+              <span class="chip chip-attention">Overpriced + stale</span>
+              <span class="chip">${d.daysOnMarket || 0}d on market</span>
+            </div>
+            <div>
+              <h3 class="text-[17px] font-semibold">${v.year} ${v.make} ${v.model}</h3>
+              <p class="text-[12px] mt-0.5" style="color: var(--muted)">${v.trim || ''} ${v.mileageKm ? '• ' + v.mileageKm.toLocaleString('en-ZA') + ' km' : ''}</p>
+              <div class="finbox">
+                <div class="finrow"><span class="finlabel">Asking</span><span class="font-mono-code font-semibold">R${asking}</span></div>
+                <div class="finrow"><span class="finlabel">Live market</span><span class="font-mono-code" style="color: var(--white-dim)">R${retail}</span></div>
+                <div class="finrow" style="border-top: 1px solid var(--glass-line); padding-top: 8px;">
+                  <span class="finlabel">Over market by</span>
+                  <span class="font-mono-code text-[17px] font-semibold" style="color: var(--danger)">R${over.toLocaleString('en-ZA')} (${overPct}%)</span>
+                </div>
+                <div class="finrow text-[12px]">
+                  <span class="finlabel">Recommended</span>
+                  <span class="font-mono-code" style="color: var(--accent)">drop to ~R${retail}</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 pt-3 flex items-center gap-2" style="border-top: 1px solid var(--glass-line)">
+              ${v.url ? `<a href="${v.url}" target="_blank" rel="noopener" class="btn-secondary flex-1 justify-center">Open in Flow</a>` : '<span class="text-[12px]" style="color:var(--muted)">—</span>'}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── New-since-last-visit notifications ────────────────────────────────
+    function initLastVisit() {
+      lastVisit = localStorage.getItem('ta_last_visit') || null;
+      if (!lastVisit) { lastVisit = new Date().toISOString(); localStorage.setItem('ta_last_visit', lastVisit); }
+    }
+    function markAllRead() {
+      localStorage.setItem('ta_last_visit', new Date().toISOString());
+      lastVisit = localStorage.getItem('ta_last_visit');
+      renderDeals(); updateNewLine();
+      showToast('Marked as read');
+    }
+    function updateNewLine() {
+      const line = document.getElementById('newSinceLine');
+      if (!line) return;
+      const n = allDeals.filter(d => d.status !== 'archived' && lastVisit && d.detectedAt && d.detectedAt > lastVisit).length;
+      line.innerHTML = n > 0
+        ? `<span class="chip chip-accent"><svg class="icon" style="width:12px;height:12px"><use href="#i-zap"/></svg> ${n} new since your last visit</span> <button onclick="markAllRead()" class="btn-ghost" style="min-height:0;padding:4px 10px;font-size:12px">Mark read</button>`
+        : '';
+    }
+
     // Price-check header keyboard support (replaces inline onkeydown)
     document.addEventListener('DOMContentLoaded', () => {
       const header = document.querySelector('#viewSearch [role="button"][aria-expanded]');
@@ -786,17 +1101,18 @@
     });
 
     // ── Scan ──────────────────────────────────────────────────────────────
-    async function triggerScan() {
+    async function triggerScan(endpoint = '/api/ingest/trigger') {
       const btn = document.getElementById('scanBtn');
       const progress = document.getElementById('scanProgress');
+      const isStock = endpoint.includes('mystock');
       btn.disabled = true;
       btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scanning…</span>';
       progress.classList.remove('hidden');
       document.getElementById('scanLog').innerHTML = '';
       document.getElementById('scanBar').style.width = '0%';
-      if (window.innerWidth < 1024) setMobileView('viewDeals');
+      if (window.innerWidth < 1024) setMobileView(isStock ? 'viewStock' : 'viewDeals');
       try {
-        const res = await fetch('/api/ingest/trigger', { method: 'POST', headers: auth.headers(), body: '{}' });
+        const res = await fetch(endpoint, { method: 'POST', headers: auth.headers(), body: '{}' });
         if (res.status === 401) return authFailed();
         const { scanId } = await res.json();
         const source = new EventSource(`/api/scan/${scanId}/events?token=${encodeURIComponent(auth.token)}`);
@@ -815,10 +1131,10 @@
           document.getElementById('scanBar').style.width = '100%';
           document.getElementById('scanPhase').textContent = 'Scan complete';
           localStorage.setItem('ta_last_scan', new Date().toISOString());
-          source.close(); loadDeals();
+          source.close(); loadDeals(); loadWatchlist();
           setTimeout(() => { progress.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scan Market</span>'; }, 3000);
         });
-        source.onerror = () => { source.close(); addLog('Live connection lost — refreshing…', true); loadDeals(); btn.disabled = false; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scan Market</span>'; };
+        source.onerror = () => { source.close(); addLog('Live connection lost — refreshing…', true); loadDeals(); loadWatchlist(); btn.disabled = false; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scan Market</span>'; };
       } catch (err) {
         console.error('Scan error:', err);
         btn.disabled = false; btn.textContent = 'Scan Market';
@@ -958,6 +1274,12 @@
     }
     applyShellMode();
     mqMobile.addEventListener('change', applyShellMode);
+  </script>
+  <script>
+    // PWA service worker — https only; local dev stays cache-free.
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
   </script>
 </body>
 </html>

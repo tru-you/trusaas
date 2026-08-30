@@ -2,13 +2,16 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 import { TrackedInventoryVehicle, ArbitrageDeal, DealerBuyBox, NormalizedVehicle } from '../types';
-import { generateVehicleFingerprint, calculateUrgencyScore } from '../engine/arbitrage';
+import { generateVehicleFingerprint, vehicleFingerprint, calculateUrgencyScore } from '../engine/arbitrage';
 import { CONFIG } from '../config';
 
 interface DatabaseSchema {
   trackedVehicles: Record<string, TrackedInventoryVehicle>;
   deals: Record<string, ArbitrageDeal>;
   dealerSubscriptions: Record<string, DealerBuyBox>;
+  /* Dealer-pinned watches: `${dealerSlug}:${fingerprint}` → true. Lets a dealer
+   *  pin a specific car so its price moves surface first in the watchlist. */
+  watches: Record<string, true>;
   /* SERP dealer-domain discovery index — GLOBAL search infrastructure, not
    * tenant data. Deals/tracked stay slug-scoped; this just remembers which
    * independent dealer sites the discovery matrix has met so later scans can
@@ -20,6 +23,7 @@ const EMPTY_SCHEMA = (): DatabaseSchema => ({
   trackedVehicles: {},
   deals: {},
   dealerSubscriptions: {},
+  watches: {},
   discoveredDomains: {},
 });
 
@@ -30,6 +34,22 @@ const EMPTY_SCHEMA = (): DatabaseSchema => ({
  * and from every real dealer. */
 function tenantKey(dealerSlug: string, id: string): string {
   return `${dealerSlug}:${id}`;
+}
+
+/** Keep the richer of two cross-source duplicates for the same vehicle. More
+ *  photos wins; ties go to the most recently seen/detected row. */
+function richerTracked(a: TrackedInventoryVehicle, b: TrackedInventoryVehicle): TrackedInventoryVehicle {
+  const ai = Array.isArray(a.images) ? a.images.length : 0;
+  const bi = Array.isArray(b.images) ? b.images.length : 0;
+  if (ai !== bi) return ai > bi ? a : b;
+  return (Date.parse(a.lastSeenAt || '') >= Date.parse(b.lastSeenAt || '')) ? a : b;
+}
+
+function richerDeal(a: ArbitrageDeal, b: ArbitrageDeal): ArbitrageDeal {
+  const ai = Array.isArray(a.vehicle?.images) ? a.vehicle.images.length : 0;
+  const bi = Array.isArray(b.vehicle?.images) ? b.vehicle.images.length : 0;
+  if (ai !== bi) return ai > bi ? a : b;
+  return (Date.parse(a.detectedAt || '') >= Date.parse(b.detectedAt || '')) ? a : b;
 }
 
 export class ArbitrageDatabase {
@@ -80,18 +100,29 @@ export class ArbitrageDatabase {
     for (const [k, v] of Object.entries(data.trackedVehicles || {})) {
       if (!isTenantKey(k)) { changed = true; continue; }
       if (isMockVehicle(v)) { changed = true; continue; }
-      keptTracked[k] = v;
+      // Re-key onto the cross-source fingerprint (make/model/year/km). Legacy
+      // keys were salted by seller/source, so the same car across platforms
+      // was several rows — collapse them, keeping the richest.
+      const slug = k.slice(0, k.indexOf(':'));
+      const fp = vehicleFingerprint(v.make, v.model, v.year, v.mileageKm);
+      const nk = `${slug}:${fp}`;
+      if (nk !== k) changed = true;
+      const existing = keptTracked[nk];
+      if (existing) changed = true;
+      keptTracked[nk] = existing ? { ...richerTracked(existing, v), fingerprint: fp } : { ...v, fingerprint: fp };
     }
 
     const keptDeals: DatabaseSchema['deals'] = {};
     for (const [k, deal] of Object.entries(data.deals || {})) {
       if (!isTenantKey(k)) { changed = true; continue; }
       if (isMockVehicle(deal.vehicle as { rawId?: string; images?: string[] })) { changed = true; continue; }
-      const existing = keptDeals[k];
-      if (!existing || (deal.detectedAt || '') >= (existing.detectedAt || '')) {
-        keptDeals[k] = deal;
-        if (existing) changed = true;
-      }
+      const slug = k.slice(0, k.indexOf(':'));
+      const fp = vehicleFingerprint(deal.vehicle.make, deal.vehicle.model, deal.vehicle.year, deal.vehicle.mileageKm);
+      const nk = `${slug}:${fp}`;
+      if (nk !== k) changed = true;
+      const existing = keptDeals[nk];
+      if (existing) changed = true;
+      keptDeals[nk] = existing ? { ...richerDeal(existing, deal), fingerprint: fp } : { ...deal, fingerprint: fp };
     }
 
     const keptSubs: DatabaseSchema['dealerSubscriptions'] = {};
@@ -100,11 +131,18 @@ export class ArbitrageDatabase {
       keptSubs[k] = sub;
     }
 
+    const keptWatches: DatabaseSchema['watches'] = {};
+    for (const [k, v] of Object.entries(data.watches || {})) {
+      if (!isTenantKey(k)) { changed = true; continue; }
+      keptWatches[k] = v;
+    }
+
     if (changed) {
       const out: DatabaseSchema = {
         trackedVehicles: keptTracked,
         deals: keptDeals,
         dealerSubscriptions: keptSubs,
+        watches: keptWatches,
         discoveredDomains: data.discoveredDomains || {},
       };
       this.data = out;
@@ -227,8 +265,21 @@ export class ArbitrageDatabase {
 
     const urgencyScore = calculateUrgencyScore(daysOnMarket, priceHistory.length, totalPriceDrop, existing.originalPrice);
 
+    // Cross-source dedup merge: when a richer listing of the SAME car arrives
+    // (more photos), upgrade the identity fields to it — otherwise the first
+    // (often photo-less AutoTrader) row would win and bury the Cars.co.za photo.
+    const incomingImages = Array.isArray(vehicle.images) ? vehicle.images : [];
+    const upgrade = incomingImages.length > (Array.isArray(existing.images) ? existing.images.length : 0);
+
     const updatedRecord: TrackedInventoryVehicle = {
       ...existing,
+      rawId: upgrade ? vehicle.rawId : existing.rawId,
+      source: upgrade ? vehicle.source : existing.source,
+      url: upgrade ? vehicle.url : existing.url,
+      trim: upgrade && vehicle.trim ? vehicle.trim : existing.trim,
+      images: upgrade ? vehicle.images : existing.images,
+      sellerId: upgrade && vehicle.sellerId ? vehicle.sellerId : existing.sellerId,
+      sellerName: upgrade && vehicle.sellerName ? vehicle.sellerName : existing.sellerName,
       lastSeenAt: now,
       daysOnMarket,
       currentPrice: vehicle.askingPrice,
@@ -249,7 +300,7 @@ export class ArbitrageDatabase {
     return this.data.trackedVehicles[tenantKey(dealerSlug, fingerprint)] || null;
   }
 
-  public getTrackedVehicles(filter?: { dealerSlug?: string; minDom?: number }): TrackedInventoryVehicle[] {
+  public getTrackedVehicles(filter?: { dealerSlug?: string; minDom?: number; status?: string[] }): TrackedInventoryVehicle[] {
     let list = Object.entries(this.data.trackedVehicles);
     if (filter?.dealerSlug) {
       list = list.filter(([k]) => k.startsWith(`${filter.dealerSlug}:`));
@@ -257,6 +308,9 @@ export class ArbitrageDatabase {
     let rows = list.map(([, v]) => v);
     if (filter?.minDom !== undefined) {
       rows = rows.filter((t) => t.daysOnMarket >= filter.minDom!);
+    }
+    if (filter?.status && filter.status.length > 0) {
+      rows = rows.filter((t) => filter.status!.includes(t.status));
     }
     return rows;
   }
@@ -271,11 +325,16 @@ export class ArbitrageDatabase {
     const existing = this.data.deals[key];
 
     if (existing) {
+      const existingImgs = Array.isArray(existing.vehicle?.images) ? existing.vehicle.images.length : 0;
+      const newImgs = Array.isArray(deal.vehicle?.images) ? deal.vehicle.images.length : 0;
       const preserved = {
         // Keep the original first-seen/detection identity for alert lifecycle.
         id: existing.id,
         detectedAt: existing.detectedAt,
         status: existing.status === 'new' ? deal.status : existing.status,
+        // Cross-source dedup: keep the richer vehicle (more photos) when the
+        // same car re-detects from a thinner source.
+        vehicle: newImgs > existingImgs ? deal.vehicle : existing.vehicle,
       };
       this.data.deals[key] = {
         ...existing,
@@ -352,6 +411,28 @@ export class ArbitrageDatabase {
     this.markDirty();
   }
 
+  // --- Watches (dealer-pinned fingerprints, tenant-scoped) ---
+
+  public getWatchedFingerprints(dealerSlug: string): string[] {
+    const prefix = `${dealerSlug}:`;
+    return Object.keys(this.data.watches)
+      .filter((k) => k.startsWith(prefix))
+      .map((k) => k.slice(prefix.length));
+  }
+
+  /** Toggle a watch on a tracked fingerprint. Returns the new watched state. */
+  public toggleWatch(dealerSlug: string, fingerprint: string): boolean {
+    const key = tenantKey(dealerSlug, fingerprint);
+    if (this.data.watches[key]) {
+      delete this.data.watches[key];
+      this.markDirty();
+      return false;
+    }
+    this.data.watches[key] = true;
+    this.markDirty();
+    return true;
+  }
+
   /** Clear data. With a slug: wipes only that tenant (dealer-initiated reset).
    *  Without: wipes everything (admin maintenance). The SERP discovery index
    *  survives a tenant reset — it belongs to the market, not the dealer. */
@@ -362,7 +443,7 @@ export class ArbitrageDatabase {
       return;
     }
     const prefix = `${dealerSlug}:`;
-    for (const map of [this.data.trackedVehicles, this.data.deals, this.data.dealerSubscriptions] as Array<Record<string, unknown>>) {
+    for (const map of [this.data.trackedVehicles, this.data.deals, this.data.dealerSubscriptions, this.data.watches] as Array<Record<string, unknown>>) {
       for (const k of Object.keys(map)) {
         if (k.startsWith(prefix)) delete map[k];
       }
