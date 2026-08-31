@@ -1,5 +1,6 @@
 import { Vehicle, QualityReport } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
+import { formatMoney, marketById, type MarketDisplay } from '../components/market';
 
 export type WebReadinessLevel = 'capture' | 'ready' | 'web-ready' | 'listed';
 
@@ -110,15 +111,16 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
 export function whatsAppSalesBlurb(
   vehicle: Vehicle,
   readiness: WebReadiness,
-  opts?: { dealerName?: string; waNumber?: string }
+  opts?: { dealerName?: string; waNumber?: string; market?: MarketDisplay }
 ): string {
-  const price = Number(vehicle.price || 0).toLocaleString('en-ZA');
+  const m = opts?.market || marketById('za');
+  const price = formatMoney(Number(vehicle.price || 0), { currency: m.currency, locale: m.locale });
   const score = readiness.overallScore != null ? `${readiness.overallScore}/100` : 'pending';
   const dealer = opts?.dealerName || vehicle.dealerName || 'Our dealership';
   return (
     `*${vehicle.year} ${vehicle.make} ${vehicle.model}*\n` +
     `${vehicle.trim || 'Standard'} · ${vehicle.color || ''}\n` +
-    `Stock *${vehicle.stockNumber}* · R ${price}\n` +
+    `Stock *${vehicle.stockNumber}* · ${price}\n` +
     `TruLens VIR: ${score} · ${readiness.label}\n` +
     `Photos: ${readiness.coreTaken}/${readiness.coreTotal} core shots\n` +
     `\n${dealer}` +

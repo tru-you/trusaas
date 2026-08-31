@@ -9,6 +9,7 @@ import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { SignaturePad } from './signature-pad';
+import { useMarket, useMoney } from '../contexts/MarketContext';
 import trulensLockup from '../assets/images/trulens-wordmark.png';
 import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
@@ -78,6 +79,8 @@ function computeCondition(vehicle: Vehicle) {
 
 export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
+  const money = useMoney();
+  const market = useMarket();
   const reportRef = useRef<HTMLDivElement>(null);
   const [waCopied, setWaCopied] = useState(false);
   const [generating, setGenerating] = useState<'full' | null>(null);
@@ -123,8 +126,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const condColor = conditionState === 'clear' ? '#16A34A' : conditionState === 'damage' ? '#B03226' : '#6E6656';
   const coreSlots = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core');
   const waBlurb = useMemo(
-    () => whatsAppSalesBlurb(brandedVehicle, readiness, { dealerName, waNumber: dealerWa || undefined }),
-    [brandedVehicle, readiness, dealerName, dealerWa]
+    () => whatsAppSalesBlurb(brandedVehicle, readiness, { dealerName, waNumber: dealerWa || undefined, market }),
+    [brandedVehicle, readiness, dealerName, dealerWa, market]
   );
 
   const embedUrl = vehicle.web3dPublicPath
@@ -134,7 +137,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const capturedPhotos = DEFAULT_TEMPLATE.slots.filter(s => vehicle.photos?.[s.id]);
 
   const reportId = `TL-${(vehicle.stockNumber || vehicle.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
-  const generatedAt = new Date().toLocaleString('en-ZA', {
+  const generatedAt = new Date().toLocaleString(market.locale, {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
@@ -641,7 +644,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </div>
             <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--muted)', marginBottom:14 }}>
               {vehicle.trim} · {vehicle.color}
-              {vehicle.mileage ? ` · ${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : ''}
+              {vehicle.mileage ? ` · ${Number(vehicle.mileage).toLocaleString(market.locale)} ${market.distanceUnit}` : ''}
               {vehicle.transmission ? ` · ${vehicle.transmission}` : ''}
               {vehicle.fuelType ? ` · ${vehicle.fuelType}` : ''}
               {' · Stock '}{vehicle.stockNumber}
@@ -656,8 +659,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="row"><span className="k">Trim</span><span className="v">{vehicle.trim || '—'}</span></div>
               <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
               <div className="row"><span className="k">Type</span><span className="v">{vehicle.vehicleType || '—'}</span></div>
-              <div className="row"><span className="k">List price</span><span className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</span></div>
-              <div className="row"><span className="k">Mileage</span><span className="v">{vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : '—'}</span></div>
+              <div className="row"><span className="k">List price</span><span className="v">{money(Number(vehicle.price || 0))}</span></div>
+              <div className="row"><span className="k">Mileage</span><span className="v">{vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString(market.locale)} ${market.distanceUnit}` : '—'}</span></div>
               <div className="row"><span className="k">Photos</span><span className="v">{capturedPhotos.length} of {DEFAULT_TEMPLATE.slots.length}</span></div>
             </div>
 

@@ -17,6 +17,8 @@ import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import type { DiscScan } from '../lib/saDisc';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import { SetupChecklistCard } from './SetupPrompt';
+import { formatMoney, formatMoneyFromData, formatDistance } from './market';
+import { useMarket, useMoney } from '../contexts/MarketContext';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -63,6 +65,8 @@ export default function InventoryList({
   onSetupSnooze
 }: InventoryListProps) {
   const { signOut, user, isDemo } = useAuth();
+  const money = useMoney();
+  const market = useMarket();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [guideSeen, setGuideSeen] = React.useState(() => !!localStorage.getItem('trulens_guide_seen'));
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -287,7 +291,7 @@ export default function InventoryList({
   // scraper module is server-only (imports fs/path), so it must never be
   // imported into this browser component.
   const [valuation, setValuation] = React.useState<
-    { averageRetailPrice: number | null; listingsFound: number; mileageAdjusted?: boolean; sampleMedianKm?: number | null } | null
+    { averageRetailPrice: number | null; listingsFound: number; mileageAdjusted?: boolean; sampleMedianKm?: number | null; currency?: string; distanceUnit?: 'km' | 'mi' } | null
   >(null);
   const [valuationLoading, setValuationLoading] = React.useState(false);
   const runValuation = React.useCallback(async () => {
@@ -394,9 +398,9 @@ export default function InventoryList({
 
   // TransUnion price (bundle-gated) — needs an M&M code in production, but in
   // demo the simulated responder accepts any seed so we synthesise one from the
-  // form itself. Result renders in the Add Vehicle flow.
-  const fmtZAR = (n: number | null | undefined) =>
-    n == null ? '—' : 'R ' + Math.round(n).toLocaleString('en-ZA');
+  // form itself. Result renders in the Add Vehicle flow. TransUnion eValue8 is
+  // the SA provider — its figures are ZAR by definition, whatever the market.
+  const fmtZAR = (n: number | null | undefined) => formatMoney(n);
   const [tuPriceResult, setTuPriceResult] = React.useState<any>(null);
   const [tuPriceLoading, setTuPriceLoading] = React.useState(false);
   const runTuPrice = React.useCallback(async () => {
@@ -899,13 +903,13 @@ export default function InventoryList({
                       <div className="flex items-center justify-between">
                         <span className="text-[rgba(232,234,230,0.72)]">Market average</span>
                         <span className="font-mono font-semibold text-[#4FE3DC]">
-                          R {valuation.averageRetailPrice.toLocaleString('en-ZA')}
+                          {formatMoneyFromData(valuation.averageRetailPrice, valuation)}
                         </span>
                       </div>
                       <div className="mt-1 flex items-center justify-between text-[rgba(232,234,230,0.6)]">
                         <span>
                           {valuation.listingsFound} listing{valuation.listingsFound === 1 ? '' : 's'}
-                          {valuation.mileageAdjusted ? ' · km-adjusted' : ''}
+                          {valuation.mileageAdjusted ? ` · ${valuation.distanceUnit || 'km'}-adjusted` : ''}
                         </span>
                         <button
                           type="button"
@@ -917,7 +921,7 @@ export default function InventoryList({
                       </div>
                       {valuation.sampleMedianKm != null && (
                         <div className="mt-1 text-[rgba(232,234,230,0.5)]">
-                          Market median: {valuation.sampleMedianKm.toLocaleString('en-ZA')} km
+                          Market median: {formatDistance(valuation.sampleMedianKm, valuation.distanceUnit || market.distanceUnit, market.locale)}
                         </div>
                       )}
                     </>
@@ -1352,7 +1356,7 @@ export default function InventoryList({
                   photos.front_bumper.startsWith('http'))
                   ? photos.front_bumper
                   : null;
-              const priceLabel = Number(vehicle.price || 0).toLocaleString();
+              const priceLabel = money(Number(vehicle.price || 0));
               const isHighlighted =
                 !!highlightStock &&
                 (vehicle.stockNumber || '').toLowerCase() === highlightStock.toLowerCase();
@@ -1399,7 +1403,7 @@ export default function InventoryList({
                           )}
                         </h3>
                         <p className="text-[13px] text-neutral-400 font-medium mt-0.5">
-                          {vehicle.trim || 'Standard Trim'} • <span className="text-neutral-300">R {priceLabel}</span>
+                          {vehicle.trim || 'Standard Trim'} • <span className="text-neutral-300">{priceLabel}</span>
                         </p>
                         
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -1612,10 +1616,10 @@ export default function InventoryList({
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[13px] font-semibold text-[#4FE3DC]">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0).toLocaleString()} ready
+                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0))} ready
                 </span>
                 <span className="text-[12px] text-[rgba(232,234,230,0.55)]">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} pending
+                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0))} pending
                 </span>
               </div>
             </div>

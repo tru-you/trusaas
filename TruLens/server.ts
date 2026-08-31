@@ -19,6 +19,14 @@ import {
 } from './photoStore';
 import { DEFAULT_TEMPLATE } from './src/templates';
 import { fetchValuation } from './src/lib/scraper';
+/* Market-aware engine (UK/US-ready) behind a kill-switch:
+ *   VALUATION_ENGINE=legacy  → the in-tree SA fork (production default)
+ *   VALUATION_ENGINE=package → shared packages/market-scraper engine
+ * MARKET (default 'za') picks the market config on the package engine. */
+import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from '../packages/market-scraper/index';
+
+const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
+const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
 
 /* Every TruLens template slot is `required: false` (dealer's call what goes on
    their site — see src/template.ts), so there is no `required` subset to pull
@@ -1002,6 +1010,15 @@ app.post('/api/auth/demo', rateLimitAuth, async (_req, res) => {
 function hasDealerScope(req: any): boolean {
   return !!req.user?.dealerSlug && !req.user?.demo;
 }
+
+/* Instance market — set by the deployment's MARKET env (default 'za'), NOT
+ * dealer data, so it rides for every authenticated caller incl. demo. The
+ * client display layer (MarketContext) reads it to pick currency/locale/units
+ * for the dealer's own prices. Same endpoint name TruInspect exposes, so the
+ * shared MarketContext works unchanged in both apps. */
+app.get('/api/dealership/settings', authenticate, (_req: any, res) => {
+  res.json({ market: INSTANCE_MARKET });
+});
 
 app.get('/api/setup/status', authenticate, async (req: any, res) => {
   if (!hasDealerScope(req)) {
@@ -2331,12 +2348,21 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
   }
   const dealerSlug = req.user?.dealerSlug || 'default';
   const km = Number(mileage);
+  const valuationOpts = {
+    vin: String(vin || '').trim().toUpperCase() || undefined,
+    dealerSlug,
+    mileage: Number.isFinite(km) && km > 0 ? Math.round(km) : undefined,
+  };
   try {
-    const data = await fetchValuation(String(make), String(model), String(year), {
-      vin: String(vin || '').trim().toUpperCase() || undefined,
-      dealerSlug,
-      mileage: Number.isFinite(km) && km > 0 ? Math.round(km) : undefined,
-    });
+    const data = VALUATION_ENGINE === 'package'
+      ? await pkgFetchValuation(
+          String(make),
+          String(model),
+          String(year),
+          valuationOpts,
+          (pkgMarkets as Record<string, any>)[INSTANCE_MARKET] || pkgMarkets.za,
+        )
+      : await fetchValuation(String(make), String(model), String(year), valuationOpts);
     res.json(data);
   } catch (err: any) {
     console.error('[valuation] failed:', err?.message || err);
