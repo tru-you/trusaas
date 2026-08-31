@@ -1094,6 +1094,16 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
       return res.json({ success: true, vehicle: saved });
     }
 
+    // Demo users are limited to 10 vehicles to prevent disk abuse.
+    if (req.user?.demo) {
+      const all = await listVehicles(req.user);
+      if (all.length >= 10) {
+        return res.status(403).json({
+          error: 'Demo limit reached — 10 vehicles maximum. Sign in with a dealership code for unlimited access.',
+        });
+      }
+    }
+
     const newVehicle = {
       ...vehicleData,
       ownerId: userId,
@@ -1829,33 +1839,20 @@ function demoConsume(req: any, feature: 'valuation' | 'regcheck' | 'accident-rep
   return { ...b };
 }
 
-/** Handle a demo request locally with simulated data, or 402 once the 2-of-each
- *  budget is spent. Returns true if the response was sent. */
+/** Demo users get a hard 403 on paid TransUnion calls — no simulation, no credits.
+ *  Returns true if the response was sent (i.e. the caller is demo). */
 function handleDemoImagin8(
   req: any,
   res: any,
-  feature: 'valuation' | 'regcheck' | 'accident-report',
-  params: Record<string, any>,
+  _feature: 'valuation' | 'regcheck' | 'accident-report',
+  _params: Record<string, any>,
 ): boolean {
   if (!req.user?.demo) return false;
-  const remaining = demoRemaining(req);
-  if ((remaining[DEMO_FEATURE_SLOT[feature]] || 0) <= 0) {
-    res.status(402).json({
-      error: 'Demo TransUnion credits used up.',
-      bundles: remaining,
-      demo: true,
-      demoUsedUp: true,
-    });
-    return true;
-  }
-  const next = demoConsume(req, feature);
-  const result =
-    feature === 'valuation'
-      ? imagin8SimValuation(String(params.mmCode), Number(params.year), params.mileage ? Number(params.mileage) : undefined)
-      : feature === 'regcheck'
-        ? imagin8SimRegCheck(String(params.identifier), params.type === 'reg' || params.type === 'engine' ? params.type : 'vin')
-        : imagin8SimAccidentReport(String(params.vin));
-  res.json({ ...result, bundlesRemaining: next, demo: true });
+  res.status(403).json({
+    error: 'TransUnion features are available on the full product. Sign in with a dealership code to unlock.',
+    demo: true,
+    demoBlocked: true,
+  });
   return true;
 }
 
@@ -1910,7 +1907,7 @@ app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
 // Bundle balance — read from Flow central so there is ONE ledger. Demo tokens
 // short-circuit locally to their own simulated budget and never reach the gateway.
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  if (req.user?.demo) return res.json({ ...demoRemaining(req), demo: true });
+  if (req.user?.demo) return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, demo: true });
   if (!SYNC_KEY) return res.json(DEMO_ZERO_BUNDLES); // gateway down → fail closed
   try {
     const slug = resolveDealerId(req);

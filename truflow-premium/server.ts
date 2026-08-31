@@ -1064,7 +1064,7 @@ app.post("/api/auth/demo", rateLimitAuth, (_req, res) => {
     writeAuth(store);
   }
   res.json({
-    token: signToken(acc, false, { sid: crypto.randomUUID() }), // short session — a demo shouldn't linger for 30 days
+    token: signToken(acc, false, { sid: crypto.randomUUID(), exp: Date.now() + 24 * 60 * 60 * 1000 }), // 24h demo session
     demo: true,
     account: { label: "Demo Dealership", role: "principal", dealershipId: "demo", demo: true },
   });
@@ -1908,11 +1908,11 @@ app.post("/api/inventory", (req: any, res) => {
       typeof req.body.showOnWebsite === "boolean" ? req.body.showOnWebsite : false
   };
 
-  // Demo users are limited to 5 vehicles to prevent disk abuse.
+  // Demo users are limited to 10 vehicles to prevent disk abuse.
   if (req.auth?.dealershipId === "demo") {
     const demoCount = state.vehicles.filter((v: any) => v.dealershipId === "demo").length;
-    if (demoCount >= 5) {
-      return res.status(403).json({ error: "Demo limit reached — 5 vehicles maximum. Sign in with a dealership code for unlimited access." });
+    if (demoCount >= 10) {
+      return res.status(403).json({ error: "Demo limit reached — 10 vehicles maximum. Sign in with a dealership code for unlimited access." });
     }
   }
 
@@ -6637,21 +6637,10 @@ async function runChargedImagin8Call(
   dealershipId = canonicalDealerSlug(dealershipId);
   const demo = isImagin8DemoSlug(dealershipId);
 
-  // Prospect demo: simulated, 2-of-each per session, never any real credits.
+  // Prospect demo: paid TransUnion calls are OFF — no simulation, no credits.
+  // The UI shows the glassmorphic "Unlock" state via zeroed bundles.
   if (demo) {
-    const key = demoSessionId || dealershipId;
-    const remaining = premiumDemoRemaining(key);
-    if ((remaining[DEMO_FEATURE_SLOT[feature]] || 0) <= 0) {
-      return { status: 402, body: { error: "Demo TransUnion credits used up.", bundles: remaining, demo: true, demoUsedUp: true } };
-    }
-    const next = premiumDemoConsume(key, feature);
-    const result =
-      feature === "valuation"
-        ? imagin8SimValuation(String(params.mmCode), Number(params.year), params.mileage ? Number(params.mileage) : undefined)
-        : feature === "regcheck"
-          ? imagin8SimRegCheck(String(params.identifier), params.type === "reg" || params.type === "engine" ? params.type : "vin")
-          : imagin8SimAccidentReport(String(params.vin));
-    return { status: 200, body: { ...result, bundlesRemaining: next, demo: true } };
+    return { status: 403, body: { error: "TransUnion features are available on the full product. Sign in with a dealership code to unlock.", demo: true, demoBlocked: true } };
   }
 
   const state = readState();
@@ -6771,7 +6760,7 @@ app.get("/api/internal/imagin8/bundles", requireSyncKey, (req: any, res) => {
   if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
   dealershipId = canonicalDealerSlug(dealershipId);
   if (isImagin8DemoSlug(dealershipId)) {
-    return res.json({ ...premiumDemoRemaining(dealershipId), demo: true });
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, demo: true });
   }
   if (isUnlimitedDealer(dealershipId)) {
     return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
@@ -6832,7 +6821,7 @@ app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
   }
   const dealershipId = canonicalDealerSlug(rawId);
   if (isImagin8DemoSlug(dealershipId)) {
-    return res.json({ ...premiumDemoRemaining(req.auth?.sid || dealershipId), demo: true });
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, demo: true });
   }
   if (isUnlimitedDealer(dealershipId)) {
     // Unlimited dealers get plain unlocked buttons — zeroed counters plus the

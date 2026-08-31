@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight, ExternalLink, Loader2, TrendingDown, TrendingUp, Minus, Shield } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, Loader2, TrendingDown, TrendingUp, Minus, Shield, Radio } from 'lucide-react';
 import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
@@ -199,9 +199,11 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           type="button"
           onClick={handleFetchValuation}
           disabled={fetching}
-          className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] cursor-pointer disabled:opacity-60"
+          className={`market-btn w-full min-h-[52px] flex items-center justify-center gap-3 text-[16px] text-[#4FE3DC] font-semibold cursor-pointer select-none${fetching ? ' scanning' : ''}`}
         >
-          {fetching ? 'Scanning…' : 'Fetch Live Market Value'}
+          {fetching ? <Loader2 size={18} className="animate-spin" /> : <Radio size={18} />}
+          {fetching ? 'Scanning market…' : 'Live Market Value'}
+          <span className="mv-badge" style={{fontSize:'11px'}}>LIVE</span>
         </button>
 
         <Imagin8GatedButton

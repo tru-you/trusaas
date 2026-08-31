@@ -532,9 +532,9 @@ function toBool(v: unknown): boolean {
 // These match the normalized TuValuation / RegCheckResult / AccidentReportResult
 // shapes the servers already hand the UI, so no frontend change is needed.
 
-/** A demo session gets 5 of each paid call — plenty of runway to run the whole
- *  suite across a few cars before the "Unlock (Premium)" wall reappears. */
-export const DEMO_IMAGIN8_ALLOWANCE = { valuation: 5, regCheck: 5, accidentReport: 5 };
+/** Demo sessions get ZERO paid calls — TransUnion features are gated behind a
+ *  real dealership subscription. The UI shows the glassmorphic "Unlock" state. */
+export const DEMO_IMAGIN8_ALLOWANCE = { valuation: 0, regCheck: 0, accidentReport: 0 };
 
 /** Deterministic FNV-1a hash → 32-bit uint. Stable per input string. */
 function hash32(str: string): number {

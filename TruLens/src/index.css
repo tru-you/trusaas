@@ -728,3 +728,53 @@ button.absolute:active { transform: translateY(2px); }
    ship at 11px — status text on the busiest screens, which is exactly the
    text someone squints at across a windscreen. */
 .text-\[11px\] { font-size: 12px; }
+
+/* ── Live Market Value button — animated gradient glow ── */
+@property --mv-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes mv-rotate { to { --mv-angle: 360deg; } }
+@keyframes mv-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(79,227,220,0.15), 0 0 4px rgba(16,185,129,0.1); }
+  50%      { box-shadow: 0 0 20px rgba(79,227,220,0.25), 0 0 8px rgba(16,185,129,0.15); }
+}
+.market-btn {
+  position: relative;
+  background: linear-gradient(135deg, rgba(79,227,220,0.08), rgba(16,185,129,0.06));
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  border-radius: 14px;
+  overflow: hidden;
+  animation: mv-pulse 3s ease-in-out infinite;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+.market-btn::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--mv-angle), #4FE3DC, #10B981, #0EA5E9, #4FE3DC);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: mv-rotate 3s linear infinite;
+  pointer-events: none;
+}
+.market-btn:hover {
+  box-shadow: 0 0 28px rgba(79,227,220,0.35), 0 0 10px rgba(16,185,129,0.2);
+  transform: translateY(-1px);
+}
+.market-btn:active { transform: scale(0.985); }
+.market-btn:disabled { opacity: 0.5; animation: none; }
+.market-btn:disabled::before { animation: none; }
+.market-btn.scanning::before { animation-duration: 0.6s; }
+.market-btn.scanning { animation: none; }
+.mv-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(16,185,129,0.2); color: #10B981;
+  text-transform: uppercase;
+}

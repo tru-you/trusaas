@@ -34,6 +34,10 @@ export interface ValuationResult {
   /** Median km of the listings that carried mileage — lets the UI show what
    *  the market's typical km is vs the subject car. Null when none had km. */
   sampleMedianKm?: number | null;
+  /** The broader model name used when the exact model returned too few results
+   *  (e.g. "Yaris" when "Yaris Cross" had <3 comps). Absent when the tight
+   *  model matched enough. */
+  modelBroadened?: string;
 }
 
 export interface JsonAuthConfig {
@@ -357,8 +361,9 @@ function htmlToListings(html: string, selectors: string[]): Listing[] {
  *  Both are SPAs whose __NEXT_DATA__/JSON-LD is a stub, so the card grid is what
  *  actually carries the data. We match card containers by class fragments and
  *  read price/km/year by regex from the (CSS-module noise-laden) card text, so
- *  the markup namespace doesn't matter. Year tolerance is 2 because AutoTrader
- *  ignores ?year= and returns a spread; a wildly-out-of-range year still drops.
+ *  the markup namespace doesn't matter. Year tolerance is ±1 (same as the rest
+ *  of the pipeline) because AutoTrader ignores ?year= and returns a spread;
+ *  a wildly-out-of-range year still drops.
  *  Returns [] when no recognisable cards, so callers fall back to the price scan.
  */
 export function extractCardListings(html: string, make: string, model: string, year: string): Listing[] {
@@ -378,10 +383,10 @@ export function extractCardListings(html: string, make: string, model: string, y
     const cardText = $c.text().replace(/\s+/g, ' ').trim();
     if (cardText.length < 8) return;
 
-    // make/model + year (tolerance 2) against the CARD TEXT, not just the title
+    // make/model + year (±1) against the CARD TEXT, not just the title
     // element — CSS-module noise strips the title out of some tiles but the text
     // still names the vehicle.
-    if (!titleMentionsVehicle(cardText, make, model, year, undefined, { yearTolerance: 2 })) return;
+    if (!titleMentionsVehicle(cardText, make, model, year)) return;
 
     // Targeted price element first (precise), regex fallback (broad). Using
     // priceFromText alone on the full card text grabs the first R-prefixed
@@ -594,7 +599,7 @@ function escapeRegex(s: string): string {
  *  fields, and dealer titles carry the same noise — so matching keys on the
  *  cleaned base model instead of the raw string. Drop displacements ("1.5",
  *  "1400cc") and variant words, never 3+ digit bare model numbers ("308"). */
-const MODEL_NOISE_RE = /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4wd|automatic|auto|manual|fwd|awd|rwd|style|storage|extras)\b)/gi;
+const MODEL_NOISE_RE = /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc)\b|\b(?:sport|sports|msport|m\s?sport|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4wd|automatic|auto|manual|fwd|awd|rwd|style|storage|extras|plus|pack|line|se|gt|facelift|fl|lci)\b)/gi;
 
 /** Reduce any vehicle-name string to its base model so variant/extras words
  *  can't veto a genuine match. Empty for blank. */
@@ -677,11 +682,10 @@ export function loadDealerSources(): DealerSource[] {
   }
 }
 
-/** How many model years either side of the query still count as a comp. A
- *  trade-in wants a close ballpark, not a single-year sliver — ±3 widens the
- *  sample on a thin model without dragging in a different generation.
- *  Env-overridable. */
-const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
+/** How many model years either side of the query still count as a comp. ±1 keeps
+ *  the sample within the same facelift/generation — ±3 was pulling in cars from
+ *  completely different price brackets. Env-overridable. */
+const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 1;
 
 /** Listing titles must name the actual vehicle: make (any of its spellings)
  *  AND model (plus any dealer-configured `match`) all have to appear, and the
@@ -1250,6 +1254,62 @@ export async function fetchValuation(
     });
   }
 
+  // Layer 3.5: Model broadening — when tight model + classifieds returned too
+  // few results, try dropping the last word of the model name and re-querying
+  // classifieds. "Yaris Cross" → "Yaris", "Corolla Quest" → "Corolla",
+  // "Polo Vivo" → "Polo". Only fires when: the model has multiple words, the
+  // sample is thin (<3), and there's budget left. Year stays locked (exact ±1).
+  const MIN_BROADENING_SAMPLE = 3;
+  let broadenedModel: string | undefined;
+  if (dealerListings.length + classifiedListings.length < MIN_BROADENING_SAMPLE && budgetLeft() > 0) {
+    const words = baseModel.split(/\s+/);
+    if (words.length >= 2) {
+      const broader = words.slice(0, -1).join(' ');
+      const broaderEnc = encodeURIComponent(broader);
+      console.log(`[scraper] model broadening: "${baseModel}" → "${broader}" (${dealerListings.length + classifiedListings.length} listings too thin)`);
+
+      const broadParseClassified = (html: string, selectors: string[]): Listing[] => {
+        const nd = extractNextDataListings(html, make, broader, y);
+        if (nd.length) return nd;
+        const cards = extractCardListings(html, make, broader, y);
+        if (cards.length) return cards;
+        return htmlToListings(html, selectors);
+      };
+
+      const broadPerSource = await Promise.all(
+        sources.map(async (src) => {
+          const acc: Listing[] = [];
+          for (let p = 1; p <= CLASSIFIEDS_PAGES; p++) {
+            if (budgetLeft() <= 0) break;
+            const url = src.url(make, broader, y);
+            const fullUrl = p <= 1 ? url : `${url}${url.includes('?') ? '&' : '?'}${src.pageParam || 'page'}=${p}`;
+            let listings: Listing[] = [];
+            try {
+              const html = await fetchWithRetry(fullUrl, { timeout: REQUEST_TIMEOUT, headers: DEFAULT_HEADERS });
+              listings = broadParseClassified(html, src.selectors);
+            } catch { /* swallow — broadening is best-effort */ }
+            if (listings.length === 0) break;
+            acc.push(...listings);
+          }
+          const seen = new Set<string>();
+          return acc.filter((l) => { const k = `${l.price}|${l.km ?? ''}`; if (seen.has(k)) return false; seen.add(k); return true; });
+        }),
+      );
+
+      const broadListings = broadPerSource.flat();
+      if (broadListings.length > 0) {
+        broadenedModel = broader;
+        classifiedListings.push(...broadListings);
+        const prices = broadListings.map((l) => l.price);
+        sourcesOutput.push({
+          name: `Broadened (${broader})`,
+          count: prices.length,
+          avg: Math.round(prices.reduce((s, v) => s + v, 0) / prices.length),
+        });
+      }
+    }
+  }
+
   // Layer 4: SERP (Google) — only when the free layers are thin AND a provider
   // is configured, so the common data-rich path never pays. Cached with the
   // rest, so at most one paid call per model per cache window.
@@ -1307,6 +1367,7 @@ export async function fetchValuation(
     sources: finalSources,
     mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && allListings.some((l) => typeof l.km === 'number'),
     sampleMedianKm: kmOf(allListings),
+    ...(broadenedModel ? { modelBroadened: broadenedModel } : {}),
   };
 
   cachePut(key, data);

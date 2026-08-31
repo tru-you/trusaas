@@ -451,12 +451,28 @@ button,input,textarea{font-family:inherit;}
 .tile.wide .kd{margin-top:4px;}
 .tile.wide .warr{width:20px;height:20px;color:var(--cyan);flex-shrink:0;}
 
-/* ── v1.3 · Market value (free scraper) ── */
-.mvbtn{width:100%;height:46px;margin-top:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r);
-  background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--cyan);font-size:14px;font-weight:600;cursor:pointer;transition:.15s ease;}
-.mvbtn:active{transform:scale(.985);background:rgba(79,227,220,.16);} .mvbtn:disabled{opacity:.6;}
+/* ── v1.3 · Market value (free scraper) — standout animated button ── */
+@property --mv-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+@keyframes mv-rotate { to { --mv-angle: 360deg; } }
+@keyframes mv-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(79,227,220,0.15), 0 0 4px rgba(16,185,129,0.1); }
+  50%      { box-shadow: 0 0 20px rgba(79,227,220,0.25), 0 0 8px rgba(16,185,129,0.15); }
+}
+.mvbtn{position:relative;width:100%;height:48px;margin-top:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,rgba(79,227,220,0.08),rgba(16,185,129,0.06));
+  border:1.5px solid transparent;background-clip:padding-box;border-radius:14px;
+  color:var(--cyan);font-size:14px;font-weight:600;cursor:pointer;overflow:hidden;
+  animation:mv-pulse 3s ease-in-out infinite;transition:transform .1s,box-shadow .2s;}
+.mvbtn::before{content:'';position:absolute;inset:-1.5px;border-radius:inherit;padding:1.5px;
+  background:conic-gradient(from var(--mv-angle),#4FE3DC,#10B981,#0EA5E9,#4FE3DC);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:mv-rotate 3s linear infinite;pointer-events:none;}
+.mvbtn:active{transform:scale(.985);}
+.mvbtn:disabled{opacity:.5;animation:none;} .mvbtn:disabled::before{animation:none;}
+.mvbtn.scanning::before{animation-duration:.6s;} .mvbtn.scanning{animation:none;}
 .mvbtn svg{width:16px;height:16px;}
-.mv-free{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;padding:2px 7px;border-radius:var(--r-pill);background:var(--cyan-surface);color:var(--cyan);}
+.mv-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 8px;border-radius:999px;background:rgba(16,185,129,.2);color:#10B981;text-transform:uppercase;}
 .mv-out{margin-top:10px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);border-radius:var(--r);padding:12px 14px;font-size:13px;}
 .mv-out.err{border-color:var(--danger-faint);background:var(--danger-faint);color:var(--danger);}
 .mv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -563,7 +579,7 @@ button,input,textarea{font-family:inherit;}
         <div class="frow"><div class="field"><label>Transmission</label><select id="aTrans"><option>Automatic</option><option>Manual</option></select></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" id="aKm" placeholder="28500" autocomplete="off"></div></div>
         <div class="lbl">The money</div>
         <div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" id="aPrice" placeholder="459900" autocomplete="off"></div><div class="field"><label>TruPrice (R)</label><input inputmode="numeric" id="aTru" placeholder="479000" autocomplete="off"></div></div>
-        <button type="button" class="mvbtn" id="aMvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 7h-9"/><path d="M14 17h5"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>Get market value<span class="mv-free">Free</span></button><div id="aMvOut"></div>
+        <button type="button" class="mvbtn" id="aMvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>Live Market Value<span class="mv-badge">LIVE</span></button><div id="aMvOut"></div>
         <button type="submit" class="btn-primary uf-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Add to inventory</button>
         <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px">Saved unpublished · shoot in TruLens to go live</p>
         <div style="height:14px"></div>
@@ -1060,7 +1076,7 @@ button,input,textarea{font-family:inherit;}
       '</div>'+
       '<div class="lbl">Details</div>'+
       '<div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
-      '<button type="button" class="mvbtn" id="vMvBtn">'+SVG_TREND+'Get market value<span class="mv-free">Free</span></button><div id="vMvOut"></div>'+
+      '<button type="button" class="mvbtn" id="vMvBtn">'+SVG_RADIO+'Live Market Value<span class="mv-badge">LIVE</span></button><div id="vMvOut"></div>'+
       '<div class="field"><label>Variant / trim</label><input type="text" value="'+esc(v.trim||"")+'" id="fTrim"></div>'+
       '<div class="field"><label>Listing blurb</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div><div style="height:8px"></div>';
     $("#sheetFoot").style.display="";
@@ -1488,13 +1504,14 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
 
   /* ── Market value (free AutoTrader/Cars.co.za scraper on the backend) ── */
   var SVG_TREND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7h-9"/><path d="M14 17h5"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>';
+  var SVG_RADIO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>';
   var SVG_SHARE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></svg>';
   function runMV(params,out,btn,curPrice,onUse){
     var key=[params.year,params.make,params.model,params.mileage||0].join("|").toLowerCase();
     var orig=btn.innerHTML;
-    var done=function(){btn.innerHTML=orig;btn.disabled=false;};
+    var done=function(){btn.innerHTML=orig;btn.disabled=false;btn.classList.remove('scanning');};
     if(mvCache[key]){out.innerHTML=mvCache[key];wireUse();return;}
-    btn.disabled=true;btn.textContent="Checking the market…";
+    btn.disabled=true;btn.classList.add('scanning');btn.innerHTML=SVG_RADIO+'Scanning market…<span class="mv-badge">LIVE</span>';
     api("POST","/api/valuation",{make:params.make,model:params.model,year:params.year,mileage:params.mileage||undefined}).then(function(res){
       mvCache[key]=mvHTML(res,params,curPrice);
       out.innerHTML=mvCache[key];wireUse();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Plus, Search, Loader2, CheckCircle2, Shield, History, TrendingUp, LineChart } from 'lucide-react';
+import { X, Plus, Search, Loader2, CheckCircle2, Shield, History, TrendingUp, LineChart, Radio } from 'lucide-react';
 import { Vehicle } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
@@ -328,10 +328,11 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
             type="button"
             onClick={runMarketValue}
             disabled={marketLoading}
-            className="inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl bg-[rgba(79,227,220,0.10)] border border-[rgba(79,227,220,0.25)] text-[#4FE3DC] text-[13px] font-medium hover:bg-[rgba(79,227,220,0.16)] hover:border-[rgba(79,227,220,0.40)] active:translate-y-[1px] transition-all cursor-pointer select-none disabled:opacity-60"
+            className={`market-btn inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2.5 text-[#4FE3DC] text-[13px] font-semibold cursor-pointer select-none${marketLoading ? ' scanning' : ''}`}
           >
-            {marketLoading ? <Loader2 size={13} className="animate-spin" /> : <LineChart size={13} />}
-            <span className="truncate">Get market value · Free</span>
+            {marketLoading ? <Loader2 size={13} className="animate-spin" /> : <Radio size={13} />}
+            <span className="truncate">Live Market Value</span>
+            <span className="mv-badge">LIVE</span>
           </button>
         </div>
         {regCheckResult && (
