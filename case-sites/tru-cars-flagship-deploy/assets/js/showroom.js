@@ -149,7 +149,7 @@
       '<div class="wrap">' +
         '<a class="brand" href="/index.html">' +
           '<span class="brand-lockup">' +
-            '<img class="lockup-light" src="/assets/brand/truecars-lockup-light.jpg" alt="TrueCars — Demo Site">' +
+            '<img class="lockup-light" src="/assets/brand/truecars-lockup-light.png" alt="TrueCars — Demo Site">' +
             '<img class="lockup-dark" src="/assets/brand/truecars-lockup-dark.jpg" alt="TrueCars — Demo Site">' +
           '</span>' +
         "</a>" +
@@ -255,9 +255,8 @@
 
         '<div class="footer-grid">' +
           "<div>" +
-            '<a class="brand" href="/index.html" style="display:inline-flex">' +
-              '<span class="brand-mark"><img src="/assets/brand/favicon.svg" alt="" width="38" height="38"></span>' +
-              '<span class="brand-text"><span class="brand-word" aria-label="Truecars">True<b class="lw lw-c">C<i></i></b><b class="lw lw-a">a<i></i></b><b class="lw lw-r">r<i></i></b><b class="lw lw-s">s<i></i></b></span><span style="color:rgba(250,250,247,0.35)">A TruDealer storefront</span></span>' +
+            '<a class="brand footer-lockup" href="/index.html" style="display:inline-flex">' +
+              '<img src="/assets/brand/truecars-lockup-dark.jpg" alt="TrueCars — Demo Site">' +
             "</a>" +
             '<p style="margin-top:20px;font-size:14px;max-width:34ch;color:rgba(250,250,247,0.45)">' +
               "The demo storefront for the TruDealer platform — inventory, inspection, finance and messaging as one system." +
