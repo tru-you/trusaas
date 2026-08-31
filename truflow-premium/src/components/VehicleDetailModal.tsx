@@ -144,7 +144,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
   // Fetch bundles on mount
   useEffect(() => {
-    fetch('/api/imagin8/bundles')
+    authFetch('/api/imagin8/bundles')
       .then(r => r.ok ? r.json() : ZERO_BUNDLES)
       .then(b => setImagin8Bundles(b))
       .catch(() => setImagin8Bundles(ZERO_BUNDLES));
