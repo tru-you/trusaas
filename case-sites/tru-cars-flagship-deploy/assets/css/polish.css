@@ -1,0 +1,131 @@
+/* ============================================================
+   TRUECARS SA — showroom polish layer
+   Add-only. Does NOT change layout, spacing, or DOM structure.
+   Adds micro-interactions, focus rings, glassmorphism, badge
+   styling, and subtle elevation to make the demo feel premium.
+   ============================================================ */
+
+/* ---------- 1. Accessible focus rings across the site ---------- */
+:where(a, button, [role="button"], input, select, textarea):focus-visible {
+  outline: 2px solid #4D9BFF;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ---------- 2. Buttons: springy micro-interaction ---------- */
+.btn,
+button.btn,
+a.btn {
+  transition:
+    transform .28s cubic-bezier(.34, 1.4, .64, 1),
+    box-shadow .28s ease,
+    filter .18s ease,
+    background-color .2s ease;
+  will-change: transform;
+}
+.btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.btn:active { transform: translateY(0) scale(.98); }
+
+.btn-grad {
+  box-shadow: 0 10px 26px -12px rgba(20, 102, 224, .55),
+              inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+.btn-grad:hover {
+  box-shadow: 0 16px 34px -12px rgba(20, 102, 224, .65),
+              0 0 26px -10px rgba(79, 155, 255, .35),
+              inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+
+/* ---------- 3. Vehicle / product cards: subtle lift ---------- */
+.card,
+.veh-card,
+.product-card,
+[data-veh-card] {
+  transition:
+    transform .35s cubic-bezier(.22, 1, .36, 1),
+    box-shadow .35s ease,
+    border-color .3s ease;
+}
+.card:hover,
+.veh-card:hover,
+.product-card:hover,
+[data-veh-card]:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 24px 60px -22px rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(79, 155, 255, .22),
+    0 0 40px -18px rgba(79, 155, 255, .3);
+}
+
+/* ---------- 4. Glassmorphism helpers ---------- */
+.tc-glass {
+  background: linear-gradient(160deg, rgba(15, 22, 40, .82), rgba(10, 15, 28, .74));
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, .08);
+}
+
+/* ---------- 5. Status / trust badges ---------- */
+.badge,
+.tag,
+[data-badge] {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(20, 102, 224, .1);
+  color: #7FE9E3;
+}
+.badge.hot,
+[data-badge="hot"] {
+  background: linear-gradient(135deg, rgba(239, 68, 68, .18), rgba(245, 158, 11, .12));
+  border-color: rgba(239, 68, 68, .35);
+  color: #FCA5A5;
+}
+.badge.new,
+[data-badge="new"] {
+  background: linear-gradient(135deg, rgba(20, 184, 166, .22), rgba(59, 130, 246, .15));
+  border-color: rgba(20, 184, 166, .35);
+  color: #7FE9E3;
+}
+
+/* ---------- 6. Typography rhythm (non-structural) ---------- */
+h1, h2, h3 { letter-spacing: -.02em; }
+h1 { text-wrap: balance; }
+h2 { text-wrap: balance; }
+p  { text-wrap: pretty; }
+
+/* ---------- 7. Image lift ---------- */
+.veh-card img,
+.product-card img,
+[data-veh-card] img {
+  transition: transform .55s cubic-bezier(.22, 1, .36, 1), filter .3s ease;
+}
+.veh-card:hover img,
+.product-card:hover img,
+[data-veh-card]:hover img {
+  transform: scale(1.045);
+  filter: saturate(1.08) contrast(1.03);
+}
+
+/* ---------- 8. Z-index audit (single source of truth) ---------- */
+:root {
+  --z-demo-bar: 250;
+  --z-modal:    900;
+  --z-truafford: 999985;   /* below chat FAB so no visual collision */
+  --z-truchat:   999990;
+  --z-toast:     999999;
+}
+
+/* ---------- 9. Reduced-motion respect ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .card, .veh-card, .product-card, [data-veh-card],
+  .veh-card img, .product-card img, [data-veh-card] img {
+    transition: none !important;
+    transform: none !important;
+  }
+}

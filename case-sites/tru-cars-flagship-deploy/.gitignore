@@ -1,0 +1,14 @@
+# Local Netlify folder
+.netlify
+
+# Agent / QA litter
+.playwright-mcp/
+tc-*.png
+tc-demo-*.jpg
+scratch_*.js
+check_vdp.js
+test_vdp_render.js
+run_server.js
+update_repay_and_home.js
+*.bak
+*.bak.html

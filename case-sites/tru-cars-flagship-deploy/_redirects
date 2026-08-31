@@ -1,0 +1,36 @@
+# True-Cars SA — Netlify
+
+# Share links are /vehicle/?stock=TC-101. The path (not the .html file) is what
+# netlify/edge-functions/vehicle-og.js binds to, so WhatsApp and Facebook get
+# per-car preview tags rendered server-side. Keep this a rewrite (200), not a
+# redirect, or the edge function never sees the request.
+/vehicle      /vehicle.html   200
+/vehicle/*    /vehicle.html   200
+
+# The showroom rebuild: certi-used was the old SRP, inventory.html a stub that
+# pointed at it. The category landing pages were thin filters over the same
+# stock, which stock.html now does properly with real facets.
+/certi-used.html     /stock.html   301
+/inventory.html      /stock.html   301
+/ev.html             /stock.html?fuelType=Electric   301
+/performance.html    /stock.html   301
+/premium-select.html /stock.html   301
+/leaseflow.html      /finance.html 301
+/rto360.html         /finance.html 301
+
+# The platform pitch. truesaas.html (161KB) and technology.html (116KB) were
+# two drafts of the same page, both branded before the TruSaaS/TruDealer
+# split and both still selling the retired "TruWeb" name. platform.html
+# replaces them; these keep every existing inbound link alive.
+/truesaas.html   /platform.html   301
+/technology.html /platform.html   301
+/dealers.html    /platform.html   301
+
+/truesaas   https://www.tru-saas.com   301
+/true-saas  https://www.tru-saas.com   301
+/trusaas    /platform.html   301
+/TruSaaS    /platform.html   301
+/demos      /demos/          301
+
+# Immersive tech-tour showcase.
+/immersive  /immersive.html   200

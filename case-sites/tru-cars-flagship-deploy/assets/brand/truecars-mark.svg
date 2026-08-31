@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="True Cars">
+  <title>True Cars mark</title>
+  <!-- Built to match assets/brand/trudealer-mark.svg: same cyan ramp, same
+       12-unit stroke weight, same T ligature. The D bowl becomes a C so the
+       demo storefront reads as a TruDealer product, not a separate brand. -->
+  <defs>
+    <linearGradient id="tcTile" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#10151E"/>
+      <stop offset="1" stop-color="#06080D"/>
+    </linearGradient>
+    <linearGradient id="tcCyan" x1="26" y1="34" x2="102" y2="98" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7CF3ED"/>
+      <stop offset="0.55" stop-color="#4FE3DC"/>
+      <stop offset="1" stop-color="#2BB6B0"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#tcTile)"/>
+  <rect x="0.75" y="0.75" width="126.5" height="126.5" rx="27.25" fill="none"
+        stroke="#4FE3DC" stroke-opacity="0.22" stroke-width="1.5"/>
+  <g transform="translate(14,14) scale(0.78)" fill="none" stroke="url(#tcCyan)"
+     stroke-width="12" stroke-linecap="butt" stroke-linejoin="round">
+    <!-- T crossbar + shared spine -->
+    <path d="M14 26 H64"/>
+    <path d="M40 26 V80"/>
+    <!-- C bowl, opening right, sharing the spine like the D does on TruDealer -->
+    <path d="M82 34 C74 27 64 26 56 26 C42 26 40 38 40 53 C40 68 42 80 56 80 C64 80 74 79 82 72"
+          stroke-linecap="round"/>
+  </g>
+</svg>

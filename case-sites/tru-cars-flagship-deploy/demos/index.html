@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dealer HTML demos — HV Motors · MKR · Cars on Caledon | True-Cars SA</title>
+<meta name="description" content="Static HTML TruWeb storefront demos: HV Motors (Worcester), MKR Auto Sales (Gqeberha), Cars on Caledon — concept sites on TruSaaS.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css?v=11">
+<link rel="stylesheet" href="../assets/css/site-chrome.css?v=8">
+<style>
+.demo-hero{padding:calc(var(--nav-h) + 48px) 0 40px;background:linear-gradient(135deg,#0b1220,#0d2440);color:#fff}
+.demo-hero h1{font-family:Fraunces,serif;font-size:clamp(30px,4.5vw,48px);line-height:1.12;max-width:20ch}
+.demo-hero h1 em{font-style:italic;color:#7FE9E3;font-weight:300}
+.demo-hero p{color:rgba(255,255,255,.72);max-width:54ch;margin-top:14px;line-height:1.7}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;padding:48px 0 80px}
+.demo-card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.demo-card:hover{transform:translateY(-4px);box-shadow:0 24px 50px -28px rgba(10,20,40,.35)}
+.demo-preview{position:relative;aspect-ratio:16/10;background:#0b1220;overflow:hidden}
+.demo-preview iframe{position:absolute;inset:0;width:200%;height:200%;border:0;transform:scale(.5);transform-origin:0 0;pointer-events:none}
+.demo-badge{position:absolute;top:12px;left:12px;z-index:2;font:700 10px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;background:rgba(11,91,215,.92);color:#fff;padding:7px 10px;border-radius:999px}
+.demo-body{padding:20px 22px 22px;flex:1;display:flex;flex-direction:column}
+.demo-loc{font:600 10px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-deep)}
+.demo-body h3{font-size:20px;font-weight:800;margin:8px 0 8px;letter-spacing:-.02em}
+.demo-body p{font-size:14px;color:var(--grey-dark);line-height:1.6;flex:1}
+.demo-tags{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 16px}
+.demo-tags span{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--bone);border:1px solid var(--line);padding:5px 9px;border-radius:999px;color:var(--grey-dark)}
+.demo-open{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--blue)}
+.demo-open svg{width:14px;height:14px}
+.demo-bar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+/* Product shots — DMS + TruLens */
+.shot-section{padding:8px 0 72px;border-top:1px solid var(--line);background:linear-gradient(180deg,#f7f9fc 0%,#fff 40%)}
+.shot-head{max-width:640px;margin:0 auto 28px;text-align:center;padding:40px 20px 0}
+.shot-head .eyebrow{justify-content:center}
+.shot-head h2{font-size:clamp(24px,3.2vw,36px);font-weight:900;letter-spacing:-.03em;margin:10px 0 12px}
+.shot-head p{color:var(--grey-dark);line-height:1.65;font-size:15px}
+.shot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:0 0 8px}
+@media(max-width:960px){.shot-grid{grid-template-columns:1fr}}
+.shot-card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#0b1220;box-shadow:0 20px 50px -30px rgba(10,20,40,.45);display:flex;flex-direction:column}
+.shot-frame{position:relative;aspect-ratio:16/10;background:#0a0e16;overflow:hidden}
+.shot-frame img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.shot-frame .chrome{position:absolute;top:0;left:0;right:0;height:28px;background:rgba(0,0,0,.55);display:flex;align-items:center;gap:6px;padding:0 12px;z-index:2}
+.shot-frame .chrome i{width:8px;height:8px;border-radius:50%;background:#ff5f57}
+.shot-frame .chrome i:nth-child(2){background:#febc2e}
+.shot-frame .chrome i:nth-child(3){background:#28c840}
+.shot-meta{padding:16px 18px 18px;background:var(--paper);flex:1;display:flex;flex-direction:column}
+.shot-meta .k{font:700 10px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-deep)}
+.shot-meta h3{font-size:17px;font-weight:800;margin:6px 0 6px}
+.shot-meta p{font-size:13px;color:var(--grey-dark);line-height:1.55;flex:1}
+.shot-meta a{margin-top:12px;font-weight:800;font-size:13px;color:var(--blue);display:inline-flex;align-items:center;gap:6px}
+.shot-flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;margin:28px auto 0;max-width:720px;padding:14px 18px;border-radius:14px;background:rgba(11,91,215,.06);border:1px solid rgba(11,91,215,.15);font-size:13px;font-weight:700;color:var(--ink)}
+.shot-flow span{opacity:.45;font-weight:500}
+.shot-flow b{color:var(--blue)}
+</style>
+</head>
+<body>
+<nav class="nav solid">
+  <div class="wrap">
+    <a class="brand" href="../index.html"><span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span></a>
+    <div class="nav-links">
+      <a href="../certi-used.html">Buy a car</a>
+      <a href="../dealers.html">I'm a dealer</a>
+      <a href="index.html" class="active">Demos</a>
+      <a href="../technology.html">Platform</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost-light btn-sm" href="../truesaas.html">TruSaaS</a>
+      <a class="btn btn-grad btn-sm" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27d%20like%20a%20dealer%20demo" target="_blank" rel="noopener">Book demo</a>
+    </div>
+  </div>
+</nav>
+
+<header class="demo-hero">
+  <div class="wrap">
+    <div class="eyebrow teal" style="color:#4FE3DC">TruWeb · static HTML storefront demos</div>
+    <h1>HV. MKR. Caledon. YCG. <em>All with TruAfford.</em></h1>
+    <p>Self-contained HTML storefront mockups — each includes the TruSaaS <b>TruAfford</b> soft affordability widget (bottom-left). Open in the browser or after Netlify deploy.</p>
+    <div class="demo-bar">
+      <a class="btn btn-grad" href="#product-shots">DMS + TruLens shots</a>
+      <a class="btn btn-ghost-light" href="hv-motors/">HV Motors</a>
+      <a class="btn btn-ghost-light" href="mkr/">MKR</a>
+      <a class="btn btn-ghost-light" href="cars-on-caledon/">Caledon</a>
+      <a class="btn btn-ghost-light" href="your-car-guy/">YCG · TruAfford</a>
+    </div>
+  </div>
+</header>
+
+<!-- Live product screenshots: DMS + TruLens -->
+<section class="shot-section" id="product-shots">
+  <div class="wrap">
+    <div class="shot-head">
+      <div class="eyebrow teal">Live product stack · screenshots</div>
+      <h2>TruLens + TruFlow DMS, integrated</h2>
+      <p>These are the real apps on Render — capture in TruLens, run the floor in TruFlow Lite or Premium, then feed stock into TruWeb HTML demos like HV / MKR / Caledon.</p>
+    </div>
+    <div class="shot-grid">
+      <article class="shot-card">
+        <div class="shot-frame">
+          <div class="chrome" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img src="../assets/img/product-shots/trulens.png" alt="TruLens capture app screenshot" width="1440" height="900" loading="lazy">
+        </div>
+        <div class="shot-meta">
+          <div class="k">TruLens · capture / PWA</div>
+          <h3>Shoot on the phone</h3>
+          <p>Guided slots, VIR readiness, export package into Flow. Capture only lives here — not inside the DMS.</p>
+          <a href="https://lens.tru-saas.com" target="_blank" rel="noopener">Open TruLens →</a>
+        </div>
+      </article>
+      <article class="shot-card">
+        <div class="shot-frame">
+          <div class="chrome" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img src="../assets/img/product-shots/dms-lite.png" alt="TruFlow Lite DMS screenshot" width="1440" height="900" loading="lazy">
+        </div>
+        <div class="shot-meta">
+          <div class="k">TruFlow Lite · entry DMS</div>
+          <h3>Stock · leads · tasks</h3>
+          <p>Honest entry DMS for independents. Imports TruLens units and exposes public stock for dealer sites.</p>
+          <a href="https://flow.tru-saas.com" target="_blank" rel="noopener">Open Flow Lite →</a>
+        </div>
+      </article>
+      <article class="shot-card">
+        <div class="shot-frame">
+          <div class="chrome" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img src="../assets/img/product-shots/dms-premium.png" alt="TruFlow Premium DMS screenshot" width="1440" height="900" loading="lazy">
+        </div>
+        <div class="shot-meta">
+          <div class="k">TruFlow Premium · full floor</div>
+          <h3>Media · recon · CRM</h3>
+          <p>Full floor ops for MKR-style pilots. Public stock API powers showroom HTML demos when dealer slug matches.</p>
+          <a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Open Flow Premium →</a>
+        </div>
+      </article>
+    </div>
+    <div class="shot-flow">
+      <b>TruLens</b><span>→ export</span><b>TruFlow Lite / Premium</b><span>→ public stock</span><b>HV · MKR · Caledon HTML</b>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="shot-head" style="padding-top:8px">
+      <div class="eyebrow">TruWeb · HTML storefronts</div>
+      <h2>Dealer site mockups</h2>
+      <p>Static HTML only — not separate live domains. Use with the DMS stack above.</p>
+    </div>
+    <div class="demo-grid" style="padding-top:8px">
+
+      <article class="demo-card">
+        <div class="demo-preview">
+          <span class="demo-badge">Worcester · WC</span>
+          <iframe src="hv-motors/index.html" title="HV Motors preview" loading="lazy" scrolling="no"></iframe>
+        </div>
+        <div class="demo-body">
+          <div class="demo-loc">HV Motors</div>
+          <h3>Hand-picked used · bank finance</h3>
+          <p>Worcester HTML mockup — stock cards, finance, WhatsApp enquire, conversion flow for volume pre-owned.</p>
+          <div class="demo-tags"><span>HTML</span><span>TruAfford</span><span>Finance</span><span>WC</span></div>
+          <a class="demo-open" href="hv-motors/" target="_blank" rel="noopener">Open HTML demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="demo-card">
+        <div class="demo-preview">
+          <span class="demo-badge">Gqeberha · EC</span>
+          <iframe src="mkr/index.html" title="MKR Auto Sales preview" loading="lazy" scrolling="no"></iframe>
+        </div>
+        <div class="demo-body">
+          <div class="demo-loc">MKR Auto Sales</div>
+          <h3>Premium pre-owned · AA authorised</h3>
+          <p>Cinematic PE HTML mockup — Select / Performance pages, VAF, chat + lead desk, TruAfford.</p>
+          <div class="demo-tags"><span>HTML</span><span>TruAfford</span><span>VAF</span><span>EC</span></div>
+          <a class="demo-open" href="mkr/" target="_blank" rel="noopener">Open HTML demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="demo-card">
+        <div class="demo-preview">
+          <span class="demo-badge">Kariega · EC</span>
+          <iframe src="cars-on-caledon/index.html" title="Cars on Caledon preview" loading="lazy" scrolling="no"></iframe>
+        </div>
+        <div class="demo-body">
+          <div class="demo-loc">Cars on Caledon</div>
+          <h3>Quality pre-owned · Caledon Street</h3>
+          <p>Glass showroom — FAB rail, chat, trade-in path, TruAfford soft pre-qual.</p>
+          <div class="demo-tags"><span>HTML</span><span>TruAfford</span><span>Trade-in</span><span>EC</span></div>
+          <a class="demo-open" href="cars-on-caledon/" target="_blank" rel="noopener">Open HTML demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+      <article class="demo-card">
+        <div class="demo-preview">
+          <span class="demo-badge">Gqeberha · EC</span>
+          <iframe src="your-car-guy/index.html" title="Your Car Guy TruAfford" loading="lazy" scrolling="no"></iframe>
+        </div>
+        <div class="demo-body">
+          <div class="demo-loc">Your Car Guy</div>
+          <h3>TruAfford · Check Affordability</h3>
+          <p>Standalone TruAfford demo + same widget on all showrooms — soft estimate, WhatsApp lead, TruSaaS colours.</p>
+          <div class="demo-tags"><span>TruAfford</span><span>Soft pre-qual</span><span>PE</span></div>
+          <a class="demo-open" href="your-car-guy/" target="_blank" rel="noopener">Open TruAfford demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<footer style="padding:28px 0 40px;border-top:1px solid var(--line)">
+  <div class="wrap" style="display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:center;font-size:13px;color:var(--grey-dark)">
+    <span>© 2026 True-Cars SA · Dealer demos</span>
+    <span class="ax">Powered by <a href="../truesaas.html"><b>TruSaaS</b></a> · <a href="../index.html">true-cars.co.za</a></span>
+  </div>
+</footer>
+<script src="../assets/js/site-chrome.js?v=15"></script>
+</body>
+</html>

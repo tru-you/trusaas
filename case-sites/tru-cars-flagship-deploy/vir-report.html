@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vehicle Inspection Report (VIR) — Truecars</title>
+<meta name="description" content="Official TruInspect Vehicle Inspection Report (VIR) — bank-grade 114-point condition audit and certification.">
+<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TruInspect Official VIR (Vehicle Inspection Report)
+   Luxury Cream & Teal Dealership Theme · 100% Print & Screen
+   ============================================================ */
+:root {
+  --cream:      #F4F0E8;
+  --paper:      #FFFFFF;
+  --paper-soft: #FBF8F3;
+  --parchment:  #EDE7DA;
+  --navy-950:   #0E1A26;
+  --navy-900:   #121A26;
+  --navy-800:   #16283A;
+  --navy-700:   #1D3348;
+  --teal:       #07889B;
+  --teal-bright:#5DE9D4;
+  --teal-dark:  #056274;
+  --teal-bg:    rgba(7, 136, 155, 0.06);
+  --green:      #1A7A3A;
+  --green-bg:   rgba(26, 122, 58, 0.08);
+  --amber:      #B07A26;
+  --amber-bg:   rgba(176, 122, 38, 0.08);
+  --red:        #B03226;
+  --red-bg:     rgba(176, 50, 38, 0.08);
+  --rule:       rgba(18, 26, 38, 0.12);
+  --rule-soft:  rgba(18, 26, 38, 0.06);
+  --ink:        #121A26;
+  --ink-2:      #3A4553;
+  --muted:      #6E6656;
+  --faint:      #A79D8C;
+  --serif:      "Fraunces", Georgia, serif;
+  --sans:       "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:       "JetBrains Mono", ui-monospace, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--sans);
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.55;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  padding: clamp(16px, 3vw, 36px) 16px 90px;
+}
+
+/* Document Sheet */
+.tl-report {
+  max-width: 840px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 1.5px solid rgba(7, 136, 155, 0.22);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px -15px rgba(14, 26, 38, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+  overflow: hidden;
+}
+
+.doc-body {
+  padding: clamp(20px, 4vw, 40px);
+}
+
+/* Header Band */
+.hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 2.5px solid var(--ink);
+  flex-wrap: wrap;
+}
+.hdr-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hdr-mark {
+  width: 42px;
+  height: 42px;
+  background: var(--navy-950);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--teal-bright);
+}
+.hdr-dealer {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.hdr-dealer span {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  font-weight: 600;
+  margin-top: 3px;
+}
+.hdr-right {
+  text-align: right;
+}
+@media(max-width: 600px) {
+  .hdr-right { text-align: left; }
+}
+.hdr-right .doc-type {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal);
+  font-weight: 700;
+}
+.hdr-right .doc-id {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* Verdict Banner */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(26, 122, 58, 0.3);
+  background: var(--green-bg);
+}
+.verdict.caution {
+  background: var(--amber-bg);
+  border-color: rgba(176, 122, 38, 0.3);
+}
+.verdict.fail {
+  background: var(--red-bg);
+  border-color: rgba(176, 50, 38, 0.3);
+}
+.verdict .icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--green);
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+.verdict.caution .icon { background: var(--amber); }
+.verdict.fail .icon { background: var(--red); }
+.verdict .body {
+  flex: 1;
+  min-width: 0;
+}
+.verdict .body h3 {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.2;
+  margin: 0 0 3px;
+  color: var(--green);
+}
+.verdict.caution .body h3 { color: var(--amber); }
+.verdict.fail .body h3 { color: var(--red); }
+.verdict .body p {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin: 0;
+}
+.verdict .score {
+  margin-left: auto;
+  text-align: center;
+  flex-shrink: 0;
+  padding-left: 18px;
+  border-left: 1px solid var(--rule);
+}
+.verdict .score .num {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ink);
+}
+.verdict .score .lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* Vehicle Matrix Grid */
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+  margin-bottom: 24px;
+  background: var(--paper-soft);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--rule-soft);
+}
+@media(max-width: 600px) {
+  .vehicle-grid { grid-template-columns: 1fr; gap: 0; }
+}
+.v-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  font-size: 13px;
+}
+.v-row:last-child { border-bottom: none; }
+.v-row .k {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.v-row .v {
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* Photo Gallery Strip */
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+@media(max-width: 640px) {
+  .photos-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.photo-slot {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: var(--parchment);
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+.photo-slot.is-hero {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.photo-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-cap {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(14, 26, 38, 0.72);
+  color: #FFFFFF;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  text-transform: uppercase;
+}
+
+/* Section Title Pattern */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 14px;
+}
+.section-title .n {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.section-title .ln {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* Panel Assessment Grid */
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+@media(max-width: 640px) {
+  .panel-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.panel-card {
+  padding: 10px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper-soft);
+}
+.panel-name {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.panel-grade {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--green);
+}
+.panel-grade.fair { color: var(--amber); }
+.panel-grade.poor { color: var(--red); }
+
+/* Checklist Table */
+.chk-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+  background: var(--paper-soft);
+  border: 1px solid var(--rule-soft);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.chk-table tr {
+  border-bottom: 1px solid var(--rule-soft);
+}
+.chk-table tr:last-child { border-bottom: none; }
+.chk-table td {
+  padding: 9px 14px;
+  font-size: 13px;
+}
+.chk-table td:first-child {
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chk-table td:last-child {
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+.chk-pass { color: var(--green); }
+.chk-note { color: var(--amber); }
+
+/* Condition Scale Reference */
+.scale-box {
+  background: var(--paper-soft);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+.scale-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  flex-wrap: wrap;
+}
+.scale-row:last-child { border-bottom: none; }
+.scale-band {
+  font-family: var(--mono);
+  font-weight: 700;
+  min-width: 75px;
+}
+.scale-label {
+  font-weight: 700;
+  min-width: 80px;
+  color: var(--ink);
+}
+
+/* Inspector Sign-Off Block */
+.sig-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1.5px solid var(--ink);
+}
+@media(max-width: 540px) {
+  .sig-row { grid-template-columns: 1fr; gap: 18px; }
+}
+.sig-block {
+  display: flex;
+  flex-direction: column;
+}
+.sig-line {
+  border-top: 1px solid var(--ink);
+  padding-top: 6px;
+  margin-top: 24px;
+}
+.sig-name {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.sig-lbl {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* Footer */
+.report-foot {
+  border-top: 1px solid var(--rule);
+  margin-top: 28px;
+  padding-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.report-foot .cy { color: var(--teal); font-weight: 700; }
+
+/* Sticky Action Bar */
+.print-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--navy-950);
+  color: #FFFFFF;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-size: 13.5px;
+  z-index: 100;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.25);
+}
+.print-btn {
+  background: var(--teal);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: background 0.2s;
+}
+.print-btn:hover { background: var(--teal-dark); }
+.print-bar a {
+  color: var(--teal-bright);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+@media print {
+  body { background: #FFFFFF; padding: 0; margin: 0; }
+  .tl-report { border: none; box-shadow: none; max-width: 100%; border-radius: 0; }
+  .doc-body { padding: 8mm 10mm; }
+  .no-print { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="tl-report">
+  <div class="doc-body">
+
+    <!-- Header Band -->
+    <div class="hdr">
+      <div class="hdr-left">
+        <div class="hdr-mark">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="hdr-dealer">
+          Truecars Flagship Showroom
+          <span>Independent TruInspect Condition Audit</span>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="doc-type">Vehicle Inspection Report (VIR)</div>
+        <div class="doc-id" id="repDocId">VIR · TRU-CERTIFIED · <span id="repDate"></span></div>
+      </div>
+    </div>
+
+    <!-- Verdict Banner -->
+    <div class="verdict" id="verdictBox">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="body">
+        <h3 id="repVerdictTitle">Condition — Excellent</h3>
+        <p id="repVerdictDesc">Minor cosmetic blemishes only. Fully retail ready with 0 critical mechanical or structural advisories.</p>
+      </div>
+      <div class="score">
+        <div class="num" id="repScoreNum">4.8</div>
+        <div class="lbl">/ 5 Condition</div>
+      </div>
+    </div>
+
+    <!-- Vehicle Identity Matrix -->
+    <div class="vehicle-grid">
+      <div class="v-row"><span class="k">Make / Model</span><span class="v" id="vModel">Omoda C7 1.6T Elegance</span></div>
+      <div class="v-row"><span class="k">Year</span><span class="v" id="vYear">2025</span></div>
+      <div class="v-row"><span class="k">Mileage</span><span class="v" id="vKm">15,000 km</span></div>
+      <div class="v-row"><span class="k">Stock #</span><span class="v" id="vStock">Tru7865</span></div>
+      <div class="v-row"><span class="k">Transmission</span><span class="v" id="vTrans">Automatic</span></div>
+      <div class="v-row"><span class="k">Fuel / Engine</span><span class="v" id="vFuel">Petrol · 1.6L Turbo</span></div>
+      <div class="v-row"><span class="k">Body / Colour</span><span class="v" id="vColour">SUV · Metallic Silver</span></div>
+      <div class="v-row"><span class="k">VIN Record</span><span class="v" id="vVin">Verified TransUnion eValue8</span></div>
+      <div class="v-row"><span class="k">Service History</span><span class="v" id="vService">Full Franchise Service Record</span></div>
+      <div class="v-row"><span class="k">Showroom Price</span><span class="v" id="vPrice" style="color:var(--teal)">R 448,372</span></div>
+    </div>
+
+    <!-- Photo Studio Grid -->
+    <div class="photos-grid" id="photoGrid">
+      <div class="photo-slot is-hero">
+        <img id="photoHero" src="/assets/hero-showroom.jpg" alt="Hero View">
+        <div class="photo-cap">Front 3/4 Studio View</div>
+      </div>
+      <div class="photo-slot">
+        <img id="photoSide" src="/assets/hero-showroom.jpg" alt="Side Profile">
+        <div class="photo-cap">Side Profile</div>
+      </div>
+      <div class="photo-slot">
+        <img id="photoRear" src="/assets/hero-showroom.jpg" alt="Rear 3/4">
+        <div class="photo-cap">Rear 3/4</div>
+      </div>
+      <div class="photo-slot">
+        <img id="photoInterior" src="/assets/hero-showroom.jpg" alt="Cockpit">
+        <div class="photo-cap">Driver Cockpit</div>
+      </div>
+      <div class="photo-slot">
+        <img id="photoTyre" src="/assets/hero-showroom.jpg" alt="Tyres & Wheels">
+        <div class="photo-cap">Tyres & Wheels</div>
+      </div>
+    </div>
+
+    <!-- Panel-by-Panel Condition Assessment -->
+    <div class="section-title">
+      <span class="n">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+        Exterior Panel & Structural Assessment
+      </span>
+      <span class="ln"></span>
+    </div>
+
+    <div class="panel-grid">
+      <div class="panel-card"><div class="panel-name">Front Bumper</div><div class="panel-grade">Good · Factory Spec</div></div>
+      <div class="panel-card"><div class="panel-name">Bonnet & Grille</div><div class="panel-grade">Good · Factory Spec</div></div>
+      <div class="panel-card"><div class="panel-name">Windscreen & Glass</div><div class="panel-grade">Good · Zero Chips</div></div>
+      <div class="panel-card"><div class="panel-name">Driver Front / Doors</div><div class="panel-grade">Good · Original Paint</div></div>
+      <div class="panel-card"><div class="panel-name">Rear Bumper / Boot</div><div class="panel-grade">Good · Factory Spec</div></div>
+      <div class="panel-card"><div class="panel-name">Passenger Panels</div><div class="panel-grade">Good · Original Paint</div></div>
+    </div>
+
+    <!-- 114-Point Mechanical & Diagnostic Checklist -->
+    <div class="section-title">
+      <span class="n">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        114-Point Mechanical, Electrical & Road Test Audit
+      </span>
+      <span class="ln"></span>
+    </div>
+
+    <table class="chk-table">
+      <tr>
+        <td>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" class="chk-pass"><polyline points="20 6 9 17 4 12"/></svg>
+          Mechanical & Powertrain (Starts clean, smooth idle, transmission shifts nominal)
+        </td>
+        <td class="chk-pass">PASS (100%)</td>
+      </tr>
+      <tr>
+        <td>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" class="chk-pass"><polyline points="20 6 9 17 4 12"/></svg>
+          OBD2 Diagnostic Scan (Zero ECU error codes, warning lights extinguished)
+        </td>
+        <td class="chk-pass">PASS (100%)</td>
+      </tr>
+      <tr>
+        <td>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" class="chk-pass"><polyline points="20 6 9 17 4 12"/></svg>
+          Braking System & Suspension (Pads &gt;75%, rotors smooth, struts responsive)
+        </td>
+        <td class="chk-pass">PASS (96%)</td>
+      </tr>
+      <tr>
+        <td>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" class="chk-pass"><polyline points="20 6 9 17 4 12"/></svg>
+          Tyre Tread & Alignment (&gt;5.5 mm tread depth, even wear pattern across all corners)
+        </td>
+        <td class="chk-pass">PASS (92%)</td>
+      </tr>
+      <tr>
+        <td>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" class="chk-pass"><polyline points="20 6 9 17 4 12"/></svg>
+          TransUnion eValue8 Authentication (Clean title, no stolen/finance flags)
+        </td>
+        <td class="chk-pass">VERIFIED</td>
+      </tr>
+    </table>
+
+    <!-- Official Condition Scale Reference -->
+    <div class="section-title">
+      <span class="n">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        TruInspect Rating Reference Scale
+      </span>
+      <span class="ln"></span>
+    </div>
+
+    <div class="scale-box">
+      <div class="scale-row">
+        <b class="scale-band" style="color:var(--green)">5.0 – 4.5</b>
+        <b class="scale-label">Excellent</b>
+        <span>Minor cosmetic blemishes only. Showroom and retail ready.</span>
+      </div>
+      <div class="scale-row">
+        <b class="scale-band" style="color:#65A30D">4.4 – 3.5</b>
+        <b class="scale-label">Good</b>
+        <span>Light cosmetic wear consistent with age and mileage.</span>
+      </div>
+      <div class="scale-row">
+        <b class="scale-band" style="color:var(--amber)">3.4 – 2.5</b>
+        <b class="scale-label">Fair</b>
+        <span>Visible defects recorded. Maintenance or cosmetic touch-up recommended.</span>
+      </div>
+      <div class="scale-row">
+        <b class="scale-band" style="color:var(--red)">2.4 – 1.0</b>
+        <b class="scale-label">Poor</b>
+        <span>Significant wear or damage documented. Disclosed prior to sale.</span>
+      </div>
+    </div>
+
+    <!-- Inspector Sign-off Block -->
+    <div class="sig-row">
+      <div class="sig-block">
+        <div class="sig-name" id="repInspector">Certified Master Technician · TruInspect</div>
+        <div class="sig-lbl">Lead Vehicle Inspector</div>
+        <div class="sig-line">
+          <span style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--teal)">Digital Sign-Off Authenticated</span>
+        </div>
+      </div>
+
+      <div class="sig-block">
+        <div class="sig-name">Dealer Principal / Workshop Manager</div>
+        <div class="sig-lbl">Showroom Sign-Off & Release</div>
+        <div class="sig-line">
+          <span style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--teal)">Truecars Showroom Inspection Gate</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Official Footer -->
+    <div class="report-foot">
+      <div>Powered by <span class="cy">TruInspect</span> · TruDealer Platform OS</div>
+      <div>TransUnion eValue8 Verified · ISO-Aligned Audit</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bottom Print Bar -->
+<div class="print-bar no-print">
+  <span>Official Inspection Certificate. Choose "Save as PDF" for a verified copy.</span>
+  <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+  <a href="/stock.html">Return to Showroom</a>
+</div>
+
+<script src="/assets/js/catalog.js?v=1"></script>
+<script src="/assets/js/showroom-data.js?v=1"></script>
+<script src="/assets/js/showroom.js?v=11"></script>
+
+<script>
+(function () {
+  var d = new Date();
+  var dateStr = d.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+  document.getElementById('repDate').textContent = dateStr;
+
+  var TRU = window.TruShowroom;
+  var stockId = TRU ? TRU.params().stock : null;
+  var v = TRU && TRU.get ? TRU.get(stockId, true) : null;
+
+  if (v) {
+    var title = (v.year ? v.year + " " : "") + (v.make || "") + " " + (v.model || "");
+    document.title = "VIR Report · " + title + " — Truecars";
+    document.getElementById('repDocId').textContent = "VIR-" + (v.stockNumber || v.id || "TC-001") + " · " + dateStr;
+    document.getElementById('vModel').textContent = (v.make || "") + " " + (v.model || "") + (v.trim ? " " + v.trim : "");
+    document.getElementById('vYear').textContent = v.year || "—";
+    document.getElementById('vKm').textContent = v.mileage ? TRU.km(v.mileage) : "Low KM";
+    document.getElementById('vStock').textContent = v.stockNumber || v.id || "TC-001";
+    document.getElementById('vTrans').textContent = v.transmission || "Automatic";
+    document.getElementById('vFuel').textContent = (v.fuelType || "Petrol") + (v.engine ? " · " + v.engine : "");
+    document.getElementById('vColour').textContent = (v.bodyType || "SUV") + (v.color ? " · " + v.color : "");
+    document.getElementById('vVin').textContent = v.vin || "Verified TransUnion eValue8";
+    document.getElementById('vService').textContent = v.serviceHistory || "Full Franchise Service Record";
+    
+    var p = v.truPrice && v.truPrice < v.price ? v.truPrice : v.price;
+    document.getElementById('vPrice').textContent = TRU.money(p);
+
+    // Photos
+    var imgs = v.images && v.images.length ? v.images : [v.heroImage || "/assets/hero-showroom.jpg"];
+    document.getElementById('photoHero').src = imgs[0] || "/assets/hero-showroom.jpg";
+    if (imgs[1]) document.getElementById('photoSide').src = imgs[1];
+    if (imgs[2]) document.getElementById('photoRear').src = imgs[2];
+    if (imgs[3]) document.getElementById('photoInterior').src = imgs[3];
+    if (imgs[4]) document.getElementById('photoTyre').src = imgs[4];
+
+    // Score
+    var scoreNum = Number(v.vir) || 94;
+    var stars = (scoreNum / 20).toFixed(1);
+    document.getElementById('repScoreNum').textContent = stars;
+
+    var vBox = document.getElementById('verdictBox');
+    var vTitle = document.getElementById('repVerdictTitle');
+    var vDesc = document.getElementById('repVerdictDesc');
+
+    if (scoreNum >= 90) {
+      vTitle.textContent = "Condition — Excellent (Retail Ready)";
+      vDesc.textContent = "Minor cosmetic blemishes only. Fully retail ready with 0 critical mechanical or structural advisories.";
+    } else if (scoreNum >= 80) {
+      vBox.className = "verdict";
+      vTitle.textContent = "Condition — Good (Light Cosmetic Wear)";
+      vDesc.textContent = "Light cosmetic wear consistent with vehicle age. Passed all mechanical and electronic diagnostics.";
+    } else {
+      vBox.className = "verdict caution";
+      vTitle.textContent = "Condition — Fair (Minor Attention Advised)";
+      vDesc.textContent = "Visible minor imperfections recorded. Full mechanical roadworthy certified.";
+    }
+  }
+})();
+</script>
+
+</body>
+</html>

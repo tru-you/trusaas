@@ -1,0 +1,27 @@
+<!--
+  Truecars 3D mark — colours exactly as supplied by Paul (teal #2DD4BF/#0D9488/#0F766E,
+  slate navy #0F172A/#020617). Kept in sync with assets/brand/favicon.svg (the app icon).
+  Transparent ground: the header supplies its own surface.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 172 176" width="100%" height="100%" role="img" aria-label="Truecars">
+  <defs>
+    <linearGradient id="mkTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2DD4BF"/><stop offset="60%" stop-color="#0D9488"/><stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+    <linearGradient id="mkTealTop" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#99F6E4"/><stop offset="100%" stop-color="#2DD4BF"/>
+    </linearGradient>
+    <linearGradient id="mkNavy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/><stop offset="60%" stop-color="#0F172A"/><stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="mkNavyTop" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#64748B"/><stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+  <path d="M 20 100 L 58 28 L 88 28 L 50 100 Z" fill="url(#mkNavy)"/>
+  <path d="M 58 28 L 88 28 L 104 52 L 74 52 Z" fill="url(#mkNavyTop)"/>
+  <path d="M 88 28 L 104 52 L 66 124 L 50 100 Z" fill="#020617"/>
+  <path d="M 58 132 L 96 60 L 126 60 L 88 132 Z" fill="url(#mkTeal)"/>
+  <path d="M 96 60 L 126 60 L 142 84 L 112 84 Z" fill="url(#mkTealTop)"/>
+  <path d="M 126 60 L 142 84 L 104 156 L 88 132 Z" fill="#0F766E"/>
+</svg>

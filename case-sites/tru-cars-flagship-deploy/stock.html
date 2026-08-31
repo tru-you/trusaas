@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Showroom — Truecars</title>
+<meta name="description" content="Browse every inspected vehicle on the Truecars floor: 360° walkarounds, VIR scores, transparent finance figures.">
+<meta property="og:title" content="The Showroom — Truecars">
+<meta property="og:description" content="Browse every inspected car with 360° walkarounds and real finance math.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.true-cars.co.za/stock.html">
+<meta property="og:image" content="https://www.true-cars.co.za/og-card.jpg">
+<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">
+<link rel="stylesheet" href="/assets/css/showroom.css?v=12">
+<meta name="view-transition" content="same-origin">
+</head>
+<body>
+
+<main class="section">
+  <div class="wrap">
+    <div class="plate reveal">
+      <div class="plate-no">The Showroom</div>
+      <div class="plate-title">
+        <div class="showroom-status-pill">
+          <span class="live-pulse"></span>
+          <span>Live Dealership Floor · 360° Studio Walkarounds · 114-Point VIR® Scored</span>
+        </div>
+        <h1>Every car on the yard, <em>in one place.</em></h1>
+        <p>Photographed in high-definition 360° studio spins, verified through TransUnion eValue8, and graded with independent VIR condition scores.</p>
+      </div>
+    </div>
+
+    <div class="srp">
+      <aside class="filters" id="filters">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <h4 style="margin:0">Filter stock</h4>
+          <button class="filters-close" id="filtersClose" type="button" aria-label="Close filters">✕</button>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="filterSearch">Search Keyword</label>
+          <input type="text" id="filterSearch" class="search-input" placeholder="Make, model, stock #...">
+        </div>
+
+        <div class="filter-group" id="fg-make">
+          <div class="filter-label">Make</div>
+          <div class="filter-options" id="fo-make"></div>
+        </div>
+
+        <div class="filter-group" id="fg-body">
+          <div class="filter-label">Body style</div>
+          <div class="filter-options" id="fo-body"></div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Price range</div>
+          <div class="filter-range">
+            <input type="number" id="fMinPrice" placeholder="Min (R)" step="10000">
+            <input type="number" id="fMaxPrice" placeholder="Max (R)" step="10000">
+          </div>
+        </div>
+
+        <div class="filter-group" id="fg-transmission">
+          <div class="filter-label">Transmission</div>
+          <div class="filter-options" id="fo-transmission"></div>
+        </div>
+
+        <div class="filter-group" id="fg-fuel">
+          <div class="filter-label">Fuel type</div>
+          <div class="filter-options" id="fo-fuel"></div>
+        </div>
+
+        <button class="btn btn-outline btn-block btn-sm" id="filtersReset" type="button" style="margin-top:16px">
+          Clear all filters
+        </button>
+      </aside>
+
+      <div>
+        <div class="srp-bar">
+          <button class="filter-toggle" id="filterToggle" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+            Filter
+          </button>
+          <div class="srp-count" id="count">—</div>
+
+          <div class="srp-controls">
+            <select id="sortSelect" aria-label="Sort stock">
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="monthly">Lowest monthly</option>
+              <option value="vir-desc">Highest VIR score</option>
+              <option value="year-desc">Newest first</option>
+              <option value="km-asc">Lowest mileage</option>
+            </select>
+
+            <div class="view-toggle">
+              <button type="button" class="view-btn is-active" id="viewGrid" aria-label="Grid view">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </button>
+              <button type="button" class="view-btn" id="viewList" aria-label="List view">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="active-tags" id="activeTags"></div>
+        <div class="card-grid" id="results"></div>
+
+        <!-- Stock Alert Lead Magnet Banner -->
+        <div class="stock-alert-banner">
+          <div class="stock-alert-left">
+            <h3>Looking for a specific model or price range?</h3>
+            <p>Get notified via WhatsApp or Email as soon as matching fresh stock is captured on our showroom floor.</p>
+          </div>
+          <button type="button" class="btn btn-outline" id="btnStockAlertTrigger" style="border-color:var(--accent);color:var(--accent);font-weight:700">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Set Stock Alert
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Floating Compare Dock -->
+<div class="compare-dock" id="compareDock">
+  <span id="compareCount">0 cars selected</span>
+  <button type="button" class="btn-comp" id="btnOpenCompare">Compare Side-by-Side</button>
+  <button type="button" class="btn-clear" id="btnClearCompare">Clear</button>
+</div>
+
+<!-- Comparison Modal -->
+<div class="compare-modal" id="compareModal">
+  <div class="compare-dialog">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--rule-soft);padding-bottom:16px">
+      <h2 style="font-size:26px;margin:0">Vehicle Comparison</h2>
+      <button type="button" class="lightbox-close" id="btnCloseCompare" style="position:static;width:36px;height:36px;font-size:20px">×</button>
+    </div>
+    <div id="compareContent"></div>
+  </div>
+</div>
+
+<!-- Feature 3: Stock Alert Dialog Modal -->
+<div class="tru-dialog-backdrop" id="stockAlertModal" role="dialog" aria-modal="true" aria-labelledby="stockAlertTitle">
+  <div class="tru-dialog-modal">
+    <div class="tru-dialog-head">
+      <div>
+        <h3 id="stockAlertTitle">Showroom Stock Alert</h3>
+        <p>Tell us what vehicle you are looking for. We will alert you immediately when matching units arrive on the floor.</p>
+      </div>
+      <button type="button" class="tru-dialog-close" id="closeStockAlertModal" aria-label="Close modal">✕</button>
+    </div>
+
+    <form id="stockAlertForm">
+      <div class="tru-form-field">
+        <label for="saContact">WhatsApp Number or Email</label>
+        <input type="text" id="saContact" required placeholder="e.g. 082 123 4567 or email@domain.co.za">
+      </div>
+      <div class="tru-form-row">
+        <div class="tru-form-field">
+          <label for="saMake">Preferred Make</label>
+          <input type="text" id="saMake" placeholder="e.g. Volkswagen, Toyota, BMW">
+        </div>
+        <div class="tru-form-field">
+          <label for="saBody">Body Style</label>
+          <select id="saBody">
+            <option value="">Any Body Style</option>
+            <option value="Hatchback">Hatchback</option>
+            <option value="SUV">SUV / Crossover</option>
+            <option value="Sedan">Sedan</option>
+            <option value="Bakkie">Bakkie / 4x4</option>
+          </select>
+        </div>
+      </div>
+      <div class="tru-form-field">
+        <label for="saMaxPrice">Max Budget (ZAR)</label>
+        <select id="saMaxPrice">
+          <option value="">Any Price</option>
+          <option value="150000">Under R150,000</option>
+          <option value="250000">Under R250,000</option>
+          <option value="350000">Under R350,000</option>
+          <option value="500000">Under R500,000</option>
+          <option value="750000">Under R750,000</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" style="padding:15px;font-size:15px;margin-top:10px">
+        Activate Stock Alert
+      </button>
+    </form>
+  </div>
+</div>
+
+<script src="/assets/js/catalog.js?v=1"></script>
+<script src="/assets/js/web3d-mock.js?v=1"></script>
+<script src="/assets/js/showroom-data.js?v=1"></script>
+<script src="/assets/js/showroom.js?v=11"></script>
+
+<script src="/tru-loader.js?v=3"
+        data-dealer="Truecars"
+        data-slug="true-cars"
+        data-flow="https://premium.tru-saas.com"
+        data-wa="27620502091"
+        data-accent="#07879A"
+        data-brand="TruDealer"
+        data-theme="light"
+        data-widgets="form,chat,share,book,afford"
+        data-form-mode="float"
+        data-share-site="https://www.true-cars.co.za"
+        data-share-vehicle-path="/vehicle/"></script>
+
+<script>
+(function () {
+  var TRU = window.TruShowroom;
+
+  var state = {
+    make: null,
+    bodyType: null,
+    fuelType: null,
+    transmission: null,
+    minPrice: null,
+    maxPrice: null,
+    q: "",
+    sort: "price-asc",
+    view: "grid"
+  };
+
+  var compared = [];
+
+  var els = {
+    results: document.getElementById("results"),
+    count: document.getElementById("count"),
+    sort: document.getElementById("sortSelect"),
+    search: document.getElementById("filterSearch"),
+    minPrice: document.getElementById("fMinPrice"),
+    maxPrice: document.getElementById("fMaxPrice"),
+    reset: document.getElementById("filtersReset"),
+    toggle: document.getElementById("filterToggle"),
+    filters: document.getElementById("filters"),
+    close: document.getElementById("filtersClose"),
+    viewGrid: document.getElementById("viewGrid"),
+    viewList: document.getElementById("viewList"),
+    activeTags: document.getElementById("activeTags"),
+    compareDock: document.getElementById("compareDock"),
+    compareCount: document.getElementById("compareCount"),
+    btnOpenCompare: document.getElementById("btnOpenCompare"),
+    btnClearCompare: document.getElementById("btnClearCompare"),
+    compareModal: document.getElementById("compareModal"),
+    btnCloseCompare: document.getElementById("btnCloseCompare"),
+    compareContent: document.getElementById("compareContent"),
+  };
+
+  function readUrlParams() {
+    var p = TRU.params();
+    if (p.make) state.make = p.make;
+    if (p.bodyType) state.bodyType = p.bodyType;
+    if (p.fuelType) state.fuelType = p.fuelType;
+    if (p.transmission) state.transmission = p.transmission;
+    if (p.minPrice) state.minPrice = Number(p.minPrice);
+    if (p.maxPrice) state.maxPrice = Number(p.maxPrice);
+    if (p.q) state.q = p.q;
+    if (p.sort) state.sort = p.sort;
+
+    if (els.search) els.search.value = state.q || "";
+    if (els.minPrice && state.minPrice) els.minPrice.value = state.minPrice;
+    if (els.maxPrice && state.maxPrice) els.maxPrice.value = state.maxPrice;
+    if (els.sort) els.sort.value = state.sort;
+  }
+
+  function query() {
+    return {
+      make: state.make,
+      bodyType: state.bodyType,
+      fuelType: state.fuelType,
+      transmission: state.transmission,
+      minPrice: state.minPrice,
+      maxPrice: state.maxPrice,
+      q: state.q,
+    };
+  }
+
+  function syncUrl() {
+    TRU.setParams({
+      make: state.make || "",
+      bodyType: state.bodyType || "",
+      fuelType: state.fuelType || "",
+      transmission: state.transmission || "",
+      minPrice: state.minPrice || "",
+      maxPrice: state.maxPrice || "",
+      q: state.q || "",
+      sort: state.sort !== "price-asc" ? state.sort : "",
+    }, true);
+  }
+
+  function sortList(list, mode) {
+    var out = list.slice();
+    if (mode === "vir-desc") {
+      return out.sort(function (a, b) {
+        return (Number(b.vir) || 0) - (Number(a.vir) || 0);
+      });
+    }
+    return TRU.sort(out, mode);
+  }
+
+  function renderActiveTags() {
+    if (!els.activeTags) return;
+    var tags = [];
+
+    if (state.q) tags.push({ label: 'Search: "' + state.q + '"', clear: function () { state.q = ""; if (els.search) els.search.value = ""; } });
+    if (state.make) tags.push({ label: 'Make: ' + state.make, clear: function () { state.make = null; } });
+    if (state.bodyType) tags.push({ label: 'Body: ' + state.bodyType, clear: function () { state.bodyType = null; } });
+    if (state.minPrice) tags.push({ label: 'From ' + TRU.money(state.minPrice), clear: function () { state.minPrice = null; if (els.minPrice) els.minPrice.value = ""; } });
+    if (state.maxPrice) tags.push({ label: 'Up to ' + TRU.money(state.maxPrice), clear: function () { state.maxPrice = null; if (els.maxPrice) els.maxPrice.value = ""; } });
+    if (state.transmission) tags.push({ label: state.transmission, clear: function () { state.transmission = null; } });
+    if (state.fuelType) tags.push({ label: state.fuelType, clear: function () { state.fuelType = null; } });
+
+    if (!tags.length) {
+      els.activeTags.innerHTML = "";
+      return;
+    }
+
+    els.activeTags.innerHTML = tags.map(function (t, i) {
+      return '<span class="active-tag" data-idx="' + i + '">' + TRU.esc(t.label) + ' <button type="button" aria-label="Remove filter">✕</button></span>';
+    }).join("") + '<button type="button" class="link" id="clearAllTags" style="font-size:12px;margin-left:8px">Clear all</button>';
+
+    els.activeTags.querySelectorAll(".active-tag").forEach(function (el) {
+      el.querySelector("button").addEventListener("click", function () {
+        var idx = Number(el.dataset.idx);
+        tags[idx].clear();
+        syncUrl();
+        render();
+      });
+    });
+
+    var clearBtn = document.getElementById("clearAllTags");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        resetAllFilters();
+      });
+    }
+  }
+
+  function renderCard(v) {
+    var stockId = v.stockNumber || v.id;
+    var isCompared = compared.indexOf(stockId) !== -1;
+    var price = v.truPrice && v.truPrice < v.price ? v.truPrice : v.price;
+    var saving = v.truPrice && v.truPrice < v.price ? v.price - v.truPrice : 0;
+    var badge = TRU.priceBadge(v);
+
+    var specs = [v.mileage ? TRU.km(v.mileage) : "", v.transmission, v.fuelType]
+      .filter(Boolean)
+      .map(function (s) { return '<span class="spec">' + TRU.esc(s) + '</span>'; })
+      .join("");
+
+    var href = "/vehicle.html?stock=" + encodeURIComponent(stockId);
+
+    return (
+      '<article class="card' + (isCompared ? ' is-compared' : '') + '">' +
+        '<div class="card-media">' +
+          '<a href="' + href + '" aria-label="' + TRU.esc(TRU.title(v)) + '" style="display:block;width:100%;height:100%">' +
+            '<img src="' + TRU.esc(v.heroImage || (v.images && v.images[0]) || '/assets/hero-showroom.jpg') + '" alt="' + TRU.esc(TRU.title(v)) + '" loading="lazy">' +
+          '</a>' +
+          (badge ? badge : '') +
+          (v.vir ? '<span class="card-vir-badge">VIR ' + v.vir + ' / 100</span>' : '') +
+        '</div>' +
+        '<div class="card-tools">' +
+          '<button data-share="' + TRU.esc(stockId) + '" aria-label="Share">' + TRU.ICON.share + '</button>' +
+          '<button data-fav="' + TRU.esc(stockId) + '" aria-label="Save"' +
+            (TRU.isFav(stockId) ? ' class="is-on"' : '') + '>' + TRU.ICON.heart + '</button>' +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-top-row">' +
+            '<div class="card-meta">' + v.year + ' · ' + TRU.esc(String(v.make).toUpperCase()) + '</div>' +
+            '<div class="card-compare-chk">' +
+              '<input type="checkbox" id="chk_' + TRU.esc(stockId) + '" data-comp="' + TRU.esc(stockId) + '"' + (isCompared ? ' checked' : '') + '>' +
+              '<label for="chk_' + TRU.esc(stockId) + '">Compare</label>' +
+            '</div>' +
+          '</div>' +
+          '<a href="' + href + '" class="card-title-link">' +
+            '<h3 class="card-title">' + TRU.esc(v.model) + '</h3>' +
+            (v.trim ? '<div class="card-trim">' + TRU.esc(v.trim) + '</div>' : '') +
+          '</a>' +
+          '<div class="card-specs">' + specs + '</div>' +
+          '<div class="card-price">' +
+            '<div class="price-block">' +
+              (saving ? '<span class="price-was">' + TRU.money(v.price) + '</span>' : '') +
+              '<span class="price-now">' + TRU.money(price) + '</span>' +
+            '</div>' +
+            '<div class="price-pm">From <b>' + TRU.money(TRU.monthly(price)) + ' / mo</b></div>' +
+          '</div>' +
+        '</div>' +
+        '<a class="card-cta" href="' + href + '">View vehicle</a>' +
+      '</article>'
+    );
+  }
+
+  function updateCompareDock() {
+    if (compared.length > 0) {
+      els.compareDock.classList.add("is-visible");
+      els.compareCount.textContent = compared.length + (compared.length === 1 ? " car selected" : " cars selected (max 3)");
+    } else {
+      els.compareDock.classList.remove("is-visible");
+    }
+  }
+
+  function renderCompareModal() {
+    var list = compared.map(function (id) { return TRU.get(id); }).filter(Boolean);
+    if (!list.length) return;
+
+    var rows = [
+      ["Vehicle", function (v) { return '<img src="' + TRU.esc(v.heroImage || (v.images && v.images[0])) + '" style="height:100px;object-fit:cover;border-radius:4px;margin-bottom:8px"><b>' + TRU.esc(TRU.title(v)) + '</b>'; }],
+      ["Price", function (v) { return '<span style="font-family:var(--serif);font-size:20px;font-weight:900">' + TRU.money(v.truPrice || v.price) + '</span>'; }],
+      ["Monthly Est.", function (v) { return '<b style="color:var(--accent)">' + TRU.money(TRU.monthly(v.truPrice || v.price)) + ' / mo</b>'; }],
+      ["VIR Score", function (v) { return v.vir ? '<b>' + v.vir + ' / 100</b> · Grade A' : 'Inspected'; }],
+      ["Year", function (v) { return v.year; }],
+      ["Mileage", function (v) { return v.mileage ? TRU.km(v.mileage) : "—"; }],
+      ["Transmission", function (v) { return v.transmission || "Automatic"; }],
+      ["Fuel Type", function (v) { return v.fuelType || "Petrol"; }],
+      ["Body Style", function (v) { return v.bodyType || "—"; }],
+      ["Action", function (v) { return '<a class="btn btn-primary btn-sm btn-block" href="/vehicle.html?stock=' + encodeURIComponent(v.stockNumber || v.id) + '">View Details</a>'; }],
+    ];
+
+    els.compareContent.innerHTML =
+      '<table class="compare-table">' +
+        '<thead><tr><th>Feature</th>' + list.map(function (v) { return '<th>' + TRU.esc(v.make + ' ' + v.model) + '</th>'; }).join("") + '</tr></thead>' +
+        '<tbody>' +
+          rows.map(function (r) {
+            return '<tr><td>' + r[0] + '</td>' + list.map(function (v) { return '<td>' + r[1](v) + '</td>'; }).join("") + '</tr>';
+          }).join("") +
+        '</tbody>' +
+      '</table>';
+  }
+
+  function render() {
+    var filtered = TRU.filter(query());
+    var list = sortList(filtered, state.sort);
+
+    els.count.textContent = String(list.length).padStart(2, "0") +
+      (list.length === 1 ? " car" : " cars") +
+      (TRU.source === "live" ? " · live DMS" : "");
+
+    if (state.view === "list") els.results.classList.add("is-list");
+    else els.results.classList.remove("is-list");
+
+    renderActiveTags();
+
+    els.results.innerHTML = list.length
+      ? list.map(renderCard).join("")
+      : '<div class="empty"><h3>Nothing matches those filters.</h3><p>Try clearing some filters or set an alert for incoming stock.</p><button class="link" id="clearInline">Clear filters</button></div>';
+
+    var clearInline = document.getElementById("clearInline");
+    if (clearInline) {
+      clearInline.addEventListener("click", resetAllFilters);
+    }
+
+    TRU.staggerCards(els.results);
+    renderFacets();
+    wireCompareHandlers();
+  }
+
+  function wireCompareHandlers() {
+    var chks = els.results.querySelectorAll("input[data-comp]");
+    chks.forEach(function (chk) {
+      chk.addEventListener("change", function () {
+        var id = chk.dataset.comp;
+        if (chk.checked) {
+          if (compared.length >= 3) {
+            alert("You can compare up to 3 vehicles at a time.");
+            chk.checked = false;
+            return;
+          }
+          if (compared.indexOf(id) === -1) compared.push(id);
+        } else {
+          var idx = compared.indexOf(id);
+          if (idx !== -1) compared.splice(idx, 1);
+        }
+        updateCompareDock();
+      });
+    });
+  }
+
+  function renderFacets() {
+    var facets = TRU.facets();
+
+    function renderGroup(containerId, list, selectedKey) {
+      var c = document.getElementById(containerId);
+      if (!c) return;
+      c.innerHTML = list.map(function (f) {
+        var isSel = state[selectedKey] === f.value;
+        return (
+          '<button type="button" class="filter-chip' + (isSel ? ' is-selected' : '') + '" data-val="' + TRU.esc(f.value) + '">' +
+            TRU.esc(f.value) + ' <span>' + f.count + '</span>' +
+          '</button>'
+        );
+      }).join("");
+
+      c.querySelectorAll("button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var val = btn.dataset.val;
+          state[selectedKey] = state[selectedKey] === val ? null : val;
+          syncUrl();
+          render();
+        });
+      });
+    }
+
+    renderGroup("fo-make", facets.make, "make");
+    renderGroup("fo-body", facets.bodyType, "bodyType");
+    renderGroup("fo-transmission", facets.transmission, "transmission");
+    renderGroup("fo-fuel", facets.fuelType, "fuelType");
+  }
+
+  function resetAllFilters() {
+    state.make = null;
+    state.bodyType = null;
+    state.fuelType = null;
+    state.transmission = null;
+    state.minPrice = null;
+    state.maxPrice = null;
+    state.q = "";
+    if (els.search) els.search.value = "";
+    if (els.minPrice) els.minPrice.value = "";
+    if (els.maxPrice) els.maxPrice.value = "";
+    syncUrl();
+    render();
+  }
+
+  /* ---- Event listeners ---- */
+  if (els.sort) {
+    els.sort.addEventListener("change", function () {
+      state.sort = els.sort.value;
+      syncUrl();
+      render();
+    });
+  }
+
+  if (els.search) {
+    els.search.addEventListener("input", function () {
+      state.q = els.search.value;
+      syncUrl();
+      render();
+    });
+  }
+
+  if (els.minPrice) {
+    els.minPrice.addEventListener("change", function () {
+      state.minPrice = els.minPrice.value ? Number(els.minPrice.value) : null;
+      syncUrl();
+      render();
+    });
+  }
+
+  if (els.maxPrice) {
+    els.maxPrice.addEventListener("change", function () {
+      state.maxPrice = els.maxPrice.value ? Number(els.maxPrice.value) : null;
+      syncUrl();
+      render();
+    });
+  }
+
+  if (els.reset) els.reset.addEventListener("click", resetAllFilters);
+
+  if (els.viewGrid && els.viewList) {
+    els.viewGrid.addEventListener("click", function () {
+      state.view = "grid";
+      els.viewGrid.classList.add("is-active");
+      els.viewList.classList.remove("is-active");
+      render();
+    });
+    els.viewList.addEventListener("click", function () {
+      state.view = "list";
+      els.viewList.classList.add("is-active");
+      els.viewGrid.classList.remove("is-active");
+      render();
+    });
+  }
+
+  if (els.toggle && els.filters) {
+    els.toggle.addEventListener("click", function () { els.filters.classList.add("is-open"); });
+  }
+  if (els.close && els.filters) {
+    els.close.addEventListener("click", function () { els.filters.classList.remove("is-open"); });
+  }
+
+  if (els.btnOpenCompare) {
+    els.btnOpenCompare.addEventListener("click", function () {
+      renderCompareModal();
+      els.compareModal.classList.add("is-open");
+    });
+  }
+  if (els.btnCloseCompare) {
+    els.btnCloseCompare.addEventListener("click", function () {
+      els.compareModal.classList.remove("is-open");
+    });
+    els.compareModal.addEventListener("click", function (e) {
+      if (e.target === els.compareModal) els.compareModal.classList.remove("is-open");
+    });
+  }
+  if (els.btnClearCompare) {
+    els.btnClearCompare.addEventListener("click", function () {
+      compared = [];
+      updateCompareDock();
+      render();
+    });
+  }
+
+  /* Stock Alert Modal */
+  var saModal = document.getElementById("stockAlertModal");
+  var closeSa = document.getElementById("closeStockAlertModal");
+  var btnSaTrigger = document.getElementById("btnStockAlertTrigger");
+  var saForm = document.getElementById("stockAlertForm");
+
+  if (btnSaTrigger && saModal) {
+    btnSaTrigger.addEventListener("click", function () {
+      saModal.classList.add("is-open");
+    });
+  }
+  if (closeSa && saModal) {
+    closeSa.addEventListener("click", function () {
+      saModal.classList.remove("is-open");
+    });
+    saModal.addEventListener("click", function (e) {
+      if (e.target === saModal) saModal.classList.remove("is-open");
+    });
+  }
+  if (saForm) {
+    saForm.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var contact = document.getElementById("saContact").value;
+      var make = document.getElementById("saMake").value;
+      var body = document.getElementById("saBody").value;
+      var maxPrice = document.getElementById("saMaxPrice").value;
+
+      if (window.TruForm && window.TruForm.open) {
+        window.TruForm.open({
+          interest: "Stock Alert Request: " + contact + " (Make: " + (make || "Any") + ", Body: " + (body || "Any") + ", Max: " + (maxPrice ? "R" + maxPrice : "Any") + ")",
+          source: "srp-stock-alert"
+        });
+      }
+      saModal.classList.remove("is-open");
+      alert("Stock alert saved! We will notify " + contact + " as soon as matching fresh inventory lands on the floor.");
+    });
+  }
+
+  readUrlParams();
+  render();
+  window.addEventListener("tru:stock", render);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# True Cars showroom — Netlify config.
+#
+# This file exists so the edge function below is registered in version control
+# rather than the dashboard. Consequence: this site must be deployed with the
+# Netlify CLI or a Git-connected build. Drag-and-drop (Netlify Drop) silently
+# strips edge functions, and every shared car goes back to unfurling as the
+# generic site card.
+#
+#   netlify deploy --prod --dir .
+
+[build]
+  publish = "."
+
+# Per-car link previews for WhatsApp, Facebook and iMessage. Unfurl bots never
+# run JavaScript, so the car's <head> has to be rewritten server-side. Two
+# entries so both /vehicle and /vehicle/?stock=... are covered.
+[[edge_functions]]
+  path = "/vehicle"
+  function = "vehicle-og"
+
+[[edge_functions]]
+  path = "/vehicle/*"
+  function = "vehicle-og"

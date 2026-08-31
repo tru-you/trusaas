@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TruRTO360 · Rent-to-own with 360° VIR · TruSaaS</title>
+  <meta name="description" content="Dealership RTO360 — integrated rent-to-own inventory with 360° VIR inspections, milestone damage tracking, and transparent handover to purchase." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="assets/brand/favicon.png" type="image/png" />
+  <style>
+    :root {
+      --bg: #06070c;
+      --surface: rgba(17, 18, 26, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f4f4f1;
+      --muted: #94a3b8;
+      --violet: #7c3aed;
+      --blue: #3b82f6;
+      --teal: #14b8a6;
+      --grad: linear-gradient(115deg, #7c3aed 0%, #6366f1 48%, #2563eb 100%);
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      background-image:
+        radial-gradient(ellipse 70% 50% at 10% -10%, rgba(124, 58, 237, 0.22), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 90% 0%, rgba(37, 99, 235, 0.16), transparent 45%);
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+    header {
+      position: sticky; top: 0; z-index: 40;
+      backdrop-filter: blur(18px);
+      background: rgba(6, 7, 12, 0.75);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 12px;
+    }
+    .brand {
+      font-family: "Plus Jakarta Sans", sans-serif; font-weight: 800; font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+    .brand span {
+      background: var(--grad); -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav a.muted { color: var(--muted); font-size: 13px; font-weight: 600; margin-left: 14px; }
+    .nav a.muted:hover { color: #fff; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 18px; border-radius: 12px; font-weight: 800; font-size: 13px;
+      border: 0; cursor: pointer; transition: transform 0.2s var(--ease), filter 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    .btn-grad { background: var(--grad); color: #fff; box-shadow: 0 12px 32px -12px rgba(124, 58, 237, 0.55); }
+    .btn-ghost {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: #fff; border-color: rgba(255, 255, 255, 0.25); }
+    .hero { padding: 56px 0 40px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #c4b5fd; background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      padding: 7px 12px; border-radius: 999px; margin-bottom: 18px;
+    }
+    h1 {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: clamp(32px, 5.5vw, 52px); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.08; max-width: 16ch; margin-bottom: 16px;
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, #a78bfa, #60a5fa 55%, #5eead4);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .lede { color: var(--muted); max-width: 52ch; font-size: 16px; margin-bottom: 28px; }
+    .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 40px; }
+    .grid {
+      display: grid; grid-template-columns: 1fr; gap: 14px; padding-bottom: 28px;
+    }
+    @media (min-width: 800px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+      padding: 22px; backdrop-filter: blur(16px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: border-color 0.2s, transform 0.2s var(--ease);
+    }
+    .card:hover { border-color: rgba(124, 58, 237, 0.35); transform: translateY(-3px); }
+    .card .n {
+      font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #a78bfa; margin-bottom: 12px;
+    }
+    .card h3 {
+      font-family: "Plus Jakarta Sans", sans-serif; font-size: 18px; font-weight: 800;
+      letter-spacing: -0.02em; margin-bottom: 10px;
+    }
+    .card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .flow {
+      margin: 20px 0 48px; padding: 22px;
+      border-radius: 18px; border: 1px solid rgba(124, 58, 237, 0.25);
+      background: linear-gradient(120deg, rgba(124, 58, 237, 0.12), rgba(37, 99, 235, 0.08));
+    }
+    .flow h2 {
+      font-family: "Plus Jakarta Sans", sans-serif; font-size: 20px; font-weight: 800;
+      margin-bottom: 16px; letter-spacing: -0.02em;
+    }
+    .steps {
+      display: grid; gap: 10px;
+    }
+    @media (min-width: 720px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+    .step {
+      background: rgba(0, 0, 0, 0.28); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px;
+    }
+    .step b {
+      display: block; font-family: "IBM Plex Mono", monospace; font-size: 10px;
+      letter-spacing: 0.1em; color: #5eead4; margin-bottom: 8px;
+    }
+    .step span { font-size: 13px; color: var(--muted); line-height: 1.45; }
+    .stack {
+      display: grid; gap: 12px; margin-bottom: 48px;
+    }
+    @media (min-width: 720px) { .stack { grid-template-columns: 1.2fr 1fr; } }
+    .stack-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px;
+    }
+    .stack-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+    .stack-card ul { list-style: none; }
+    .stack-card li {
+      font-size: 13px; color: var(--muted); padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .stack-card li:last-child { border-bottom: 0; }
+    .stack-card li::before {
+      content: "◆"; color: #7c3aed; font-size: 10px; margin-top: 4px;
+    }
+    .cta-band {
+      text-align: center; padding: 40px 24px 56px;
+      border-top: 1px solid var(--border);
+    }
+    .cta-band h2 {
+      font-family: "Plus Jakarta Sans", sans-serif; font-size: clamp(24px, 4vw, 34px);
+      font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px;
+    }
+    .cta-band p { color: var(--muted); max-width: 46ch; margin: 0 auto 22px; }
+    footer {
+      border-top: 1px solid var(--border); padding: 20px 0 36px;
+      font-size: 12px; color: var(--muted);
+    }
+  </style>
+<link rel="stylesheet" href="assets/css/polish.css?v=1">
+<link rel="stylesheet" href="assets/css/flagship.css?v=21">
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="truesaas.html">Tru<span>SaaS</span> · RTO360</a>
+      <div>
+        <a class="muted" href="index.html">True-Cars</a>
+        <a class="muted" href="truesaas.html#modules">Modules</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="pill">Dealership product · Fleet &amp; finance path</div>
+      <h1>Dealership <em>RTO360</em></h1>
+      <p class="lede">
+        Integrated <strong style="color:#fff">rent-to-own inventory</strong> with
+        <strong style="color:#fff">360° VIR inspections</strong>, milestone-based damage tracking,
+        and a seamless transition to purchase with transparent handover.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-grad" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27d%20like%20a%20demo%20of%20Dealership%20RTO360%20%2F%20TruRTO360." target="_blank" rel="noopener">Book RTO360 demo</a>
+        <a class="btn btn-ghost" href="truesaas.html#modules">All TruSaaS modules</a>
+        <a class="btn btn-ghost" href="vehicle.html?id=porsche-cayenne-s-19">See TruOrbit / VIR proof</a>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="RTO360 pillars">
+      <article class="card">
+        <div class="n">01 · Inventory</div>
+        <h3>Rent-to-own stock, one system</h3>
+        <p>RTO units live inside dealer inventory — not a side spreadsheet. Pricing, payment milestones, and availability stay in Flow with the rest of the floor.</p>
+      </article>
+      <article class="card">
+        <div class="n">02 · Condition</div>
+        <h3>360° VIR at every milestone</h3>
+        <p>Each check-in captures a full condition snapshot: orbit frames, damage tags, and a VIR trail so both yard and client know exactly what changed.</p>
+      </article>
+      <article class="card">
+        <div class="n">03 · Handover</div>
+        <h3>Transparent path to purchase</h3>
+        <p>When the client is ready to buy out, history, payments, and condition reports transfer cleanly — no surprise reconditioning fights at the end.</p>
+      </article>
+    </section>
+
+    <section class="flow">
+      <h2>How RTO360 runs on the lot</h2>
+      <div class="steps">
+        <div class="step"><b>1 · List</b><span>Unit flagged as rent-to-own in TruFlow stock with RTO terms and deposit rules.</span></div>
+        <div class="step"><b>2 · Onboard</b><span>Baseline 360° VIR + TruLens photos before keys leave the yard.</span></div>
+        <div class="step"><b>3 · Milestone</b><span>Scheduled re-inspections log new damage vs baseline — client-facing reports.</span></div>
+        <div class="step"><b>4 · Convert</b><span>Buy-out path with full audit trail: payments, condition, handover pack.</span></div>
+      </div>
+    </section>
+
+    <section class="stack">
+      <div class="stack-card">
+        <h3>What dealers get</h3>
+        <ul>
+          <li>RTO inventory lane inside the same DMS as retail stock</li>
+          <li>Milestone schedules tied to payments or calendar</li>
+          <li>Damage delta reports (before → after each check)</li>
+          <li>Customer-facing condition PDF / portal link</li>
+          <li>Clean conversion to retail sale without re-keying</li>
+        </ul>
+      </div>
+      <div class="stack-card">
+        <h3>Stack it runs on</h3>
+        <ul>
+          <li><b style="color:#fff">TruFlow</b> — stock, terms, milestones, CRM</li>
+          <li><b style="color:#fff">TruLens + TruOrbit</b> — capture &amp; orbit proof</li>
+          <li><b style="color:#fff">TruVIR</b> — condition scores &amp; PDFs</li>
+          <li><b style="color:#fff">TruShowroom</b> — optional RTO browse lane</li>
+          <li><b style="color:#fff">TruChat</b> — qualify RTO vs finance leads 24/7</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <section class="cta-band">
+    <div class="wrap">
+      <h2>Rent-to-own without the paperwork chaos.</h2>
+      <p>Show the yard a single system for RTO inventory, condition milestones, and transparent buy-out.</p>
+      <a class="btn btn-grad" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20Dealership%20RTO360%20demo%20please." target="_blank" rel="noopener">Talk to Paul · WhatsApp</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">© 2026 TruSaaS · TruRTO360 / Dealership RTO360 · Built for SA dealers</div>
+  </footer>
+<script src="assets/js/flagship.js?v=15" defer></script>
+</body>
+</html>

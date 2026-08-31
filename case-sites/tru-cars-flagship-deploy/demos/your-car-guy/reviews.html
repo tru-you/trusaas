@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Reviews & Location — Your Car Guy</title>
+<meta name="description" content="5.0 stars · 498 Google reviews · 17 Burt Drive, Newton Park, Gqeberha · Your Car Guy pre-owned vehicles.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020202;--signal:#DF1D1D;--signal-bright:#F04444;--signal-dim:#8B1111;
+  --text:#E8E8E8;--muted:#6B7280;--gold:#FBBF24;
+  --glass:rgba(255,255,255,.03);--glass-hi:rgba(255,255,255,.05);
+  --border:rgba(255,255,255,.06);--border-hi:rgba(223,29,29,.18);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;line-height:1.55;-webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%,rgba(223,29,29,.06),transparent 60%);
+}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+
+/* ── Glass base ─────────────────────────────────────── */
+.glass{
+  background:var(--glass);backdrop-filter:blur(28px) saturate(1.3);
+  border:1px solid var(--border);border-radius:20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 4px 40px rgba(0,0,0,.6);
+}
+
+/* ── Rating hero ────────────────────────────────────── */
+.rating-hero{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:14px 28px;flex-wrap:wrap;margin:36px auto 28px;
+  background:rgba(255,255,255,.035);backdrop-filter:blur(28px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.07);border-radius:60px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 4px 32px rgba(0,0,0,.5);
+  width:fit-content;
+}
+.gbp-avatar{
+  width:44px;height:44px;border-radius:50%;object-fit:contain;
+  border:2px solid rgba(223,29,29,.25);flex-shrink:0;
+  box-shadow:0 0 16px rgba(223,29,29,.12);background:#111;
+}
+.big-stars{display:flex;gap:2px;flex-shrink:0}
+.big-stars svg{width:22px;height:22px}
+.rating-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.rating-num em{font-style:normal;color:var(--signal-bright)}
+.rating-num span{color:var(--muted);font-weight:600}
+.rating-sub{color:var(--muted);font-size:13px}
+.rating-sub strong{color:var(--text);font-weight:700}
+.sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+
+/* ── Shimmer ────────────────────────────────────────── */
+.rating-hero{position:relative;overflow:hidden}
+.rating-hero::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.1) 50%,transparent 70%);
+  animation:shine 4s ease-in-out infinite;pointer-events:none;
+}
+@keyframes shine{0%,100%{transform:translateX(-120%)}50%{transform:translateX(120%)}}
+.big-stars svg{filter:drop-shadow(0 0 4px rgba(251,191,36,.4));animation:starPulse 3s ease-in-out infinite}
+.big-stars svg:nth-child(2){animation-delay:.15s}
+.big-stars svg:nth-child(3){animation-delay:.3s}
+.big-stars svg:nth-child(4){animation-delay:.45s}
+.big-stars svg:nth-child(5){animation-delay:.6s}
+@keyframes starPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(251,191,36,.3))}50%{filter:drop-shadow(0 0 10px rgba(251,191,36,.7))}}
+
+/* ── Layout: map + info ─────────────────────────────── */
+.loc-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:32px;perspective:1000px}
+@media(min-width:720px){.loc-grid{grid-template-columns:1.4fr 1fr}}
+.map-wrap{
+  border-radius:20px;overflow:hidden;border:1px solid var(--border);
+  height:300px;position:relative;
+  box-shadow:0 8px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(223,29,29,.06);
+  transform:rotateY(1.5deg);transition:transform .4s var(--ease);
+}
+.map-wrap:hover{transform:rotateY(0)}
+.map-wrap iframe{width:100%;height:100%;border:0;filter:invert(0.94) hue-rotate(180deg) saturate(0.4) brightness(0.75) contrast(1.2)}
+.map-wrap::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  border-radius:20px;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.4);
+}
+.info-card{
+  padding:22px;display:flex;flex-direction:column;gap:14px;
+  transform:rotateY(-1.5deg);transition:transform .4s var(--ease);
+}
+.info-card:hover{transform:rotateY(0)}
+.info-row{display:flex;align-items:center;gap:11px;font-size:13px}
+.info-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(223,29,29,.08);border:1px solid rgba(223,29,29,.12);
+  display:grid;place-items:center;flex-shrink:0;
+}
+.info-icon svg{width:14px;height:14px;stroke:var(--signal-bright);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.info-label{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:1px}
+.info-val{font-weight:600;font-size:13px}
+.info-val a{color:var(--text);text-decoration:none;transition:color .15s}
+.info-val a:hover{color:var(--signal-bright)}
+
+/* ── Photo strip ────────────────────────────────────── */
+.photo-strip{
+  display:flex;gap:10px;overflow-x:auto;padding:0 0 24px;
+  scrollbar-width:thin;scrollbar-color:rgba(223,29,29,.2) transparent;
+  -webkit-overflow-scrolling:touch;perspective:800px;
+}
+.photo-strip::-webkit-scrollbar{height:4px}
+.photo-strip::-webkit-scrollbar-thumb{background:rgba(223,29,29,.2);border-radius:4px}
+.photo-card{
+  flex:0 0 220px;height:150px;border-radius:16px;overflow:hidden;
+  border:1px solid var(--border);position:relative;
+  box-shadow:0 6px 24px rgba(0,0,0,.5);
+  transition:transform .3s var(--ease),border-color .3s;
+}
+.photo-card:hover{transform:translateY(-4px) scale(1.02);border-color:var(--border-hi)}
+.photo-card img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.6));
+  pointer-events:none;
+}
+
+/* ── Google link ────────────────────────────────────── */
+.gbp-link{
+  text-align:center;padding:4px 0 40px;
+}
+.gbp-link a{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;
+  padding:8px 16px;border-radius:10px;border:1px solid var(--border);
+  background:var(--glass);transition:color .2s,border-color .2s;
+}
+.gbp-link a:hover{color:var(--signal-bright);border-color:var(--border-hi)}
+.gbp-link a svg{width:14px;height:14px;fill:currentColor}
+
+footer{border-top:1px solid var(--border);padding:16px 0 28px;font-size:10px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+
+<main class="wrap">
+
+  <section class="rating-hero">
+    <img class="gbp-avatar" src="https://yourcarguy.co.za/wp-content/uploads/2026/06/Floating-Logo-2-e1606121199287.png" alt="Your Car Guy">
+    <div class="big-stars">
+      <svg viewBox="0 0 24 24"><path fill="#FBBF24" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z"/></svg>
+      <svg viewBox="0 0 24 24"><path fill="#FBBF24" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z"/></svg>
+      <svg viewBox="0 0 24 24"><path fill="#FBBF24" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z"/></svg>
+      <svg viewBox="0 0 24 24"><path fill="#FBBF24" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z"/></svg>
+      <svg viewBox="0 0 24 24"><path fill="#FBBF24" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01z"/></svg>
+    </div>
+    <div class="rating-num"><em>5.0</em> <span>/ 5.0</span></div>
+    <div class="sep"></div>
+    <p class="rating-sub"><strong>498 reviews</strong></p>
+  </section>
+
+  <div class="photo-strip">
+    <div class="photo-card"><img src="https://yourcarguy.co.za/wp-content/uploads/2026/08/769_3206_I1-768x576.jpg" alt="2024 Ford Ranger XL"></div>
+    <div class="photo-card"><img src="https://yourcarguy.co.za/wp-content/uploads/2026/08/769_3303_I1-768x576.jpg" alt="2024 Toyota Urban Cruiser XR"></div>
+    <div class="photo-card"><img src="https://yourcarguy.co.za/wp-content/uploads/2026/08/769_3435_I1-768x576.jpg" alt="2023 Ford Ranger Wildtrak"></div>
+    <div class="photo-card"><img src="https://yourcarguy.co.za/wp-content/uploads/2026/08/769_3206_I2-150x150.jpg" alt="Ford Ranger detail"></div>
+    <div class="photo-card"><img src="https://yourcarguy.co.za/wp-content/uploads/2026/08/769_3303_I2-150x150.jpg" alt="Urban Cruiser detail"></div>
+  </div>
+
+  <section class="loc-grid">
+    <div class="map-wrap">
+      <iframe
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3310.049246468145!2d25.563672811549317!3d-33.93986147308776!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1e7ad15fe9db8827%3A0x322dded707258a97!2sYour%20Car%20Guy!5e0!3m2!1sen!2sza!4v1782218469178!5m2!1sen!2sza"
+        title="Your Car Guy — 17 Burt Drive, Newton Park"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <div class="info-card glass">
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div>
+          <div class="info-label">Address</div>
+          <div class="info-val">17 Burt Drive, Newton Park<br>Gqeberha 6045</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
+        <div>
+          <div class="info-label">Call us</div>
+          <div class="info-val"><a href="tel:0834659921">083 465 9921</a> &middot; <a href="tel:0410070393">041 007 0393</a></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div>
+          <div class="info-label">Email</div>
+          <div class="info-val"><a href="mailto:sales@yourcarguy.co.za">sales@yourcarguy.co.za</a></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+        <div>
+          <div class="info-label">Hours</div>
+          <div class="info-val">Mon-Fri 07:30-17:30<br>Sat 08:00-13:00</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="gbp-link">
+    <a href="https://g.page/r/YOUR-CAR-GUY/review" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      See all reviews on Google
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">&copy; 2026 Your Car Guy &middot; 17 Burt Drive, Newton Park, Gqeberha</div>
+</footer>
+
+</body>
+</html>

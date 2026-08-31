@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside the stack — Truecars</title>
+<meta name="description" content="The technology tour: TruOrbit 360° walkarounds, the TruInspect VIR, and the widget suite that feeds TruFlow DMS in real time.">
+<meta property="og:title" content="Inside the stack — Truecars">
+<meta property="og:description" content="Drag-to-spin 360° walkarounds, the inspection report, and the widgets that turn a listing into a lead.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.true-cars.co.za/immersive">
+<meta property="og:image" content="https://www.true-cars.co.za/og-card.jpg">
+<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">
+<link rel="stylesheet" href="/assets/css/showroom.css?v=11">
+<style>
+  /* Webhook explainer — a quiet callout band. Self-contained so it never
+     drifts if showroom.css tokens move. */
+  .hook-band {
+    margin: 28px 0 0;
+    padding: 20px 22px;
+    border-left: 3px solid #15C7C0;
+    background: rgba(21, 199, 192, 0.07);
+    border-radius: 0 10px 10px 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #465468;
+  }
+  .hook-band b { color: #0A1420; }
+  .hook-band .hook-tag {
+    display: inline-block;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #0A1420;
+    background: #15C7C0;
+    padding: 4px 8px;
+    border-radius: 5px;
+    margin-right: 10px;
+    vertical-align: 2px;
+  }
+  /* Stage note under the orbit player */
+  .stage-note {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #8291A6;
+    text-align: center;
+  }
+  /* Pipeline flow — three steps side by side */
+  .flow-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 8px; }
+  @media (min-width: 720px) { .flow-row { grid-template-columns: 1fr 1fr 1fr; } }
+  .flow-step {
+    border: 1px solid #E2EAF3;
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .flow-step .n { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.1em; color: #15C7C0; font-weight: 700; }
+  .flow-step b { display: block; margin-top: 6px; font-size: 15px; color: #0A1420; }
+  .flow-step p { margin: 6px 0 0; font-size: 13px; color: #8291A6; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<main>
+
+  <!-- ---------- hero ---------- -->
+  <section class="hero">
+    <div class="hero-media"><img src="/assets/hero-showroom.jpg" alt="" fetchpriority="high"></div>
+    <div class="hero-scrim"></div>
+
+    <div class="wrap hero-inner">
+      <span class="hero-eyebrow reveal reveal-1">
+        <span class="hero-dot" aria-hidden="true"></span>
+        <span>The technology tour</span>
+      </span>
+      <h1 class="hero-title reveal reveal-2">One capture. <em>Every channel.</em></h1>
+      <div class="hero-facts reveal reveal-3">
+        <span>TruOrbit 360°</span>
+        <span class="hero-sep">&middot;</span>
+        <span>Inspection VIR</span>
+        <span class="hero-sep">&middot;</span>
+        <span>Widget suite</span>
+      </div>
+      <div class="hero-cta reveal reveal-4">
+        <a class="btn btn-primary" href="#orbit">Spin the demo car</a>
+        <a class="btn btn-outline" id="virLinkHero" href="/report/">View a live VIR</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- I. TruOrbit ---------- -->
+  <section class="section" id="orbit">
+    <div class="wrap">
+      <div class="plate reveal">
+        <div class="plate-no">I. TruOrbit</div>
+        <div class="plate-title">
+          <h2>Drag it. <em>That's the whole point.</em></h2>
+          <p>No rig, no studio — a phone walked around the car in the yard. Grab and spin. Same player you see on every car's detail page.</p>
+        </div>
+      </div>
+      <div id="orbitStage"></div>
+    </div>
+  </section>
+
+  <!-- ---------- II. TruInspect VIR ---------- -->
+  <section class="section band">
+    <div class="wrap">
+      <div class="plate reveal">
+        <div class="plate-no">II. TruInspect</div>
+        <div class="plate-title">
+          <h2>The report the buyer <em>and</em> the bank read.</h2>
+          <p>A graded condition report with a score, damage tags by area, and the inspector's signature. Printed clean, defensible, and shareable.</p>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <a class="btn btn-outline" id="virLinkPanel" href="/report/">Open a live inspection report</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- III. Widgets ---------- -->
+  <section class="section">
+    <div class="wrap">
+      <div class="plate reveal">
+        <div class="plate-no">III. Widgets</div>
+        <div class="plate-title">
+          <h2>Every touchpoint, <em>one pipeline.</em></h2>
+          <p>Six widgets live on this site. Each one is a door a buyer walks through — and every door opens into the dealer console.</p>
+        </div>
+      </div>
+
+      <div class="module-grid">
+        <article class="module">
+          <div class="module-no">01 / Pre-approval</div>
+          <h3>TruForm</h3>
+          <p>Finance application and trade-in capture in one form. Qualified leads route straight to the console.</p>
+          <a class="link" href="/finance.html">Try an application</a>
+        </article>
+        <article class="module">
+          <div class="module-no">02 / Messaging</div>
+          <h3>TruChat</h3>
+          <p>An assistant that knows the stock list, qualifies the buyer, and hands to WhatsApp with the context attached.</p>
+          <a class="link" href="#" onclick="window.TruChat&&window.TruChat.open&&window.TruChat.open();return false;">Open the chat</a>
+        </article>
+        <article class="module">
+          <div class="module-no">03 / Affordability</div>
+          <h3>TruAfford</h3>
+          <p>Deposit, term and balloon the buyer moves themselves — same math, everywhere.</p>
+          <a class="link" href="/finance.html">Check affordability</a>
+        </article>
+        <article class="module">
+          <div class="module-no">04 / Finance</div>
+          <h3>TruRepay</h3>
+          <p>Instalments on every card and every car, so the buyer knows the number before they drive.</p>
+          <a class="link" href="/finance.html">Open the calculator</a>
+        </article>
+        <article class="module">
+          <div class="module-no">05 / Test drives</div>
+          <h3>TruBook</h3>
+          <p>Pick a car, pick a slot, get an invite. The yard sees the booking against the stock number.</p>
+          <a class="link" href="/stock.html">Book a drive</a>
+        </article>
+        <article class="module">
+          <div class="module-no">06 / Sharing</div>
+          <h3>TruShare</h3>
+          <p>One tap shares a car with per-vehicle preview tags — the link unfurls into the listing.</p>
+          <a class="link" href="/stock.html">Share a car</a>
+        </article>
+      </div>
+
+      <div class="hook-band reveal">
+        <span class="hook-tag">Webhooks</span>
+        <b>Every interaction fires a webhook into TruFlow DMS in real time.</b>
+        A booking, a chat, a finance check, a share — nothing sits on the site. It lands in the dealer console as it happens.
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- IV. The pipeline ---------- -->
+  <section class="section band">
+    <div class="wrap">
+      <div class="plate reveal">
+        <div class="plate-no">IV. The pipeline</div>
+        <div class="plate-title">
+          <h2>From the yard <em>to this page.</em></h2>
+          <p>TruLens carries the dealership slug through every step. Capture once, and the car is in the DMS and on the storefront.</p>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-step reveal">
+          <div class="n">01 · Capture</div>
+          <b>TruLens</b>
+          <p>Guided photos + a 360° orbit taken on a phone in the yard, tagged to your dealership.</p>
+        </div>
+        <div class="flow-step reveal">
+          <div class="n">02 · Manage</div>
+          <b>TruFlow DMS</b>
+          <p>Stock, pricing against the market, finance and messaging — one system, one source of truth.</p>
+        </div>
+        <div class="flow-step reveal">
+          <div class="n">03 · Publish</div>
+          <b>This storefront</b>
+          <p>The same feed that powers true-cars.co.za. Every car here is live, inspected and priced.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- data + chrome -->
+<script src="/assets/js/catalog.js?v=1"></script>
+<script src="/assets/js/web3d-mock.js?v=1"></script>
+<script src="/assets/js/showroom-data.js?v=1"></script>
+<script src="/assets/js/showroom.js?v=11"></script>
+
+<!-- TruDealer widget suite -->
+<script src="/tru-loader.js?v=3"
+        data-dealer="Truecars"
+        data-slug="true-cars"
+        data-flow="https://premium.tru-saas.com"
+        data-wa="27620502091"
+        data-accent="#07879A"
+        data-brand="TruDealer"
+        data-theme="light"
+        data-widgets="form,afford,chat,share,book"
+        data-form-mode="float"
+        data-share-site="https://www.true-cars.co.za"
+        data-share-vehicle-path="/vehicle/"></script>
+
+<script>
+(function () {
+  var host = document.getElementById("orbitStage");
+  if (!host) return;
+  var TRU = window.TruShowroom || {};
+  var esc = TRU.esc || function (s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  };
+
+  /* The EXACT same 360° walkaround the vehicle detail page renders (`.orbit-hero`
+     drag-spin with jump chips, degree readout and reset) — not the mock player.
+     Fed by a REAL Lens orbit (no mock flag) from the floor. */
+  function buildOrbitHero(v) {
+    var frames = v.web3d.frames;
+
+    /* Jump chips, derived from each frame's azimuth rather than hardcoded. */
+    var chips = frames.map(function (f, i) {
+      var az = typeof f.azimuth === "number" ? f.azimuth : i / frames.length;
+      return { i: i, az: ((az % 1) + 1) % 1, name: f.name };
+    });
+    function nearest(target) {
+      var best = chips[0];
+      chips.forEach(function (c) {
+        var d = Math.min(Math.abs(c.az - target), 1 - Math.abs(c.az - target));
+        var bd = Math.min(Math.abs(best.az - target), 1 - Math.abs(best.az - target));
+        if (d < bd) best = c;
+      });
+      return best;
+    }
+    var jumps = [["Front", 0], ["Side", 0.25], ["Rear", 0.5], ["Other side", 0.75]]
+      .map(function (p) { var c = nearest(p[1]); return { label: p[0], i: c.i }; });
+
+    host.innerHTML =
+      '<figure class="orbit-hero">' +
+        '<div class="orbit-head">' +
+          '<span class="eyebrow">360° walkaround</span>' +
+          '<span class="orbit-count">' + frames.length + " angles captured</span>" +
+        "</div>" +
+        '<div class="orbit" id="orbit" tabindex="0" role="group" ' +
+          'aria-label="360 degree walkaround — drag, or use arrow keys, to rotate">' +
+          frames.map(function (f, i) {
+            return '<img src="' + esc(f.image) + '" alt="' + esc(f.name || "") + '"' +
+              (i === 0 ? ' class="is-active"' : "") +
+              (i === 0 ? "" : ' loading="lazy"') + ">";
+          }).join("") +
+          '<div class="orbit-label" id="orbitLabel">' + esc(frames[0].name || "") + "</div>" +
+          '<button class="orbit-reset" id="orbitReset" type="button" aria-label="Reset to front">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+            'stroke-linecap="round"><path d="M1 4v6h6"/>' +
+            '<path d="M3.5 20A9 9 0 1 0 4 10l-3 0"/></svg>' +
+          "</button>" +
+          '<div class="orbit-hint" id="orbitHint">' +
+            'Drag to spin · <b id="orbitDeg">0°</b>' +
+          "</div>" +
+        "</div>" +
+        '<div class="orbit-chips" id="orbitChips">' +
+          jumps.map(function (j, k) {
+            return '<button type="button" data-i="' + j.i + '"' +
+              (k === 0 ? ' class="is-on"' : "") + ">" + esc(j.label) + "</button>";
+          }).join("") +
+        "</div>" +
+      "</figure>";
+
+    wireOrbit(frames);
+  }
+
+  function wireOrbit(data) {
+    var orbit  = document.getElementById("orbit");
+    var label  = document.getElementById("orbitLabel");
+    var hint   = document.getElementById("orbitHint");
+    var deg    = document.getElementById("orbitDeg");
+    var chips  = document.getElementById("orbitChips");
+    var reset  = document.getElementById("orbitReset");
+    var imgs   = orbit.querySelectorAll("img");
+    var n      = imgs.length;
+    var idx    = 0;
+
+    function show(k) {
+      idx = ((k % n) + n) % n;
+      for (var j = 0; j < n; j++) imgs[j].classList.toggle("is-active", j === idx);
+      label.textContent = data[idx].name || "";
+      var az = typeof data[idx].azimuth === "number" ? data[idx].azimuth : idx / n;
+      deg.textContent = Math.round((((az % 1) + 1) % 1) * 360) + "°";
+      if (chips) {
+        var btns = chips.querySelectorAll("button");
+        for (var b = 0; b < btns.length; b++) {
+          btns[b].classList.toggle("is-on", +btns[b].dataset.i === idx);
+        }
+      }
+    }
+
+    var dragging = false, startX = 0, startIdx = 0, moved = false;
+    function stepWidth() { return Math.max(24, orbit.clientWidth / (n * 1.6)); }
+    function down(x, id) {
+      dragging = true; moved = false; startX = x; startIdx = idx;
+      orbit.classList.add("is-dragging");
+      if (id != null && orbit.setPointerCapture) orbit.setPointerCapture(id);
+    }
+    function move(x) {
+      if (!dragging) return;
+      var delta = Math.round((x - startX) / stepWidth());
+      if (delta !== 0 && !moved) { moved = true; orbit.classList.add("has-moved"); }
+      show(startIdx + delta);
+    }
+    function up() { dragging = false; orbit.classList.remove("is-dragging"); }
+
+    orbit.addEventListener("pointerdown", function (ev) { ev.preventDefault(); down(ev.clientX, ev.pointerId); });
+    orbit.addEventListener("pointermove", function (ev) { move(ev.clientX); });
+    orbit.addEventListener("pointerup", up);
+    orbit.addEventListener("pointercancel", up);
+
+    orbit.addEventListener("keydown", function (ev) {
+      if (ev.key === "ArrowRight") { show(idx + 1); orbit.classList.add("has-moved"); ev.preventDefault(); }
+      else if (ev.key === "ArrowLeft") { show(idx - 1); orbit.classList.add("has-moved"); ev.preventDefault(); }
+      else if (ev.key === "Home") { show(0); ev.preventDefault(); }
+    });
+
+    if (chips) {
+      chips.addEventListener("click", function (ev) {
+        var b = ev.target.closest("button");
+        if (!b) return;
+        show(+b.dataset.i);
+        orbit.classList.add("has-moved");
+      });
+    }
+    if (reset) {
+      reset.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        show(0);
+        orbit.classList.remove("has-moved");
+      });
+    }
+
+    show(0);
+  }
+
+  function pickReal() {
+    var list = TRU.vehicles || [];
+    for (var i = 0; i < list.length; i++) {
+      var v = list[i];
+      if (v.web3d && v.web3d.frames && v.web3d.frames.length && !v.web3d.mock) return v;
+    }
+    return null;
+  }
+
+  function mount() {
+    var v = pickReal();
+    if (v) { buildOrbitHero(v); return true; }
+    return false;
+  }
+
+  function empty() {
+    host.innerHTML =
+      '<div style="padding:64px 24px;text-align:center;color:#8291A6;font-size:14px;line-height:1.7">' +
+        "No orbit captured yet.<br>" +
+        "Walk a car in TruLens demo and it spins here — a real 360, not a mock." +
+      "</div>";
+  }
+
+  /* Feed resolves async (tru:stock) and each orbit upgrades lazily from Lens,
+     so retry until a real one lands. */
+  if (!mount()) {
+    var tries = 0;
+    var timer = setInterval(function () {
+      if (mount() || ++tries > 20) {
+        clearInterval(timer);
+        if (!host.querySelector(".orbit-hero")) empty();
+      }
+    }, 400);
+  }
+
+  /* VIR links point at a REAL report — the best-scored inspected car on the
+     floor right now, rendered live from the DMS feed. Never a static sample. */
+  function wireVirLinks() {
+    var list = TRU.vehicles || [];
+    var best = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].vir && (!best || list[i].vir > best.vir)) best = list[i];
+    }
+    if (!best) return false;
+    var h = "/report/?stock=" + encodeURIComponent(best.stockNumber);
+    ["virLinkHero", "virLinkPanel"].forEach(function (id) {
+      var a = document.getElementById(id);
+      if (a) a.setAttribute("href", h);
+    });
+    return true;
+  }
+  if (!wireVirLinks()) {
+    window.addEventListener("tru:stock", function once() {
+      if (wireVirLinks()) window.removeEventListener("tru:stock", once);
+    });
+  }
+})();
+</script>
+</body>
+</html>
