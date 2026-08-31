@@ -121,6 +121,39 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ## 4. Recent Changes (2026-08-21)
 
+### UK-first market expansion — market spine, all four apps, widgets (2026-08-31)
+
+**Program:** UK first, US as Phase 6. Locked decisions: separate regional deployments of ONE codebase (MARKET env per instance, Frankfurt region, fresh region-bound disks, `uk.*` subdomains); NO paid data providers at v1 (free scraper + VIN decode later; Imagin8/TU stays SA-only); full Premium desktop pass in-program; WP plugin EXCLUDED (retired one-off).
+
+**Valuation spine (packages/market-scraper is now the production path for non-ZA markets):**
+- Engine fixes: currency-safe depreciation slope (relative to median price, was ZAR-absolute), miles normalisation (JSON-LD `unitCode` SMI, card odometer regex, market `distanceUnit` for unit-less feeds), bare 4-7 digit price regex (ungrouped £/$ amounts), `ValuationResult.currency` + `distanceUnit` to clients, dealer layer market-scoped via `priceSourcesPath` (SA dealers can never poison a £/$ pool).
+- `markets/uk.ts` rebuilt around **cinch.co.uk** — verified live: server-rendered Next.js over PLAIN HTTP, listings in `__NEXT_DATA__` with price/miles/year. AutoTrader UK parked (Cloudflare + SPA shell, needs Unlocker gb egress); Parkers dropped (404s).
+- **Kill-switch doctrine:** every app's `/api/valuation` takes `VALUATION_ENGINE=legacy|package` (default `legacy` = the in-tree SA fork, SA production byte-identical). SA instances stay on legacy until explicitly flipped. Premium's `/api/public/trade-estimate` forces the package engine for any non-ZA market regardless of the switch. Premium's trade-report renderer + saved reports carry currency/distanceUnit (old reports fall back ZAR/km).
+- ⚠️ The 2026-08-25 "apps keep their own scraper copies, package is standalone" doctrine is hereby AMENDED: the package is the live engine for every non-ZA market; the in-tree forks survive only as the SA legacy default pending the parity cutover.
+
+**Market substrate:**
+- `packages/tru-ui-src/src/market.ts` — shared display module (`formatMoney`, `formatMoneyFromData`, `formatDistance`, `toKm`, `marketById`, `MARKETS` za/uk/us), synced into Lens/Inspect via `sync:ui`. **Premium copies it manually — Premium does NOT run sync:ui (its ErrorBoundary diverged from the shared source).**
+- Instance market: `MARKET` env (default za) → `GET /api/dealership/settings` returns `market` in all three servers (same endpoint name); Premium also rides it on `/api/state` and supports a per-dealership `market` override field (Dealership type).
+- Client: `MarketContext` + `useMoney()`/`useMarket()` in Inspect/Lens (fetch settings, AuthContext-based) and Premium (authFetch twin); ZA fallback everywhere so nothing breaks when the fetch fails.
+
+**App conversions (all committed):**
+- TruInspect: every dealer-owned price/date/distance (desktop shell+dashboard, vehicle manager incl. offers, inventory, VIR report, trade-in walkaround/valuation/summary with cents-aware printed docs); TU lines stay ZAR (SA provider by definition).
+- TruLens: Live Market Value card (response currency + distance labels), stock cards/totals, shoot report, WhatsApp blurb takes market; dead ZAR/USD/GBP selector removed.
+- TruFlow Premium desktop: App.tsx dashboards + EOD report/CSV, LeadDetailModal (finance cards, tax-invoice + consideration docs keep cents, SMS template), VehicleDetailModal (market value card, share caption, offer/settlement doc with currency name, WhatsApp blurb passes market), AccountingRecon/AgreementPreview/AmortizationCalc/InvoicePreview/BulkImport/WebManagementGrid (miles on gallery grid)/DocHubPanel/salesShare/dmsReadiness.
+- TruFlow Mobile: MARKET globals from /api/state (+per-dealership override), money/dist/odo helpers, all price+distance surfaces, static labels patched when market resolves, CHAT_API localStorage override, sw `tfm-2026-08-31a`.
+- **Share contract lockstep:** tru-share (`data-currency`, `data-distance-unit`), mobile `shareVehicle`, and the vehicle-og edge-function reference (`case-sites/cars-at-caledon/netlify/edge-functions/vehicle-og.js`) all speak `cur` + `odu` URL params — added ONLY when non-default, so SA links stay byte-identical and old readers ignore them. Edge function maps to symbol/ISO currency/schema unitCode KMT|SMI.
+- Widgets: tru-value (`data-market` → request param + response-driven money/miles), tru-afford (market preset table za/uk/us: currency, slider scales, bands, price cap; FSP→lender), tru-repay (data-market/data-locale grouping; UK/US fees default 0 unless explicitly set), tru-form (neutral placeholders), tru-loader (hardcoded true-cars chat config deleted — chat needs `data-chat-config` now). tru-book untouched (already neutral). tru-afford also carries the previously-uncommitted inline-mount feature (data-mount); tru-form carries data-surface.
+
+**Deploy:** render.yaml §8 = UK stack — `trusaas-lens-uk`, `trusaas-inspect-uk`, `trusaas-premium-uk`, `trusaas-mobile-uk`, `trusaas-chat-uk`, all `region: frankfurt`, `MARKET=uk`, `VALUATION_ENGINE=package`, fresh `-uk` disks, own sync keys (dashboard), NO IMAGIN8_*/ZERNIO_* on UK. Inter-service URLs use onrender hosts until `uk.*.tru-saas.com` domains are set.
+
+**Open items for UK pilot:**
+- [ ] TU/Imagin8 buttons must be MARKET-GATED in the UI (hidden where no provider) before UK pilot traffic — currently they render and would error on UK instances.
+- [ ] UK browser verification of the full arc (demo login → add vehicle → valuation → printed report).
+- [ ] DVLA vehicle-enquiry wiring as UK spec auto-fill (US: NHTSA vPIC) — Phase 6b.
+- [ ] Lens `LENS_DEFAULT_DEALER_SLUG` mkr-autosales default + SA dealer seed must not ride UK instances.
+- [ ] Legal: UK GDPR privacy policy; FCA wording review for finance widgets; US TCPA memo deferred to Phase 6.
+- [ ] Premium `/api/state` unscoped-dealerships leak (GDPR review item, pre-existing).
+
 ### Imagin8 ledger keyed by slug + flow-lite retired + tasks/dropdown fixes (2026-08-30)
 
 **Imagin8 bundles are now keyed by dealership slug** — the slug has always been the suite identity ("Flow is the source of truth, keyed by dealerslug"), but the ledger was being written under the dealership `d.id` by the master admin while Lens/Inspect proxies read it by slug. Two keys for one dealer: admin top-ups never unlocked the buttons in the prescribed apps. Fix (`truflow-premium/server.ts`):

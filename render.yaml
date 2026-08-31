@@ -545,4 +545,231 @@ services:
       - key: STALE_FLOORPLAN_DAYS
         value: "40"
 
+  # ── 8. UK regional stack (UK-first market expansion, 2026-08-31) ─────────────
+  # Same codebase as the SA services — MARKET=uk flips currency/units/valuation
+  # sources at runtime. Frankfurt region: UK dealer data stays in-region (GDPR),
+  # lower latency than Oregon. Fresh disks = zero SA data crossover.
+  # VALUATION_ENGINE=package is REQUIRED here: the legacy in-tree scraper is
+  # SA-only by definition; UK comps come from the market-scraper engine (cinch
+  # et al). Domains planned as uk.lens.tru-saas.com etc (set in dashboard after
+  # first deploy); inter-service URLs use the onrender hosts until then — swap
+  # TRUFLOW_DMS_URL/API_TARGET to the custom domains once they resolve.
+  - type: web
+    name: trusaas-lens-uk
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: TruLens
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - TruLens/**
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: trulens-data-uk
+      mountPath: /var/data
+      sizeGB: 5
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MARKET
+        value: uk
+      - key: VALUATION_ENGINE
+        value: package
+      - key: LOCAL_MODE
+        value: "1"
+      - key: DATA_DIR
+        value: /var/data
+      - key: DEMO_ENABLED
+        value: "1"
+      - key: TRULENS_ACCESS_CODE
+        sync: false
+      - key: TRULENS_TOKEN_SECRET
+        sync: false
+      - key: TRULENS_DEALER_CODES
+        sync: false
+      # UK sync key — must equal TRUFLOW_SYNC_KEY on trusaas-premium-uk.
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
+      - key: TRUFLOW_DMS_URL
+        value: https://trusaas-premium-uk.onrender.com
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      # Bright Data — same account key as SA; the engine selects gb egress per
+      # market config. AutoTrader UK needs the Unlocker (Cloudflare), cinch
+      # works on plain HTTP.
+      - key: SCRAPER_UNLOCKER_ENABLED
+        value: "1"
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        value: brightdata
+      - key: SERP_ZONE
+        sync: false
+
+  - type: web
+    name: trusaas-inspect-uk
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: truinspect
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truinspect/**
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: truinspect-data-uk
+      mountPath: /var/data
+      sizeGB: 5
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MARKET
+        value: uk
+      - key: VALUATION_ENGINE
+        value: package
+      - key: LOCAL_MODE
+        value: "1"
+      - key: DATA_DIR
+        value: /var/data
+      - key: DEMO_ENABLED
+        value: "1"
+      - key: TRUINSPECT_ACCESS_CODE
+        sync: false
+      - key: TRUINSPECT_DEALER_CODES
+        sync: false
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
+      - key: TRUFLOW_DMS_URL
+        value: https://trusaas-premium-uk.onrender.com
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      # No Imagin8 keys on UK instances — TransUnion eValue8 is SA-only. The
+      # TU buttons must be market-gated in the UI before UK pilot traffic.
+      - key: SCRAPER_UNLOCKER_ENABLED
+        value: "1"
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        value: brightdata
+      - key: SERP_ZONE
+        sync: false
+
+  - type: web
+    name: trusaas-premium-uk
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: truflow-premium
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truflow-premium/**
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: truflow-premium-data-uk
+      mountPath: /var/data
+      sizeGB: 10
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MARKET
+        value: uk
+      - key: VALUATION_ENGINE
+        value: package
+      - key: DATA_DIR
+        value: /var/data
+      # Fresh disk mints this on first boot (same as SA did).
+      - key: ADMIN_ACCESS_CODE
+        sync: false
+      - key: DEMO_ENABLED
+        value: "1"
+      # UK sync key — same value as lens-uk/inspect-uk.
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      # No IMAGIN8_* and no ZERNIO_* on the UK stack at v1 — paid data
+      # providers and TruSocial stay SA until their UK equivalents land.
+      - key: SCRAPER_UNLOCKER_ENABLED
+        value: "1"
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        value: brightdata
+      - key: SERP_ZONE
+        sync: false
+
+  - type: web
+    name: trusaas-mobile-uk
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: truflow-mobile
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truflow-mobile/**
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_TARGET
+        value: https://trusaas-premium-uk.onrender.com
+      - key: PORT
+        value: "3002"
+
+  - type: web
+    name: trusaas-chat-uk
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: truchat-api
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truchat-api/**
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: TRUCHAT_MODEL
+        value: deepseek-chat
+      - key: TRUCHAT_MARKET
+        value: United Kingdom
+      - key: TRUCHAT_LOCALE
+        value: en-GB
+      - key: TRUCHAT_CURRENCY
+        value: GBP
+      # Point at the first UK dealer's public stock feed once provisioned.
+      - key: STOCK_API
+        sync: false
+      - key: SALES_WHATSAPP
+        sync: false
+
 
