@@ -1,4 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
+import { useMoney, useMarket } from "./contexts/MarketContext";
 import {
   Home,
   TrendingUp,
@@ -301,6 +302,8 @@ function Segmented<T extends string>({ value, onChange, options }: {
 }
 
 export default function App() {
+  const money = useMoney();
+  const market = useMarket();
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [backingUp, setBackingUp] = useState(false);
@@ -719,7 +722,7 @@ export default function App() {
 
   // Derived metrics
   const formatZAR = (num: number) => {
-    return "R " + Math.round(num).toLocaleString("en-ZA");
+    return money(num);
   };
 
   const activeVehiclesCount = state.vehicles.filter((v) => v.status !== "SOLD" && !v.archivedAt).length;
@@ -737,7 +740,7 @@ export default function App() {
    */
   const notOnline = (() => {
     const inStock = activeStock.filter((v) => v.status !== "SOLD");
-    const graded = inStock.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any) }));
+    const graded = inStock.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any, market.locale) }));
     const noPhotos = graded.filter((g) => g.r.level === "capture");
     const incomplete = graded.filter((g) => g.r.level === "partial");
     const blocked = [...noPhotos, ...incomplete];
@@ -796,7 +799,7 @@ export default function App() {
   const currentDealerSlug = currentDealership?.slug || (isMasterAdmin ? undefined : dealershipId);
   const dealerProducts: string[] = (currentDealership as any)?.products || [];
   const hasProduct = (p: string) => isMasterAdmin && !adminDealerScope ? true : dealerProducts.includes(p);
-  const todayLabel = new Date().toLocaleDateString("en-ZA", {
+  const todayLabel = new Date().toLocaleDateString(market.locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -1424,13 +1427,13 @@ export default function App() {
       ["Key Performance Indicators", "Value"],
       ["Leads Engaged / Worked", `${state.leads.length} Leads`],
       ["Vehicles Moved (Sold)", `${sold.length} Units`],
-      ["Total Reconditioning Outlay", `R ${reconTotal.toLocaleString()}`],
-      ["Gross Sales Revenue", `R ${totalRevenue.toLocaleString()}`],
-      ["Total Profit Realized", `R ${totalProfit.toLocaleString()}`],
+      ["Total Reconditioning Outlay", money(reconTotal)],
+      ["Gross Sales Revenue", money(totalRevenue)],
+      ["Total Profit Realized", money(totalProfit)],
       [],
       ["Finalized Sales Transactions"],
       ["Stock Ref", "Vehicle Model", "Sale Amount", "Calculated Gross Margin"],
-      ...sold.map(v => [v.stockNumber || "", `${v.year} ${v.make} ${v.model}`, `R ${(v.retailPrice || 0).toLocaleString()}`, `R ${((v.retailPrice || 0) - (v.costPrice || 0)).toLocaleString()}`]),
+      ...sold.map(v => [v.stockNumber || "", `${v.year} ${v.make} ${v.model}`, money(v.retailPrice || 0), money((v.retailPrice || 0) - (v.costPrice || 0))]),
     ];
     const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -1641,7 +1644,7 @@ export default function App() {
                <span className="opacity-40 select-none">•</span>
                <span>live</span>
                <span className="opacity-40 select-none">•</span>
-               <span>{new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}</span>
+                <span>{new Date().toLocaleDateString(market.locale, { weekday: "short", day: "numeric", month: "short" })}</span>
              </span>
            </div>
 
@@ -1847,7 +1850,7 @@ export default function App() {
                                 <span className="ml-1.5 inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-mono bg-[rgba(184,106,106,0.12)] text-[#B86A6A] border border-[rgba(184,106,106,0.25)]">R{f.overBy.toLocaleString()} over mkt</span>
                               )}
                             </td>
-                            <td className="py-3 px-4 font-mono text-[color:var(--white)]">R {(f.v.retailPrice || 0).toLocaleString()}</td>
+                            <td className="py-3 px-4 font-mono text-[color:var(--white)]">{money(f.v.retailPrice || 0)}</td>
                             <td className="py-3 px-4 text-right">
                               <button onClick={() => setSelectedDetailVehicle(f.v)} className="btn btn-secondary btn-sm">Reprice</button>
                             </td>
@@ -2067,7 +2070,7 @@ export default function App() {
                     const live = state.vehicles.filter((v: any) => !v.archivedAt && v.status === "INVENTORY");
                     const rows = live.map((v: any) => {
                       const days = stockAge(v);
-                      const r = computeDmsGalleryReadiness(v as any);
+                      const r = computeDmsGalleryReadiness(v as any, market.locale);
                       return [
                         v.stockNumber || "",
                         v.year || "",
@@ -2126,7 +2129,7 @@ export default function App() {
                     inventoryStatusFilter === "ALL" ||
                     inventoryStatusFilter === "ARCHIVED" ||
                     v.status === inventoryStatusFilter;
-                  const r = computeDmsGalleryReadiness(v as any);
+                  const r = computeDmsGalleryReadiness(v as any, market.locale);
                   const mPhoto =
                     inventoryPhotoFilter === "ALL" ||
                     (inventoryPhotoFilter === "NEEDS" && r.level === "capture") ||
@@ -2161,7 +2164,7 @@ export default function App() {
                       </thead>
                       <tbody>
                         {visibleInventory.map((v) => {
-                          const readiness = computeDmsGalleryReadiness(v as any);
+                          const readiness = computeDmsGalleryReadiness(v as any, market.locale);
                           const days = Number(v.daysInInventory) || 0;
                           const ageTone =
                             days >= 90 ? "text-red-400" : days >= 60 ? "text-amber-400" : days >= 30 ? "text-yellow-400" : "text-[rgba(232,234,230,0.72)]";
@@ -3926,13 +3929,13 @@ export default function App() {
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Need shoot</div>
                 <div className="text-2xl font-semibold text-[color:var(--warning)] mt-1">
-                  {activeStock.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
+                  {activeStock.filter(v => computeDmsGalleryReadiness(v, market.locale).level === "capture").length}
                 </div>
               </div>
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Web-ready gallery</div>
                 <div className="text-2xl font-semibold text-[color:var(--cyan-bright)] mt-1">
-                  {activeStock.filter(v => computeDmsGalleryReadiness(v).webReady).length}
+                  {activeStock.filter(v => computeDmsGalleryReadiness(v, market.locale).webReady).length}
                 </div>
               </div>
               <div className="card p-4">
@@ -3950,7 +3953,7 @@ export default function App() {
 
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
               {activeStock.map(v => {
-                const r = computeDmsGalleryReadiness(v as any);
+                const r = computeDmsGalleryReadiness(v as any, market.locale);
                 return (
                   <div key={v.id} className="card overflow-hidden flex flex-col">
                     <div className="aspect-[4/3] bg-[color:var(--ink-2)] relative">
@@ -4622,7 +4625,7 @@ export default function App() {
                   <span className="text-[13px] font-semibold tracking-widest  text-[color:var(--cyan)] font-mono">Operations Report</span>
                 </div>
                 <h3 className="font-sans text-xl font-semibold tracking-tight text-[color:var(--white)] mt-1">End of day summary</h3>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{new Date().toLocaleDateString(market.locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
               <button 
                 onClick={() => setShowEODReport(false)} 
@@ -4649,7 +4652,7 @@ export default function App() {
               </div>
               <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-3 flex flex-col gap-0.5">
                 <span className="text-[13px] font-semibold text-[color:var(--cyan-bright)]  font-mono">Net Profit</span>
-                <span className="text-lg font-semibold text-[color:var(--cyan)]">R {totalProfit.toLocaleString()}</span>
+                <span className="text-lg font-semibold text-[color:var(--cyan)]">{money(totalProfit)}</span>
                 <span className="text-[13px] text-[color:var(--cyan)]">{marginPct}% avg margin</span>
               </div>
             </div>
@@ -4657,15 +4660,15 @@ export default function App() {
             <div className="bg-[color:var(--ink)] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Reconditioning Expenditures</span>
-                <span className="font-mono font-semibold text-[color:var(--muted)]">- R {reconTotal.toLocaleString()}</span>
+                <span className="font-mono font-semibold text-[color:var(--muted)]">- {money(reconTotal)}</span>
               </div>
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Dealership Revenue</span>
-                <span className="font-mono font-semibold text-[color:var(--white)]">R {totalRevenue.toLocaleString()}</span>
+                <span className="font-mono font-semibold text-[color:var(--white)]">{money(totalRevenue)}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Unpaid invoices</span>
-                <span className="font-mono font-semibold text-[color:var(--warning)]">R {state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}</span>
+                <span className="font-mono font-semibold text-[color:var(--warning)]">{money(state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0))}</span>
               </div>
             </div>
 
@@ -4679,7 +4682,7 @@ export default function App() {
                       <span className="font-semibold text-[color:var(--white)] block">{v.year} {v.make} {v.model} {v.trim}</span>
                       <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: {v.stockNumber}</span>
                     </div>
-                    <span className="font-mono font-semibold text-[color:var(--cyan)]">R {((v.retailPrice || 0) - (v.costPrice || 0)).toLocaleString()} profit</span>
+                    <span className="font-mono font-semibold text-[color:var(--cyan)]">{money((v.retailPrice || 0) - (v.costPrice || 0))} profit</span>
                   </div>
                 ))}
               </div>

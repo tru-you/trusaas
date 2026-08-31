@@ -38,6 +38,10 @@ export interface ValuationResult {
    *  (e.g. "Yaris" when "Yaris Cross" had <3 comps). Absent when the tight
    *  model matched enough. */
   modelBroadened?: string;
+  /** Market currency symbol (R/£/$) + display unit. The legacy SA fork always
+   *  returns rands/km; the fields exist so both engine shapes line up. */
+  currency?: string;
+  distanceUnit?: 'km' | 'mi';
 }
 
 export interface JsonAuthConfig {

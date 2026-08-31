@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef } from "react";
 import { Vehicle } from "../types";
 import { Search, ArrowUpDown, Globe, Check, X } from "lucide-react";
+import { useMoney, useMarket } from "../contexts/MarketContext";
+import { formatDistance } from "./market";
 
 interface Props {
   vehicles: Vehicle[];
@@ -11,9 +13,9 @@ interface Props {
 type SortKey = "stockNumber" | "make" | "year" | "mileage" | "retailPrice" | "costPrice" | "daysInInventory";
 type SortDir = "asc" | "desc";
 
-const formatZAR = (num: number) => "R " + Math.round(num).toLocaleString("en-ZA");
-
 export default function WebManagementGrid({ vehicles, onUpdateVehicle, role }: Props) {
+  const money = useMoney();
+  const market = useMarket();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "INVENTORY" | "SOLD">("all");
   const [webFilter, setWebFilter] = useState<"all" | "online" | "offline">("all");
@@ -131,9 +133,9 @@ export default function WebManagementGrid({ vehicles, onUpdateVehicle, role }: P
 
     if (col.editable) {
       const display = ["retailPrice", "costPrice"].includes(col.key) && typeof val === "number"
-        ? formatZAR(val)
+        ? money(val)
         : col.key === "mileage" && typeof val === "number"
-        ? val.toLocaleString() + " km"
+        ? formatDistance(val, market.distanceUnit, market.locale)
         : val ?? "—";
       return (
         <span
@@ -174,7 +176,7 @@ export default function WebManagementGrid({ vehicles, onUpdateVehicle, role }: P
         </div>
         <div className="bg-[color:var(--glass)] border border-white/10 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Floor Value</span>
-          <span className="text-xl font-mono font-semibold text-[color:var(--white)]">{formatZAR(totalFloor)}</span>
+          <span className="text-xl font-mono font-semibold text-[color:var(--white)]">{money(totalFloor)}</span>
         </div>
       </div>
 

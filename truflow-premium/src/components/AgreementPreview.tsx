@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Agreement, Lead, Vehicle, Dealership } from "../types";
 import { Printer, Shield, FileSignature, RotateCcw, Check } from "lucide-react";
+import { useMoney } from "../contexts/MarketContext";
 
 interface AgreementPreviewProps {
   agreement: Agreement;
@@ -11,6 +12,7 @@ interface AgreementPreviewProps {
 }
 
 export default function AgreementPreview({ agreement, lead, vehicle, dealership, onSignAgreement }: AgreementPreviewProps) {
+  const money = useMoney();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [signMode, setSignMode] = useState<"draw" | "type">("draw");
@@ -22,7 +24,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, dealership,
   const dealerAddress = dealership?.address || dealership?.location || "";
 
   const formatZAR = (num: number) => {
-    return "R " + Math.round(num).toLocaleString("en-ZA");
+    return money(num);
   };
 
   const handlePrint = () => {

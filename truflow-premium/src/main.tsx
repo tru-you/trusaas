@@ -4,13 +4,16 @@ import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import MobileDevice from './components/MobileDevice.tsx';
 import './index.css';
+import { MarketProvider } from './contexts/MarketContext';
 import { registerServiceWorker } from './lib/pwa';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <MobileDevice>
-        <App />
+        <MarketProvider>
+          <App />
+        </MarketProvider>
       </MobileDevice>
     </ErrorBoundary>
   </StrictMode>,

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useMoney } from "../contexts/MarketContext";
 
 interface AmortizationCalcProps {
   initialPrice?: number;
 }
 
 export default function AmortizationCalc({ initialPrice = 485000 }: AmortizationCalcProps) {
+  const money = useMoney();
   const [price, setPrice] = useState(initialPrice);
   const [deposit, setDeposit] = useState(50000);
   const [interestRate, setInterestRate] = useState(11.5);
@@ -46,7 +48,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
   }, [price, deposit, interestRate, term, balloonPct]);
 
   const formatZAR = (num: number) => {
-    return "R " + Math.round(num).toLocaleString("en-ZA");
+    return money(num);
   };
 
   return (

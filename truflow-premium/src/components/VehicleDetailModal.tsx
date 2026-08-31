@@ -2,6 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Vehicle, Dealership } from "../types";
 import { openTruLens } from "../lib/productConfig";
 import { openStockWhatsApp } from "../lib/salesShare";
+import { useMoney, useMarket } from "../contexts/MarketContext";
+import { formatMoney, formatMoneyFromData, formatDistance } from "./market";
 import VehiclePicker, { VehiclePickerValue } from "./VehiclePicker";
 import {
   X,
@@ -100,6 +102,12 @@ interface VehicleDetailModalProps {
 }
 
 export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled, hasLens = true, dealership}: VehicleDetailModalProps) {
+  const money = useMoney();
+  const market = useMarket();
+  /* Legal docs keep cents — offers and settlements can't round. */
+  const moneyDoc = (n: number) =>
+    `${market.currency}${market.currency === "R" ? " " : ""}${(Number(n) || 0).toLocaleString(market.locale, { minimumFractionDigits: 2 })}`;
+  const currencyName = market.currency === "£" ? "Pounds" : market.currency === "$" ? "Dollars" : "Rand";
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -246,7 +254,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   if (!isOpen) return null;
 
   const formatZAR = (num: number) => {
-    return "R " + Math.round(num).toLocaleString("en-ZA");
+    return money(num);
   };
 
   /* Every array a TruLens capture fills, not just `images`.
@@ -351,8 +359,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
   const buildDefaultCaption = () =>
     `${vehicle.year} ${vehicle.make} ${vehicle.model} (${vehicle.transmission})\n` +
-    `${vehicle.mileage.toLocaleString()} km · ${vehicle.fuelType}\n` +
-    `R ${Math.round(vehicle.retailPrice).toLocaleString("en-ZA")}\n\n` +
+    `${formatDistance(Number(vehicle.mileage), market.distanceUnit, market.locale)} · ${vehicle.fuelType}\n` +
+    `${money(vehicle.retailPrice)}\n\n` +
     (vehicle.description ? vehicle.description + "\n\n" : "") +
     `Contact us to book a test-drive or secure this vehicle!`;
 
@@ -697,12 +705,12 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         <div>
                           <div className="text-[11px] text-[color:var(--muted)]">Avg Retail</div>
                           <div className="text-[16px] font-semibold text-emerald-400 font-mono">
-                            {marketValuation.averageRetailPrice != null ? `R ${Math.round(marketValuation.averageRetailPrice).toLocaleString("en-ZA")}` : "—"}
+                            {marketValuation.averageRetailPrice != null ? formatMoneyFromData(marketValuation.averageRetailPrice, marketValuation) : "—"}
                           </div>
                         </div>
                         <div>
                           <div className="text-[11px] text-[color:var(--muted)]">Mileage Adjusted</div>
-                          <div className="text-[13px] text-[color:var(--white)]">{marketValuation.mileageAdjusted ? `Yes (median ${marketValuation.sampleMedianKm?.toLocaleString()} km)` : "No"}</div>
+                          <div className="text-[13px] text-[color:var(--white)]">{marketValuation.mileageAdjusted ? `Yes (median ${formatDistance(marketValuation.sampleMedianKm, marketValuation.distanceUnit || market.distanceUnit, market.locale)})` : "No"}</div>
                         </div>
                       </div>
                       <button
@@ -726,7 +734,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           <div key={v.label}>
                             <div className="text-[11px] text-[color:var(--muted)]">{v.label}</div>
                             <div className="text-[16px] font-semibold text-[color:var(--white)] font-mono">
-                              {v.value != null ? `R ${Math.round(v.value).toLocaleString("en-ZA")}` : "—"}
+                              {v.value != null ? formatMoney(Math.round(v.value)) : "—"}
                             </div>
                           </div>
                         ))}
@@ -1416,7 +1424,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           <button
                             onClick={async () => {
                               await onUpdateVehicle(vehicle.id, { retailPrice: suggestedHealthyPrice });
-                              alert(`Retail price adjusted to R ${suggestedHealthyPrice.toLocaleString("en-ZA")}! Target profit margin of 15% is now secured.`);
+                              alert(`Retail price adjusted to ${money(suggestedHealthyPrice)}! Target profit margin of 15% is now secured.`);
                             }}
                             className="w-full py-2 bg-[color:var(--glass)] hover:bg-[color:var(--glass)] text-[color:var(--muted)] font-semibold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
                           >
@@ -1841,7 +1849,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           )}
           <button
             type="button"
-            onClick={() => { void openStockWhatsApp(vehicle as any); }}
+            onClick={() => { void openStockWhatsApp(vehicle as any, undefined, market); }}
             aria-label="WhatsApp this vehicle to a customer"
             className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
           >
@@ -1870,7 +1878,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           "Transfer of ownership is subject to receipt of all required documentation.",
         ]);
         const offerAmount = vehicle.costPrice || vehicle.retailPrice || 0;
-        const today = new Date().toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+        const today = new Date().toLocaleDateString(market.locale, { day: "numeric", month: "long", year: "numeric" });
 
         return (
           <div className="fixed inset-0 bg-black/70 z-[350] flex items-center justify-center p-6" onClick={() => setShowOutrightOtp(false)}>
@@ -1910,7 +1918,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">VIN / Chassis:</span><span>{(vehicle as any).chassisNumber || ""}</span></div>
                     <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Engine Nr:</span><span>{(vehicle as any).engineNumber || ""}</span></div>
                     <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Registration:</span><span>{(vehicle as any).registrationNumber || ""}</span></div>
-                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Mileage:</span><span>{vehicle.mileage?.toLocaleString() || "0"} km</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Mileage:</span><span>{vehicle.mileage ? formatDistance(Number(vehicle.mileage), market.distanceUnit, market.locale) : "0"}</span></div>
                     <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Colour:</span><span>{(vehicle as any).colour || (vehicle as any).color || ""}</span></div>
                   </div>
                 </div>
@@ -1921,15 +1929,15 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     The Buyer hereby offers to purchase the above-described vehicle for the amount of:
                   </p>
                   <p className="text-2xl font-bold mt-2 mb-1">
-                    R {offerAmount.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}
+                    {moneyDoc(offerAmount)}
                   </p>
                   <p className="text-xs text-gray-500">
-                    ({numberToWords(offerAmount)} Rand)
+                    ({numberToWords(offerAmount)} {currencyName})
                   </p>
                   {(vehicle as any).settlementAmount > 0 && (
                     <p className="text-sm text-gray-600 mt-2">
-                      Settlement amount of R {(vehicle as any).settlementAmount.toLocaleString("en-ZA", { minimumFractionDigits: 2 })} to be deducted,
-                      net payable to seller: R {(offerAmount - (vehicle as any).settlementAmount).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}
+                      Settlement amount of {moneyDoc((vehicle as any).settlementAmount)} to be deducted,
+                      net payable to seller: {moneyDoc(offerAmount - (vehicle as any).settlementAmount)}
                     </p>
                   )}
                 </div>

@@ -11,6 +11,7 @@ import {
   FileSpreadsheet,
   Banknote,
 } from "lucide-react";
+import { useMoney } from "../contexts/MarketContext";
 
 interface AccountingReconProps {
   state: DMSState;
@@ -21,6 +22,7 @@ interface AccountingReconProps {
 }
 
 export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, onReconcileExpense, role }: AccountingReconProps) {
+  const money = useMoney();
   const [activeTab, setActiveTab] = useState<"pl" | "deals" | "aging" | "recon" | "floor">("pl");
   const [floorPlanRate, setFloorPlanRate] = useState(13.75);
 
@@ -43,7 +45,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
   });
 
   const formatZAR = (num: number) => {
-    return "R " + Math.round(num).toLocaleString("en-ZA");
+    return money(num);
   };
 
   // P&L calculations

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { Lead, Vehicle, User, Communication, Task, Agreement, TradeIn, InvoiceExtra, Dealership, Client } from "../types";
 import { getAccount } from "../lib/session";
+import { useMoney, useMarket } from "../contexts/MarketContext";
 import { fetchState, updateLead, updateLeadStatus, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement, createVehicle } from "../api";
 import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature, Shield, CheckCircle2, AlertCircle, Banknote, Trash2, Printer, ChevronDown, ChevronUp, Car } from "lucide-react";
 import AgreementPreview from "./AgreementPreview";
@@ -40,6 +41,11 @@ export default function LeadDetailModal({
   initialTab,
   clients,
 }: LeadDetailModalProps) {
+  const money = useMoney();
+  const market = useMarket();
+  /* Printed documents keep cents — tax invoices can't round to the rand. */
+  const moneyDoc = (n: number) =>
+    `${market.currency}${market.currency === "R" ? " " : ""}${(Number(n) || 0).toLocaleString(market.locale, { minimumFractionDigits: 2 })}`;
   const [lead, setLead] = useState<Lead | null>(null);
   // Who is logged in — communications used to be stamped "Marc van der Merwe"
   // regardless of who sent them.
@@ -228,7 +234,7 @@ export default function LeadDetailModal({
     if (val === "welcome") {
       setEmailSubject(`Showroom Enquiry Verified — ${carName}`);
       setEmailBody(
-        `Hi ${lead.firstName},\n\nThank you for reaching out regarding the immaculate ${carName} (Stock: ${vehicle.stockNumber}) listed at R ${vehicle.retailPrice.toLocaleString()}.\n\nThis vehicle is detailed and currently available for static inspection on our Sandton showroom floor. Are you available for a structured viewing and test drive Saturday morning?\n\nKind regards,\nSandton Pre-Owned Showrooms`
+        `Hi ${lead.firstName},\n\nThank you for reaching out regarding the immaculate ${carName} (Stock: ${vehicle.stockNumber}) listed at ${money(vehicle.retailPrice)}.\n\nThis vehicle is detailed and currently available for static inspection on our Sandton showroom floor. Are you available for a structured viewing and test drive Saturday morning?\n\nKind regards,\nSandton Pre-Owned Showrooms`
       );
       setSmsBody(`Hi ${lead.firstName}, following up on your ${carName} inquiry. Let us know if you want to book a drive! JHB Pre-Owned Showrooms.`);
       setWhatsappBody(`Good day ${lead.firstName}. Hope you are well. Regarding the ${carName}, let me know when is best to touch base to schedule a test drive session!`);
@@ -1227,7 +1233,7 @@ export default function LeadDetailModal({
                               <p className="text-[13px] text-[rgba(232,234,230,0.72)] line-clamp-2">{entry.detail}</p>
                             )}
                             <div className="flex items-center gap-3 mt-1.5 text-[11px] text-[color:var(--muted)]">
-                              <span>{new Date(entry.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })} · {new Date(entry.date).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span>{new Date(entry.date).toLocaleDateString(market.locale, { day: 'numeric', month: 'short', year: 'numeric' })} · {new Date(entry.date).toLocaleTimeString(market.locale, { hour: '2-digit', minute: '2-digit' })}</span>
                               {entry.who && <span className="font-mono">{entry.who}</span>}
                             </div>
                           </div>
@@ -1412,7 +1418,7 @@ export default function LeadDetailModal({
             };
 
             const ti = tradeIns[activeTradeSlot];
-            const fmt = (n: number) => `R ${n.toLocaleString('en-ZA', { minimumFractionDigits: 0 })}`;
+            const fmt = (n: number) => money(n);
 
             const renderField = (label: string, value: any, onChange: (v: string) => void, opts?: { type?: string; placeholder?: string; mono?: boolean }) => (
               <label className="flex flex-col gap-1">
@@ -1791,7 +1797,7 @@ export default function LeadDetailModal({
                           updateLead(lead.id, { invoiceNumber: invNr } as any);
                         }
                       }
-                      const today = new Date().toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
+                      const today = new Date().toLocaleDateString(market.locale, { day: 'numeric', month: 'long', year: 'numeric' });
                       const vatRate = 0.15;
                       const totalExVat = Math.round(customerOwes / (1 + vatRate));
                       const vatAmount = customerOwes - totalExVat;
@@ -1828,16 +1834,16 @@ export default function LeadDetailModal({
                             <tbody>
                               <tr>
                                 <td style="padding:8px;border-bottom:1px solid #eee">${vehicle?.year || ''} ${vehicle?.make || ''} ${vehicle?.model || ''} ${(vehicle as any)?.variant || ''}<br/><span style="font-size:11px;color:#999">Stock: ${vehicle?.stockNumber || '—'} | VIN: ${(vehicle as any)?.chassisNumber || '—'}</span></td>
-                                <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">R ${sellingPrice.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td>
+                                <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${moneyDoc(sellingPrice)}</td>
                               </tr>
-                              ${extras.map(e => `<tr><td style="padding:8px;border-bottom:1px solid #eee">${e.description}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">R ${Number(e.amount).toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>`).join('')}
-                              ${tradeAllowanceTotal > 0 ? tradeIns.filter(t => t.allowance).map(t => `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Less: Trade-in allowance — ${t.year || ''} ${t.make} ${t.model}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;color:#c00">- R ${Number(t.allowance).toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>`).join('') : ''}
-                              ${depositAmount > 0 ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Less: Deposit received</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;color:#c00">- R ${depositAmount.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>` : ''}
+                              ${extras.map(e => `<tr><td style="padding:8px;border-bottom:1px solid #eee">${e.description}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${moneyDoc(Number(e.amount))}</td></tr>`).join('')}
+                              ${tradeAllowanceTotal > 0 ? tradeIns.filter(t => t.allowance).map(t => `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Less: Trade-in allowance — ${t.year || ''} ${t.make} ${t.model}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;color:#c00">- ${moneyDoc(Number(t.allowance))}</td></tr>`).join('') : ''}
+                              ${depositAmount > 0 ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Less: Deposit received</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;color:#c00">- ${moneyDoc(depositAmount)}</td></tr>` : ''}
                             </tbody>
                             <tfoot>
-                              <tr><td style="padding:8px;text-align:right;font-size:12px;color:#666">Excl. VAT</td><td style="padding:8px;text-align:right;font-size:12px">R ${totalExVat.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
-                              <tr><td style="padding:8px;text-align:right;font-size:12px;color:#666">VAT (15%)</td><td style="padding:8px;text-align:right;font-size:12px">R ${vatAmount.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
-                              <tr style="font-weight:bold;font-size:15px"><td style="padding:8px;text-align:right;border-top:2px solid #333">Total Due</td><td style="padding:8px;text-align:right;border-top:2px solid #333">R ${customerOwes.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
+                              <tr><td style="padding:8px;text-align:right;font-size:12px;color:#666">Excl. VAT</td><td style="padding:8px;text-align:right;font-size:12px">${moneyDoc(totalExVat)}</td></tr>
+                              <tr><td style="padding:8px;text-align:right;font-size:12px;color:#666">VAT (15%)</td><td style="padding:8px;text-align:right;font-size:12px">${moneyDoc(vatAmount)}</td></tr>
+                              <tr style="font-weight:bold;font-size:15px"><td style="padding:8px;text-align:right;border-top:2px solid #333">Total Due</td><td style="padding:8px;text-align:right;border-top:2px solid #333">${moneyDoc(customerOwes)}</td></tr>
                             </tfoot>
                           </table>
                           ${bd.bankName ? `<div style="border-top:1px solid #ddd;padding-top:12px;margin-bottom:16px"><h4 style="font-size:12px;color:#666;margin:0 0 6px">BANKING DETAILS</h4><p style="margin:2px 0;font-size:12px">Bank: ${bd.bankName} | Branch: ${bd.branchCode || '—'}</p><p style="margin:2px 0;font-size:12px">Account: ${bd.accountNumber || '—'} | Type: ${bd.accountType || '—'}</p></div>` : ''}
@@ -1859,7 +1865,7 @@ export default function LeadDetailModal({
                     <button
                       type="button"
                       onClick={() => {
-                        const today = new Date().toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
+                        const today = new Date().toLocaleDateString(market.locale, { day: 'numeric', month: 'long', year: 'numeric' });
                         const dealerName = dealership?.name || 'Dealership';
                         const dealerAddr = dealership?.address || '';
                         const dealerVat = dealership?.vatNumber || '';
@@ -1899,15 +1905,15 @@ export default function LeadDetailModal({
                                   <th style="padding:8px;border:1px solid #ddd">Description of goods</th>
                                   <th style="padding:8px;border:1px solid #ddd">VIN / Chassis</th>
                                   <th style="padding:8px;border:1px solid #ddd">Reg No.</th>
-                                  <th style="padding:8px;border:1px solid #ddd;text-align:right">Price (R)</th>
+                                  <th style="padding:8px;border:1px solid #ddd;text-align:right">Price (${market.currency})</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                ${rows.map(r => `<tr><td style="padding:8px;border:1px solid #ddd">${r.desc}</td><td style="padding:8px;border:1px solid #ddd">${r.vin}</td><td style="padding:8px;border:1px solid #ddd">${r.reg}</td><td style="padding:8px;border:1px solid #ddd;text-align:right">${r.price.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>`).join('')}
+                                ${rows.map(r => `<tr><td style="padding:8px;border:1px solid #ddd">${r.desc}</td><td style="padding:8px;border:1px solid #ddd">${r.vin}</td><td style="padding:8px;border:1px solid #ddd">${r.reg}</td><td style="padding:8px;border:1px solid #ddd;text-align:right">${moneyDoc(Number(r.price))}</td></tr>`).join('')}
                               </tbody>
                               <tfoot>
-                                <tr style="font-weight:bold"><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right">Total consideration</td><td style="padding:8px;border:1px solid #ddd;text-align:right">R ${total.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
-                                <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-size:12px;color:#666">Notional input tax (15/115)</td><td style="padding:8px;border:1px solid #ddd;text-align:right;font-size:12px">R ${notionalInput.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
+                                <tr style="font-weight:bold"><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right">Total consideration</td><td style="padding:8px;border:1px solid #ddd;text-align:right">${moneyDoc(total)}</td></tr>
+                                <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-size:12px;color:#666">Notional input tax (15/115)</td><td style="padding:8px;border:1px solid #ddd;text-align:right;font-size:12px">${moneyDoc(notionalInput)}</td></tr>
                               </tfoot>
                             </table>
                             <div style="margin-top:24px;border-top:1px solid #ddd;padding-top:16px">
@@ -2008,7 +2014,7 @@ export default function LeadDetailModal({
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
                       <div className="text-[13px] font-semibold text-emerald-400 tracking-normal font-mono">Delivery Checklist</div>
                       {(lead as any).deliveredAt && (
-                        <span className="text-[11px] text-emerald-400 font-mono">Delivered {new Date((lead as any).deliveredAt).toLocaleDateString('en-ZA')}</span>
+                        <span className="text-[11px] text-emerald-400 font-mono">Delivered {new Date((lead as any).deliveredAt).toLocaleDateString(market.locale)}</span>
                       )}
                     </div>
                     {(() => {
@@ -2073,7 +2079,7 @@ export default function LeadDetailModal({
                           <div className="text-center border-b-2 border-black pb-4 mb-6">
                             <h1 className="text-xl font-bold tracking-tight">{dealerName}</h1>
                             <h2 className="text-base font-semibold mt-1">OFFER TO PURCHASE — TRADE-IN VEHICLE</h2>
-                            <p className="text-[11px] text-gray-500 mt-1">Date: {new Date().toLocaleDateString('en-ZA')}</p>
+                            <p className="text-[11px] text-gray-500 mt-1">Date: {new Date().toLocaleDateString(market.locale)}</p>
                           </div>
 
                           {/* Buyer (Dealer) */}
@@ -2252,11 +2258,11 @@ export default function LeadDetailModal({
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Vehicle price</span>
-                        <span className="text-[13px] font-mono font-semibold text-[color:var(--cyan)]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
+                        <span className="text-[13px] font-mono font-semibold text-[color:var(--cyan)]">{vehicle ? money(vehicle.retailPrice) : "N/A"}</span>
                       </div>
                       <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Est. monthly*</span>
-                        <span className="text-[13px] font-mono font-semibold text-[rgba(232,234,230,0.72)]">{estMonthly ? `R ${estMonthly.toLocaleString()}` : "N/A"}</span>
+                        <span className="text-[13px] font-mono font-semibold text-[rgba(232,234,230,0.72)]">{estMonthly ? money(estMonthly) : "N/A"}</span>
                       </div>
                     </div>
                     <p className="text-[13px] text-[rgba(232,234,230,0.55)]">*Rough guide only. Use the Repayment calculator for deposit, rate, balloon and term.</p>

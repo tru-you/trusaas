@@ -1626,6 +1626,7 @@ app.get("/api/state", (req: any, res) => {
   const s = readState();
   res.json({
     ...s,
+    market: INSTANCE_MARKET,
     vehicles: scopeToDealer(s.vehicles, req.auth),
     leads: scopeToDealer(s.leads, req.auth),
     tasks: scopeToDealer(s.tasks, req.auth),
@@ -1638,6 +1639,17 @@ app.get("/api/state", (req: any, res) => {
     users: scopeToDealer(s.users, req.auth),
     clients: scopeToDealer(s.clients || [], req.auth),
   });
+});
+
+/* Instance market — same endpoint name Lens/Inspect expose, so the shared
+ * MarketContext works unchanged here. Instance-level (MARKET env), not dealer
+ * data; a dealership-level market field can override later. */
+app.get("/api/dealership/settings", (req: any, res) => {
+  const s = readState();
+  const dealerMarket = req.auth?.dealershipId
+    ? (s.dealerships || []).find((d: any) => d.id === req.auth.dealershipId)?.market
+    : undefined;
+  res.json({ market: String(dealerMarket || INSTANCE_MARKET).toLowerCase() });
 });
 
 /** Download the entire DMS as a file. Admin only.
@@ -6554,6 +6566,16 @@ app.post("/api/integration/webhook-codat", (req, res) => {
 
 import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice, getStaticInfo as imagin8GetStaticInfo, accidentReport as imagin8AccidentReport, simulatedValuation as imagin8SimValuation, simulatedRegCheck as imagin8SimRegCheck, simulatedAccidentReport as imagin8SimAccidentReport, DEMO_IMAGIN8_ALLOWANCE } from "../packages/imagin8";
 import { fetchValuation } from "./src/lib/scraper";
+/* Market-aware engine (UK/US-ready) behind a kill-switch:
+ *   VALUATION_ENGINE=legacy  → the in-tree SA fork (production default)
+ *   VALUATION_ENGINE=package → shared packages/market-scraper engine
+ * MARKET (default 'za') picks the market config. The public trade-estimate
+ * route forces the package engine for any non-ZA market regardless of the
+ * switch — the legacy fork is SA-only by definition. */
+import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from "../packages/market-scraper/index";
+
+const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || "legacy").toLowerCase();
+const INSTANCE_MARKET = (process.env.MARKET || "za").toLowerCase();
 
 const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
@@ -6873,14 +6895,18 @@ app.post("/api/valuation", authenticate, async (req: any, res) => {
   }
   try {
     const subjectKm = Number(mileage);
-    const data = await fetchValuation(
-      String(make),
-      String(model),
-      String(year),
-      {
-        mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
-      },
-    );
+    const valuationOpts = {
+      mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
+    };
+    const data = VALUATION_ENGINE === "package"
+      ? await pkgFetchValuation(
+          String(make),
+          String(model),
+          String(year),
+          valuationOpts,
+          (pkgMarkets as Record<string, any>)[INSTANCE_MARKET] || pkgMarkets.za,
+        )
+      : await fetchValuation(String(make), String(model), String(year), valuationOpts);
     console.log(`[scraper] valuation for ${make} ${model} ${year}: avg=${data.averageRetailPrice} listings=${data.listingsFound}`);
     res.json(data);
   } catch (err: any) {
@@ -6925,10 +6951,20 @@ function newReportId(): string {
 }
 
 function renderTradeReport(r: any): string {
-  const zar = (n: number) => "R " + Math.round(n || 0).toLocaleString("en-ZA");
+  /* Money/locale/unit follow the currency the estimate came back in (reports
+   * saved before markets landed fall back to ZAR/en-ZA/km). */
+  const cur = String(r.currency || "R");
+  const md: Record<string, { locale: string; unit: string }> = {
+    R: { locale: "en-ZA", unit: "km" },
+    "£": { locale: "en-GB", unit: "mi" },
+    $: { locale: "en-US", unit: "mi" },
+  };
+  const m = md[cur] || md.R;
+  const unit = String(r.distanceUnit || m.unit);
+  const zar = (n: number) => `${cur}${cur === "R" ? " " : ""}${Math.round(n || 0).toLocaleString(m.locale)}`;
   const veh = [r.year, r.make, r.model].filter(Boolean).join(" ");
   const e = (s: any) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-  const date = new Date(r.createdAt || Date.now()).toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" });
+  const date = new Date(r.createdAt || Date.now()).toLocaleDateString(m.locale, { year: "numeric", month: "long", day: "numeric" });
   const row = (k: string, v: string) => `<tr><td class="k">${e(k)}</td><td class="v">${e(v)}</td></tr>`;
   const accent = /^#?[0-9a-fA-F]{6}$/.test(String(r.accent || "")) ? (String(r.accent)[0] === "#" ? String(r.accent) : "#" + r.accent) : "#0f766e";
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -6955,7 +6991,7 @@ table{width:100%;border-collapse:collapse;margin:6px 0 4px}td{padding:9px 0;bord
 <div class="sub">Verified against ${r.listingsFound || 0} live market listing${r.listingsFound === 1 ? "" : "s"}${r.mileageAdjusted ? " · mileage-adjusted" : ""}</div>
 <table>
 ${row("Vehicle", veh || "—")}
-${row("Mileage", r.mileage ? Number(r.mileage).toLocaleString("en-ZA") + " km" : "—")}
+${row("Mileage", r.mileage ? Number(r.mileage).toLocaleString(m.locale) + " " + unit : "—")}
 ${row("Registration", r.reg || "—")}
 ${row("VIN", r.vin || "—")}
 ${row("Condition", r.condition ? r.condition + " / 5" : "—")}
@@ -6980,9 +7016,18 @@ app.post("/api/public/trade-estimate", async (req: any, res) => {
   }
   try {
     const subjectKm = Number(mileage);
-    const data = await fetchValuation(String(make), String(model), String(year), {
+    const valuationOpts = {
       mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
-    });
+    };
+    /* Market comes from the caller (widget's data-market), else the instance
+     * default. The legacy fork is SA-only by definition, so any non-ZA market
+     * takes the package engine regardless of the kill-switch. */
+    const requestedMarket = String((req.body || {}).market || INSTANCE_MARKET).toLowerCase();
+    const marketCfg = (pkgMarkets as Record<string, any>)[requestedMarket] || pkgMarkets.za;
+    const usePkg = VALUATION_ENGINE === "package" || marketCfg.id !== "za";
+    const data = usePkg
+      ? await pkgFetchValuation(String(make), String(model), String(year), valuationOpts, marketCfg)
+      : await fetchValuation(String(make), String(model), String(year), valuationOpts);
     const retail = data.averageRetailPrice;
     if (retail == null) {
       return res.json({ ok: false, reason: "no_data", listingsFound: 0 });
@@ -7009,12 +7054,14 @@ app.post("/api/public/trade-estimate", async (req: any, res) => {
       condition: Number(condition) || null, damage: String(damage || ""),
       accent: /^#?[0-9a-fA-F]{6}$/.test(String((req.body || {}).accent || "")) ? String((req.body || {}).accent) : "",
       low, high, estimate: trade, retail, margin, listingsFound: data.listingsFound, mileageAdjusted: !!data.mileageAdjusted,
+      currency: data.currency || "R", distanceUnit: data.distanceUnit || "km",
     };
     writeTradeReports(reports);
     const reportUrl = originOf(req) + "/api/public/trade-report/" + id;
     console.log(`[trade-estimate] ${make} ${model} ${year}: retail=${retail} trade=${trade} (-${margin}%) listings=${data.listingsFound} report=${id}`);
     res.json({
-      ok: true, currency: "ZAR", estimate: trade, retail, margin, low, high,
+      ok: true, currency: data.currency || "R", distanceUnit: data.distanceUnit || "km",
+      estimate: trade, retail, margin, low, high,
       listingsFound: data.listingsFound, mileageAdjusted: !!data.mileageAdjusted,
       sampleMedianKm: data.sampleMedianKm ?? null, reportUrl,
     });

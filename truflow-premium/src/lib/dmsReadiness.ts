@@ -31,7 +31,7 @@ export function computeDmsGalleryReadiness(v: {
   status?: string;
   lastPhotoSync?: string;
   showOnWebsite?: boolean;
-}): DmsGalleryReadiness {
+}, locale = "en-ZA"): DmsGalleryReadiness {
   /* The gallery is images + extrasPhotos, which is exactly what the public feed
      publishes (toPublicVehicle concatenates the two). This counted `images`
      alone — and mapAutoLensPhotos only files the eight exterior slots there,
@@ -98,7 +98,7 @@ export function computeDmsGalleryReadiness(v: {
     photoCount,
     webReady: true,
     reasons: v.lastPhotoSync
-      ? [`Synced ${new Date(v.lastPhotoSync).toLocaleDateString("en-ZA")}`]
+      ? [`Synced ${new Date(v.lastPhotoSync).toLocaleDateString(locale)}`]
       : ["Ready for website (confirm publish in TruLens / settings)"],
   };
 }

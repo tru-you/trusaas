@@ -30,6 +30,10 @@ export interface Dealership {
   websiteUrl?: string;
   /** Slug used by the public stock feed (?dealer=). */
   slug?: string;
+  /** Market this dealership trades in ('za' | 'uk' | 'us'). Absent = the
+   *  instance default (MARKET env, ZA) — a per-dealer override for future
+   *  multi-market regions. */
+  market?: string;
   /** Which products this dealership's code opens — "lens", "flow", "inspect",
    *  "live", "value". Every product verifies codes against this instance, so a
    *  dealer gains or loses an app by this list changing, rather than by someone

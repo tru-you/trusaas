@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Vehicle } from "../types";
 import { Upload, FileSpreadsheet, Check, AlertCircle, X, Download, ChevronDown } from "lucide-react";
+import { useMoney } from "../contexts/MarketContext";
 
 interface Props {
   onImportVehicles: (vehicles: Partial<Vehicle>[]) => Promise<void>;
@@ -172,6 +173,7 @@ function generateTemplate(): string {
 }
 
 export default function BulkImport({ onImportVehicles, existingStockNumbers }: Props) {
+  const money = useMoney();
   const [step, setStep] = useState<"upload" | "preview" | "importing" | "done">("upload");
   const [parsed, setParsed] = useState<ParsedRow[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
@@ -357,8 +359,8 @@ export default function BulkImport({ onImportVehicles, existingStockNumbers }: P
                     <td className="px-3 py-2 text-[color:var(--white)]">{row.mapped.model || "—"}</td>
                     <td className="px-3 py-2 text-[color:var(--white)]">{row.mapped.year || "—"}</td>
                     <td className="px-3 py-2 text-[rgba(232,234,230,0.55)]">{row.mapped.trim || "—"}</td>
-                    <td className="px-3 py-2 text-right font-mono text-[color:var(--white)]">{row.mapped.retailPrice ? `R ${row.mapped.retailPrice.toLocaleString()}` : "—"}</td>
-                    <td className="px-3 py-2 text-right font-mono text-[rgba(232,234,230,0.55)]">{row.mapped.costPrice ? `R ${row.mapped.costPrice.toLocaleString()}` : "—"}</td>
+                    <td className="px-3 py-2 text-right font-mono text-[color:var(--white)]">{row.mapped.retailPrice ? money(row.mapped.retailPrice) : "—"}</td>
+                    <td className="px-3 py-2 text-right font-mono text-[rgba(232,234,230,0.55)]">{row.mapped.costPrice ? money(row.mapped.costPrice) : "—"}</td>
                     <td className="px-3 py-2 text-right font-mono text-[rgba(232,234,230,0.55)]">{row.mapped.mileage ? row.mapped.mileage.toLocaleString() : "—"}</td>
                   </tr>
                 ))}

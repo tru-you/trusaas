@@ -1,5 +1,6 @@
 import { Invoice, Lead, Vehicle, Dealership } from "../types";
 import { Printer } from "lucide-react";
+import { useMoney } from "../contexts/MarketContext";
 
 interface InvoicePreviewProps {
   invoice: Invoice;
@@ -9,6 +10,7 @@ interface InvoicePreviewProps {
 }
 
 export default function InvoicePreview({ invoice, lead, vehicle, dealership }: InvoicePreviewProps) {
+  const money = useMoney();
   const exVat = invoice.amount / 1.15;
   const vat = invoice.amount - exVat;
 
@@ -17,7 +19,7 @@ export default function InvoicePreview({ invoice, lead, vehicle, dealership }: I
   const dealerVat = dealership?.vatNumber || "";
 
   const formatZAR = (num: number) => {
-    return "R " + Math.round(num).toLocaleString("en-ZA");
+    return money(num);
   };
 
   const handlePrint = () => {

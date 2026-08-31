@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldC
 import type { AccountingPlatform, DealerDocument, Dealership, DocMode, DocStage, Lead } from "../../types";
 import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "../../types";
 import { authFetch } from "../../lib/session";
+import { useMarket } from "../../contexts/MarketContext";
 import { createStageDocument, finalizeStageDocument, signDocument, updateLead, skipDocStage } from "../../api";
 
 interface Props {
@@ -71,6 +72,7 @@ const ACCOUNTING_LABEL: Record<AccountingPlatform, string> = {
 };
 
 export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) {
+  const market = useMarket();
   const [docs, setDocs] = useState<DealerDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyStage, setBusyStage] = useState<DocStage | null>(null);
@@ -386,7 +388,7 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
           Deal stage:{" "}
           <span className={`font-semibold ${isComplete ? "text-emerald-300" : "text-[color:var(--white)]"}`}>
             {isComplete
-              ? `Complete — handed over ${new Date(lead.docFlowCompletedAt!).toLocaleDateString("en-ZA")}`
+              ? `Complete — handed over ${new Date(lead.docFlowCompletedAt!).toLocaleDateString(market.locale)}`
               : lead.docStage
               ? STAGE_LABEL[lead.docStage]
               : "Not started"}

@@ -1,5 +1,8 @@
 /** WhatsApp / share helpers for stock units */
 
+import { formatDistance, formatMoney, marketById } from "../components/market";
+import type { MarketDisplay } from "../components/market";
+
 export const WA_NUMBER_KEY = "truflow_wa_number";
 
 export function getDealerWaNumber(): string {
@@ -14,8 +17,8 @@ export function setDealerWaNumber(raw: string) {
   localStorage.setItem(WA_NUMBER_KEY, raw.trim());
 }
 
-export function formatZar(n: number): string {
-  return "R " + Math.round(Number(n) || 0).toLocaleString("en-ZA");
+export function formatZar(n: number, market: MarketDisplay = marketById("za")): string {
+  return formatMoney(n, { currency: market.currency, locale: market.locale });
 }
 
 export function buildStockWhatsAppBlurb(
@@ -31,15 +34,16 @@ export function buildStockWhatsAppBlurb(
     fuelType?: string;
     images?: string[];
   },
-  opts?: { dealerName?: string }
+  opts?: { dealerName?: string },
+  market: MarketDisplay = marketById("za")
 ): string {
   const dealer = opts?.dealerName || "Our dealership";
   const photos = v.images?.length || 0;
   return (
     `*${v.year} ${v.make} ${v.model}*\n` +
     `${v.trim || "Standard"} · Stock *${v.stockNumber}*\n` +
-    `${formatZar(v.retailPrice)}` +
-    (v.mileage != null ? ` · ${Number(v.mileage).toLocaleString("en-ZA")} km` : "") +
+    `${formatZar(v.retailPrice, market)}` +
+    (v.mileage != null ? ` · ${formatDistance(Number(v.mileage), market.distanceUnit, market.locale)}` : "") +
     `\n` +
     (v.transmission || v.fuelType
       ? `${[v.transmission, v.fuelType].filter(Boolean).join(" · ")}\n`
@@ -64,9 +68,10 @@ async function fetchImageAsFile(url: string, index: number): Promise<File | null
 /** Opens WhatsApp (web/app) with prefilled stock blurb + images via Web Share API */
 export async function openStockWhatsApp(
   v: Parameters<typeof buildStockWhatsAppBlurb>[0],
-  phoneOverride?: string
+  phoneOverride?: string,
+  market?: MarketDisplay
 ) {
-  const text = buildStockWhatsAppBlurb(v);
+  const text = buildStockWhatsAppBlurb(v, undefined, market);
 
   // Try Web Share API with images (mobile browsers)
   if (navigator.share && v.images?.length) {
@@ -98,8 +103,8 @@ export async function openStockWhatsApp(
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-export async function copyStockBlurb(v: Parameters<typeof buildStockWhatsAppBlurb>[0]) {
-  const text = buildStockWhatsAppBlurb(v);
+export async function copyStockBlurb(v: Parameters<typeof buildStockWhatsAppBlurb>[0], market?: MarketDisplay) {
+  const text = buildStockWhatsAppBlurb(v, undefined, market);
   await navigator.clipboard.writeText(text);
   return text;
 }
