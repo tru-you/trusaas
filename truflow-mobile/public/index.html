@@ -1603,6 +1603,10 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
         var add=function(k,val){if(val!==""&&val!=null)q.push(k+"="+encodeURIComponent(val));};
         add("stock",v.stockNumber||v.id);add("year",v.year||"");add("make",v.make||"");add("name",v.model||"");
         add("variant",v.trim||"");if(vPrice(v)>0)add("price",Math.round(vPrice(v)));add("km",v.mileage||"");
+        /* Market declarations ride only when non-default — SA links stay
+           byte-identical; the vehicle-og edge function reads cur/odu. */
+        if(MARKET.currency!=="R")add("cur",MARKET.currency);
+        if(MARKET.unit!=="km")add("odu",MARKET.unit);
         add("trans",v.transmission||"");add("fuel",v.fuelType||"");add("body",v.bodyType||"");
         if(hero)add("img",(location.origin+hero));
         url=DEALER_SITE+"/vehicle/?"+q.join("&");

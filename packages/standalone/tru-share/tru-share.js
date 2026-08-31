@@ -46,6 +46,10 @@
  *                      button opens THEIR page rather than facebook.com
  *   data-ig-handle     the dealer's Instagram handle
  *   data-gbp           full Google Business profile URL (optional)
+ *   data-currency      price currency symbol for captions/sheet (default "R";
+ *                      also declared on share links as ?cur= when not R)
+ *   data-distance-unit odometer unit declared on share links as ?odu= when
+ *                      not "km" (the value itself is whatever the site passes)
  *
  * Programmatic:
  *   window.TruShare.open(vehicle)      open the sheet for a vehicle
@@ -99,7 +103,11 @@
        rather than the generic Facebook home. */
     fbPage: attr("data-fb-page", ""),        // "carsoncaledon" or a numeric id
     igHandle: attr("data-ig-handle", ""),    // "carsoncaledon"
-    gbp: attr("data-gbp", "")                // Google Business profile URL, optional
+    gbp: attr("data-gbp", ""),               // Google Business profile URL, optional
+    /* Market display: currency symbol for prices, odometer unit for the
+       share contract. Defaults keep ZA sites byte-identical. */
+    currency: attr("data-currency", "R"),
+    distanceUnit: attr("data-distance-unit", "km")
   };
 
   var INSTANCE = "tru-share";
@@ -109,7 +117,9 @@
   var clean = function (s) { return String(s == null ? "" : s).replace(/\s+/g, " ").trim(); };
   var fmtR = function (n) {
     n = Number(n) || 0;
-    return "R" + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    /* R keeps the SA space grouping; £/$ take commas and attach directly. */
+    var grouped = String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, cfg.currency === "R" ? " " : ",");
+    return cfg.currency + grouped;
   };
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -145,6 +155,11 @@
     add("variant", v.variant);
     if (Number(v.price) > 0) add("price", Math.round(Number(v.price)));
     add("km", v.km);
+    /* Market declarations ride along only when they differ from the launch
+       defaults — SA share URLs stay byte-identical, and old edge functions
+       ignore unknown params. Keep key names in step with vehicle-og.js. */
+    if (cfg.currency !== "R") add("cur", cfg.currency);
+    if (cfg.distanceUnit !== "km") add("odu", cfg.distanceUnit);
     add("trans", v.trans);
     add("fuel", v.fuel);
     add("body", v.body);

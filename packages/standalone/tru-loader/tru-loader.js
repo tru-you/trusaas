@@ -131,10 +131,10 @@
 
   // Helper to load chat stack in order
   function loadChatStack(onComplete) {
-    var chatBase = getScriptUrl("truchat/shared/qualifier.js").replace("qualifier.js", "");
+    var configUrl = getAttr("data-chat-config", "");
+    if (!configUrl) return;
 
-    // Load dealer-specific config if available (e.g. truchat/coc/config.js)
-    var configUrl = getScriptUrl("truchat/true-cars/config.js");
+    var chatBase = getScriptUrl("truchat/shared/qualifier.js").replace("qualifier.js", "");
 
     loadScript(configUrl, function () {
       loadScript(chatBase + "qualifier.js", function () {

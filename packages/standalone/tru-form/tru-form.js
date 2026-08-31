@@ -31,6 +31,9 @@
  *                       location — area / city field
  *                     Omit to show only the base fields (name, phone, email,
  *                     interest dropdown, message).
+ *   data-tradein-open  "1" — auto-expand the trade-in block on mount
+ *   data-finance-open  "1" — auto-expand the finance block on mount
+ *   data-interest      pre-select the "Interested in" dropdown (loose match)
  *
  * Programmatic control (per the LAST-mounted instance; all instances in
  * window.TruForm.instances):
@@ -100,6 +103,9 @@
        TruDealer" on every site using the default. */
     brand: attr("data-brand", "TruDealer"),
     theme: attr("data-theme", "dark"),
+  /* data-surface="#hex" — retune the panel to the host's ground tone. Custom
+     properties can't pierce :host{all:initial}, so the override compiles in. */
+  surface: attr("data-surface", ""),
     z: attr("data-z", "2147300000"),
     fields: (attr("data-fields", "") || "").split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean)
   };
@@ -169,7 +175,16 @@
       "--tf-surface:#FBF8F3;--tf-err:#B91C1C;",
       "--tf-fill:rgba(14,26,38,.04);--tf-fill-2:rgba(14,26,38,.08);",
       "--tf-hair:rgba(14,26,38,.10);--tf-edge:rgba(14,26,38,.14);"
-    ].join("") : ""
+    ].join("") : "",
+    (function () {
+      var s = String(cfg.surface || "").trim().replace(/^#/, "");
+      if (/^[0-9a-fA-F]{3}$/.test(s)) s = s[0] + s[0] + s[1] + s[1] + s[2] + s[2];
+      if (!/^[0-9a-fA-F]{6}$/.test(s)) return "";
+      var r = parseInt(s.slice(0, 2), 16), g = parseInt(s.slice(2, 4), 16), b = parseInt(s.slice(4, 6), 16);
+      return "--tf-surface:#" + s.toLowerCase() +
+        ";--tf-glass:rgba(" + r + "," + g + "," + b + ",.86);" +
+        "--tf-fill:rgba(14,26,38,.05);--tf-fill-2:rgba(14,26,38,.09);";
+    })()
   ].join("");
 
   var isInline = cfg.mode === "inline";
@@ -428,7 +443,7 @@
         '<div class="tf-section">',
           '<div class="tf-section-title">', carSvg, ' Vehicle Interest</div>',
           '<div class="tf-field"><label for="tf-veh">Which vehicle are you interested in?</label>',
-            '<input type="text" id="tf-veh" placeholder="e.g. 2023 Toyota Fortuner" value="', esc(cfg.vehicle), '" /></div>',
+            '<input type="text" id="tf-veh" placeholder="e.g. 2023 Toyota Corolla" value="', esc(cfg.vehicle), '" /></div>',
         '</div>'
       ].join('');
     }
@@ -449,8 +464,8 @@
             '</div>',
             '<div class="tf-row">',
               '<div class="tf-field"><label for="tf-ti-model">Model</label>',
-                '<input type="text" id="tf-ti-model" placeholder="e.g. Hilux 2.8 GD-6" /></div>',
-              '<div class="tf-field"><label for="tf-ti-km">Mileage (km)</label>',
+                '<input type="text" id="tf-ti-model" placeholder="e.g. 1.8 XR" /></div>',
+              '<div class="tf-field"><label for="tf-ti-km">Mileage</label>',
                 '<input type="text" id="tf-ti-km" inputmode="numeric" placeholder="e.g. 85,000" /></div>',
             '</div>',
           '</div>',
@@ -493,7 +508,7 @@
         '<div class="tf-section">',
           '<div class="tf-section-title">', pinSvg, ' Your Location</div>',
           '<div class="tf-field"><label for="tf-loc">City / Area</label>',
-            '<input type="text" id="tf-loc" placeholder="e.g. Cape Town, Sandton, Durban" autocomplete="address-level2" /></div>',
+            '<input type="text" id="tf-loc" placeholder="e.g. City, Region" autocomplete="address-level2" /></div>',
         '</div>'
       ].join('');
     }
@@ -543,7 +558,7 @@
 
           '<div class="tf-row">',
             '<div class="tf-field"><label for="tf-ph">Phone<span class="tf-req">*</span></label>',
-              '<input type="tel" id="tf-ph" placeholder="e.g. 082 123 4567" autocomplete="tel" required />',
+              '<input type="tel" id="tf-ph" placeholder="Phone number" autocomplete="tel" required />',
               '<div class="tf-hint">Enter a valid phone number</div></div>',
             '<div class="tf-field"><label for="tf-em">Email</label>',
               '<input type="email" id="tf-em" placeholder="you@example.com" autocomplete="email" />',
@@ -769,6 +784,11 @@
     wireToggle("tf-tradein-toggle", "tf-tradein-fields");
     wireToggle("tf-finance-toggle", "tf-finance-fields");
 
+    /* Page-level pre-opens: sell/finance pages skip the toggle click */
+    if (attr("data-tradein-open", "") === "1") setToggle("tf-tradein-toggle", "tf-tradein-fields", true);
+    if (attr("data-finance-open", "") === "1") setToggle("tf-finance-toggle", "tf-finance-fields", true);
+    setSelect("tf-interest", attr("data-interest", ""));
+
     /* ---- validation ---- */
     function validate() {
       var ok = true;
@@ -874,6 +894,16 @@
       });
     }
 
+    /* Doctrine: every lead is an event. Any page can react — gate content,
+       fire pixels, thank the buyer — without touching the widget core. */
+    function announceLead(source) {
+      try {
+        window.dispatchEvent(new CustomEvent("tru:lead", {
+          detail: { source: source, product: "TruForm", dealer: cfg.dealer, slug: cfg.slug }
+        }));
+      } catch (e) {}
+    }
+
     function showState(cls) {
       root.classList.remove("is-sent", "is-error");
       if (cls) root.classList.add(cls);
@@ -901,6 +931,7 @@
       postLead("TruForm Contact").then(function (ok) {
         setBusy(submitBtn, false, "", submitIdle);
         showState(ok ? "is-sent" : "is-error");
+        if (ok) announceLead("TruForm Contact");
       });
     });
 
@@ -910,7 +941,9 @@
       var url = "https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(buildWhatsAppMsg());
       /* Open synchronously so the tap isn't blocked as a popup. */
       window.open(url, "_blank", "noopener");
-      if (!looksLikeBot()) postLead("TruForm Contact (WhatsApp)");
+      if (!looksLikeBot()) postLead("TruForm Contact (WhatsApp)").then(function (ok) {
+        if (ok) announceLead("TruForm Contact (WhatsApp)");
+      });
       showState("is-sent");
     }
     if (waSendBtn) waSendBtn.addEventListener("click", waSend);

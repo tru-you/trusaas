@@ -47,6 +47,12 @@
     } catch (e) {}
   }
 
+  var MARKETS = {
+    za: { cur: "R", locale: "en-ZA", income: 25000, incomeMin: 8000, incomeMax: 120000, incomeStep: 500, expenses: 12000, expensesMin: 2000, expensesMax: 80000, expensesStep: 500, strong: 15000, good: 8000, tight: 3500, priceCap: 2500000 },
+    uk: { cur: "£", locale: "en-GB", income: 3200, incomeMin: 1000, incomeMax: 12000, incomeStep: 50, expenses: 1500, expensesMin: 300, expensesMax: 6000, expensesStep: 50, strong: 1800, good: 1000, tight: 400, priceCap: 100000 },
+    us: { cur: "$", locale: "en-US", income: 5500, incomeMin: 2000, incomeMax: 20000, incomeStep: 100, expenses: 2500, expensesMin: 500, expensesMax: 12000, expensesStep: 100, strong: 3000, good: 1800, tight: 800, priceCap: 150000 }
+  };
+
   var cfg = {
     dealer: attr("data-dealer", "this dealership"),
     wa: attr("data-wa", ""),
@@ -63,8 +69,12 @@
     webhook: attr("data-webhook", ""),
     cmbKey: attr("data-callmebot-key", ""),
     cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),
-    slug: attr("data-slug", "")
+    slug: attr("data-slug", ""),
+    market: attr("data-market", "za"),
+    mount: attr("data-mount", "")
   };
+
+  var preset = MARKETS[cfg.market] || MARKETS.za;
 
   var ID = "tru-afford";
 
@@ -127,8 +137,8 @@
   var state = {
     open: false,
     step: 1,
-    income: 25000,
-    expenses: 12000,
+    income: preset.income,
+    expenses: preset.expenses,
     deposit: 10,
     term: 72,
     employment: "permanent",
@@ -138,7 +148,8 @@
   };
 
   function money(n) {
-    return "R " + Math.round(n || 0).toLocaleString("en-ZA");
+    var s = Math.round(n || 0).toLocaleString(preset.locale);
+    return preset.cur + (preset.cur === "R" ? " " : "") + s;
   }
 
   function calc() {
@@ -162,14 +173,14 @@
     // Soft score band (not a bureau score)
     var ratio = state.income > 0 ? (state.expenses / state.income) : 1;
     var band = "Fair";
-    if (net >= 15000 && ratio <= 0.55 && state.employment === "permanent") band = "Strong";
-    else if (net >= 8000 && ratio <= 0.7) band = "Good";
-    else if (net < 3500) band = "Tight";
+    if (net >= preset.strong && ratio <= 0.55 && state.employment === "permanent") band = "Strong";
+    else if (net >= preset.good && ratio <= 0.7) band = "Good";
+    else if (net < preset.tight) band = "Tight";
     return {
       net: net,
       maxInstalment: maxInstalment,
       minInstalment: minInstalment,
-      priceMax: Math.min(priceMax, 2500000),
+      priceMax: Math.min(priceMax, preset.priceCap),
       priceMin: Math.max(0, priceMin),
       loanMax: loanMax,
       band: band,
@@ -333,7 +344,12 @@
     /* data-text: override primary text colour (launcher + panel). */
     cfg.text ? "#" + ID + "-root{--ta-text:" + cfg.text + "}#" + ID + "-root .ta-launcher,#" + ID + "-root .ta-ltitle,#" + ID + "-root .ta-panel{color:" + cfg.text + "}" : "",
     /* data-scale: resize the launcher, anchored to its corner. */
-    cfg.scale ? "#" + ID + "-root .ta-launcher{transform:scale(" + cfg.scale + ");transform-origin:bottom " + cfg.position + "}" : ""
+    cfg.scale ? "#" + ID + "-root .ta-launcher{transform:scale(" + cfg.scale + ");transform-origin:bottom " + cfg.position + "}" : "",
+    ":host(.ta-inline){position:static!important;inset:auto!important;bottom:auto!important;left:auto!important;right:auto!important;max-width:100%!important;width:100%!important;pointer-events:auto!important;display:block!important}",
+    "#" + ID + "-root.ta-inline{align-items:stretch!important;pointer-events:auto!important;width:100%}",
+    "#" + ID + "-root.ta-inline .ta-launcher{display:none!important}",
+    "#" + ID + "-root.ta-inline .ta-x{display:none!important}",
+    "#" + ID + "-root.ta-inline .ta-panel{position:static!important;display:flex!important;opacity:1!important;transform:none!important;width:100%!important;max-width:100%!important;max-height:none!important;box-shadow:0 20px 50px -30px rgba(0,0,0,.45)!important}"
   ].join("");
 
   function el(html) {
@@ -359,7 +375,10 @@
   function mount() {
     var hostEl = document.createElement("div");
     hostEl.id = ID + "-host";
-    document.body.appendChild(hostEl);
+    var target = cfg.mount ? document.querySelector(cfg.mount) : null;
+    var inline = !!target;
+    if (inline) { hostEl.className = "ta-inline"; target.appendChild(hostEl); }
+    else { document.body.appendChild(hostEl); }
     shadow = hostEl.attachShadow({ mode: "open" });
 
     var style = document.createElement("style");
@@ -396,6 +415,8 @@
       "</div>"
     );
     shadow.appendChild(root);
+
+    if (inline) { root.classList.add("ta-inline", "is-open"); state.open = true; }
 
     $("#" + ID + "-open").addEventListener("click", open);
     $("#" + ID + "-close").addEventListener("click", close);
@@ -449,9 +470,9 @@
         '<div class="ta-h">Your monthly numbers</div>' +
         '<p class="ta-p">We’ll estimate instalment and vehicle price bands from disposable income.</p>' +
         '<div class="ta-field"><div class="ta-row"><label>Net monthly income</label><output id="o-inc">' + money(state.income) + "</output></div>" +
-        '<input type="range" id="r-inc" min="8000" max="120000" step="500" value="' + state.income + '"></div>' +
+        '<input type="range" id="r-inc" min="' + preset.incomeMin + '" max="' + preset.incomeMax + '" step="' + preset.incomeStep + '" value="' + state.income + '"></div>' +
         '<div class="ta-field"><div class="ta-row"><label>Monthly expenses</label><output id="o-exp">' + money(state.expenses) + "</output></div>" +
-        '<input type="range" id="r-exp" min="2000" max="80000" step="500" value="' + state.expenses + '"></div>' +
+        '<input type="range" id="r-exp" min="' + preset.expensesMin + '" max="' + preset.expensesMax + '" step="' + preset.expensesStep + '" value="' + state.expenses + '"></div>' +
         '<div class="ta-grid2">' +
         '<div class="ta-field"><div class="ta-row"><label>Deposit</label><output id="o-dep">' + state.deposit + "%</output></div>" +
         '<input type="range" id="r-dep" min="0" max="40" step="5" value="' + state.deposit + '"></div>' +
@@ -495,12 +516,12 @@
         '<div class="ta-metric"><div class="k">Deposit ≈</div><div class="v">' + money(r.depositAmt) + "</div></div>" +
         "</div></div>" +
         '<div class="ta-field"><label>Your name</label><input type="text" id="ta-name" placeholder="Full name" value="' + esc(state.name) + '" autocomplete="name"></div>' +
-        '<div class="ta-field"><label>Mobile</label><input type="tel" id="ta-phone" placeholder="06…" value="' + esc(state.phone) + '" autocomplete="tel"></div>' +
+        '<div class="ta-field"><label>Mobile</label><input type="tel" id="ta-phone" placeholder="Phone number" value="' + esc(state.phone) + '" autocomplete="tel"></div>' +
         '<div class="ta-actions">' +
         '<button type="button" class="ta-btn ta-btn-ghost" data-go="3">Back</button>' +
         '<button type="button" class="ta-btn ta-btn-wa" id="ta-wa">WhatsApp result</button>' +
         "</div>" +
-        '<p class="ta-fine">Estimate only. Final rate, term and approval subject to bank / FSP credit assessment. ' +
+        '<p class="ta-fine">Estimate only. Final rate, term and approval subject to bank / lender credit assessment. ' +
         esc(cfg.dealer) + " and TruSaaS are not offering credit by this tool alone. Illustrative rate " +
         (cfg.rate * 100).toFixed(2) + "% linked, excl. fees & insurance.</p>" +
         "</div>";

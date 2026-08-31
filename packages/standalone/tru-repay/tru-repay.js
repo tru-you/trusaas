@@ -45,6 +45,9 @@
  *   data-init-fee    Initiation fee shown in the disclaimer (default 1207)
  *   data-admin-fee   Monthly admin fee shown in the disclaimer (default 69)
  *   data-currency    Currency symbol (default "R")
+ *   data-market      "za" (default) | "uk" | "us" — sets the number locale;
+ *                    uk/us also zero-default the fees unless set explicitly
+ *   data-locale      Explicit locale tag overriding the data-market locale
  *   data-brand       Footer credit (default "TruRepay · TruSaaS")
  *   data-z           z-index (default 999975)
  *
@@ -76,6 +79,10 @@
   }
   function num(v, d) { var n = parseFloat(v); return isFinite(n) ? n : d; }
 
+  var MARKET_LOCALE = { za: "en-ZA", uk: "en-GB", us: "en-US" };
+  var market = attr("data-market", "za");
+  var foreignMarket = market === "uk" || market === "us";
+
   var cfg = {
     dealer: attr("data-dealer", "this dealership"),
     slug: attr("data-slug", ""),
@@ -100,9 +107,11 @@
     deposit: num(attr("data-deposit", ""), 10),
     term: num(attr("data-term", ""), 72),
     balloon: num(attr("data-balloon", ""), 0),
-    initFee: num(attr("data-init-fee", ""), 1207),
-    adminFee: num(attr("data-admin-fee", ""), 69),
+    initFee: num(attr("data-init-fee", ""), ((scr && scr.hasAttribute("data-init-fee")) || !foreignMarket) ? 1207 : 0),
+    adminFee: num(attr("data-admin-fee", ""), ((scr && scr.hasAttribute("data-admin-fee")) || !foreignMarket) ? 69 : 0),
     cur: attr("data-currency", "R"),
+    market: market,
+    locale: attr("data-locale", "") || MARKET_LOCALE[market] || "en-ZA",
     brand: attr("data-brand", "TruDealer"),
     theme: attr("data-theme", "dark"),
     z: attr("data-z", "2147200000")
@@ -488,7 +497,7 @@
     var closeBtn = shadow.querySelector(".tr-x");
 
     function id(i) { return shadow.getElementById(i); }
-    function money(n) { return cfg.cur + " " + Math.max(0, Math.round(n)).toLocaleString("en-ZA"); }
+    function money(n) { var s = Math.max(0, Math.round(n)).toLocaleString(cfg.locale); return cfg.cur + (cfg.cur === "R" ? " " : "") + s; }
     function digits(s) { return String(s || "").replace(/[^\d]/g, ""); }
 
     /* ---- live calculation ---- */
