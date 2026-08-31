@@ -3,6 +3,7 @@ import { X, Plus, Search, Loader2, CheckCircle2, Shield, History, TrendingUp, Li
 import { Vehicle } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
+import { formatMoney, formatMoneyFromData } from './market';
 
 interface Props {
   onClose: () => void;
@@ -13,9 +14,6 @@ const inputCls = 'ti-input';
 const labelCls = 'ti-field-label';
 
 const titleCase = (s: string) => s.replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
-
-const fmtZAR = (n: number | null | undefined) =>
-  n == null ? '—' : 'R ' + Math.round(n).toLocaleString('en-ZA');
 
 /** Synthetic identifier used by demo when no VIN/stock is typed yet — seeds the
  *  simulated responder off the form's own data so every demo car gets a stable,
@@ -371,14 +369,15 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
                 <span className="text-amber-400 font-medium">{tuPriceResult.error}</span>
               ) : (
                 <span className="font-semibold" style={{ color: 'var(--cyan)' }}>
-                  Retail {fmtZAR(tuPriceResult.retailPrice)} · Trade {fmtZAR(tuPriceResult.tradePrice)}
+                  {/* TransUnion eValue8 is the SA provider — ZAR by definition. */}
+                  Retail {formatMoney(tuPriceResult.retailPrice)} · Trade {formatMoney(tuPriceResult.tradePrice)}
                 </span>
               )}
             </div>
             {!tuPriceResult.error && tuPriceResult.marketValue != null && (
               <div className="mt-1 flex items-center justify-between">
                 <span style={{ color: 'var(--muted)' }}>Market estimate</span>
-                <span style={{ color: 'var(--white)' }}>{fmtZAR(tuPriceResult.marketValue)}</span>
+                <span style={{ color: 'var(--white)' }}>{formatMoney(tuPriceResult.marketValue)}</span>
               </div>
             )}
           </div>
@@ -391,7 +390,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
                 <span className="text-amber-400 font-medium">{marketResult.error}</span>
               ) : marketResult.averageRetailPrice != null ? (
                 <span className="text-right">
-                  <span className="font-semibold" style={{ color: 'var(--white)' }}>{fmtZAR(marketResult.averageRetailPrice)}</span>
+                  <span className="font-semibold" style={{ color: 'var(--white)' }}>{formatMoneyFromData(marketResult.averageRetailPrice, marketResult)}</span>
                   <span className="ml-2" style={{ color: 'var(--muted)' }}>{marketResult.listingsFound} listings</span>
                   <button type="button" onClick={() => setF((s) => ({ ...s, price: String(Math.round(marketResult.averageRetailPrice)) }))}
                     className="ml-2 underline cursor-pointer" style={{ color: 'var(--cyan)' }}>Use as price</button>

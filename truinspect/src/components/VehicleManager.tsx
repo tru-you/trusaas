@@ -11,6 +11,7 @@ import { telHref, mailtoHref, whatsappHref, openContact } from '../lib/contact';
 import { deriveReportId } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
+import { useMarket, useMoney } from '../contexts/MarketContext';
 
 interface Props {
   vehicle: Vehicle;
@@ -31,6 +32,8 @@ export default function VehicleManager({
   vehicle, onUpdateVehicle, onPhotosUploaded, onViewReport, onOpenTradeIn, onOpenDamage, onOpenChecklist, onDelete, onBack,
 }: Props) {
   const { user } = useAuth();
+  const money = useMoney();
+  const market = useMarket();
   const fileRef = React.useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = React.useState(false);
   const [form, setForm] = React.useState({
@@ -330,7 +333,7 @@ export default function VehicleManager({
           </div>
           <div className="ti-stat">
             <p className="ti-stat-label">Asking Price</p>
-            <p className="ti-stat-value">R {(vehicle.price || 0).toLocaleString('en-ZA')}</p>
+            <p className="ti-stat-value">{money(vehicle.price || 0)}</p>
           </div>
         </div>
 
@@ -477,7 +480,7 @@ export default function VehicleManager({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[13px] font-semibold truncate" style={{ color: 'var(--white)' }}>{o.buyerName}</span>
-                      <span className="text-[13px]" style={{ fontFamily: 'var(--mono)', color: 'var(--cyan)' }}>R {o.amount.toLocaleString('en-ZA')}</span>
+                      <span className="text-[13px]" style={{ fontFamily: 'var(--mono)', color: 'var(--cyan)' }}>{money(o.amount)}</span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full capitalize" style={{
                         background: o.status === 'accepted' ? 'var(--cyan-faint)' : 'rgba(232,234,230,0.06)',
                         color: o.status === 'accepted' ? 'var(--cyan)' : o.status === 'declined' ? 'var(--danger)' : 'var(--muted)',
@@ -485,7 +488,7 @@ export default function VehicleManager({
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 text-[11px]" style={{ color: 'var(--muted)' }}>
                       {o.buyerContact && <span>{o.buyerContact}</span>}
-                      <span>{new Date(o.receivedAt).toLocaleDateString('en-ZA')}</span>
+                      <span>{new Date(o.receivedAt).toLocaleDateString(market.locale)}</span>
                       {o.documentRef && <a href={o.documentRef} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-[var(--cyan)]"><Paperclip size={10} /> Document</a>}
                     </div>
                     {o.note && <p className="text-[11px] mt-1" style={{ color: 'var(--white-dim)' }}>{o.note}</p>}

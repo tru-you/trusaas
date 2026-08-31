@@ -3,6 +3,7 @@ import { Search, Check, Copy, RefreshCw, Plus, LogOut, Car, Users, Settings, Com
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
+import { useMoney } from '../contexts/MarketContext';
 
 interface DesktopShellProps {
   vehicles: Vehicle[];
@@ -41,6 +42,7 @@ export default function DesktopShell({
   onOpenGuide,
   children,
 }: DesktopShellProps) {
+  const money = useMoney();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [copiedStockId, setCopiedStockId] = React.useState<string | null>(null);
 
@@ -162,7 +164,7 @@ export default function DesktopShell({
                         {vehicle.year} {vehicle.make} {vehicle.model}
                       </h4>
                       <p className="text-[12px] mt-0.5 truncate" style={{ color: 'var(--muted)' }}>
-                        {vehicle.trim || 'Standard'} · R {(vehicle.price || 0).toLocaleString('en-ZA')}
+                        {vehicle.trim || 'Standard'} · {money(vehicle.price || 0)}
                       </p>
                     </div>
                     <span className="text-[11px] font-semibold shrink-0 mt-0.5" style={{ color: readiness.color }}>

@@ -3,6 +3,7 @@ import { Plus, Camera, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
+import { useMoney } from '../contexts/MarketContext';
 import type { SetupStatus } from '../lib/setupStatus';
 import { SetupChecklistCard } from './SetupPrompt';
 
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehicle, setupStatus, onSetUp, onSnooze }: Props) {
+  const money = useMoney();
   const totalRequired = DEFAULT_TEMPLATE.slots.filter((s) => s.required).length;
   const taken = (v: Vehicle) => DEFAULT_TEMPLATE.slots.filter((s) => s.required && v.photos?.[s.id]).length;
 
@@ -108,7 +110,7 @@ export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehic
                           {vehicle.year} {vehicle.make} {vehicle.model}
                         </h3>
                         <p className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                          {vehicle.trim || 'Standard'} · {vehicle.price ? 'R ' + vehicle.price.toLocaleString('en-ZA') : 'No price set'}
+                          {vehicle.trim || 'Standard'} · {vehicle.price ? money(vehicle.price) : 'No price set'}
                         </p>
                       </div>
                       <span className="text-[11px] font-semibold shrink-0" style={{ color: readiness.color }}>{readiness.label}</span>

@@ -6,6 +6,7 @@ import {
   computeOverallRating, deriveReportId,
 } from '../types/inspection';
 import { DEFAULT_TEMPLATE } from '../templates';
+import { formatMoneyFromData, marketByCurrency } from './market';
 
 /**
  * Pick the largest html2canvas scale that keeps the rasterised report within
@@ -80,8 +81,12 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
 
   const overallRating = computeOverallRating(items);
   const totalRecon = items.reduce((s, i) => s + i.estimatedRepairCost, 0);
-  const fmt = (n: number) => `R ${n.toLocaleString('en-ZA')}`;
-  const now = new Date().toLocaleString('en-ZA', {
+  /* Money + dates in the market the valuation came back in (R/£/$); appraisals
+   * saved before markets landed fall back to ZAR/en-ZA. */
+  const valMarket = marketByCurrency(valuation.currency);
+  const fmt = (n: number) => formatMoneyFromData(n, valuation);
+  const symText = valMarket.currency === 'R' ? 'R ' : valMarket.currency;
+  const now = new Date().toLocaleString(valMarket.locale, {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
@@ -290,7 +295,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
    * finalTradeInValue but never itemised here — margin is dealer-only. */
   const reconAdjustments = items.filter(i => i.estimatedRepairCost > 0);
   const linkedVirId = deriveReportId(vehicle, 'VIR');
-  const validUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-ZA', {
+  const validUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(valMarket.locale, {
     day: '2-digit', month: 'short', year: 'numeric',
   });
 
@@ -498,14 +503,14 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             <div className="val-box market">
               <div className="lbl">Market average</div>
               <div className="price">
-                <span className="sym">R </span>
-                {valuation.averageRetailPrice != null ? valuation.averageRetailPrice.toLocaleString('en-ZA') : '—'}
+                <span className="sym">{symText}</span>
+                {valuation.averageRetailPrice != null ? valuation.averageRetailPrice.toLocaleString(valMarket.locale) : '—'}
               </div>
               <div className="sub">TransUnion &amp; live market data</div>
             </div>
             <div className="val-box offer">
               <div className="lbl">Purchase offer</div>
-              <div className="price"><span className="sym">R </span>{valuation.finalTradeInValue.toLocaleString('en-ZA')}</div>
+              <div className="price"><span className="sym">{symText}</span>{valuation.finalTradeInValue.toLocaleString(valMarket.locale)}</div>
               <div className="sub">Condition-adjusted · valid {validUntil}</div>
             </div>
           </div>
@@ -517,7 +522,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             <div className="row"><span className="k">VIN</span><span className="v">{vehicle.vin || '—'}</span></div>
             <div className="row"><span className="k">Stock #</span><span className="v">{vehicle.stockNumber || '—'}</span></div>
             <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
-            <div className="row"><span className="k">Odometer</span><span className="v">{(vehicle.mileage || 0).toLocaleString('en-ZA')} km</span></div>
+            <div className="row"><span className="k">Odometer</span><span className="v">{(vehicle.mileage || 0).toLocaleString(valMarket.locale)} {valMarket.distanceUnit}</span></div>
             {vehicle.transmission && <div className="row"><span className="k">Transmission</span><span className="v">{vehicle.transmission}</span></div>}
             {vehicle.fuelType && <div className="row"><span className="k">Fuel type</span><span className="v">{vehicle.fuelType}</span></div>}
             {vehicle.warranty && <div className="row"><span className="k">Warranty</span><span className="v">{vehicle.warranty}</span></div>}

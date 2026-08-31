@@ -5,6 +5,7 @@ import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue 
 import { useAuth } from '../contexts/AuthContext';
 import { urlMake } from '../lib/makeAliases';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
+import { formatMoneyFromData, marketByCurrency } from './market';
 
 interface TradeInValuationProps {
   vehicle: Vehicle;
@@ -149,6 +150,8 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
         ...v,
         fallbackRequired: !!data.fallbackRequired,
         searchUrl: data.searchUrl,
+        currency: data.currency,
+        distanceUnit: data.distanceUnit,
       }));
     } catch {
       const atUrl = `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(urlMake(vehicle.make))}&model=${encodeURIComponent(vehicle.model)}&year=${vehicle.year}`;
@@ -174,7 +177,9 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
     recalc(valuation.averageRetailPrice, margin);
   };
 
-  const fmt = (n: number) => `R ${n.toLocaleString('en-ZA')}`;
+  /* Money in the currency the valuation actually came back in (R/£/$) —
+   * falls back to ZAR for appraisals saved before markets landed. */
+  const fmt = (n: number) => formatMoneyFromData(n, valuation);
 
   return (
     <div className="relative flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
@@ -365,7 +370,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                 {[...history].reverse().map((snap, i) => (
                   <div key={i} className="flex items-center justify-between text-[12px]">
                     <span className="text-neutral-500">
-                      {new Date(snap.scrapedAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: '2-digit' })}
+                      {new Date(snap.scrapedAt).toLocaleDateString(marketByCurrency(valuation.currency).locale, { day: 'numeric', month: 'short', year: '2-digit' })}
                     </span>
                     <span className="text-[#E8EAE6] font-mono font-medium">{fmt(snap.price)}</span>
                     <span className="text-neutral-600 text-[12px]">{snap.listingsFound} listings</span>
@@ -383,7 +388,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           <Loader2 size={30} className="animate-spin text-cyan-400" />
           <p className="text-[15px] font-bold text-[#E8EAE6]">Assessing live market…</p>
           <p className="text-[12px] text-neutral-400 text-center">
-            Scanning dealer stock and SA classifieds for your {vehicle.year} {vehicle.make} {vehicle.model}
+            Scanning dealer stock and live classifieds for your {vehicle.year} {vehicle.make} {vehicle.model}
           </p>
         </div>
       )}

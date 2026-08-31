@@ -50,6 +50,9 @@ export interface ValuationResult {
   currency?: string;
   mileageAdjusted?: boolean;
   sampleMedianKm?: number | null;
+  /** Display unit the source market uses for odometers (km default, mi US/UK).
+   *  All km figures in this result stay km — clients convert for display. */
+  distanceUnit?: "km" | "mi";
 }
 
 export interface JsonAuthConfig {
@@ -103,6 +106,10 @@ export interface MarketConfig {
   maxPrice: number;
   /** Accept-Language header for plain HTTP. */
   acceptLanguage: string;
+  /** Odometer unit the market displays in ("km" default, "mi" for US/UK).
+   *  The engine always normalises to km internally — this is a display hint
+   *  carried through to the result so clients can convert back. */
+  distanceUnit?: "km" | "mi";
   /** Path to data/price-sources.json (dealer layer). Overridable per instance. */
   priceSourcesPath?: string;
   /** Classifieds sites to walk — the SA sites by default. */
@@ -436,7 +443,11 @@ function priceScanRe(cfg: MarketConfig): RegExp {
 }
 
 function priceReg(cfg: MarketConfig): RegExp {
-  return new RegExp(`${escapeRegex(cfg.currency)}\\s?((?:\\d{1,3}(?:[ ,]\\d{3})*)|\\d{6,7})`);
+  /* Grouped thousands ("£12,995") or bare digits ("£12995"). The old shape
+   * missed bare 4–5 digit prices entirely — fine for grouped ZA sites, wrong
+   * for US/UK markup that renders without separators. The currency symbol must
+   * immediately precede the digits, so years in the same text never match. */
+  return new RegExp(`${escapeRegex(cfg.currency)}\\s?(\\d{1,3}(?:[ ,]\\d{3})+|\\d{4,7})`);
 }
 
 function priceFromText(text: string, cfg: MarketConfig): number | null {
@@ -491,7 +502,12 @@ export function extractJsonLd(html: string, cfg: MarketConfig): Listing[] {
       const price = num(offer?.price ?? offer?.lowPrice ?? node.price);
       if (price == null || price < cfg.minPrice || price > cfg.maxPrice) continue;
       const odo = node.mileageFromOdometer;
-      const km = num(odo && typeof odo === "object" ? odo.value : odo);
+      let km = num(odo && typeof odo === "object" ? odo.value : odo);
+      /* schema.org unitCode "SMI" = statute miles → km; a unit-less odometer in
+       * a miles market defaults to miles too. */
+      const unit = odo && typeof odo === "object" ? String(odo.unitCode || "") : "";
+      const miles = /^smi$/i.test(unit) || (!unit && cfg.distanceUnit === "mi");
+      if (km != null && miles) km = km * 1.60934;
       out.push({
         price: Math.round(price),
         km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined,
@@ -549,8 +565,11 @@ export function extractCardListings(html: string, make: string, model: string, y
     const price = priceEl.length ? num(priceEl.text()) : priceFromText(cardText, cfg);
     if (price == null || price < cfg.minPrice || price > cfg.maxPrice) return;
 
-    const kmMatch = cardText.match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);
-    const km = kmMatch ? num(kmMatch[1]) : undefined;
+    /* Odometer in km or miles (US/UK listings carry miles — normalise to km so
+     * the engine's maths stays unit-consistent). */
+    const odoMatch = cardText.match(/(\d{1,3}(?:[ ,]\d{3})*)\s?(km|mi(?:les)?\b)/i);
+    let km: number | undefined = odoMatch ? num(odoMatch[1]) ?? undefined : undefined;
+    if (km != null && odoMatch && /^mi/i.test(odoMatch[2])) km = Math.round(km * 1.60934);
     const key = `${Math.round(price)}|${km ?? ""}`;
     if (seen.has(key)) return;
     seen.add(key);
@@ -582,12 +601,18 @@ export function extractNextDataListings(html: string, make: string, model: strin
     if (Array.isArray(n)) { n.forEach(visit); return; }
     const price = typeof n.price === "number" ? n.price : null;
     if (price != null && price >= cfg.minPrice && price <= cfg.maxPrice && (n.make || n.model || n.title)) {
-      const title = String(n.title || `${n.year ?? ""} ${n.make ?? ""} ${n.model ?? ""}`);
+      /* Feeds name the year field differently (year / modelYear / vehicleYear). */
+      const yr = n.year ?? n.modelYear ?? n.vehicleYear;
+      const title = String(n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`);
       if (yearTolerant(cfg, title, make, model, year)) {
         const key = `${n.reference ?? n.id ?? ""}|${price}`;
         if (!seen.has(key)) {
           seen.add(key);
-          const km = num(n.mileage ?? n.km ?? n.odometer);
+          let km = num(n.mileage ?? n.km ?? n.odometer);
+          /* A market's own classifieds report in the market's unit — miles
+           * markets (US/UK) normalise to km here so engine maths stays
+           * km-denominated everywhere. */
+          if (km != null && cfg.distanceUnit === "mi") km = km * 1.60934;
           out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
         }
       }
@@ -609,7 +634,12 @@ export function adjustForMileage(listings: Listing[], targetKm?: number): number
   let slope = den ? numr / den : 0;
   const medPrice = median(withKm.map((l) => l.price)) ?? my;
   const defaultSlope = -(medPrice * 0.03) / 20_000;
-  if (!(slope < -0.2 && slope > -3)) slope = defaultSlope;
+  /* Acceptance band expressed as a fraction of the median price per km so it
+   * holds in any currency. The old absolute band (R0.2–R3 per km) was tuned
+   * for a ~R200k median; -1e-6 … -1.5e-5 of price per km reproduces exactly
+   * that at R200k and scales with the car's value in ZAR/USD/GBP alike. */
+  const rel = medPrice > 0 ? slope / medPrice : 0;
+  if (!(rel < -1e-6 && rel > -1.5e-5)) slope = defaultSlope;
   return listings.map((l) => {
     if (typeof l.km !== "number") return l.price;
     const adj = l.price + slope * (targetKm - l.km);

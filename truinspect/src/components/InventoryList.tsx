@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import { SetupChecklistCard } from './SetupPrompt';
 import type { SetupStatus } from '../lib/setupStatus';
+import { useMarket, useMoney } from '../contexts/MarketContext';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -72,6 +73,8 @@ export default function InventoryList({
   setupGoSignal
 }: InventoryListProps) {
   const { signOut, user } = useAuth();
+  const money = useMoney();
+  const market = useMarket();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [guideSeen, setGuideSeen] = React.useState(() => !!localStorage.getItem('truinspect_guide_seen'));
   // Setup modal's "Set up now" — jump to the Settings tab when the signal bumps.
@@ -224,9 +227,6 @@ export default function InventoryList({
   const [dealerWhatsApp, setDealerWhatsApp] = React.useState(
     () => localStorage.getItem('trulens_dealer_wa') || ''
   );
-  const [currency, setCurrency] = React.useState(
-    () => localStorage.getItem('trulens_currency') || 'ZAR'
-  );
   const [aiThreshold, setAiThreshold] = React.useState(() => {
     const n = Number(localStorage.getItem('trulens_ai_threshold'));
     return Number.isFinite(n) && n >= 50 ? n : 85;
@@ -262,7 +262,6 @@ export default function InventoryList({
     localStorage.setItem('trulens_dealer_name', dealershipName);
     localStorage.setItem('trulens_dealer_branch', branch);
     localStorage.setItem('trulens_dealer_wa', dealerWhatsApp);
-    localStorage.setItem('trulens_currency', currency);
     localStorage.setItem('trulens_ai_threshold', String(aiThreshold));
     localStorage.setItem('trulens_dms_url', dmsUrl);
     localStorage.setItem('trulens_dealer_vat', dealerVat);
@@ -270,7 +269,7 @@ export default function InventoryList({
     localStorage.setItem('trulens_dealer_email', dealerEmail);
     localStorage.setItem('trulens_dealer_phone', dealerPhone);
     localStorage.setItem('trulens_tradein_tcs', tradeInTcs);
-  }, [dealershipName, branch, dealerWhatsApp, currency, aiThreshold, dmsUrl, dealerVat, dealerAddress, dealerEmail, dealerPhone, tradeInTcs]);
+  }, [dealershipName, branch, dealerWhatsApp, aiThreshold, dmsUrl, dealerVat, dealerAddress, dealerEmail, dealerPhone, tradeInTcs]);
 
   const [make, setMake] = React.useState('');
   const [model, setModel] = React.useState('');
@@ -1157,7 +1156,7 @@ export default function InventoryList({
                   photos.front_bumper.startsWith('http'))
                   ? photos.front_bumper
                   : null;
-              const priceLabel = Number(vehicle.price || 0).toLocaleString();
+              const priceLabel = money(Number(vehicle.price || 0));
               const isHighlighted =
                 !!highlightStock &&
                 (vehicle.stockNumber || '').toLowerCase() === highlightStock.toLowerCase();
@@ -1204,7 +1203,7 @@ export default function InventoryList({
                           )}
                         </h3>
                         <p className="text-[13px] text-neutral-400 font-medium mt-0.5">
-                          {vehicle.trim || 'Standard Trim'} • <span className="text-neutral-300">R {priceLabel}</span>
+                          {vehicle.trim || 'Standard Trim'} • <span className="text-neutral-300">{priceLabel}</span>
                         </p>
                         
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -1382,10 +1381,10 @@ export default function InventoryList({
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[13px] font-bold text-emerald-400">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' || v.status === 'Listed' ? v.price : 0), 0).toLocaleString()} Ready
+                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'Ready' || v.status === 'Listed' ? v.price : 0), 0))} Ready
                 </span>
                 <span className="text-[13px] text-neutral-500">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} Pending
+                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0))} Pending
                 </span>
               </div>
             </div>
@@ -1632,18 +1631,15 @@ export default function InventoryList({
               <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <p className="text-[13px] font-bold text-neutral-200">Currency</p>
-                    <p className="text-[13px] text-neutral-500">Global display currency for valuations</p>
+                    <p className="text-[13px] font-bold text-neutral-200">Market</p>
+                    <p className="text-[13px] text-neutral-500">Set per TruSaaS region — prices and reports follow it</p>
                   </div>
-                  <select 
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-neutral-900 border border-neutral-800 rounded min-h-[44px] px-3 text-[13px] text-[#E8EAE6]"
-                  >
-                    <option value="ZAR">South African Rand (R)</option>
-                    <option value="USD">US Dollar ($)</option>
-                    <option value="GBP">British Pound (£)</option>
-                  </select>
+                  {/* Read-only: currency follows the instance market (MARKET env),
+                      never a per-device choice — the old selector promised a switch
+                      that nothing consumed. */}
+                  <span className="bg-neutral-900 border border-neutral-800 rounded min-h-[44px] px-3 text-[13px] text-[#E8EAE6] flex items-center">
+                    {market.label} ({market.currency})
+                  </span>
                 </div>
               </div>
             </div>

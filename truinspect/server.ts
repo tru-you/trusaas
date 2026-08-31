@@ -8,6 +8,15 @@ import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { fetchValuation } from './src/lib/scraper';
+/* Market-aware engine (UK/US-ready) behind a kill-switch:
+ *   VALUATION_ENGINE=legacy  → the in-tree SA fork (production default)
+ *   VALUATION_ENGINE=package → shared packages/market-scraper engine
+ * MARKET (default 'za') picks the market config on the package engine.
+ * Dealer-level market lands with the market substrate; instance env for now. */
+import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from '../packages/market-scraper/index';
+
+const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
+const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
 import {
   initPhotoStore,
   mediaDir,
@@ -1309,9 +1318,11 @@ function computeSetupItems(d: any) {
 
 app.get('/api/dealership/settings', authenticate, (req: any, res) => {
   const slug = scopedDealerSlug(req);
-  if (!slug) return res.json({ settings: {}, skipPrompt: true });
+  // `market` rides every response (even demo/slugless) — it's instance-level,
+  // not dealer data, and the client display layer needs it unconditionally.
+  if (!slug) return res.json({ settings: {}, skipPrompt: true, market: INSTANCE_MARKET });
   try {
-    res.json({ settings: readDealerSettings()[slug] || {} });
+    res.json({ settings: readDealerSettings()[slug] || {}, market: INSTANCE_MARKET });
   } catch (e) {
     console.error('GET /api/dealership/settings - Error:', e);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -1535,16 +1546,20 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
   }
 
   try {
-    const data = await fetchValuation(
-      String(make),
-      String(model),
-      String(year),
-      {
-        vin: String(req.body?.vin || '').trim().toUpperCase() || undefined,
-        dealerSlug,
-        mileage: subjectKm,
-      },
-    );
+    const valuationOpts = {
+      vin: String(req.body?.vin || '').trim().toUpperCase() || undefined,
+      dealerSlug,
+      mileage: subjectKm,
+    };
+    const data = VALUATION_ENGINE === 'package'
+      ? await pkgFetchValuation(
+          String(make),
+          String(model),
+          String(year),
+          valuationOpts,
+          (pkgMarkets as Record<string, any>)[INSTANCE_MARKET] || pkgMarkets.za,
+        )
+      : await fetchValuation(String(make), String(model), String(year), valuationOpts);
 
     // Append to per-vehicle, per-dealer valuation history
     if (vehicleId && data.averageRetailPrice !== null) {

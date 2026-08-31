@@ -6,6 +6,7 @@ import {
   TRADE_IN_ITEMS, createDefaultItems, getStatusOptions, needsReconCost,
   computeOverallRating,
 } from '../types/inspection';
+import { useMoney } from '../contexts/MarketContext';
 
 interface TradeInWalkAroundProps {
   vehicle: Vehicle;
@@ -29,6 +30,7 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploadPhoto }: TradeInWalkAroundProps) {
+  const money = useMoney();
   const [items, setItems] = React.useState<InspectionItem[]>(() => {
     const base: InspectionItem[] = vehicle.tradeInData?.items?.length
       ? JSON.parse(JSON.stringify(vehicle.tradeInData.items))
@@ -152,7 +154,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           <div className="text-right shrink-0">
             <div className="text-[13px] font-medium text-[#E8EAE6]">{completedCount}/{items.length}</div>
             <div className="text-[13px] text-cyan-400 font-semibold">
-              R {totalRecon.toLocaleString('en-ZA')} recon
+              {money(totalRecon)} recon
             </div>
           </div>
         </div>

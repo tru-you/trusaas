@@ -45,6 +45,11 @@ export interface ValuationState {
   fallbackRequired: boolean;
   searchUrl?: string;
   history?: ValuationSnapshot[];
+  /** Market currency the estimate came back in (R/£/$) — carried from the
+   *  valuation response so saved appraisals render in the right money. */
+  currency?: string;
+  /** Odometer unit the source market speaks in (km default, mi for UK/US). */
+  distanceUnit?: 'km' | 'mi';
 }
 
 export interface TradeInVehicleDetails {

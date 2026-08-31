@@ -115,6 +115,14 @@ services:
         sync: false
       - key: BRIGHTDATA_UNLOCKER_ZONE
         sync: false
+      # Google SERP fallback tier (wide net when classifieds come back thin).
+      # The in-tree scraper supports it; key/zone set in dashboard.
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        value: brightdata
+      - key: SERP_ZONE
+        sync: false
 
   # ── 1b. TruInspect — AI damage detection / PDF inspection reports ─────────
   - type: web
@@ -199,6 +207,14 @@ services:
       - key: BRIGHTDATA_API_KEY
         sync: false
       - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
+      # Google SERP fallback tier (wide net when classifieds come back thin).
+      # The in-tree scraper supports it; key/zone set in dashboard.
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        value: brightdata
+      - key: SERP_ZONE
         sync: false
 
   # ── 2. TruFlow Mobile — standalone Premium companion app ────────────────────
@@ -356,6 +372,14 @@ services:
       - key: BRIGHTDATA_API_KEY
         sync: false
       - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
+      # Google SERP fallback tier (wide net when classifieds come back thin).
+      # The in-tree scraper supports it; key/zone set in dashboard.
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        value: brightdata
+      - key: SERP_ZONE
         sync: false
 
   # ── 4. TruChat API — hosted DeepSeek chat brain for static sites ───────────

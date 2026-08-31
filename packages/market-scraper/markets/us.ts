@@ -1,3 +1,4 @@
+import path from "path";
 import { MarketConfig } from "../engine";
 
 /** United States — Autotrader.com + Cars.com, USD, us. TrueCar/Carfax not
@@ -13,6 +14,10 @@ export const us: MarketConfig = {
   minPrice: 1_000,
   maxPrice: 3_000_000,
   acceptLanguage: "en-US,en;q=0.9",
+  distanceUnit: "mi",
+  /* Market-scoped dealer layer (see uk.ts) — SA dealers must never feed a
+   * $ pool. Empty until US dealer groups are onboarded. */
+  priceSourcesPath: path.join(process.cwd(), "data", "price-sources-us.json"),
   classifieds: [
     {
       name: "Autotrader.com",

@@ -188,6 +188,7 @@ export async function fetchValuation(
       fallbackRequired: false,
       sources: dealerSources,
       currency: cfg.currency,
+      distanceUnit: cfg.distanceUnit,
       mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && dealerListings.some((l) => typeof l.km === "number"),
       sampleMedianKm: kmOf(dealerListings),
     };
@@ -244,7 +245,7 @@ export async function fetchValuation(
     : undefined;
 
   if (allListings.length === 0) {
-    const data: ValuationResult = { averageRetailPrice: null, listingsFound: 0, fallbackRequired: true, currency: cfg.currency, searchUrl, carsUrl, sources: finalSources, mileageAdjusted: false, sampleMedianKm: null };
+    const data: ValuationResult = { averageRetailPrice: null, listingsFound: 0, fallbackRequired: true, currency: cfg.currency, distanceUnit: cfg.distanceUnit, searchUrl, carsUrl, sources: finalSources, mileageAdjusted: false, sampleMedianKm: null };
     cachePut(key, data);
     return data;
   }
@@ -257,6 +258,7 @@ export async function fetchValuation(
     searchUrl, carsUrl,
     sources: finalSources,
     currency: cfg.currency,
+    distanceUnit: cfg.distanceUnit,
     mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && allListings.some((l) => typeof l.km === "number"),
     sampleMedianKm: kmOf(allListings),
   };

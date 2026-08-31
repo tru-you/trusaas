@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { deriveReportId } from '../types/inspection';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { SignaturePad } from './signature-pad';
+import { useMarket, useMoney } from '../contexts/MarketContext';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -113,6 +114,8 @@ function computeCondition(vehicle: Vehicle) {
 
 export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
+  const money = useMoney();
+  const market = useMarket();
   const reportRef = useRef<HTMLDivElement>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   /* Inlining every photo takes a moment on a big inspection, and a download
@@ -212,7 +215,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
      not change. 'VIR' distinguishes this report from the Trade-In Appraisal
      for the same vehicle — both used to print the identical 'TI-' id. */
   const reportId = deriveReportId(vehicle, 'VIR');
-  const generatedAt = new Date().toLocaleString('en-ZA', {
+  const generatedAt = new Date().toLocaleString(market.locale, {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
@@ -562,7 +565,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="row"><span className="k">Trim</span><span className="v">{vehicle.trim || '—'}</span></div>
               <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
               <div className="row"><span className="k">Type</span><span className="v">{vehicle.vehicleType || '—'}</span></div>
-              <div className="row"><span className="k">List price</span><span className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</span></div>
+              <div className="row"><span className="k">List price</span><span className="v">{money(Number(vehicle.price || 0))}</span></div>
               <div className="row"><span className="k">Damage tags</span><span className="v">{condition.findings.length}</span></div>
             </div>
 
