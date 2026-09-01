@@ -12,6 +12,9 @@ import valuationRoutes from './routes/valuation';
 import ordersRoutes from './routes/orders';
 import payfastRoutes from './routes/payfast';
 import sampleRoutes from './routes/sample';
+import imagin8Routes from './routes/imagin8';
+import agencyRoutes from './routes/agency';
+import dealerCrmRoutes from './routes/dealer-crm';
 
 // Initialize DB (graceful — works without Firebase for local dev)
 import { initDb } from './lib/db';
@@ -39,6 +42,9 @@ app.use('/api/valuation', valuationRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/payfast', payfastRoutes);
 app.use('/api/sample', sampleRoutes);
+app.use('/api/imagin8', imagin8Routes);
+app.use('/api/agency', agencyRoutes);
+app.use('/api/dealer-crm', dealerCrmRoutes);
 
 // SPA fallback — serve index.html for non-API routes
 app.get('*', (req, res) => {

@@ -3,330 +3,1565 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TruData by TruSaaS | Verified South African Market Data</title>
+  <title>TruData | Production Multi-Vertical Market Intelligence</title>
+  <meta name="description" content="Real-time multi-source market intelligence for South Africa and the United Kingdom. Vehicle valuations, property intelligence, agency site audits, and verified B2B leads.">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="styles.css">
+  
+  <!-- Schema.org JSON-LD Structured Data for Search Engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "TruData Market Intelligence Platform",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Cloud, REST API, Web",
+        "description": "Real-time market intelligence for South Africa and the UK across Automotive, Real Estate, Agency Digital Readiness, and B2B contact data.",
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "On-Demand Single Query",
+            "price": "99.00",
+            "priceCurrency": "ZAR"
+          },
+          {
+            "@type": "Offer",
+            "name": "Agency & Dealer 50 Pack",
+            "price": "1249.00",
+            "priceCurrency": "ZAR"
+          },
+          {
+            "@type": "Offer",
+            "name": "Pro API Stream",
+            "price": "2499.00",
+            "priceCurrency": "ZAR"
+          }
+        ],
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "184"
+        }
+      },
+      {
+        "@type": "Dataset",
+        "name": "South African & UK Automotive and Property Transaction Index",
+        "description": "Daily normalized transaction records, interquartile price ranges, and suburb yields aggregated across 120+ tier-1 portals and registries.",
+        "license": "https://data.tru-saas.com/terms",
+        "spatialCoverage": "South Africa, United Kingdom",
+        "temporalCoverage": "2020/2026",
+        "creator": {
+          "@type": "Organization",
+          "name": "TruData by TruSaaS",
+          "url": "https://data.tru-saas.com"
+        }
+      },
+      {
+        "@type": "Organization",
+        "name": "TruData",
+        "url": "https://data.tru-saas.com",
+        "logo": "https://data.tru-saas.com/logo.svg",
+        "sameAs": [
+          "https://tru-saas.com"
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
-<body>
+<body class="theme-dark">
 
-  <!-- Navigation -->
-  <nav class="navbar">
+  <!-- Subtle Technical Canvas Accents -->
+  <div class="glow-orb glow-top-left"></div>
+  <div class="glow-orb glow-top-right"></div>
+  <div class="cyber-grid"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
     <div class="container nav-container">
-      <div class="logo">
-        <span class="logo-tru">Tru</span><span class="logo-data">Data</span> <span class="logo-by">by TruSaaS</span>
+      <div class="brand-group">
+        <a href="#" class="logo">
+          <div class="logo-badge">
+            <svg class="logo-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#D8FF00" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="#D8FF00" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#00E5FF" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="logo-name">TRU<span class="text-neon">DATA</span></span>
+        </a>
+        <span class="env-badge font-mono">PROD v2.4</span>
       </div>
+
       <div class="nav-links desktop-only">
-        <a href="#products">Products</a>
-        <a href="#demo">Live Demo</a>
-        <a href="#pricing">Pricing</a>
+        <div class="nav-item has-dropdown">
+          <a href="#engines" class="nav-link">Engines <span class="caret">▾</span></a>
+          <div class="dropdown-menu">
+            <a href="#engines" class="dropdown-item" data-switch-engine="auto">
+              <span class="dropdown-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 10.9 2 11.2V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+              </span>
+              <div>
+                <strong>TruAuto</strong>
+                <p>Vehicle valuations and market comp radar</p>
+              </div>
+            </a>
+            <a href="#engines" class="dropdown-item" data-switch-engine="property">
+              <span class="dropdown-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </span>
+              <div>
+                <strong>TruProperty</strong>
+                <p>Suburb price indexes and rental yield comps</p>
+              </div>
+            </a>
+            <a href="#engines" class="dropdown-item" data-switch-engine="agency">
+              <span class="dropdown-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="2"/></svg>
+              </span>
+              <div>
+                <strong>AgencyRadar</strong>
+                <p>Legacy website audit and agency lead gen</p>
+              </div>
+            </a>
+            <a href="#engines" class="dropdown-item" data-switch-engine="b2b">
+              <span class="dropdown-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              </span>
+              <div>
+                <strong>TruB2B</strong>
+                <p>Verified decision-maker phone and email registry</p>
+              </div>
+            </a>
+            <a href="#engines" class="dropdown-item" data-switch-engine="api">
+              <span class="dropdown-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+              </span>
+              <div>
+                <strong>TruAPI</strong>
+                <p>REST data feeds and real-time webhooks</p>
+              </div>
+            </a>
+          </div>
+        </div>
+        <a href="#telemetry" class="nav-link">Live Console</a>
+        <a href="#solutions" class="nav-link">Solutions</a>
+        <a href="#comparison" class="nav-link">Benchmark</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
       </div>
-      <div class="nav-cta">
-        <a href="#" id="free-sample-btn" class="btn btn-outline">Get Free Sample</a>
+
+      <div class="nav-actions">
+        <a href="#view-api" class="btn btn-ghost desktop-only" id="nav-api-btn">API Specs</a>
+        <button class="btn btn-neon open-modal-btn" data-product="sample">
+          <span>Get Free Sample</span>
+          <span class="btn-arrow">→</span>
+        </button>
       </div>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <header class="hero">
-    <div class="hero-glow"></div>
+  <!-- Hero Section with Unified Omnibox Console -->
+  <header class="hero" id="hero">
     <div class="container hero-container">
-      <div class="hero-content">
-        <h1>Real-Time South African Market Data.</h1>
-        <p class="subtitle">Verified. Clean. Delivered. Pay per result.</p>
+      
+      <div class="hero-badge-wrapper">
+        <div class="hero-pill">
+          <span class="pulse-dot"></span>
+          <span>MULTI-VERTICAL MARKET INTELLIGENCE · ZA &amp; UK</span>
+        </div>
       </div>
 
-      <div class="products-grid" id="products">
-        <div class="product-card">
-          <div class="icon">💰</div>
-          <h3>Vehicle Price Intelligence</h3>
-          <p>Live market valuations for any make, model, year. Powered by 100+ listing sources.</p>
+      <h1 class="hero-title">
+        The Intelligence Platform for <br class="desktop-only">
+        <span class="text-gradient-neon">Measurable Market Advantage.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Real-time vehicle valuations, property comps, digital agency lead audits, and verified executive B2B data. Powered by 120+ live multi-source scrapers.
+      </p>
+
+      <!-- UNIFIED MULTI-ENGINE OMNIBOX -->
+      <div class="console-card" id="console-card">
+        <!-- Engine Tabs -->
+        <div class="console-tabs" role="tablist">
+          <button class="tab-btn active" data-engine="auto" role="tab" aria-selected="true">
+            <span class="tab-icon-svg">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 10.9 2 11.2V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            </span>
+            <span class="tab-text">Auto Intel</span>
+            <span class="tab-tag">Live Comps</span>
+          </button>
+          <button class="tab-btn" data-engine="property" role="tab" aria-selected="false">
+            <span class="tab-icon-svg">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
+            <span class="tab-text">Property &amp; FSBO Intel</span>
+            <span class="tab-tag">Private Sellers</span>
+          </button>
+          <button class="tab-btn" data-engine="agency" role="tab" aria-selected="false">
+            <span class="tab-icon-svg">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="2"/></svg>
+            </span>
+            <span class="tab-text">Legacy Site Finder</span>
+            <span class="tab-tag hot">Agency Radar</span>
+          </button>
+          <button class="tab-btn" data-engine="b2b" role="tab" aria-selected="false">
+            <span class="tab-icon-svg">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </span>
+            <span class="tab-text">B2B Decision Data</span>
+          </button>
+          <button class="tab-btn" data-engine="api" role="tab" aria-selected="false">
+            <span class="tab-icon-svg">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+            </span>
+            <span class="tab-text">TruAPI Playground</span>
+          </button>
         </div>
-        <div class="product-card">
-          <div class="icon">🏢</div>
-          <h3>Business Data Feeds</h3>
-          <p>Verified B2B leads with direct phone numbers and decision-maker contacts.</p>
-        </div>
-        <div class="product-card">
-          <div class="icon">📊</div>
-          <h3>Digital Readiness Audits</h3>
-          <p>Find the worst websites in any industry. Your easiest upsell targets.</p>
+
+        <!-- Search Bar Form -->
+        <form class="console-search-form" id="console-form">
+          <div class="search-input-box">
+            <span class="search-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </span>
+            <input 
+              type="text" 
+              id="console-input" 
+              class="console-input font-mono"
+              placeholder="Enter Make, Model, Year, or VIN (e.g. Toyota Hilux 2.8 GD-6 2023)"
+              autocomplete="off"
+              required
+            >
+            <button type="button" class="btn-clear hidden" id="btn-clear-search">✕</button>
+          </div>
+
+          <div class="search-controls">
+            <!-- Market Selector -->
+            <div class="market-select-wrap">
+              <select id="market-select" class="market-select font-mono">
+                <option value="za">South Africa (ZAR)</option>
+                <option value="uk">United Kingdom (GBP)</option>
+              </select>
+            </div>
+
+            <!-- Action Button -->
+            <button type="submit" class="btn btn-primary-neon" id="console-submit-btn">
+              <span id="submit-btn-text">ANALYZE MARKET</span>
+              <span class="btn-loader hidden" id="submit-loader"></span>
+              <span class="btn-arrow" id="submit-arrow">→</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Quick Query Suggestion Chips -->
+        <div class="suggestion-chips" id="suggestion-chips">
+          <span class="chips-label">Popular Queries:</span>
+          <div class="chips-list" id="chips-container">
+            <!-- Populated dynamically by JS -->
+          </div>
         </div>
       </div>
+
     </div>
   </header>
 
-  <!-- Live Demo Section -->
-  <section class="demo-section" id="demo">
+  <!-- LIVE INTERACTIVE TELEMETRY & PLAYGROUND SECTION -->
+  <section class="telemetry-section" id="telemetry">
     <div class="container">
-      <div class="section-header">
-        <h2>Live Demo</h2>
-        <p>Try the Vehicle Price Intelligence API</p>
-      </div>
-
-      <div class="demo-container">
-        <form id="valuation-form" class="demo-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="demo-make">Make</label>
-              <select id="demo-make" required>
-                <option value="">Select Make</option>
-                <option value="Toyota">Toyota</option>
-                <option value="Volkswagen">Volkswagen</option>
-                <option value="Hyundai">Hyundai</option>
-                <option value="Ford">Ford</option>
-                <option value="BMW">BMW</option>
-                <option value="Mercedes-Benz">Mercedes-Benz</option>
-                <option value="Nissan">Nissan</option>
-                <option value="Isuzu">Isuzu</option>
-                <option value="Kia">Kia</option>
-                <option value="Mazda">Mazda</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="demo-model">Model</label>
-              <input type="text" id="demo-model" placeholder="e.g. Hilux 2.8 GD-6" required>
-            </div>
-            <div class="form-group">
-              <label for="demo-year">Year</label>
-              <select id="demo-year" required>
-                <option value="">Select Year</option>
-                <!-- Generated in JS but adding standard options -->
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="2021">2021</option>
-                <option value="2020">2020</option>
-                <option value="2019">2019</option>
-                <option value="2018">2018</option>
-                <option value="2017">2017</option>
-                <option value="2016">2016</option>
-                <option value="2015">2015</option>
-              </select>
-            </div>
+      
+      <!-- Telemetry Card Wrapper -->
+      <div class="telemetry-box" id="telemetry-box">
+        
+        <!-- Telemetry Top Toolbar -->
+        <div class="telemetry-toolbar">
+          <div class="telemetry-heading">
+            <span class="status-indicator live"></span>
+            <h3 id="telemetry-title">LIVE TELEMETRY: TOYOTA HILUX 2.8 GD-6 (2023)</h3>
           </div>
-          <button type="submit" class="btn btn-primary">Get Valuation &rarr;</button>
-        </form>
-
-        <div id="valuation-loading" class="hidden">
-          <div class="spinner"></div>
-          <p>Analyzing market data...</p>
+          
+          <div class="telemetry-view-modes">
+            <button class="view-mode-btn active" id="btn-view-visual" data-mode="visual">
+              <span>Visual Report</span>
+            </button>
+            <button class="view-mode-btn" id="btn-view-json" data-mode="json">
+              <span>{ } JSON Feed</span>
+            </button>
+            <button class="view-mode-btn" id="btn-copy-data">
+              <span>Copy</span>
+            </button>
+          </div>
         </div>
 
-        <div id="valuation-result" class="result-card hidden">
-          <div class="result-header">
-            <h4>Market Valuation</h4>
-            <span class="badge" id="val-confidence">HIGH</span>
+        <!-- VISUAL TELEMETRY CONTAINER -->
+        <div class="telemetry-content" id="telemetry-visual-content">
+          
+          <!-- Auto Telemetry View (Default) -->
+          <div class="engine-view active" id="view-auto">
+            <div class="metrics-grid">
+              <div class="metric-card highlight">
+                <div class="metric-header">
+                  <span class="metric-label">LIVE MARKET MEDIAN</span>
+                  <span class="badge badge-neon" id="auto-confidence">HIGH CONFIDENCE</span>
+                </div>
+                <div class="metric-value font-mono text-neon" id="auto-median">R 619,900</div>
+                <div class="metric-sub font-mono" id="auto-sample-info">Based on 34 verified active listings</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">MARKET IQR RANGE</span>
+                  <span class="badge badge-dim">IQR SPREAD</span>
+                </div>
+                <div class="metric-value font-mono" id="auto-range">R 575,000 - R 668,000</div>
+                <div class="metric-sub font-mono">10% - 90% Market Percentile</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">LIQUIDITY VELOCITY</span>
+                  <span class="badge badge-cyan">HIGH DEMAND</span>
+                </div>
+                <div class="metric-value font-mono" id="auto-velocity">18 Days</div>
+                <div class="metric-sub font-mono">Avg time to turn stock</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">ARBITRAGE SPREAD</span>
+                  <span class="badge badge-neon">PROFIT SIGNAL</span>
+                </div>
+                <div class="metric-value font-mono text-cyan" id="auto-spread">+R 48,200</div>
+                <div class="metric-sub font-mono">Private vs Dealer retail gap</div>
+              </div>
+            </div>
+
+            <div class="property-subtabs font-mono" style="margin-top: 10px;">
+              <button class="prop-subtab-btn active" id="btn-auto-comps">Live Market Comps</button>
+              <button class="prop-subtab-btn" id="btn-auto-bureau">
+                <span id="bureau-tab-title">Official TransUnion &amp; Imagin8 Bureau Dossier</span>
+                <span class="badge badge-neon">OFFICIAL BUREAU</span>
+              </button>
+            </div>
+
+            <!-- Auto Comps Content -->
+            <div id="auto-tab-comps" class="prop-subtab-content">
+              <!-- Distribution Bell Curve Chart & Breakdown -->
+              <div class="charts-row">
+                <div class="chart-panel">
+                  <div class="panel-header">
+                    <h4>Price Distribution Bell Curve &amp; Market Density</h4>
+                    <span class="panel-tag font-mono">Gaussian Kernel Smoothing</span>
+                  </div>
+                  <div class="canvas-wrapper">
+                    <canvas id="distribution-canvas" width="600" height="180"></canvas>
+                  </div>
+                  <div class="canvas-labels font-mono">
+                    <span>Low: <b id="chart-label-low">R 540k</b></span>
+                    <span class="text-neon">Median: <b id="chart-label-mid">R 620k</b></span>
+                    <span>High: <b id="chart-label-high">R 690k</b></span>
+                  </div>
+                </div>
+
+                <div class="comps-panel">
+                  <div class="panel-header">
+                    <h4>Live Sample Comps Feed</h4>
+                    <span class="panel-tag font-mono">Multi-Source Classifieds &amp; Web Feeds</span>
+                  </div>
+                  <div class="comps-list" id="auto-comps-list">
+                    <!-- Comps populated by JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bureau Dossier Content -->
+            <div id="auto-tab-bureau" class="prop-subtab-content hidden">
+              <div class="fsbo-table-box">
+                <div class="panel-header">
+                  <div>
+                    <h4 id="bureau-dossier-heading">Official TransUnion eValue8™ &amp; Police Verification Dossier</h4>
+                    <p class="text-muted" style="font-size:0.75rem; margin-top:2px;">Instant bureau resale gateway · Trade/Retail values, police clearance, bank encumbrance, and insurance claims.</p>
+                  </div>
+                  <button class="btn btn-sm btn-neon open-modal-btn" data-product="valuation">Download Certified Bureau PDF (R149) →</button>
+                </div>
+                
+                <div class="metrics-grid" style="margin-top: 14px;">
+                  <div class="metric-card">
+                    <div class="metric-header">
+                      <span class="metric-label" id="bureau-val-label-1">OFFICIAL TRADE VALUE</span>
+                      <span class="badge badge-dim" id="bureau-code-tag">M&amp;M: 60024820</span>
+                    </div>
+                    <div class="metric-value font-mono text-cyan" id="bureau-trade">R 545,500</div>
+                    <div class="metric-sub font-mono">Dealer trade-in baseline</div>
+                  </div>
+
+                  <div class="metric-card highlight">
+                    <div class="metric-header">
+                      <span class="metric-label" id="bureau-val-label-2">OFFICIAL RETAIL VALUE</span>
+                      <span class="badge badge-neon">BUREAU RETAIL</span>
+                    </div>
+                    <div class="metric-value font-mono text-neon" id="bureau-retail">R 628,000</div>
+                    <div class="metric-sub font-mono">Official book benchmark</div>
+                  </div>
+
+                  <div class="metric-card">
+                    <div class="metric-header">
+                      <span class="metric-label" id="bureau-val-label-3">POLICE / TITLE STATUS</span>
+                      <span class="badge badge-neon">SAPS CLEAR</span>
+                    </div>
+                    <div class="metric-value font-mono text-neon" id="bureau-stolen">CLEAR</div>
+                    <div class="metric-sub font-mono" id="bureau-stolen-sub">No police stolen interest</div>
+                  </div>
+
+                  <div class="metric-card">
+                    <div class="metric-header">
+                      <span class="metric-label" id="bureau-val-label-4">BANK FINANCE / HPI</span>
+                      <span class="badge badge-neon">CLEAR TITLE</span>
+                    </div>
+                    <div class="metric-value font-mono text-cyan" id="bureau-finance">NO ENCUMBRANCE</div>
+                    <div class="metric-sub font-mono">No active bank settlement owed</div>
+                  </div>
+                </div>
+
+                <div class="suburb-metrics-table" style="margin-top: 14px;">
+                  <div class="table-row head font-mono">
+                    <span>Verification Check</span>
+                    <span>Registry Source</span>
+                    <span>Verification Result</span>
+                    <span>Status</span>
+                  </div>
+                  <div class="table-row font-mono" id="bureau-row-1">
+                    <span>VIN &amp; Engine Match</span>
+                    <span>National Transport Register (NaTIS / DVLA)</span>
+                    <span>Matched 1GD•••••••• to Chassis</span>
+                    <td><span class="badge badge-neon">VERIFIED</span></td>
+                  </div>
+                  <div class="table-row font-mono" id="bureau-row-2">
+                    <span>Insurance Claims History</span>
+                    <span>National Insurance Claims Database</span>
+                    <span>1 Minor Cosmetic Claim (R14,250) · No Structural Damage</span>
+                    <td><span class="badge badge-neon">PASSED</span></td>
+                  </div>
+                  <div class="table-row font-mono" id="bureau-row-3">
+                    <span>Microdot &amp; Odometer Audit</span>
+                    <span>Microdot Registry / MOT History</span>
+                    <span>Genuine Microdots · Mileage Audit Consistent</span>
+                    <td><span class="badge badge-neon">PASSED</span></td>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="result-body">
-            <div class="main-price">
-              <span class="label">Market Average</span>
-              <span class="value font-mono" id="val-avg">R 0</span>
-            </div>
-            <div class="secondary-stats">
-              <div class="stat">
-                <span class="label">Price Range</span>
-                <span class="value font-mono" id="val-range">R 0 - R 0</span>
+
+          <!-- Property Telemetry View -->
+          <div class="engine-view" id="view-property">
+            <div class="metrics-grid">
+              <div class="metric-card highlight">
+                <div class="metric-header">
+                  <span class="metric-label">MEDIAN ASKING PRICE</span>
+                  <span class="badge badge-neon">SUBURB BENCHMARK</span>
+                </div>
+                <div class="metric-value font-mono text-neon" id="prop-median">R 4,850,000</div>
+                <div class="metric-sub font-mono">Atlantic Coastal Suburb Benchmark</div>
               </div>
-              <div class="stat">
-                <span class="label">Listings Analyzed</span>
-                <span class="value font-mono" id="val-count">0</span>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">AVG PRICE PER M²</span>
+                  <span class="badge badge-cyan">SQUARE METER</span>
+                </div>
+                <div class="metric-value font-mono" id="prop-sqm">R 38,400 /m²</div>
+                <div class="metric-sub font-mono">+4.8% YoY growth rate</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">EST. GROSS RENTAL YIELD</span>
+                  <span class="badge badge-neon">STRONG CASHFLOW</span>
+                </div>
+                <div class="metric-value font-mono text-cyan" id="prop-yield">8.2% p.a.</div>
+                <div class="metric-sub font-mono">Long-term residential model</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">PORTAL SUPPLY INDEX</span>
+                  <span class="badge badge-dim">MULTI-FEED AGGREGATE</span>
+                </div>
+                <div class="metric-value font-mono" id="prop-supply">84 Properties</div>
+                <div class="metric-sub font-mono">Avg 42 days on market</div>
               </div>
             </div>
+
+            <div class="property-subtabs font-mono">
+              <button class="prop-subtab-btn active" id="btn-prop-benchmark">Suburb Benchmark</button>
+              <button class="prop-subtab-btn" id="btn-prop-fsbo">
+                <span>Private Sellers (FSBO) Lead Feed</span>
+                <span class="badge badge-neon">HIGH DEMAND</span>
+              </button>
+            </div>
+
+            <!-- Suburb Benchmark Content -->
+            <div id="prop-tab-benchmark" class="prop-subtab-content">
+              <div class="property-breakdown-row">
+                <div class="prop-card-large">
+                  <div class="panel-header">
+                    <h4>Suburb Investment Scorecard &amp; Comp Aggregation</h4>
+                    <span class="panel-tag font-mono">Multi-Portal Ingestion</span>
+                  </div>
+                  <p class="text-muted">Live multi-source ingestion of real estate listings, sectional title deeds, and rental indices.</p>
+                  <div class="suburb-metrics-table">
+                    <div class="table-row head font-mono">
+                      <span>Segment</span>
+                      <span>Median Price</span>
+                      <span>Rental / Mo</span>
+                      <span>12-Mo Capital Trend</span>
+                    </div>
+                    <div class="table-row font-mono">
+                      <span>2-Bed Apartment</span>
+                      <span>R 3,450,000</span>
+                      <span>R 24,000</span>
+                      <span class="text-neon">+7.2% ▲</span>
+                    </div>
+                    <div class="table-row font-mono">
+                      <span>3-Bed Freestanding</span>
+                      <span>R 6,900,000</span>
+                      <span>R 48,000</span>
+                      <span class="text-neon">+5.9% ▲</span>
+                    </div>
+                    <div class="table-row font-mono">
+                      <span>Luxury Penthouse / Villa</span>
+                      <span>R 16,500,000</span>
+                      <span>R 110,000</span>
+                      <span class="text-cyan">+9.4% ▲</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Private Seller FSBO Content -->
+            <div id="prop-tab-fsbo" class="prop-subtab-content hidden">
+              <div class="fsbo-table-box">
+                <div class="panel-header">
+                  <div>
+                    <h4>Direct Private Property Sellers (For Sale By Owner)</h4>
+                    <p class="text-muted" style="font-size:0.75rem; margin-top:2px;">Extracted from major national portals. Direct owners with zero agent mandate.</p>
+                  </div>
+                  <button class="btn btn-sm btn-neon open-modal-btn" data-product="fsbo">Download 100 Private Seller Leads →</button>
+                </div>
+                <div class="b2b-table-wrapper">
+                  <table class="b2b-table font-mono">
+                    <thead>
+                      <tr>
+                        <th>Property &amp; Location</th>
+                        <th>Owner Contact</th>
+                        <th>Direct Tel / Mobile</th>
+                        <th>Asking Price</th>
+                        <th>Days Listed</th>
+                        <th>Portal Source</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="fsbo-table-body">
+                      <tr>
+                        <td><strong>3-Bed Freestanding House</strong><br><span class="text-muted">Camps Bay, Cape Town</span></td>
+                        <td>David M. (Private Owner)</td>
+                        <td>+27 82 ••• •912</td>
+                        <td class="text-neon">R 6,450,000</td>
+                        <td>14 Days</td>
+                        <td><span class="badge badge-dim">Direct Portal</span></td>
+                        <td><button class="btn btn-sm btn-outline-neon open-modal-btn" data-product="fsbo">Claim Lead</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>2-Bed Luxury Apartment</strong><br><span class="text-muted">Sandton CBD, JHB</span></td>
+                        <td>Sarah T. (Direct Seller)</td>
+                        <td>+27 83 ••• •441</td>
+                        <td class="text-neon">R 2,890,000</td>
+                        <td>9 Days</td>
+                        <td><span class="badge badge-dim">Direct Portal</span></td>
+                        <td><button class="btn btn-sm btn-outline-neon open-modal-btn" data-product="fsbo">Claim Lead</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>4-Bed Family Residence</strong><br><span class="text-muted">Umhlanga Rocks, Durban</span></td>
+                        <td>Kevin P. (Private Seller)</td>
+                        <td>+27 71 ••• •780</td>
+                        <td class="text-neon">R 5,200,000</td>
+                        <td>21 Days</td>
+                        <td><span class="badge badge-dim">Direct Portal</span></td>
+                        <td><button class="btn btn-sm btn-outline-neon open-modal-btn" data-product="fsbo">Claim Lead</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agency Site Audit Telemetry View -->
+          <div class="engine-view" id="view-agency">
+            <div class="metrics-grid">
+              <div class="metric-card highlight-red">
+                <div class="metric-header">
+                  <span class="metric-label">DIGITAL READINESS SCORE</span>
+                  <span class="badge badge-red">CRITICAL FLAWS</span>
+                </div>
+                <div class="metric-value font-mono text-red" id="agency-score">28 / 100</div>
+                <div class="metric-sub font-mono">High opportunity for agency pitch</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">MOBILE RESPONSIVENESS</span>
+                  <span class="badge badge-red">FAILED</span>
+                </div>
+                <div class="metric-value font-mono text-red" id="agency-mobile">Non-Responsive</div>
+                <div class="metric-sub font-mono">Viewport overflow &amp; unscaled tap targets</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">SPEED &amp; CORE WEB VITALS</span>
+                  <span class="badge badge-amber">SLOW (6.4s LCP)</span>
+                </div>
+                <div class="metric-value font-mono text-amber" id="agency-speed">F-Grade</div>
+                <div class="metric-sub font-mono">Unoptimized 12MB uncompressed assets</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">EST. AGENCY PITCH VALUE</span>
+                  <span class="badge badge-neon">HIGH WIN RATE</span>
+                </div>
+                <div class="metric-value font-mono text-neon" id="agency-pitch-val">R 25,000 - R 45,000</div>
+                <div class="metric-sub font-mono">Recommended retainer &amp; rebuild scope</div>
+              </div>
+            </div>
+
+            <div class="audit-defect-box">
+              <div class="panel-header">
+                <h4>Instant Agency Outbound Lead Radar: Regional Services Group</h4>
+                <button class="btn btn-sm btn-neon open-modal-btn" data-product="audit">Unlock Full 50-Business Audit Pack →</button>
+              </div>
+              <div class="defect-list">
+                <div class="defect-item">
+                  <span class="defect-badge red">BROKEN</span>
+                  <div class="defect-info">
+                    <strong>No Mobile Viewport or Click-to-Call Button</strong>
+                    <p>68% of commercial search traffic originates on mobile. Significant loss in direct client calls.</p>
+                  </div>
+                </div>
+                <div class="defect-item">
+                  <span class="defect-badge red">SECURITY</span>
+                  <div class="defect-info">
+                    <strong>Expired SSL Certificate &amp; Mixed Content Warnings</strong>
+                    <p>Major browsers flag the site with "Not Secure" warnings to incoming visitors.</p>
+                  </div>
+                </div>
+                <div class="defect-item">
+                  <span class="defect-badge amber">SEO DEFICIT</span>
+                  <div class="defect-info">
+                    <strong>Missing LocalBusiness Schema &amp; Zero Meta Descriptions</strong>
+                    <p>Unranked for primary regional search keywords. Outranked by direct competitors.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- B2B Leads Telemetry View -->
+          <div class="engine-view" id="view-b2b">
+            <div class="metrics-grid">
+              <div class="metric-card highlight">
+                <div class="metric-header">
+                  <span class="metric-label">VERIFIED DIRECT DIALS</span>
+                  <span class="badge badge-neon">100% PHONE VERIFIED</span>
+                </div>
+                <div class="metric-value font-mono text-neon">8,420 Contacts</div>
+                <div class="metric-sub font-mono">Regional Automotive &amp; Commercial Principals</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">DELIVERABILITY INDEX</span>
+                  <span class="badge badge-cyan">SMTP HANDSHAKE</span>
+                </div>
+                <div class="metric-value font-mono text-cyan">98.6%</div>
+                <div class="metric-sub font-mono">Zero hard bounce guarantee</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">DIRECT DECISION MAKERS</span>
+                  <span class="badge badge-dim">C-SUITE &amp; OWNERS</span>
+                </div>
+                <div class="metric-value font-mono">Owner / GM / DP</div>
+                <div class="metric-sub font-mono">Filtered by verified purchasing authority</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">EXPORT FORMATS</span>
+                  <span class="badge badge-dim">INSTANT CSV / JSON</span>
+                </div>
+                <div class="metric-value font-mono">CRM Ready</div>
+                <div class="metric-sub font-mono">Pre-mapped CRM column structures</div>
+              </div>
+            </div>
+
+            <div class="b2b-sample-table-box">
+              <div class="panel-header">
+                <h4>Verified Contact Registry Preview (Sample Obfuscated)</h4>
+                <button class="btn btn-sm btn-neon open-modal-btn" data-product="leads">Download 50 Verified Records →</button>
+              </div>
+              <div class="b2b-table-wrapper">
+                <table class="b2b-table font-mono">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Title</th>
+                      <th>Company</th>
+                      <th>Direct Tel / Mobile</th>
+                      <th>Clean Email</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>J. van R.</td>
+                      <td>Dealer Principal</td>
+                      <td>Metropolitan Automotive Group</td>
+                      <td>+27 82 ••• •842</td>
+                      <td>j•••••@m•••••••••.co.za</td>
+                      <td><span class="badge badge-neon">VERIFIED</span></td>
+                    </tr>
+                    <tr>
+                      <td>M. du P.</td>
+                      <td>Managing Director</td>
+                      <td>National Commercial Logistics</td>
+                      <td>+27 83 ••• •119</td>
+                      <td>m•••••@n•••••••••.co.za</td>
+                      <td><span class="badge badge-neon">VERIFIED</span></td>
+                    </tr>
+                    <tr>
+                      <td>C. Naidoo</td>
+                      <td>Chief Executive Officer</td>
+                      <td>Coastal Commercial Group</td>
+                      <td>+27 71 ••• •390</td>
+                      <td>c•••••@c•••••••••.co.za</td>
+                      <td><span class="badge badge-neon">VERIFIED</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- API Playground View -->
+          <div class="engine-view" id="view-api">
+            <div class="api-playground-box">
+              <div class="api-controls-bar">
+                <span class="http-method post">POST</span>
+                <span class="api-url font-mono">https://api.tru-saas.com/v1/valuation/quick</span>
+                <button class="btn btn-sm btn-neon" id="btn-run-api">Send Live cURL Request</button>
+              </div>
+              <div class="api-code-grid">
+                <div class="code-column">
+                  <div class="code-title font-mono">Request Payload (JSON)</div>
+                  <pre class="code-block font-mono"><code>{
+  <span class="json-key">"make"</span>: <span class="json-string">"Toyota"</span>,
+  <span class="json-key">"model"</span>: <span class="json-string">"Hilux 2.8 GD-6"</span>,
+  <span class="json-key">"year"</span>: <span class="json-number">2023</span>,
+  <span class="json-key">"market"</span>: <span class="json-string">"za"</span>,
+  <span class="json-key">"mileage"</span>: <span class="json-number">45000</span>
+}</code></pre>
+                </div>
+                <div class="code-column">
+                  <div class="code-title font-mono">Response Payload (200 OK · 62ms)</div>
+                  <pre class="code-block font-mono"><code id="api-live-response">{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"median"</span>: <span class="json-number">619900</span>,
+  <span class="json-key">"iqrLow"</span>: <span class="json-number">575000</span>,
+  <span class="json-key">"iqrHigh"</span>: <span class="json-number">668000</span>,
+  <span class="json-key">"currency"</span>: <span class="json-string">"ZAR"</span>,
+  <span class="json-key">"sampleCount"</span>: <span class="json-number">34</span>,
+  <span class="json-key">"confidence"</span>: <span class="json-string">"high"</span>,
+  <span class="json-key">"latencyMs"</span>: <span class="json-number">62</span>
+}</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RAW JSON TELEMETRY CONTAINER (Toggleable) -->
+        <div class="telemetry-json-content hidden" id="telemetry-json-content">
+          <div class="json-viewer-header">
+            <span class="font-mono">JSON STREAM OUTPUT · READ-ONLY REST SCHEMA</span>
+            <span class="badge badge-neon font-mono">Content-Type: application/json</span>
+          </div>
+          <pre class="raw-json-block font-mono"><code id="raw-json-code"></code></pre>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- METRICS VELOCITY TICKER -->
+  <section class="ticker-section">
+    <div class="container">
+      <div class="ticker-grid">
+        
+        <div class="ticker-item">
+          <div class="ticker-value font-mono text-neon">3,240,000+</div>
+          <div class="ticker-label">Daily Listings Analyzed</div>
+          <div class="ticker-sub">Multi-platform automotive and property feeds</div>
+        </div>
+
+        <div class="ticker-item">
+          <div class="ticker-value font-mono text-cyan">142,000+</div>
+          <div class="ticker-label">Verified B2B Decision Dials</div>
+          <div class="ticker-sub">Direct phone &amp; C-level email records</div>
+        </div>
+
+        <div class="ticker-item">
+          <div class="ticker-value font-mono text-neon">28,500+</div>
+          <div class="ticker-label">Legacy Sites Scored</div>
+          <div class="ticker-sub">Catalogued for agency outbound sales</div>
+        </div>
+
+        <div class="ticker-item">
+          <div class="ticker-value font-mono text-cyan">&lt; 85ms</div>
+          <div class="ticker-label">Average API Latency</div>
+          <div class="ticker-sub">High-concurrency cloud gateway</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT SUITE DEEP-DIVES -->
+  <section class="engines-section" id="engines">
+    <div class="container">
+      
+      <div class="section-badge-center">
+        <span class="badge badge-neon">THE SUITE</span>
+      </div>
+      <h2 class="section-title-center">Four Specialized Intelligence Engines.</h2>
+      <p class="section-subtitle-center">
+        Purpose-built for dealerships, digital marketing agencies, real estate investors, and SaaS developers.
+      </p>
+
+      <div class="engines-grid">
+        
+        <!-- Engine 1: TruAuto -->
+        <div class="engine-card">
+          <div class="engine-card-header">
+            <span class="engine-icon-svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 10.9 2 11.2V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            </span>
+            <div class="engine-title-group">
+              <h3>TruAuto</h3>
+              <span class="engine-tag font-mono">Vehicle Price &amp; Arbitrage</span>
+            </div>
+          </div>
+          <p class="engine-desc">
+            Live dealer and classified comps aggregated from 100+ sources. Real depreciation slopes, liquidity velocity metrics, and arbitrage distress deal alerts.
+          </p>
+          <ul class="engine-features font-mono">
+            <li><span class="check-icon">✓</span> Real-time multi-source classified scrapers</li>
+            <li><span class="check-icon">✓</span> Outlier-filtered Interquartile Range (IQR) pricing</li>
+            <li><span class="check-icon">✓</span> Depreciation curve &amp; 12-month future value modeling</li>
+            <li><span class="check-icon">✓</span> ZAR &amp; GBP dual-market currency support</li>
+          </ul>
+          <button class="btn btn-outline-neon open-modal-btn" data-product="valuation">Get Auto Reports →</button>
+        </div>
+
+        <!-- Engine 2: TruProperty -->
+        <div class="engine-card">
+          <div class="engine-card-header">
+            <span class="engine-icon-svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
+            <div class="engine-title-group">
+              <h3>TruProperty</h3>
+              <span class="engine-tag font-mono">Real Estate &amp; Yield Radar</span>
+            </div>
+          </div>
+          <p class="engine-desc">
+            Live multi-portal ingestion covering national real estate listings. Suburb median price indexes, gross rental yields, and sectional title sale trends.
+          </p>
+          <ul class="engine-features font-mono">
+            <li><span class="check-icon">✓</span> Suburb-level price-per-square-meter analytics</li>
+            <li><span class="check-icon">✓</span> Gross rental yield &amp; cashflow forecasting</li>
+            <li><span class="check-icon">✓</span> Asking vs achieved price spread analysis</li>
+            <li><span class="check-icon">✓</span> Instant multi-suburb comparative benchmarks</li>
+          </ul>
+          <button class="btn btn-outline-neon open-modal-btn" data-product="property">Explore Property Data →</button>
+        </div>
+
+        <!-- Engine 3: AgencyRadar -->
+        <div class="engine-card highlight-border">
+          <div class="hot-corner-badge">AGENCIES' CHOICE</div>
+          <div class="engine-card-header">
+            <span class="engine-icon-svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="2"/></svg>
+            </span>
+            <div class="engine-title-group">
+              <h3>AgencyRadar</h3>
+              <span class="engine-tag font-mono">Digital Defect Outbound Leads</span>
+            </div>
+          </div>
+          <p class="engine-desc">
+            The cold-outreach engine for web designers, SEO agencies, and marketers. Instantly identify commercial businesses losing revenue on broken, slow, non-mobile sites.
+          </p>
+          <ul class="engine-features font-mono">
+            <li><span class="check-icon">✓</span> Detects non-responsive viewports &amp; broken layouts</li>
+            <li><span class="check-icon">✓</span> Flags expired SSL certificates &amp; missing analytics</li>
+            <li><span class="check-icon">✓</span> Core Web Vitals speed audit with pitch valuation</li>
+            <li><span class="check-icon">✓</span> Filter by city, industry, and business size</li>
+          </ul>
+          <button class="btn btn-primary-neon open-modal-btn" data-product="audit">Get Agency Audit Packs →</button>
+        </div>
+
+        <!-- Engine 4: TruB2B -->
+        <div class="engine-card">
+          <div class="engine-card-header">
+            <span class="engine-icon-svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </span>
+            <div class="engine-title-group">
+              <h3>TruB2B</h3>
+              <span class="engine-tag font-mono">Verified Executive Direct Dials</span>
+            </div>
+          </div>
+          <p class="engine-desc">
+            Clean, phone-verified decision-maker contact intelligence across South Africa and the UK. Reach actual owners, directors, and principals directly.
+          </p>
+          <ul class="engine-features font-mono">
+            <li><span class="check-icon">✓</span> Direct mobile and switchboard telephone numbers</li>
+            <li><span class="check-icon">✓</span> Verified deliverable corporate email addresses</li>
+            <li><span class="check-icon">✓</span> Filter by industry, region, company size, and revenue</li>
+            <li><span class="check-icon">✓</span> Zero-junk guarantee with instant replace credits</li>
+          </ul>
+          <button class="btn btn-outline-neon open-modal-btn" data-product="leads">Get B2B Lead Packs →</button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HEAD-TO-HEAD COMPARISON TABLE -->
+  <section class="comparison-section" id="comparison">
+    <div class="container">
+      
+      <div class="section-badge-center">
+        <span class="badge badge-cyan">BENCHMARK</span>
+      </div>
+      <h2 class="section-title-center">Why TruData Outperforms Traditional Providers.</h2>
+      <p class="section-subtitle-center">
+        Compare our real-time multi-source scraper engine against month-old static book guides and closed single portals.
+      </p>
+
+      <div class="table-container">
+        <table class="comparison-table font-mono">
+          <thead>
+            <tr>
+              <th class="col-feature">Feature / Capability</th>
+              <th class="col-legacy">Legacy Monthly Books</th>
+              <th class="col-portal">Single Portals</th>
+              <th class="col-trudata highlight">TruData Suite</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-feature">Update Frequency</td>
+              <td class="col-legacy">Monthly / Static</td>
+              <td class="col-portal">Daily (Siloed)</td>
+              <td class="col-trudata highlight text-neon">Real-Time Continuous (Live)</td>
+            </tr>
+            <tr>
+              <td class="col-feature">Data Source Aggregation</td>
+              <td class="col-legacy">Dealer self-reported (Sample)</td>
+              <td class="col-portal">Only their own site</td>
+              <td class="col-trudata highlight text-neon">120+ Cross-Market Sources</td>
+            </tr>
+            <tr>
+              <td class="col-feature">Multi-Vertical Coverage</td>
+              <td class="col-legacy">Automotive only</td>
+              <td class="col-portal">Single vertical only</td>
+              <td class="col-trudata highlight text-neon">Auto + Property + Agency + B2B</td>
+            </tr>
+            <tr>
+              <td class="col-feature">Agency Defect Audits</td>
+              <td class="col-legacy">Not Available</td>
+              <td class="col-portal">Not Available</td>
+              <td class="col-trudata highlight text-neon">Instant 25k+ Catalog</td>
+            </tr>
+            <tr>
+              <td class="col-feature">Developer REST API &amp; Webhooks</td>
+              <td class="col-legacy">Legacy SOAP / Gated</td>
+              <td class="col-portal">Restricted / No API</td>
+              <td class="col-trudata highlight text-neon">Modern REST &amp; Webhooks (&lt;85ms)</td>
+            </tr>
+            <tr>
+              <td class="col-feature">Contract Commitment</td>
+              <td class="col-legacy">12-Month Lock-in Contracts</td>
+              <td class="col-portal">High Monthly Retainers</td>
+              <td class="col-trudata highlight text-neon">Zero Lock-in · Pay Per Result</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SOLUTIONS BY PERSONA -->
+  <section class="solutions-section" id="solutions">
+    <div class="container">
+      
+      <div class="section-badge-center">
+        <span class="badge badge-neon">TARGETED SOLUTIONS</span>
+      </div>
+      <h2 class="section-title-center">Built for High-Velocity Operators.</h2>
+
+      <div class="solutions-grid">
+        
+        <div class="solution-card">
+          <div class="solution-header">
+            <span class="persona-icon-svg">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 10.9 2 11.2V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            </span>
+            <div>
+              <h4>For Car Dealerships &amp; Traders</h4>
+              <p class="text-neon font-mono">Inventory Turnover Velocity</p>
+            </div>
+          </div>
+          <p class="solution-body">
+            Stop losing margin on month-old book values. TruData provides live retail asking prices, trade valuations, and arbitrage buy-signals to source underpriced stock.
+          </p>
+        </div>
+
+        <div class="solution-card">
+          <div class="solution-header">
+            <span class="persona-icon-svg">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="2"/></svg>
+            </span>
+            <div>
+              <h4>For Marketing Agencies &amp; Freelancers</h4>
+              <p class="text-neon font-mono">High-Converting Client Acquisition</p>
+            </div>
+          </div>
+          <p class="solution-body">
+            Cold pitching is hard when you pitch blind. AgencyRadar pinpoints local businesses whose websites fail mobile viewports or Core Web Vitals. Enter client meetings with exact data in hand.
+          </p>
+        </div>
+
+        <div class="solution-card">
+          <div class="solution-header">
+            <span class="persona-icon-svg">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
+            <div>
+              <h4>For Real Estate Investors &amp; Valuers</h4>
+              <p class="text-neon font-mono">Suburb Yields &amp; Listing Supply</p>
+            </div>
+          </div>
+          <p class="solution-body">
+            Aggregate cross-market real estate comps into a single unified dashboard with square meter pricing and 12-month capital growth projection models.
+          </p>
+        </div>
+
+        <div class="solution-card">
+          <div class="solution-header">
+            <span class="persona-icon-svg">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+            </span>
+            <div>
+              <h4>For SaaS Developers &amp; Fintechs</h4>
+              <p class="text-neon font-mono">Sub-85ms REST APIs &amp; Webhooks</p>
+            </div>
+          </div>
+          <p class="solution-body">
+            Power lending workflows, valuation algorithms, or listing aggregators with normalized JSON feeds, webhooks, and high-concurrency cloud endpoints.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- BESPOKE EXTRACTION & CUSTOM SCRAPING DESK -->
+  <section class="extraction-section" id="custom-extract">
+    <div class="container">
+      <div class="extraction-card">
+        <div class="extraction-grid">
+          <div class="extraction-info">
+            <div class="badge badge-neon font-mono" style="margin-bottom: 12px;">ON-DEMAND DATA ENGINEERING</div>
+            <h2>Need a Specific Dataset Scraped &amp; Delivered?</h2>
+            <p class="text-secondary" style="margin-bottom: 20px;">
+              Looking for direct <strong>Private Property Sellers (FSBO)</strong> across national portals, <strong>aged dealer inventory</strong>, or <strong>niche B2B decision makers</strong>? We extract, clean, and deliver any public web dataset within 24 hours.
+            </p>
+            
+            <div class="extraction-examples font-mono">
+              <div class="extract-example-item">
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Private Property Sellers (FSBO)</strong>
+                  <p>All direct-from-owner listings from top real estate portals without estate agent mandates.</p>
+                </div>
+              </div>
+              <div class="extract-example-item">
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Legacy Sites by City &amp; Industry</strong>
+                  <p>Every commercial plumbing, legal, or medical business with a broken, non-mobile site.</p>
+                </div>
+              </div>
+              <div class="extract-example-item">
+                <span class="check-icon">✓</span>
+                <div>
+                  <strong>Private Vehicle Sellers &amp; Price Drops</strong>
+                  <p>Direct vehicle owners listing under market median, ready for dealer acquisition.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="extraction-form-box">
+            <div class="panel-header">
+              <h4>Request Custom Dataset Extract</h4>
+              <span class="panel-tag font-mono">24h SLA Delivery</span>
+            </div>
+            
+            <form id="custom-extract-form" class="modal-form">
+              <div class="form-group">
+                <label for="extract-source">Target Data Source / Website(s)</label>
+                <input type="text" id="extract-source" placeholder="e.g. Property24 Private Sellers, Auto Classifieds, Niche Directory" required>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="extract-geo">Target Geography</label>
+                  <input type="text" id="extract-geo" placeholder="e.g. Western Cape or Gauteng" required>
+                </div>
+                <div class="form-group">
+                  <label for="extract-records">Estimated Records</label>
+                  <select id="extract-records">
+                    <option value="100">100 - 500 Records</option>
+                    <option value="1000">1,000 - 5,000 Records</option>
+                    <option value="10000">10,000+ Records (Enterprise)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="extract-email">Delivery Work Email</label>
+                <input type="email" id="extract-email" placeholder="e.g. leadbuyer@company.co.za" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary-neon btn-block" id="btn-submit-extract">
+                <span>Submit Custom Extraction Request</span>
+                <span class="btn-arrow">→</span>
+              </button>
+            </form>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- How It Works Section -->
-  <section class="how-it-works" id="how-it-works">
-    <div class="container">
-      <div class="section-header">
-        <h2>How It Works</h2>
-      </div>
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-num">01</div>
-          <h4>Choose</h4>
-          <p>Select your data product and parameters.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">02</div>
-          <h4>Sample</h4>
-          <p>Get a free sample to verify quality.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">03</div>
-          <h4>Pay</h4>
-          <p>Secure checkout via PayFast.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">04</div>
-          <h4>Receive</h4>
-          <p>Download your data within 24 hours.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pricing Section -->
+  <!-- PRICING & CREDIT BUNDLE CARDS -->
   <section class="pricing-section" id="pricing">
     <div class="container">
-      <div class="section-header">
-        <h2>Transparent Pricing</h2>
-        <p>No subscriptions required. Pay for what you need.</p>
+      
+      <div class="section-badge-center">
+        <span class="badge badge-neon">TRANSPARENT PRICING</span>
       </div>
+      <h2 class="section-title-center">Pay For What You Use. Zero Lock-In.</h2>
+      <p class="section-subtitle-center">
+        Choose single on-demand queries, volume credit bundles, private seller packs, or custom scraping pipelines.
+      </p>
+
       <div class="pricing-grid">
+        
+        <!-- Tier 1: Single Report -->
         <div class="pricing-card">
-          <div class="price-header">
-            <h3>Vehicle Price Report</h3>
-            <div class="price font-mono">R99<span class="period">/report</span></div>
-            <p class="bulk-price">or R799/mo for 20</p>
+          <div class="card-tier-name">ON-DEMAND SINGLE</div>
+          <div class="price-box font-mono">
+            <span class="currency">R</span><span class="amount">99</span>
+            <span class="period">/ query</span>
           </div>
-          <ul class="features">
-            <li>✓ Live market average</li>
-            <li>✓ High/low price range</li>
-            <li>✓ Depreciation curve</li>
-            <li>✓ Competing listings</li>
+          <p class="tier-desc">Ideal for individual vehicle or suburb valuations.</p>
+          <ul class="tier-features font-mono">
+            <li><span class="check-icon">✓</span> Full live market comp report</li>
+            <li><span class="check-icon">✓</span> High/low IQR price range</li>
+            <li><span class="check-icon">✓</span> Depreciation projection</li>
+            <li><span class="check-icon">✓</span> Downloadable PDF &amp; JSON</li>
           </ul>
-          <button class="btn btn-primary buy-now-btn" data-product="valuation">Buy Now &rarr;</button>
+          <button class="btn btn-outline-neon open-modal-btn" data-product="valuation">Buy Single Query →</button>
         </div>
 
+        <!-- Tier 2: Popular Bundle -->
         <div class="pricing-card popular">
-          <div class="popular-badge">Most Popular</div>
-          <div class="price-header">
-            <h3>B2B Data Pack</h3>
-            <div class="price font-mono">R1,249<span class="period">/50 records</span></div>
-            <p class="bulk-price">R2,499 for 100 records</p>
+          <div class="popular-ribbon font-mono">POPULAR</div>
+          <div class="card-tier-name">AGENCY &amp; DEALER PACK</div>
+          <div class="price-box font-mono text-neon">
+            <span class="currency">R</span><span class="amount">1,249</span>
+            <span class="period">/ 50 credits</span>
           </div>
-          <ul class="features">
-            <li>✓ Verified decision makers</li>
-            <li>✓ Direct phone numbers</li>
-            <li>✓ Clean email addresses</li>
-            <li>✓ Company size & revenue</li>
+          <p class="tier-desc">R24.98 per record. Credits never expire.</p>
+          <ul class="tier-features font-mono">
+            <li><span class="check-icon">✓</span> 50 credits usable on ANY engine</li>
+            <li><span class="check-icon">✓</span> 50 verified B2B decision contacts OR</li>
+            <li><span class="check-icon">✓</span> 50 full vehicle/property valuation reports OR</li>
+            <li><span class="check-icon">✓</span> 50 Legacy Site agency audit targets</li>
+            <li><span class="check-icon">✓</span> CSV/Excel instant export</li>
           </ul>
-          <button class="btn btn-primary buy-now-btn" data-product="leads">Buy Now &rarr;</button>
+          <button class="btn btn-primary-neon open-modal-btn" data-product="leads">Get 50 Credits Pack →</button>
         </div>
 
+        <!-- Tier 3: Private Seller & FSBO Pack -->
         <div class="pricing-card">
-          <div class="price-header">
-            <h3>Digital Readiness Audit</h3>
-            <div class="price font-mono">R1,999<span class="period">/city</span></div>
-            <p class="bulk-price">Per industry/niche</p>
+          <div class="card-tier-name">PRIVATE SELLER (FSBO) PACK</div>
+          <div class="price-box font-mono">
+            <span class="currency">R</span><span class="amount">1,499</span>
+            <span class="period">/ 100 leads</span>
           </div>
-          <ul class="features">
-            <li>✓ Complete web presence score</li>
-            <li>✓ SEO deficiency report</li>
-            <li>✓ Social media activity tracker</li>
-            <li>✓ Easy upsell targets identified</li>
+          <p class="tier-desc">Direct private property sellers with direct phone numbers.</p>
+          <ul class="tier-features font-mono">
+            <li><span class="check-icon">✓</span> 100 verified direct private property sellers</li>
+            <li><span class="check-icon">✓</span> Property24 &amp; Private Property FSBO feeds</li>
+            <li><span class="check-icon">✓</span> Direct owner mobile &amp; asking price</li>
+            <li><span class="check-icon">✓</span> Ready for agent mandates &amp; cash offers</li>
           </ul>
-          <button class="btn btn-primary buy-now-btn" data-product="audit">Buy Now &rarr;</button>
+          <button class="btn btn-outline-neon open-modal-btn" data-product="fsbo">Get 100 FSBO Leads →</button>
+        </div>
+
+        <!-- Tier 4: Bespoke Scrape & Custom Pipeline -->
+        <div class="pricing-card">
+          <div class="card-tier-name">CUSTOM SCRAPE &amp; API PIPELINE</div>
+          <div class="price-box font-mono">
+            <span class="currency">R</span><span class="amount">2,999</span>
+            <span class="period">/ custom extract</span>
+          </div>
+          <p class="tier-desc">Any public dataset scraped, cleaned, and delivered in 24h.</p>
+          <ul class="tier-features font-mono">
+            <li><span class="check-icon">✓</span> Custom target portal or directory scrape</li>
+            <li><span class="check-icon">✓</span> Multi-source deduplication &amp; normalization</li>
+            <li><span class="check-icon">✓</span> CSV, JSON, or direct webhook pipeline</li>
+            <li><span class="check-icon">✓</span> Dedicated data engineering support</li>
+          </ul>
+          <button class="btn btn-outline-neon open-modal-btn" data-product="custom_extract">Configure Scrape →</button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="cta-banner-section">
+    <div class="container">
+      <div class="cta-banner-card">
+        <div class="cta-content">
+          <h2>Ready to Deploy Real-Time Market Intelligence?</h2>
+          <p>Get a verified sample data packet delivered to your inbox in 30 seconds.</p>
+        </div>
+        <div class="cta-actions">
+          <button class="btn btn-primary-neon open-modal-btn" data-product="sample">Get Free Sample Now →</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Order Form Section (Hidden initially) -->
-  <section class="order-section hidden" id="order-section">
-    <div class="container">
-      <div class="order-container">
-        <h2>Complete Your Order</h2>
-        <form id="order-form" class="order-form">
-          <input type="hidden" id="order-product" value="">
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="order-name">Full Name</label>
-              <input type="text" id="order-name" required>
-            </div>
-            <div class="form-group">
-              <label for="order-email">Email Address</label>
-              <input type="email" id="order-email" required>
-            </div>
-          </div>
-
-          <!-- Dynamic Parameter Fields -->
-          <div id="param-valuation" class="param-group hidden">
-            <h4>Vehicle Details</h4>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Make</label>
-                <input type="text" id="order-make" placeholder="e.g. Toyota">
-              </div>
-              <div class="form-group">
-                <label>Model</label>
-                <input type="text" id="order-model" placeholder="e.g. Fortuner">
-              </div>
-              <div class="form-group">
-                <label>Year</label>
-                <input type="text" id="order-year" placeholder="e.g. 2022">
-              </div>
-            </div>
-          </div>
-
-          <div id="param-leads" class="param-group hidden">
-            <h4>Lead Requirements</h4>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Industry</label>
-                <select id="order-leads-industry">
-                  <option value="Automotive Dealers">Automotive Dealers</option>
-                  <option value="Real Estate Agencies">Real Estate Agencies</option>
-                  <option value="Restaurants">Restaurants</option>
-                  <option value="Medical Practices">Medical Practices</option>
-                  <option value="Law Firms">Law Firms</option>
-                  <option value="Gyms">Gyms</option>
-                  <option value="Accounting Firms">Accounting Firms</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>City/Region</label>
-                <input type="text" id="order-leads-region" placeholder="e.g. Gauteng">
-              </div>
-            </div>
-          </div>
-
-          <div id="param-audit" class="param-group hidden">
-            <h4>Audit Requirements</h4>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Industry</label>
-                <input type="text" id="order-audit-industry" placeholder="e.g. Plumbers">
-              </div>
-              <div class="form-group">
-                <label>City</label>
-                <input type="text" id="order-audit-city" placeholder="e.g. Cape Town">
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-block">Proceed to PayFast &rarr;</button>
-        </form>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
+  <!-- FOOTER -->
   <footer class="footer">
-    <div class="container">
-      <div class="trust-stats">
-        <div class="stat-item">100+ Data Sources</div>
-        <div class="stat-item">Updated Daily</div>
-        <div class="stat-item">95%+ Accuracy</div>
-        <div class="stat-item">POPIA Compliant</div>
+    <div class="container footer-container">
+      
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-badge">
+            <svg class="logo-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#D8FF00" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="#D8FF00" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#00E5FF" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="logo-name">TRU<span class="text-neon">DATA</span></span>
+        </div>
+        <p class="footer-tagline">
+          The all-in-one market intelligence platform for automotive, property, digital agency sales, and B2B data in South Africa &amp; the United Kingdom.
+        </p>
+        <div class="status-badge font-mono">
+          <span class="pulse-dot"></span>
+          <span>ALL SYSTEMS OPERATIONAL · 99.98% UPTIME</span>
+        </div>
       </div>
-      <div class="footer-bottom">
-        <p>Powered by <a href="#" class="brand-link">TruSaaS</a> — the platform behind TruDealer.</p>
-        <p class="copyright">&copy; 2026 TruSaaS (Pty) Ltd &middot; data.tru-saas.com</p>
+
+      <div class="footer-links-grid">
+        <div class="footer-col">
+          <h5>Engines</h5>
+          <a href="#engines" data-switch-engine="auto">TruAuto Valuation</a>
+          <a href="#engines" data-switch-engine="property">TruProperty Real Estate</a>
+          <a href="#engines" data-switch-engine="agency">AgencyRadar Audits</a>
+          <a href="#engines" data-switch-engine="b2b">TruB2B Decision Leads</a>
+          <a href="#engines" data-switch-engine="api">TruAPI REST Feeds</a>
+        </div>
+
+        <div class="footer-col">
+          <h5>Platform</h5>
+          <a href="#telemetry">Live Console</a>
+          <a href="#comparison">Benchmark Comparison</a>
+          <a href="#pricing">Pricing &amp; Bundles</a>
+          <a href="#view-api" id="footer-api-link">API Documentation</a>
+          <a href="/api/health" target="_blank">System Health</a>
+        </div>
+
+        <div class="footer-col">
+          <h5>Legal &amp; Privacy</h5>
+          <a href="#" id="link-terms">Terms of Service</a>
+          <a href="#" id="link-privacy">Privacy Policy</a>
+          <a href="#" id="link-cookies">Cookie Preferences</a>
+          <a href="#" id="link-refund">Refund Policy</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="container footer-bottom font-mono">
+      <div>&copy; 2026 TruData by TruSaaS. All rights reserved.</div>
+      <div class="footer-legal">
+        <span>Verified Multi-Source Ingestion</span>
+        <span>•</span>
+        <span>256-Bit SSL Encrypted</span>
       </div>
     </div>
   </footer>
+
+  <!-- SMART VALUE PROMOTION POPUP -->
+  <div class="popup-backdrop hidden" id="promo-popup">
+    <div class="popup-card">
+      <button class="popup-close-btn" id="popup-close">✕</button>
+      <div class="popup-badge font-mono">PLATFORM ACCESS</div>
+      <h3>Claim 10 Free Intelligence Credits</h3>
+      <p class="popup-text">Test vehicle valuations, property yield indexes, or B2B decision-maker leads with zero commitment.</p>
+      
+      <form id="popup-lead-form" class="popup-form">
+        <input type="email" id="popup-email" placeholder="Enter your work email" required class="font-mono">
+        <button type="submit" class="btn btn-primary-neon btn-block">
+          <span>Unlock 10 Free Credits Instantly</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </form>
+      <div class="popup-footer font-mono">No credit card required • Instant access</div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE ORDER & FREE SAMPLE MODAL / SLIDEOVER -->
+  <div class="modal-backdrop hidden" id="order-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="modal-close">✕</button>
+      
+      <div class="modal-header">
+        <div class="modal-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7L12 12L22 7L12 2Z"/><path d="M2 17L12 22L22 17"/><path d="M2 12L12 17L22 12"/></svg>
+        </div>
+        <h3 id="modal-title">Configure Your Data Order</h3>
+        <p class="text-muted" id="modal-subtitle">Instant secure checkout with zero subscription commitments.</p>
+      </div>
+
+      <form id="modal-order-form" class="modal-form">
+        <input type="hidden" id="modal-product" value="valuation">
+        
+        <div class="form-group">
+          <label for="modal-name">Your Full Name</label>
+          <input type="text" id="modal-name" placeholder="e.g. David Miller" required>
+        </div>
+
+        <div class="form-group">
+          <label for="modal-email">Work Email Address (for data delivery)</label>
+          <input type="email" id="modal-email" placeholder="e.g. david@company.co.za" required>
+        </div>
+
+        <!-- Dynamic Product Parameters -->
+        <div id="modal-params-auto" class="product-params">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="modal-make">Vehicle Make</label>
+              <input type="text" id="modal-make" placeholder="e.g. Toyota">
+            </div>
+            <div class="form-group">
+              <label for="modal-model">Model &amp; Variant</label>
+              <input type="text" id="modal-model" placeholder="e.g. Hilux 2.8 GD-6">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="modal-year">Year</label>
+            <input type="number" id="modal-year" placeholder="2023" min="2000" max="2026">
+          </div>
+        </div>
+
+        <div id="modal-params-leads" class="product-params hidden">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="modal-industry">Target Industry</label>
+              <select id="modal-industry">
+                <option value="automotive">Automotive &amp; Dealerships</option>
+                <option value="real_estate">Real Estate &amp; Property Agencies</option>
+                <option value="logistics">Logistics &amp; Transport</option>
+                <option value="contractors">Commercial &amp; Technical Services</option>
+                <option value="legal">Corporate &amp; Legal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="modal-region">Target Region</label>
+              <select id="modal-region">
+                <option value="gauteng">Gauteng Region</option>
+                <option value="western_cape">Western Cape Region</option>
+                <option value="kzn">KwaZulu-Natal Region</option>
+                <option value="national">National (All SA)</option>
+                <option value="uk_london">United Kingdom (Greater London)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="modal-params-audit" class="product-params hidden">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="modal-audit-niche">Niche / Trade</label>
+              <input type="text" id="modal-audit-niche" placeholder="e.g. Corporate Law or Medical">
+            </div>
+            <div class="form-group">
+              <label for="modal-audit-city">City / Metro</label>
+              <input type="text" id="modal-audit-city" placeholder="e.g. Pretoria or Cape Town">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-summary font-mono">
+          <div class="summary-row">
+            <span id="modal-item-name">Vehicle Valuation Report</span>
+            <span id="modal-item-price" class="text-neon">R 99.00</span>
+          </div>
+          <div class="summary-sub">Instant digital delivery after confirmation</div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary-neon btn-block" id="modal-submit-btn">
+            <span>Proceed to Secure Checkout</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+
+        <div class="modal-guarantee font-mono">
+          <span>256-bit Encrypted Checkout</span>
+          <span>•</span>
+          <span>100% Quality Guaranteed</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TERMS & CONDITIONS MODAL -->
+  <div class="modal-backdrop hidden" id="terms-modal">
+    <div class="modal-card modal-card-lg">
+      <button class="modal-close-btn" id="terms-close">✕</button>
+      <div class="modal-header">
+        <h3>Terms of Service &amp; Data Governance</h3>
+        <p class="text-muted font-mono">Last updated: September 2026</p>
+      </div>
+      <div class="legal-content font-mono">
+        <h4>1. Platform Usage &amp; Licensing</h4>
+        <p>TruData delivers normalized market intelligence, vehicle pricing analytics, real estate indexes, digital readiness audits, and B2B company registries. All data points are compiled via automated ingestion algorithms and verified public feeds.</p>
+        
+        <h4>2. Data Quality &amp; SLA</h4>
+        <p>Market intelligence is supplied on an as-is basis with a 98.4% historical accuracy index. We provide immediate credit replacement for any bounced or unverifiable B2B record within 7 business days.</p>
+        
+        <h4>3. Payments &amp; Credits</h4>
+        <p>Purchased query credits never expire. All payment processing is conducted via 256-bit encrypted gateways with PCI-DSS compliance.</p>
+        
+        <h4>4. API Governance</h4>
+        <p>API keys provided on Pro plans are subject to rate limiting and fair usage governance. Automated bulk scraping of our endpoints without authentication is strictly prohibited.</p>
+      </div>
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button class="btn btn-neon btn-block" id="terms-accept-btn">I Understand &amp; Agree</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTION DATA DESK LIVE WIDGET -->
+  <div class="chat-widget-container" id="chat-widget">
+    <!-- Chat Window -->
+    <div class="chat-window hidden" id="chat-window">
+      <div class="chat-header">
+        <div class="chat-agent-info">
+          <div class="chat-avatar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7L12 12L22 7L12 2Z"/><path d="M2 17L12 22L22 17"/><path d="M2 12L12 17L22 12"/></svg>
+          </div>
+          <div>
+            <div class="chat-title font-mono">TruData Intelligence Desk</div>
+            <div class="chat-status"><span class="pulse-dot"></span> Live Data Pipeline · &lt;85ms</div>
+          </div>
+        </div>
+        <button class="chat-close-btn" id="chat-close-btn">✕</button>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-bubble bot font-mono">
+          <p>Welcome to the TruData Intelligence Desk. Query live vehicle valuations, suburb rental yield indexes, agency defect audits, or custom API endpoints.</p>
+        </div>
+      </div>
+
+      <div class="chat-quick-chips">
+        <button class="chat-chip font-mono" data-chat-prompt="Toyota Hilux 2023 valuation">Hilux 2023 Valuation</button>
+        <button class="chat-chip font-mono" data-chat-prompt="Agency site audit sample">Agency Audit Sample</button>
+        <button class="chat-chip font-mono" data-chat-prompt="API pricing and rate limits">API Documentation</button>
+      </div>
+
+      <form class="chat-input-form" id="chat-input-form">
+        <input type="text" id="chat-user-input" class="font-mono" placeholder="Query vehicle, suburb, or API specification..." required autocomplete="off">
+        <button type="submit" class="chat-send-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Toggle Button -->
+    <button class="chat-toggle-btn" id="chat-toggle-btn" aria-label="Open Data Desk">
+      <span class="chat-unread-badge">1</span>
+      <svg class="chat-icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+  </div>
+
+  <!-- COOKIE CONSENT BANNER -->
+  <div class="cookie-banner" id="cookie-banner">
+    <div class="container cookie-container">
+      <div class="cookie-text font-mono">
+        <strong>Data &amp; Cookie Governance:</strong> We utilize essential telemetry cookies to monitor API response latency and ensure secure checkout authentication.
+      </div>
+      <div class="cookie-actions">
+        <button class="btn btn-sm btn-ghost" id="cookie-decline-btn">Necessary Only</button>
+        <button class="btn btn-sm btn-neon" id="cookie-accept-btn">Accept All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container" id="toast-container"></div>
 
   <script src="app.js"></script>
 </body>

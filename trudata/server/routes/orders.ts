@@ -7,16 +7,26 @@ const router = Router();
 
 const PRICING: Record<string, number> = {
   'valuation': 99,
+  'property': 99,
+  'leads': 1249,
   'leads_50': 1249,
   'leads_100': 2499,
-  'audit': 1999
+  'audit': 1999,
+  'fsbo': 1499,
+  'legacy_sites': 1999,
+  'custom_extract': 2999
 };
 
 const ITEM_NAMES: Record<string, string> = {
-  'valuation': 'TruData Valuation Report',
-  'leads_50': 'TruData Leads (50)',
-  'leads_100': 'TruData Leads (100)',
-  'audit': 'TruData Dealership Audit'
+  'valuation': 'TruData Auto Valuation Report',
+  'property': 'TruData Property Suburb Report',
+  'leads': 'TruData Verified B2B Decision Pack (50)',
+  'leads_50': 'TruData Verified B2B Decision Pack (50)',
+  'leads_100': 'TruData Verified B2B Decision Pack (100)',
+  'audit': 'TruData Legacy Site Defect Audit Pack',
+  'fsbo': 'TruData Private Property Sellers (FSBO) Lead Pack (100)',
+  'legacy_sites': 'TruData Legacy Site Outreach Pack (50)',
+  'custom_extract': 'TruData Bespoke Scrape & Custom Data Pipeline'
 };
 
 router.post('/', async (req, res) => {
@@ -72,8 +82,6 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
     
-    // For security, we might want to sanitize the order object returned here
-    // But for MVP, returning full order is okay.
     res.json(order);
   } catch (error) {
     console.error('Error fetching order:', error);
