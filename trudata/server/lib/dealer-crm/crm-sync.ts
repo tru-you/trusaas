@@ -2,8 +2,9 @@ import crypto from 'crypto';
 import axios from 'axios';
 import { DealerContactProfile, TruCrmLeadPayload } from './types';
 
-const TRUFLOW_URL = (process.env.TRUFLOW_DMS_URL || 'https://premium.tru-saas.com').replace(/\/$/, '');
-const SYNC_KEY = process.env.TRUFLOW_SYNC_KEY || '';
+const TRUCRM_URL = (process.env.TRUCRM_URL || 'https://crm.tru-saas.com').replace(/\/$/, '');
+const TRUFLOW_URL = (process.env.TRUFLOW_DMS_URL || 'https://flow.tru-saas.com').replace(/\/$/, '');
+const SYNC_KEY = process.env.TRUFLOW_SYNC_KEY || process.env.TRUCRM_ACCESS_CODE || '';
 
 /**
  * Convert a dealer contact profile into a TruCRM Lead object
