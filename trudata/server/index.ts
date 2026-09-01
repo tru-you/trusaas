@@ -28,9 +28,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files — resolve from project root/public regardless of CWD
-const projectRoot = path.resolve(__dirname, '..');
-const publicDir = path.join(projectRoot, 'public');
+import fs from 'fs';
+
+// Static files — resolve from project root/public regardless of CWD or bundle context
+const candidates = [
+  path.resolve(__dirname, '..', 'public'),
+  path.resolve(__dirname, 'public'),
+  path.resolve(process.cwd(), 'public'),
+  path.resolve(process.cwd(), 'trudata', 'public')
+];
+const publicDir = candidates.find(p => fs.existsSync(p)) || path.resolve(process.cwd(), 'public');
 app.use(express.static(publicDir));
 
 // Routes
