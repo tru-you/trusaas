@@ -45,6 +45,12 @@ export interface RegLookupResult {
   engineCapacity?: number;
   yearOfManufacture?: number;
   firstRegistration?: string;
+  /** From the spec data point (optional, costs a call) — fills the VIN field. */
+  vin?: string;
+  bodyType?: string;
+  transmissionType?: string;
+  co2Emissions?: number;
+  bhp?: number;
   motStatus?: string;
   motExpiryDate?: string;
   taxStatus?: string;
@@ -63,14 +69,20 @@ const API_KEY = process.env.REG_LOOKUP_API_KEY || '';
 const DVLA_UAT = /^(1|true|yes)$/i.test(process.env.REG_LOOKUP_UAT || '');
 const HISTORY_ENABLED = /^(1|true|yes)$/i.test(process.env.HISTORY_CHECK_ENABLED || '');
 
-/* CheckCarDetails data-point URLs. Docs sit behind their login, so the
- * defaults are best-effort shapes — override per env the moment the real
- * endpoints are confirmed ({key} and {vrm} are replaced). */
+/* CheckCarDetails data-point URLs — confirmed live 2026-08-31:
+ *   GET https://api.checkcardetails.co.uk/vehicledata/{datapoint}?apikey={key}&vrm={vrm}
+ * vehicleregistration (£0.02) = make/model/colour/fuel/year/tax/mot status;
+ * mot (£0.02) = full MOT history incl. defects + odometer readings.
+ * Override per env if their paths ever move. */
 const CCD_BASE = 'https://api.checkcardetails.co.uk';
-const CCD_REG_URL = process.env.REG_LOOKUP_URL || `${CCD_BASE}/api/v1/vehicle-registration?apikey={key}&vrm={vrm}`;
-const CCD_MOT_URL = process.env.REG_LOOKUP_MOT_URL || '';
+const CCD_REG_URL = process.env.REG_LOOKUP_URL || `${CCD_BASE}/vehicledata/vehicleregistration?apikey={key}&vrm={vrm}`;
+const CCD_MOT_URL = process.env.REG_LOOKUP_MOT_URL || `${CCD_BASE}/vehicledata/mot?apikey={key}&vrm={vrm}`;
 const CCD_MILEAGE_URL = process.env.REG_LOOKUP_MILEAGE_URL || '';
 const CCD_HISTORY_URL = process.env.REG_LOOKUP_HISTORY_URL || '';
+/* Spec data point (£0.04) — adds VIN + body/transmission/CO2. Off by default
+ * to keep intake at 4p; flip REG_LOOKUP_SPECS=1 to enrich. */
+const CCD_SPECS_ENABLED = /^(1|true|yes)$/i.test(process.env.REG_LOOKUP_SPECS || '');
+const CCD_SPECS_URL = process.env.REG_LOOKUP_SPECS_URL || `${CCD_BASE}/vehicledata/vehiclespecs?apikey={key}&vrm={vrm}`;
 
 const DVLA_HOST = DVLA_UAT
   ? 'https://uat.driver-vehicle-licensing.api.gov.uk'
@@ -153,13 +165,44 @@ function extractRegistrationResult(data: any, provider: string, vrm: string): Re
 function attachMotHistory(result: RegLookupResult, data: any): void {
   const list = Array.isArray(data?.motHistory) ? data.motHistory : Array.isArray(data?.tests) ? data.tests : null;
   if (!list) return;
-  result.motHistory = list.map((t: any) => ({
-    date: t.date || t.testDate || undefined,
-    mileage: num(t.mileage ?? t.odometer),
-    result: t.result || t.status || undefined,
-    advisories: Array.isArray(t.advisories) ? t.advisories.map(String) : undefined,
-    failures: Array.isArray(t.failures) ? t.failures.map(String) : Array.isArray(t.reasons) ? t.reasons.map(String) : undefined,
-  }));
+  result.motHistory = list.map((t: any) => {
+    /* CheckCarDetails shape: completedDate / odometerValue+odometerUnit /
+       testResult / defects[{type: ADVISORY|MAJOR|DANGEROUS|MINOR, text}]. */
+    let mileage = num(t.mileage ?? t.odometer);
+    if (mileage == null) mileage = num(t.odometerValue);
+    const unit = String(t.odometerUnit || '').toUpperCase();
+    if (mileage != null && (unit === 'MI' || unit === 'MILES')) mileage = Math.round(mileage * 1.60934);
+    const defects = Array.isArray(t.defects) ? t.defects : null;
+    const advisories = defects
+      ? defects.filter((d: any) => /ADVISORY|MINOR/i.test(String(d?.type || ''))).map((d: any) => String(d?.text || '')).filter(Boolean)
+      : Array.isArray(t.advisories) ? t.advisories.map(String) : undefined;
+    const failures = defects
+      ? defects.filter((d: any) => /MAJOR|DANGEROUS|PRS/i.test(String(d?.type || ''))).map((d: any) => String(d?.text || '')).filter(Boolean)
+      : Array.isArray(t.failures) ? t.failures.map(String) : Array.isArray(t.reasons) ? t.reasons.map(String) : undefined;
+    const rawResult = String(t.result || t.status || t.testResult || '');
+    return {
+      date: t.date || t.testDate || t.completedDate || undefined,
+      mileage,
+      result: rawResult ? rawResult.charAt(0).toUpperCase() + rawResult.slice(1).toLowerCase() : undefined,
+      advisories,
+      failures,
+    };
+  });
+}
+
+/** MOT odometer readings double as the mileage timeline — newest first in the
+ *  CCD response, so sort ascending and flag any backwards step (clocking). */
+function deriveMileageFromMot(result: RegLookupResult): void {
+  if (result.mileageRecords?.length || !result.motHistory?.length) return;
+  const recs = result.motHistory
+    .filter((t) => t.mileage != null && t.date)
+    .map((t) => ({ date: t.date, mileage: t.mileage as number }))
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  if (recs.length < 2) return;
+  result.mileageRecords = recs;
+  for (let i = 1; i < recs.length; i++) {
+    if (recs[i].mileage < recs[i - 1].mileage) { result.mileageAlert = true; break; }
+  }
 }
 
 function attachMileageRecords(result: RegLookupResult, data: any): void {
@@ -185,10 +228,37 @@ async function lookupCheckCarDetails(vrm: string): Promise<RegLookupResult> {
   const result = extractRegistrationResult(regData, 'checkcardetails', vrm);
   attachMotHistory(result, regData);
   attachMileageRecords(result, regData);
-  /* Optional deeper tiers ride their own endpoints when configured — a miss
-   * there never fails the intake lookup itself. */
+  /* The MOT data point carries the full test history + odometer timeline.
+   * A miss there never fails the intake lookup itself. */
   if (CCD_MOT_URL) {
-    try { const mot = await fetchJson(fillTemplate(CCD_MOT_URL, vrm)); attachMotHistory(result, mot); } catch { /* intake still returns */ }
+    try {
+      const mot = await fetchJson(fillTemplate(CCD_MOT_URL, vrm));
+      attachMotHistory(result, mot);
+      deriveMileageFromMot(result);
+      /* MOT endpoint repeats the live status too — prefer it when fresher. */
+      if (mot?.mot?.motStatus && !result.motStatus) result.motStatus = mot.mot.motStatus;
+    } catch { /* intake still returns */ }
+  }
+  /* Optional spec enrichment (REG_LOOKUP_SPECS=1): VIN + body/transmission/
+     CO2/BHP. Costs an extra call per lookup, so it stays opt-in. */
+  if (CCD_SPECS_ENABLED && CCD_SPECS_URL) {
+    try {
+      const specs = await fetchJson(fillTemplate(CCD_SPECS_URL, vrm));
+      const vi = specs?.VehicleIdentification || {};
+      const model = specs?.ModelData || {};
+      const perf = specs?.Performance || {};
+      const trans = specs?.Transmission || {};
+      if (vi.Vin) result.vin = String(vi.Vin);
+      if (vi.DvlaBodyType) result.bodyType = String(vi.DvlaBodyType);
+      if (trans.TransmissionType) result.transmissionType = String(trans.TransmissionType);
+      const co2 = specs?.VehicleExciseDutyDetails?.DvlaCo2 ?? specs?.Emissions?.ManufacturerCo2;
+      if (num(co2) != null) result.co2Emissions = num(co2);
+      if (num(perf?.Power?.Bhp) != null) result.bhp = num(perf?.Power?.Bhp);
+      /* Spec model string is richer than the registration one — keep both,
+       * prefer the detailed model for display when present. */
+      if (model.Model && !result.model) result.model = String(model.Model);
+      if (!result.firstRegistration && vi.DateFirstRegistered) result.firstRegistration = String(vi.DateFirstRegistered);
+    } catch { /* intake still returns */ }
   }
   if (CCD_MILEAGE_URL) {
     try { const mil = await fetchJson(fillTemplate(CCD_MILEAGE_URL, vrm)); attachMileageRecords(result, mil); } catch { /* intake still returns */ }

@@ -119,6 +119,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
         model: data.model ? titleCase(data.model) : prev.model,
         year: data.yearOfManufacture ? String(data.yearOfManufacture) : prev.year,
         color: data.colour ? titleCase(data.colour) : prev.color,
+        vin: data.vin ? String(data.vin).toUpperCase() : prev.vin,
         fuelType: data.fuelType && fuelMap[String(data.fuelType).toUpperCase()] ? fuelMap[String(data.fuelType).toUpperCase()] : prev.fuelType,
       }));
       if (data.make) filled.push('make');
@@ -126,6 +127,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
       if (data.yearOfManufacture) filled.push('year');
       if (data.colour) filled.push('colour');
       if (data.fuelType) filled.push('fuel');
+      if (data.vin) filled.push('vin');
       setPlateLookup(data as RegLookupResult);
       setPlateNote(
         filled.length === 0

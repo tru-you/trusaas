@@ -622,6 +622,10 @@ services:
         sync: false
       - key: HISTORY_CHECK_ENABLED
         value: "0"
+      # Spec data point (adds VIN + body/transmission at intake, +4p/lookup).
+      # 403 until the key is entitled to the specs data point - then flip to "1"
+      - key: REG_LOOKUP_SPECS
+        value: "0"
 
   - type: web
     name: trusaas-inspect-uk
@@ -684,6 +688,10 @@ services:
         sync: false
       - key: HISTORY_CHECK_ENABLED
         value: "0"
+      # Spec data point (adds VIN + body/transmission at intake, +4p/lookup).
+      # 403 until the key is entitled to the specs data point - then flip to "1"
+      - key: REG_LOOKUP_SPECS
+        value: "0"
 
   - type: web
     name: trusaas-premium-uk
@@ -741,6 +749,10 @@ services:
       - key: REG_LOOKUP_API_KEY
         sync: false
       - key: HISTORY_CHECK_ENABLED
+        value: "0"
+      # Spec data point (adds VIN + body/transmission at intake, +4p/lookup).
+      # 403 until the key is entitled to the specs data point - then flip to "1"
+      - key: REG_LOOKUP_SPECS
         value: "0"
 
   - type: web

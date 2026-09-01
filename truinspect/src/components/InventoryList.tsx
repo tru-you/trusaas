@@ -356,6 +356,7 @@ export default function InventoryList({
         setFuelType(fuelMap[String(data.fuelType).toUpperCase()]);
         filled.push('fuel');
       }
+      if (data.vin) { setVin(String(data.vin).toUpperCase()); filled.push('vin'); }
       setPickerKey((k) => k + 1);
       setLookupResult(data as RegLookupResult);
       setPlateNote(
