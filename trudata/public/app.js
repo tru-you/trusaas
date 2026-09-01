@@ -286,27 +286,116 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // Telemetry Engine Loaders
   // --------------------------------------------------------------------------
-  async function loadEngineTelemetry(engine, query, extraParams = {}) {
-    setLoadingState(true);
-
-    if (engine === 'auto') {
-      await loadAutoTelemetry(query, extraParams);
-    } else if (engine === 'property') {
-      loadPropertyTelemetry(query);
-    } else if (engine === 'agency') {
-      loadAgencyTelemetry(query, extraParams);
-    } else if (engine === 'b2b') {
-      loadB2BTelemetry(query);
-    } else if (engine === 'api') {
-      loadApiTelemetry();
+  async function loadEngineTelemetry(engine, query, extraParams = {}, isLiveSearch = false) {
+    try {
+      if (engine === 'auto') {
+        if (isLiveSearch) {
+          setLoadingState(true);
+          await loadAutoTelemetry(query, extraParams);
+          setLoadingState(false);
+        } else {
+          loadAutoTelemetrySync(query, extraParams);
+        }
+      } else if (engine === 'property') {
+        loadPropertyTelemetry(query);
+      } else if (engine === 'agency') {
+        loadAgencyTelemetry(query, extraParams, isLiveSearch);
+      } else if (engine === 'b2b') {
+        loadB2BTelemetry(query);
+      } else if (engine === 'api') {
+        loadApiTelemetry();
+      }
+    } catch (err) {
+      console.error('Error loading engine telemetry:', err);
+    } finally {
+      setLoadingState(false);
     }
-
-    setLoadingState(false);
   }
 
-  // 1. Auto Telemetry
+  // 1. Auto Telemetry (Sync Baseline)
+  function loadAutoTelemetrySync(query, extraParams = {}) {
+    const market = marketSelect?.value || 'za';
+    const currency = market === 'uk' ? '£' : 'R';
+    
+    let make = extraParams.make || 'Toyota';
+    let model = extraParams.model || 'Hilux 2.8 GD-6';
+    let year = extraParams.year || 2023;
+
+    if (!extraParams.make && query) {
+      const parts = query.split(' ');
+      if (parts.length >= 2) {
+        make = parts[0];
+        model = parts.slice(1, -1).join(' ') || parts[1];
+        const lastPart = parts[parts.length - 1];
+        if (/^\d{4}$/.test(lastPart)) year = parseInt(lastPart);
+      }
+    }
+
+    telemetryTitle.textContent = `LIVE TELEMETRY: ${make.toUpperCase()} ${model.toUpperCase()} (${year})`;
+
+    const baseMedian = market === 'uk' ? 24500 : 619900;
+    const low = Math.floor(baseMedian * 0.92);
+    const high = Math.floor(baseMedian * 1.08);
+    const result = {
+      make, model, year,
+      median: baseMedian,
+      low, high,
+      count: 34,
+      confidence: 'high',
+      currency,
+      sources: [
+        { name: 'National Classified Feeds', count: 18, avg: baseMedian * 1.02 },
+        { name: 'Tier-1 Portals', count: 12, avg: baseMedian * 0.99 },
+        { name: 'Direct Dealer Network', count: 4, avg: baseMedian * 0.97 }
+      ],
+      arbitrageSpread: Math.floor(baseMedian * 0.08)
+    };
+
+    activeTelemetryData = result;
+
+    const elMedian = document.getElementById('auto-median');
+    if (elMedian) elMedian.textContent = formatMoney(result.median, result.currency);
+    const elRange = document.getElementById('auto-range');
+    if (elRange) elRange.textContent = `${formatMoney(result.low, result.currency)} - ${formatMoney(result.high, result.currency)}`;
+    const elConf = document.getElementById('auto-confidence');
+    if (elConf) elConf.textContent = `${(result.confidence || 'HIGH').toUpperCase()} CONFIDENCE`;
+    const elSample = document.getElementById('auto-sample-info');
+    if (elSample) elSample.textContent = `Based on ${result.count || 28} verified active listings`;
+    const elSpread = document.getElementById('auto-spread');
+    if (elSpread) elSpread.textContent = `+${formatMoney(result.arbitrageSpread, result.currency)}`;
+
+    drawDistributionChart(result.median, result.low, result.high, result.currency);
+
+    const compsContainer = document.getElementById('auto-comps-list');
+    if (compsContainer) {
+      compsContainer.innerHTML = '';
+      const sampleComps = [
+        { source: 'Tier-1 Classified Feed', title: `${year} ${make} ${model} Auto`, odo: '38,000 km', price: result.median * 1.02, area: 'Regional East' },
+        { source: 'Dealer Direct Network', title: `${year} ${make} ${model} 4x4`, odo: '44,200 km', price: result.median * 0.99, area: 'Metro Central' },
+        { source: 'Commercial Feed', title: `${year} ${make} ${model} Raised Body`, odo: '51,000 km', price: result.low * 1.01, area: 'Financial District' },
+        { source: 'Verified Listing', title: `${year} ${make} ${model} Edition`, odo: '29,500 km', price: result.high * 0.98, area: 'Coastal North' }
+      ];
+
+      sampleComps.forEach(comp => {
+        const row = document.createElement('div');
+        row.className = 'comp-item';
+        row.innerHTML = `
+          <div class="comp-meta">
+            <span class="comp-title">${comp.title}</span>
+            <span class="comp-details font-mono">${comp.source} • ${comp.odo} • ${comp.area}</span>
+          </div>
+          <div class="comp-price font-mono">${formatMoney(Math.floor(comp.price), result.currency)}</div>
+        `;
+        compsContainer.appendChild(row);
+      });
+    }
+
+    updateRawJson(result);
+  }
+
+  // 1b. Auto Telemetry (Live Async)
   async function loadAutoTelemetry(query, extraParams = {}) {
-    const market = marketSelect.value || 'za';
+    const market = marketSelect?.value || 'za';
     const currency = market === 'uk' ? '£' : 'R';
     
     let make = extraParams.make || 'Toyota';
@@ -336,125 +425,29 @@ document.addEventListener('DOMContentLoaded', () => {
         result = await res.json();
       }
     } catch (e) {
-      console.warn('Real valuation API unreachable, using live simulation model:', e);
+      console.warn('Valuation API unreachable, using fallback model:', e);
     }
 
     if (!result || !result.median) {
-      const baseMedian = market === 'uk' ? 24500 : 619900;
-      const low = Math.floor(baseMedian * 0.92);
-      const high = Math.floor(baseMedian * 1.08);
-      result = {
-        make, model, year,
-        median: baseMedian,
-        low, high,
-        count: 34,
-        confidence: 'high',
-        currency,
-        sources: [
-          { name: 'National Classified Feeds', count: 18, avg: baseMedian * 1.02 },
-          { name: 'Tier-1 Portals', count: 12, avg: baseMedian * 0.99 },
-          { name: 'Direct Dealer Network', count: 4, avg: baseMedian * 0.97 }
-        ],
-        arbitrageSpread: Math.floor(baseMedian * 0.08)
-      };
+      loadAutoTelemetrySync(query, extraParams);
+      return;
     }
 
+    result.currency = currency;
     activeTelemetryData = result;
 
-    document.getElementById('auto-median').textContent = formatMoney(result.median, result.currency);
-    document.getElementById('auto-range').textContent = `${formatMoney(result.low, result.currency)} - ${formatMoney(result.high, result.currency)}`;
-    document.getElementById('auto-confidence').textContent = `${(result.confidence || 'HIGH').toUpperCase()} CONFIDENCE`;
-    document.getElementById('auto-sample-info').textContent = `Based on ${result.count || 28} verified active listings`;
-    document.getElementById('auto-spread').textContent = `+${formatMoney(result.arbitrageSpread || Math.floor(result.median * 0.08), result.currency)}`;
+    const elMedian = document.getElementById('auto-median');
+    if (elMedian) elMedian.textContent = formatMoney(result.median, result.currency);
+    const elRange = document.getElementById('auto-range');
+    if (elRange) elRange.textContent = `${formatMoney(result.low, result.currency)} - ${formatMoney(result.high, result.currency)}`;
+    const elConf = document.getElementById('auto-confidence');
+    if (elConf) elConf.textContent = `${(result.confidence || 'HIGH').toUpperCase()} CONFIDENCE`;
+    const elSample = document.getElementById('auto-sample-info');
+    if (elSample) elSample.textContent = `Based on ${result.count || 28} verified active listings`;
+    const elSpread = document.getElementById('auto-spread');
+    if (elSpread) elSpread.textContent = `+${formatMoney(result.arbitrageSpread || Math.floor(result.median * 0.08), result.currency)}`;
 
     drawDistributionChart(result.median, result.low, result.high, result.currency);
-
-    const compsContainer = document.getElementById('auto-comps-list');
-    compsContainer.innerHTML = '';
-    const sampleComps = [
-      { source: 'Tier-1 Classified Feed', title: `${year} ${make} ${model} Auto`, odo: '38,000 km', price: result.median * 1.02, area: 'Regional East' },
-      { source: 'Dealer Direct Network', title: `${year} ${make} ${model} 4x4`, odo: '44,200 km', price: result.median * 0.99, area: 'Metro Central' },
-      { source: 'Commercial Feed', title: `${year} ${make} ${model} Raised Body`, odo: '51,000 km', price: result.low * 1.01, area: 'Financial District' },
-      { source: 'Verified Listing', title: `${year} ${make} ${model} Edition`, odo: '29,500 km', price: result.high * 0.98, area: 'Coastal North' }
-    ];
-
-    sampleComps.forEach(comp => {
-      const row = document.createElement('div');
-      row.className = 'comp-item';
-      row.innerHTML = `
-        <div class="comp-meta">
-          <span class="comp-title">${comp.title}</span>
-          <span class="comp-details font-mono">${comp.source} • ${comp.odo} • ${comp.area}</span>
-        </div>
-        <div class="comp-price font-mono">${formatMoney(Math.floor(comp.price), result.currency)}</div>
-      `;
-    // Update Bureau Dossier according to market (ZA = TransUnion eValue8 / Imagin8, UK = DVLA & HPI Check)
-    if (market === 'uk') {
-      document.getElementById('bureau-tab-title').textContent = 'Official DVLA, MOT & HPI History Dossier';
-      document.getElementById('bureau-dossier-heading').textContent = 'Official DVLA Specification, MOT History & HPI Clear Dossier';
-      document.getElementById('bureau-val-label-1').textContent = 'CAP TRADE VALUE';
-      document.getElementById('bureau-code-tag').textContent = 'CAP ID: 84920';
-      document.getElementById('bureau-trade').textContent = formatGBP.format(Math.round(result.median * 0.86));
-      document.getElementById('bureau-val-label-2').textContent = 'CAP RETAIL VALUE';
-      document.getElementById('bureau-retail').textContent = formatGBP.format(result.median);
-      document.getElementById('bureau-val-label-3').textContent = 'INSURANCE WRITE-OFF';
-      document.getElementById('bureau-stolen').textContent = 'CAT CLEAR';
-      document.getElementById('bureau-stolen-sub').textContent = 'No Cat S/N/C/D write-off recorded';
-      document.getElementById('bureau-val-label-4').textContent = 'FINANCE & STOLEN';
-      document.getElementById('bureau-finance').textContent = 'HPI CLEAR';
-
-      document.getElementById('bureau-row-1').innerHTML = `
-        <span>VRM &amp; Spec Check</span>
-        <span>DVLA National Vehicle Register</span>
-        <span>${make.toUpperCase()} ${model.toUpperCase()} · ${year} · ULEZ Compliant</span>
-        <td><span class="badge badge-neon">VERIFIED</span></td>
-      `;
-      document.getElementById('bureau-row-2').innerHTML = `
-        <span>MOT History &amp; Advisory</span>
-        <span>DVSA MOT Testing Service</span>
-        <span>Valid MOT (Expires in 8 Mo) · 0 Advisories</span>
-        <td><span class="badge badge-neon">PASSED</span></td>
-      `;
-      document.getElementById('bureau-row-3').innerHTML = `
-        <span>Mileage &amp; Odometer Discrepancy</span>
-        <span>National Mileage Register (NMR)</span>
-        <span>Verified 34,200 miles · No rollback anomaly</span>
-        <td><span class="badge badge-neon">VERIFIED</span></td>
-      `;
-    } else {
-      document.getElementById('bureau-tab-title').textContent = 'Official TransUnion & Imagin8 Bureau Dossier';
-      document.getElementById('bureau-dossier-heading').textContent = 'Official TransUnion eValue8™ & Police Verification Dossier';
-      document.getElementById('bureau-val-label-1').textContent = 'OFFICIAL TRADE VALUE';
-      document.getElementById('bureau-code-tag').textContent = 'M&M: 60024820';
-      document.getElementById('bureau-trade').textContent = formatZAR.format(Math.round(result.median * 0.88));
-      document.getElementById('bureau-val-label-2').textContent = 'OFFICIAL RETAIL VALUE';
-      document.getElementById('bureau-retail').textContent = formatZAR.format(result.median);
-      document.getElementById('bureau-val-label-3').textContent = 'POLICE / TITLE STATUS';
-      document.getElementById('bureau-stolen').textContent = 'SAPS CLEAR';
-      document.getElementById('bureau-stolen-sub').textContent = 'No police stolen interest';
-      document.getElementById('bureau-val-label-4').textContent = 'BANK FINANCE / ENCUMBRANCE';
-      document.getElementById('bureau-finance').textContent = 'CLEAR TITLE';
-
-      document.getElementById('bureau-row-1').innerHTML = `
-        <span>VIN &amp; Engine Match</span>
-        <span>National Transport Register (NaTIS)</span>
-        <span>Matched 1GD•••••••• to Chassis</span>
-        <td><span class="badge badge-neon">VERIFIED</span></td>
-      `;
-      document.getElementById('bureau-row-2').innerHTML = `
-        <span>Insurance Claims History</span>
-        <span>TransUnion Insurance Claims Database</span>
-        <span>1 Minor Cosmetic Claim (R14,250) · No Structural Damage</span>
-        <td><span class="badge badge-neon">PASSED</span></td>
-      `;
-      document.getElementById('bureau-row-3').innerHTML = `
-        <span>Microdot &amp; Odometer Audit</span>
-        <span>Microdot SA Registry</span>
-        <span>Genuine Microdots · Mileage Audit Consistent</span>
-        <td><span class="badge badge-neon">PASSED</span></td>
-      `;
-    }
-
     updateRawJson(result);
   }
 
@@ -483,10 +476,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     activeTelemetryData = data;
-    document.getElementById('prop-median').textContent = formatZAR.format(data.medianAskingPrice);
-    document.getElementById('prop-sqm').textContent = `${formatZAR.format(data.pricePerSqm)} /m²`;
-    document.getElementById('prop-yield').textContent = `${data.grossRentalYield} p.a.`;
-    document.getElementById('prop-supply').textContent = `${data.portalSupplyCount} Properties`;
+    const elPropMed = document.getElementById('prop-median');
+    if (elPropMed) elPropMed.textContent = formatZAR.format(data.medianAskingPrice);
+    const elPropSqm = document.getElementById('prop-sqm');
+    if (elPropSqm) elPropSqm.textContent = `${formatZAR.format(data.pricePerSqm)} /m²`;
+    const elPropYield = document.getElementById('prop-yield');
+    if (elPropYield) elPropYield.textContent = `${data.grossRentalYield} p.a.`;
+    const elPropSup = document.getElementById('prop-supply');
+    if (elPropSup) elPropSup.textContent = `${data.portalSupplyCount} Properties`;
 
     // Render FSBO table
     const fsboTableBody = document.getElementById('fsbo-table-body');
@@ -517,11 +514,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateRawJson(data);
   }
 
-  // 3. Agency Site Audit Telemetry
-  async function loadAgencyTelemetry(query = 'Commercial Services in Pretoria', extra = {}) {
+  // 3. Agency Site Audit Telemetry (Instant + Async Live Search)
+  async function loadAgencyTelemetry(query = 'Commercial Services in Pretoria', extra = {}, isLiveSearch = false) {
     let niche = extra.niche || 'Commercial Services';
     let city = extra.city || 'Pretoria';
-    const country = marketSelect.value === 'uk' ? 'uk' : 'za';
+    const country = marketSelect?.value === 'uk' ? 'uk' : 'za';
 
     if (!extra.niche && query) {
       const parts = query.split(/ in | at | - |, /i);
@@ -535,60 +532,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
     telemetryTitle.textContent = `LIVE LEGACY SITE RADAR: ${niche.toUpperCase()} IN ${city.toUpperCase()}`;
 
-    let crawlData = null;
-    try {
-      const res = await fetch('/api/agency/crawl', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ city, industry: niche, country, maxResults: 5 })
-      });
-      if (res.ok) {
-        crawlData = await res.json();
-      }
-    } catch (e) {
-      console.warn('Live agency crawler fallback:', e);
-    }
-
-    const firstTarget = crawlData?.targets?.[0];
-    const score = firstTarget ? firstTarget.readinessScore : 28;
-    const pitchVal = firstTarget ? firstTarget.estimatedPitchValue : (country === 'uk' ? '£2,500 - £4,500' : 'R 25,000 - R 45,000');
-    const isMobileFail = firstTarget ? !firstTarget.techStack.hasViewportMeta : true;
-    const speedSeconds = firstTarget ? firstTarget.techStack.estimatedLoadSeconds : 6.4;
-
-    activeTelemetryData = crawlData || {
+    // Default fast baseline data
+    const baselineData = {
       searchTarget: `${niche} in ${city}`,
-      readinessScore: score,
+      sampleAuditedDomain: `www.${niche.toLowerCase().replace(/\s+/g, '')}-${city.toLowerCase()}.co.za`,
+      readinessScore: 28,
       status: 'CRITICAL_DEFECTS_FOUND',
-      estimatedPitchValue: pitchVal
+      estimatedPitchValue: country === 'uk' ? '£2,500 - £4,500' : 'R 25,000 - R 45,000',
+      defects: [
+        { severity: 'CRITICAL', title: 'Missing Mobile Viewport Tag (Broken on Mobile)', agencyPitchAngle: 'Losing an estimated 68% of commercial mobile prospects searching on smartphones.' },
+        { severity: 'CRITICAL', title: 'Expired SSL Certificate (Not Secure)', agencyPitchAngle: 'Google Chrome and Safari display scary security alert banners to visitors.' },
+        { severity: 'HIGH', title: 'Missing LocalBusiness Schema & Meta Tags', agencyPitchAngle: 'Fails to index for regional search terms against competitors on Google Maps.' }
+      ]
     };
 
-    document.getElementById('agency-score').textContent = `${score} / 100`;
-    document.getElementById('agency-mobile').textContent = isMobileFail ? 'Non-Responsive (Failed)' : 'Responsive (Pass)';
-    document.getElementById('agency-speed').textContent = `${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (${speedSeconds}s LCP)`;
-    document.getElementById('agency-pitch-val').textContent = pitchVal;
+    activeTelemetryData = baselineData;
 
-    // Render defects list if target available
-    if (firstTarget && firstTarget.defects) {
-      const defectListBox = document.querySelector('.defect-list');
-      if (defectListBox) {
-        defectListBox.innerHTML = '';
-        firstTarget.defects.slice(0, 3).forEach(d => {
-          const item = document.createElement('div');
-          item.className = 'defect-item';
-          const badgeClass = d.severity === 'CRITICAL' ? 'red' : 'amber';
-          item.innerHTML = `
-            <span class="defect-badge ${badgeClass}">${d.severity}</span>
-            <div class="defect-info">
-              <strong>${d.title}</strong>
-              <p>${d.description} <em>Pitch angle: ${d.agencyPitchAngle}</em></p>
-            </div>
-          `;
-          defectListBox.appendChild(item);
-        });
-      }
+    const elScore = document.getElementById('agency-score');
+    if (elScore) elScore.textContent = `${baselineData.readinessScore} / 100`;
+    const elMobile = document.getElementById('agency-mobile');
+    if (elMobile) elMobile.textContent = 'Non-Responsive (Failed)';
+    const elSpeed = document.getElementById('agency-speed');
+    if (elSpeed) elSpeed.textContent = 'F-Grade (6.4s LCP)';
+    const elPitch = document.getElementById('agency-pitch-val');
+    if (elPitch) elPitch.textContent = baselineData.estimatedPitchValue;
+
+    // Render baseline defects
+    const defectListBox = document.querySelector('.defect-list');
+    if (defectListBox) {
+      defectListBox.innerHTML = '';
+      baselineData.defects.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'defect-item';
+        const badgeClass = d.severity === 'CRITICAL' ? 'red' : 'amber';
+        item.innerHTML = `
+          <span class="defect-badge ${badgeClass}">${d.severity}</span>
+          <div class="defect-info">
+            <strong>${d.title}</strong>
+            <p><em>Pitch angle: ${d.agencyPitchAngle}</em></p>
+          </div>
+        `;
+        defectListBox.appendChild(item);
+      });
     }
 
-    updateRawJson(activeTelemetryData);
+    updateRawJson(baselineData);
+
+    // If explicit live search requested, trigger live crawler in background
+    if (isLiveSearch) {
+      try {
+        setLoadingState(true);
+        const res = await fetch('/api/agency/crawl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city, industry: niche, country, maxResults: 5 })
+        });
+        if (res.ok) {
+          const crawlData = await res.json();
+          const firstTarget = crawlData?.targets?.[0];
+          if (firstTarget) {
+            const score = firstTarget.readinessScore || 32;
+            const pitchVal = firstTarget.estimatedPitchValue || baselineData.estimatedPitchValue;
+            const isMobileFail = firstTarget.techStack ? !firstTarget.techStack.hasViewportMeta : true;
+            const speedSeconds = firstTarget.techStack?.estimatedLoadSeconds || 6.4;
+
+            activeTelemetryData = crawlData;
+            if (elScore) elScore.textContent = `${score} / 100`;
+            if (elMobile) elMobile.textContent = isMobileFail ? 'Non-Responsive (Failed)' : 'Responsive (Pass)';
+            if (elSpeed) elSpeed.textContent = `${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (${speedSeconds}s LCP)`;
+            if (elPitch) elPitch.textContent = pitchVal;
+
+            if (defectListBox && firstTarget.defects) {
+              defectListBox.innerHTML = '';
+              firstTarget.defects.slice(0, 3).forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'defect-item';
+                const badgeClass = d.severity === 'CRITICAL' ? 'red' : 'amber';
+                item.innerHTML = `
+                  <span class="defect-badge ${badgeClass}">${d.severity}</span>
+                  <div class="defect-info">
+                    <strong>${d.title}</strong>
+                    <p>${d.description} <em>Pitch angle: ${d.agencyPitchAngle}</em></p>
+                  </div>
+                `;
+                defectListBox.appendChild(item);
+              });
+            }
+            updateRawJson(crawlData);
+          }
+        }
+      } catch (e) {
+        console.warn('Live crawler background fallback:', e);
+      } finally {
+        setLoadingState(false);
+      }
+    }
   }
 
   // 4. B2B Leads Telemetry
@@ -653,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   function handleSearch(query, extra = {}) {
     if (!query) return;
-    loadEngineTelemetry(currentEngine, query, extra);
+    loadEngineTelemetry(currentEngine, query, extra, true);
 
     setTimeout(() => {
       document.getElementById('telemetry')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
