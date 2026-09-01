@@ -20,7 +20,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import { SetupChecklistCard } from './SetupPrompt';
 import type { SetupStatus } from '../lib/setupStatus';
-import { useMarket, useMoney } from '../contexts/MarketContext';
+import { useMarket, useMoney, useRegLookup } from '../contexts/MarketContext';
+import type { RegLookupResult } from '../../../packages/reg-lookup';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -75,6 +76,7 @@ export default function InventoryList({
   const { signOut, user } = useAuth();
   const money = useMoney();
   const market = useMarket();
+  const regLookup = useRegLookup();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [guideSeen, setGuideSeen] = React.useState(() => !!localStorage.getItem('truinspect_guide_seen'));
   // Setup modal's "Set up now" — jump to the Settings tab when the signal bumps.
@@ -318,6 +320,56 @@ export default function InventoryList({
     setTimeout(() => setScanNote(null), 5000);
   };
 
+  /* UK plate lookup — the licence-disc equivalent for UK instances: type the
+     VRM, the registration dataset fills make/model/year/colour/fuel and rides
+     the vehicle record as a regCheck snapshot (MOT/tax/mileage signals). */
+  const [plate, setPlate] = React.useState('');
+  const [plateLoading, setPlateLoading] = React.useState(false);
+  const [plateNote, setPlateNote] = React.useState<string | null>(null);
+  const [lookupResult, setLookupResult] = React.useState<RegLookupResult | null>(null);
+
+  const runPlateLookup = async () => {
+    const reg = plate.trim();
+    if (!reg || !user) return;
+    setPlateLoading(true);
+    setPlateNote(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/reg-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ registration: reg }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Lookup failed (${res.status})`);
+      const titleCase = (v: string) =>
+        v.toLowerCase().split(' ').map((w: string) => (w ? w[0].toUpperCase() + w.slice(1) : w)).join(' ');
+      const filled: string[] = [];
+      if (data.make) { setMake(titleCase(data.make)); filled.push('make'); }
+      if (data.model) { setModel(titleCase(data.model)); filled.push('model'); }
+      if (data.yearOfManufacture) { setYear(Number(data.yearOfManufacture)); filled.push('year'); }
+      if (data.colour) { setColor(titleCase(data.colour)); filled.push('colour'); }
+      const fuelMap: Record<string, 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'> = {
+        PETROL: 'Petrol', DIESEL: 'Diesel', HYBRID: 'Hybrid', ELECTRICITY: 'Electric',
+      };
+      if (data.fuelType && fuelMap[String(data.fuelType).toUpperCase()]) {
+        setFuelType(fuelMap[String(data.fuelType).toUpperCase()]);
+        filled.push('fuel');
+      }
+      setPickerKey((k) => k + 1);
+      setLookupResult(data as RegLookupResult);
+      setPlateNote(
+        filled.length === 0
+          ? 'No details came back for that plate — enter the basics by hand.'
+          : `Filled ${filled.length} field${filled.length > 1 ? 's' : ''} from UK vehicle data — check and adjust.`,
+      );
+    } catch (err: any) {
+      setPlateNote(err?.message || 'Lookup failed — enter the details by hand.');
+    } finally {
+      setPlateLoading(false);
+    }
+  };
+
   /* Add Vehicle auto-fill: an M&M code resolves the full factory spec via
      Imagin8 Static Info (on the flat unlimited subscription, so free to run).
      Fires on blur so a picked or typed code fills make/model/fuel in one hit. */
@@ -477,6 +529,8 @@ export default function InventoryList({
         trim,
         mmCode: mmCode || undefined,
         vin: vin.trim(),
+        registration: plate.trim() || undefined,
+        regCheck: lookupResult || undefined,
         stockNumber: stockNumber.trim(),
         color: color.trim(),
         price: Number(price),
@@ -497,6 +551,8 @@ export default function InventoryList({
         trim,
         mmCode: mmCode || undefined,
         vin: vin || 'VIN-PENDING-' + Math.floor(1000 + Math.random() * 9000),
+        registration: plate.trim() || undefined,
+        regCheck: lookupResult || undefined,
         stockNumber: stockNumber || 'STK-' + Math.floor(10000 + Math.random() * 90000),
         color: color || 'Black',
         price: Number(price),
@@ -531,6 +587,9 @@ export default function InventoryList({
     setServicePlan('');
     setExtras('');
     setDiscPhoto(null);
+    setPlate('');
+    setPlateNote(null);
+    setLookupResult(null);
 
     setShowAddForm(false);
   };
@@ -748,7 +807,11 @@ export default function InventoryList({
                   {editingVehicle ? 'Edit vehicle' : 'New vehicle'}
                 </h3>
                 <p className="text-[13px] text-[rgba(232,234,230,0.55)] mt-0.5">
-                  {editingVehicle ? 'Update this stock unit’s details.' : 'Scan the licence disc, or enter the basics by hand.'}
+                  {editingVehicle
+                    ? 'Update this stock unit’s details.'
+                    : market.id === 'uk'
+                      ? (regLookup.available ? 'Look up the plate, or enter the basics by hand.' : 'Enter the basics by hand.')
+                      : 'Scan the licence disc, or enter the basics by hand.'}
                 </p>
               </div>
               <button
@@ -761,14 +824,73 @@ export default function InventoryList({
               </button>
             </div>
 
-            {/* Scan is the primary: it fills nine fields from one photo. */}
-            <button
-              type="button"
-              onClick={() => setScanningDisc(true)}
-              className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] cursor-pointer"
-            >
-              <ScanLine size={18} /> Scan licence disc
-            </button>
+            {/* Primary intake action is market-shaped: SA scans the licence
+                disc; UK types the plate and the registration dataset fills
+                the form (when a lookup provider is configured). */}
+            {market.id !== 'uk' && (
+              <button
+                type="button"
+                onClick={() => setScanningDisc(true)}
+                className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] cursor-pointer"
+              >
+                <ScanLine size={18} /> Scan licence disc
+              </button>
+            )}
+
+            {market.id === 'uk' && regLookup.available && (
+              <div className="space-y-2">
+                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block">Registration plate — auto-fills make, model &amp; more</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={plate}
+                    onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void runPlateLookup(); } }}
+                    placeholder="e.g. BJ52SFK"
+                    maxLength={10}
+                    className="ti-input flex-1 uppercase tracking-widest font-mono"
+                    style={{ minHeight: 48 }}
+                    autoComplete="off"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void runPlateLookup()}
+                    disabled={plateLoading || plate.trim().length < 2}
+                    className="btn-primary on-fill px-5 min-h-[48px] flex items-center justify-center gap-2 text-[14px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {plateLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                    {plateLoading ? 'Checking…' : 'Look up'}
+                  </button>
+                </div>
+                {plateNote && (
+                  <p className="text-[13px] text-[rgba(232,234,230,0.72)]">{plateNote}</p>
+                )}
+                {lookupResult && (
+                  <div className="flex flex-wrap gap-2">
+                    {lookupResult.motStatus && (
+                      <span className={`text-[11px] px-2 py-1 rounded-full border ${lookupResult.motStatus === 'Valid' ? 'text-[#4FE3DC] border-[rgba(79,227,220,0.4)] bg-[rgba(79,227,220,0.08)]' : 'text-amber-400 border-amber-400/40 bg-amber-400/10'}`}>
+                        MOT: {lookupResult.motStatus}{lookupResult.motExpiryDate ? ` · due ${lookupResult.motExpiryDate}` : ''}
+                      </span>
+                    )}
+                    {lookupResult.taxStatus && (
+                      <span className={`text-[11px] px-2 py-1 rounded-full border ${lookupResult.taxStatus === 'Taxed' ? 'text-[#4FE3DC] border-[rgba(79,227,220,0.4)] bg-[rgba(79,227,220,0.08)]' : 'text-amber-400 border-amber-400/40 bg-amber-400/10'}`}>
+                        Tax: {lookupResult.taxStatus}
+                      </span>
+                    )}
+                    {lookupResult.mileageAlert && (
+                      <span className="text-[11px] px-2 py-1 rounded-full border text-red-400 border-red-400/40 bg-red-400/10">
+                        ⚠ Mileage discrepancy recorded
+                      </span>
+                    )}
+                    {lookupResult.markedForExport && (
+                      <span className="text-[11px] px-2 py-1 rounded-full border text-red-400 border-red-400/40 bg-red-400/10">
+                        ⚠ Marked for export
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {scanNote && (
               <p className="text-[13px] text-[rgba(232,234,230,0.72)]">{scanNote}</p>

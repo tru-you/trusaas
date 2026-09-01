@@ -651,7 +651,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             {activeTab === "specs" && (
               <div className="space-y-5 animate-in fade-in duration-200">
 
-                {/* ── Imagin8 / TransUnion — auto-populate or manual ── */}
+                {/* ── Imagin8 / TransUnion — auto-populate or manual.
+                     SA-only stack (SA provider) — hidden on other markets. ── */}
+                {market.id === 'za' && (
                 <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="text-[11px] font-mono text-[color:var(--cyan)] uppercase tracking-wider">Imagin8 · Auto-fill from TransUnion</div>
@@ -819,6 +821,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* ── PRICING & PROFIT ── */}
                 <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">

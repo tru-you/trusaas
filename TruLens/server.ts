@@ -24,6 +24,7 @@ import { fetchValuation } from './src/lib/scraper';
  *   VALUATION_ENGINE=package → shared packages/market-scraper engine
  * MARKET (default 'za') picks the market config on the package engine. */
 import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from '../packages/market-scraper/index';
+import { lookupRegistration, lookupCarHistory, regLookupConfigured, regLookupProvider, historyCheckEnabled } from '../packages/reg-lookup';
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
 const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
@@ -1015,9 +1016,34 @@ function hasDealerScope(req: any): boolean {
  * dealer data, so it rides for every authenticated caller incl. demo. The
  * client display layer (MarketContext) reads it to pick currency/locale/units
  * for the dealer's own prices. Same endpoint name TruInspect exposes, so the
- * shared MarketContext works unchanged in both apps. */
+ * shared MarketContext works unchanged in both apps. regLookup flags gate the
+ * plate-lookup UI the same way. */
 app.get('/api/dealership/settings', authenticate, (_req: any, res) => {
-  res.json({ market: INSTANCE_MARKET });
+  res.json({
+    market: INSTANCE_MARKET,
+    regLookup: regLookupConfigured(),
+    regLookupProvider: regLookupProvider(),
+    historyChecks: historyCheckEnabled(),
+  });
+});
+
+// ==================== UK REGISTRATION LOOKUP ====================
+// Plate → vehicle data (UK market). Same contract as TruInspect's route; the
+// provider + key are env-driven (packages/reg-lookup).
+
+app.post('/api/reg-lookup', authenticate, async (req: any, res) => {
+  const { registration, deep } = req.body || {};
+  try {
+    if (deep) {
+      const history = await lookupCarHistory(String(registration || ''));
+      return res.json({ ok: true, history });
+    }
+    const result = await lookupRegistration(String(registration || ''));
+    res.json({ ok: true, ...result });
+  } catch (err: any) {
+    const status = err?.status && err.status >= 400 && err.status < 600 ? err.status : 502;
+    res.status(status).json({ ok: false, error: err?.message || 'Lookup failed' });
+  }
 });
 
 app.get('/api/setup/status', authenticate, async (req: any, res) => {

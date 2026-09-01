@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Loader2, TrendingDown, TrendingUp,
 import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
+import { useMarket } from '../contexts/MarketContext';
 import { urlMake } from '../lib/makeAliases';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import { formatMoneyFromData, marketByCurrency } from './market';
@@ -16,6 +17,7 @@ interface TradeInValuationProps {
 
 export default function TradeInValuation({ vehicle, items, onBack, onComplete }: TradeInValuationProps) {
   const { user } = useAuth();
+  const market = useMarket();
   const totalRecon = items.reduce((s, i) => s + i.estimatedRepairCost, 0);
 
   const [valuation, setValuation] = React.useState<ValuationState>(() => {
@@ -211,6 +213,9 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           <span className="mv-badge" style={{fontSize:'11px'}}>LIVE</span>
         </button>
 
+        {/* TransUnion official valuation is SA-only (SA provider, needs an
+            M&M code) — other markets keep the free live-market scan. */}
+        {market.id === 'za' && (
         <Imagin8GatedButton
           feature="valuation"
           bundles={imagin8Bundles}
@@ -219,15 +224,16 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           className="w-full justify-center min-h-[48px] text-[14px]"
           icon={tuValLoading ? <Loader2 size={15} className="animate-spin" /> : <Shield size={15} />}
         />
+        )}
 
         {/* TU Valuation result */}
-        {tuVal && tuVal.available === false && (
+        {market.id === 'za' && tuVal && tuVal.available === false && (
           <div className="rounded-xl border border-neutral-700 bg-neutral-800/40 p-4">
             <div className="text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1">TransUnion Official</div>
             <div className="text-[13px] text-neutral-400">{tuVal.note || 'Valuation unavailable — using market estimate.'}</div>
           </div>
         )}
-        {tuVal && tuVal.available !== false && (
+        {market.id === 'za' && tuVal && tuVal.available !== false && (
           <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 space-y-2">
             <div className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider">TransUnion Official</div>
             <div className="grid grid-cols-3 gap-3">

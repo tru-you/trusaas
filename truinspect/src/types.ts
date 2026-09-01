@@ -28,6 +28,11 @@ export interface Vehicle {
   trim: string;
   mmCode?: string;
   vin: string;
+  /** UK registration plate (VRM) — filled by the DVLA/aggregator lookup. */
+  registration?: string;
+  /** Snapshot of the last reg lookup (make/model/MOT/tax/mileage signals).
+   *  Kept raw-ish on purpose — providers return more than we render today. */
+  regCheck?: import('../../packages/reg-lookup').RegLookupResult;
   stockNumber: string;
   color: string;
   price: number;

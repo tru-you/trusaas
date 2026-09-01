@@ -612,6 +612,16 @@ services:
         value: brightdata
       - key: SERP_ZONE
         sync: false
+      # UK registration lookup (plate → vehicle data at add-vehicle time).
+      # mock = deterministic demo data; flip to checkcardetails + set
+      # REG_LOOKUP_API_KEY for live lookups (dvla provider also supported).
+      # HISTORY_CHECK_ENABLED=1 arms the per-vehicle deep history-check action.
+      - key: REG_LOOKUP_PROVIDER
+        value: mock
+      - key: REG_LOOKUP_API_KEY
+        sync: false
+      - key: HISTORY_CHECK_ENABLED
+        value: "0"
 
   - type: web
     name: trusaas-inspect-uk
@@ -667,6 +677,13 @@ services:
         value: brightdata
       - key: SERP_ZONE
         sync: false
+      # UK registration lookup (see trusaas-lens-uk notes).
+      - key: REG_LOOKUP_PROVIDER
+        value: mock
+      - key: REG_LOOKUP_API_KEY
+        sync: false
+      - key: HISTORY_CHECK_ENABLED
+        value: "0"
 
   - type: web
     name: trusaas-premium-uk
@@ -718,6 +735,13 @@ services:
         value: brightdata
       - key: SERP_ZONE
         sync: false
+      # UK registration lookup (see trusaas-lens-uk notes).
+      - key: REG_LOOKUP_PROVIDER
+        value: mock
+      - key: REG_LOOKUP_API_KEY
+        sync: false
+      - key: HISTORY_CHECK_ENABLED
+        value: "0"
 
   - type: web
     name: trusaas-mobile-uk

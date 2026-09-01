@@ -14,6 +14,7 @@ import { fetchValuation } from './src/lib/scraper';
  * MARKET (default 'za') picks the market config on the package engine.
  * Dealer-level market lands with the market substrate; instance env for now. */
 import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from '../packages/market-scraper/index';
+import { lookupRegistration, lookupCarHistory, regLookupConfigured, regLookupProvider, historyCheckEnabled } from '../packages/reg-lookup';
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
 const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
@@ -1320,9 +1321,16 @@ app.get('/api/dealership/settings', authenticate, (req: any, res) => {
   const slug = scopedDealerSlug(req);
   // `market` rides every response (even demo/slugless) — it's instance-level,
   // not dealer data, and the client display layer needs it unconditionally.
-  if (!slug) return res.json({ settings: {}, skipPrompt: true, market: INSTANCE_MARKET });
+  // regLookup flags gate the plate-lookup UI the same way.
+  const marketMeta = {
+    market: INSTANCE_MARKET,
+    regLookup: regLookupConfigured(),
+    regLookupProvider: regLookupProvider(),
+    historyChecks: historyCheckEnabled(),
+  };
+  if (!slug) return res.json({ settings: {}, skipPrompt: true, ...marketMeta });
   try {
-    res.json({ settings: readDealerSettings()[slug] || {}, market: INSTANCE_MARKET });
+    res.json({ settings: readDealerSettings()[slug] || {}, ...marketMeta });
   } catch (e) {
     console.error('GET /api/dealership/settings - Error:', e);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -1348,6 +1356,26 @@ app.put('/api/dealership/settings', authenticate, (req: any, res) => {
   } catch (e) {
     console.error('PUT /api/dealership/settings - Error:', e);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ==================== UK REGISTRATION LOOKUP ====================
+// Plate → vehicle data (UK market). Tier 1 intake lookup fills the add-vehicle
+// form; the deep history check is a deliberate per-vehicle action gated by
+// HISTORY_CHECK_ENABLED. Provider + key are env-driven (packages/reg-lookup).
+
+app.post('/api/reg-lookup', authenticate, async (req: any, res) => {
+  const { registration, deep } = req.body || {};
+  try {
+    if (deep) {
+      const history = await lookupCarHistory(String(registration || ''));
+      return res.json({ ok: true, history });
+    }
+    const result = await lookupRegistration(String(registration || ''));
+    res.json({ ok: true, ...result });
+  } catch (err: any) {
+    const status = err?.status && err.status >= 400 && err.status < 600 ? err.status : 502;
+    res.status(status).json({ ok: false, error: err?.message || 'Lookup failed' });
   }
 });
 

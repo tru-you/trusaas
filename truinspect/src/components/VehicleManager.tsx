@@ -369,6 +369,8 @@ export default function VehicleManager({
             </div>
 
             {/* Imagin8 / Vehicle Verification */}
+            {/* TransUnion stack is SA-only (SA provider) — hidden on other markets. */}
+            {market.id === 'za' && (
             <div className="pt-2 border-t border-[var(--glass-line)] space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-[12px] font-semibold" style={{ color: 'var(--white-dim)' }}>TransUnion Verification</span>
@@ -421,6 +423,7 @@ export default function VehicleManager({
                 </div>
               )}
             </div>
+            )}
           </section>
 
           {/* Warranty / service / extras */}

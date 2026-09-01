@@ -18,7 +18,8 @@ import type { DiscScan } from '../lib/saDisc';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import { SetupChecklistCard } from './SetupPrompt';
 import { formatMoney, formatMoneyFromData, formatDistance } from './market';
-import { useMarket, useMoney } from '../contexts/MarketContext';
+import { useMarket, useMoney, useRegLookup } from '../contexts/MarketContext';
+import type { RegLookupResult } from '../../../packages/reg-lookup';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -67,6 +68,7 @@ export default function InventoryList({
   const { signOut, user, isDemo } = useAuth();
   const money = useMoney();
   const market = useMarket();
+  const regLookup = useRegLookup();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [guideSeen, setGuideSeen] = React.useState(() => !!localStorage.getItem('trulens_guide_seen'));
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -286,6 +288,54 @@ export default function InventoryList({
   const [extrasOpen, setExtrasOpen] = React.useState(false);
   const [scanningDisc, setScanningDisc] = React.useState(false);
   const [scanNote, setScanNote] = React.useState<string | null>(null);
+
+  /* UK plate lookup — VRM → registration dataset fills make/model/year/colour/
+     fuel; the snapshot rides the vehicle record as regCheck. */
+  const [plate, setPlate] = React.useState('');
+  const [plateLoading, setPlateLoading] = React.useState(false);
+  const [plateNote, setPlateNote] = React.useState<string | null>(null);
+  const [lookupResult, setLookupResult] = React.useState<RegLookupResult | null>(null);
+
+  const runPlateLookup = async () => {
+    const reg = plate.trim();
+    if (!reg || !user) return;
+    setPlateLoading(true);
+    setPlateNote(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/reg-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ registration: reg }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `Lookup failed (${res.status})`);
+      const titleCase = (v: string) =>
+        v.toLowerCase().split(' ').map((w: string) => (w ? w[0].toUpperCase() + w.slice(1) : w)).join(' ');
+      const filled: string[] = [];
+      if (data.make) { setMake(titleCase(data.make)); filled.push('make'); }
+      if (data.model) { setModel(titleCase(data.model)); filled.push('model'); }
+      if (data.yearOfManufacture) { setYear(Number(data.yearOfManufacture)); filled.push('year'); }
+      if (data.colour) { setColor(titleCase(data.colour)); filled.push('colour'); }
+      const fuelMap: Record<string, 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'> = {
+        PETROL: 'Petrol', DIESEL: 'Diesel', HYBRID: 'Hybrid', ELECTRICITY: 'Electric',
+      };
+      if (data.fuelType && fuelMap[String(data.fuelType).toUpperCase()]) {
+        setFuelType(fuelMap[String(data.fuelType).toUpperCase()]);
+        filled.push('fuel');
+      }
+      setLookupResult(data as RegLookupResult);
+      setPlateNote(
+        filled.length === 0
+          ? 'No details came back for that plate — enter the basics by hand.'
+          : `Filled ${filled.length} field${filled.length > 1 ? 's' : ''} from UK vehicle data — check and adjust.`,
+      );
+    } catch (err: any) {
+      setPlateNote(err?.message || 'Lookup failed — enter the details by hand.');
+    } finally {
+      setPlateLoading(false);
+    }
+  };
 
   // Live market valuation at the pricing step. Typed locally on purpose — the
   // scraper module is server-only (imports fs/path), so it must never be
@@ -529,6 +579,8 @@ export default function InventoryList({
         trim,
         mmCode: mmCode || undefined,
         vin: vin.trim(),
+        registration: plate.trim() || undefined,
+        regCheck: lookupResult || undefined,
         stockNumber: stockNumber.trim(),
         color: color.trim(),
         price: Number(price),
@@ -547,6 +599,8 @@ export default function InventoryList({
         trim,
         mmCode: mmCode || undefined,
         vin: vin.trim(),
+        registration: plate.trim() || undefined,
+        regCheck: lookupResult || undefined,
         stockNumber: stockNumber.trim(),
         color: color.trim(),
         price: Number(price),
@@ -561,6 +615,9 @@ export default function InventoryList({
 
     // Reset form
     setDiscPhoto(null);
+    setPlate('');
+    setPlateNote(null);
+    setLookupResult(null);
     setEditingVehicle(null);
     setMake('');
     setModel('');
@@ -826,7 +883,10 @@ export default function InventoryList({
               </button>
             </div>
 
-            {/* Scan is the primary: it fills nine fields from one photo. */}
+            {/* Primary intake action is market-shaped: SA scans the licence
+                disc; UK types the plate and the registration dataset fills
+                the form (when a lookup provider is configured). */}
+            {market.id !== 'uk' && (
             <button
               type="button"
               onClick={() => setScanningDisc(true)}
@@ -834,6 +894,62 @@ export default function InventoryList({
             >
               <ScanLine size={18} /> Scan licence disc
             </button>
+            )}
+
+            {market.id === 'uk' && regLookup.available && (
+            <div className="space-y-2">
+              <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block">Registration plate — auto-fills make, model &amp; more</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={plate}
+                  onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void runPlateLookup(); } }}
+                  placeholder="e.g. BJ52SFK"
+                  maxLength={10}
+                  className="ti-input flex-1 uppercase tracking-widest font-mono"
+                  style={{ minHeight: 48 }}
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={() => void runPlateLookup()}
+                  disabled={plateLoading || plate.trim().length < 2}
+                  className="btn-primary on-fill px-5 min-h-[48px] flex items-center justify-center gap-2 text-[14px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {plateLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                  {plateLoading ? 'Checking…' : 'Look up'}
+                </button>
+              </div>
+              {plateNote && (
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)]">{plateNote}</p>
+              )}
+              {lookupResult && (
+                <div className="flex flex-wrap gap-2">
+                  {lookupResult.motStatus && (
+                    <span className={`text-[11px] px-2 py-1 rounded-full border ${lookupResult.motStatus === 'Valid' ? 'text-[#4FE3DC] border-[rgba(79,227,220,0.4)] bg-[rgba(79,227,220,0.08)]' : 'text-amber-400 border-amber-400/40 bg-amber-400/10'}`}>
+                      MOT: {lookupResult.motStatus}{lookupResult.motExpiryDate ? ` · due ${lookupResult.motExpiryDate}` : ''}
+                    </span>
+                  )}
+                  {lookupResult.taxStatus && (
+                    <span className={`text-[11px] px-2 py-1 rounded-full border ${lookupResult.taxStatus === 'Taxed' ? 'text-[#4FE3DC] border-[rgba(79,227,220,0.4)] bg-[rgba(79,227,220,0.08)]' : 'text-amber-400 border-amber-400/40 bg-amber-400/10'}`}>
+                      Tax: {lookupResult.taxStatus}
+                    </span>
+                  )}
+                  {lookupResult.mileageAlert && (
+                    <span className="text-[11px] px-2 py-1 rounded-full border text-red-400 border-red-400/40 bg-red-400/10">
+                      ⚠ Mileage discrepancy recorded
+                    </span>
+                  )}
+                  {lookupResult.markedForExport && (
+                    <span className="text-[11px] px-2 py-1 rounded-full border text-red-400 border-red-400/40 bg-red-400/10">
+                      ⚠ Marked for export
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+            )}
 
             {scanNote && (
               <p className="text-[13px] text-[rgba(232,234,230,0.72)]">{scanNote}</p>
@@ -859,7 +975,7 @@ export default function InventoryList({
                 }}
               />
               <div>
-                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Mileage (km)</label>
+                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Mileage ({market.distanceUnit})</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -871,7 +987,7 @@ export default function InventoryList({
                 />
               </div>
               <div>
-                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Price (R)</label>
+                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Price ({market.currency})</label>
                 <input
                   type="number"
                   placeholder="35000"
@@ -932,7 +1048,10 @@ export default function InventoryList({
               )}
             </div>
 
-             {/* Imagin8 lookups — TransUnion price + reg check + accident report */}
+             {/* Imagin8 lookups — TransUnion price + reg check + accident report.
+                 SA-only stack (SA provider) — hidden on other markets. */}
+            {market.id === 'za' && (
+            <>
             <div className="grid grid-cols-2 gap-2">
               <Imagin8GatedButton
                 feature="valuation"
@@ -1007,6 +1126,8 @@ export default function InventoryList({
                   )}
                 </div>
               </div>
+            )}
+            </>
             )}
 
             {/* Everything else behind one disclosure. Values live in component
@@ -1105,7 +1226,9 @@ export default function InventoryList({
                   />
                 </div>
                 {/* Auto-filled by the make/model picker above (the M&M code it
-                    resolves); editable for a hand correction. */}
+                    resolves); editable for a hand correction. SA-only concept —
+                    hidden on other markets. */}
+                {market.id === 'za' && (
                 <div>
                   <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">M&amp;M Code</label>
                   <input
@@ -1123,6 +1246,7 @@ export default function InventoryList({
                     <p className="mt-1 text-[12px] text-[#4FE3DC]">{staticNote}</p>
                   )}
                 </div>
+                )}
 
                 {/* Optional Extras — full-width multi-select checklist */}
                 <div className="col-span-2 relative">

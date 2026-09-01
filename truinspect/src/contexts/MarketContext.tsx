@@ -3,8 +3,10 @@
  *
  * The server's MARKET env (default 'za') decides which market this instance
  * serves; it rides GET /api/dealership/settings. Every display surface that
- * shows the dealer's OWN prices (asking prices, offers, recon — as opposed to
- * valuation responses, which carry their own currency) reads the market here.
+ * shows the dealer's OWN prices reads the market here.
+ *
+ * The same fetch also carries the UK reg-lookup availability flags — the
+ * plate box in the add-vehicle flows renders only when regLookup is true.
  *
  * Fail-safe: any fetch hiccup keeps the ZA default, so SA instances behave
  * exactly as before this existed.
@@ -13,11 +15,28 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { MarketDisplay, marketById } from '../components/market';
 
-const MarketContext = createContext<MarketDisplay>(marketById('za'));
+export interface RegLookupInfo {
+  available: boolean;
+  provider: string;
+  historyChecks: boolean;
+}
+
+interface MarketContextValue {
+  market: MarketDisplay;
+  regLookup: RegLookupInfo;
+}
+
+const MarketContext = createContext<MarketContextValue>({
+  market: marketById('za'),
+  regLookup: { available: false, provider: '', historyChecks: false },
+});
 
 export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [market, setMarket] = useState<MarketDisplay>(marketById('za'));
+  const [value, setValue] = useState<MarketContextValue>({
+    market: marketById('za'),
+    regLookup: { available: false, provider: '', historyChecks: false },
+  });
 
   useEffect(() => {
     let alive = true;
@@ -29,7 +48,15 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
         if (!res.ok) return;
         const data = await res.json();
-        if (alive && data?.market) setMarket(marketById(data.market));
+        if (!alive) return;
+        setValue({
+          market: data?.market ? marketById(data.market) : marketById('za'),
+          regLookup: {
+            available: !!data?.regLookup,
+            provider: String(data?.regLookupProvider || ''),
+            historyChecks: !!data?.historyChecks,
+          },
+        });
       } catch {
         /* keep the ZA default — market is display-only, never blocking */
       }
@@ -37,12 +64,17 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => { alive = false; };
   }, [user]);
 
-  return <MarketContext.Provider value={market}>{children}</MarketContext.Provider>;
+  return <MarketContext.Provider value={value}>{children}</MarketContext.Provider>;
 };
 
 /** The instance market (ZA when unknown). */
 export function useMarket(): MarketDisplay {
-  return useContext(MarketContext);
+  return useContext(MarketContext).market;
+}
+
+/** UK reg-lookup availability (false on SA instances / unconfigured). */
+export function useRegLookup(): RegLookupInfo {
+  return useContext(MarketContext).regLookup;
 }
 
 /** Format the dealer's own money (asking price, offers, recon) in the

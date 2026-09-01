@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { authFetch } from "../lib/session";
 import type { Dealership as FullDealership } from "../types";
+import { useMarket } from "../contexts/MarketContext";
 
 const DealerDetailsSettings = lazy(() => import("./DealerDetailsSettings"));
 const DocSettingsPanel = lazy(() => import("./DocSettingsPanel"));
@@ -102,6 +103,7 @@ export default function DealershipAdmin({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const market = useMarket();
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -529,7 +531,8 @@ export default function DealershipAdmin({
                         <div className="rounded-xl border border-white/10 bg-[color:var(--ink)]/40 p-3 flex flex-col gap-3">
                           <div className="flex flex-wrap gap-1.5">
                             {tabBtn("details", "Details")}
-                            {tabBtn("transunion", "TransUnion")}
+                            {/* TransUnion eValue8 is the SA data provider — no tab elsewhere. */}
+                            {market.id === 'za' && tabBtn("transunion", "TransUnion")}
                             {tabBtn("truradar", "TruRadar")}
                             {tabBtn("documents", "Documents")}
                             {tabBtn("accounting", "Accounting")}
@@ -552,7 +555,7 @@ export default function DealershipAdmin({
                                 }}
                               />
                             )}
-                            {tab === "transunion" && (
+                            {market.id === 'za' && tab === "transunion" && (
                               <Imagin8CustomerSettings
                                 dealershipId={d.id}
                                 slug={d.slug}
