@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { fetchValuation, markets } from '../../../packages/market-scraper/index';
-import type { ValuationResult } from '../../../packages/market-scraper/index';
+import { fetchValuation, markets } from '../lib/scraper/index';
+import type { ValuationResult } from '../lib/scraper/index';
 
 const router = Router();
 

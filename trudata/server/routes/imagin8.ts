@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getStaticInfo, getModels, getValues, regCheck, accidentReport } from '../../../packages/imagin8';
+import { getStaticInfo, getModels, getValues, regCheck, accidentReport } from '../lib/imagin8';
 
 const router = Router();
 
