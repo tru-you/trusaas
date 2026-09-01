@@ -1013,16 +1013,12 @@ services:
     buildFilter:
       paths:
         - trudata/**
-        - packages/imagin8.ts
-        - packages/market-scraper/**
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: "3001"
       - key: BRIGHTDATA_API_KEY
         sync: false
       - key: BRIGHTDATA_UNLOCKER_ZONE
