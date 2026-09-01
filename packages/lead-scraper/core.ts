@@ -7,8 +7,8 @@
  * dedupe and CSV output.
  *
  * Bright Data zones (account-specific):
- *   unlocker = tds2   (BRIGHTDATA_UNLOCKER_ZONE)
- *   serp     = tds    (BRIGHTDATA_SERP_ZONE)   ← the zone is named "tds", not "serp"
+ *   unlocker = web_unlocker1  (BRIGHTDATA_UNLOCKER_ZONE)
+ *   serp     = tds            (BRIGHTDATA_SERP_ZONE)
  */
 
 import http from "http";
@@ -545,12 +545,33 @@ export async function crawlWebsiteContacts(rawUrlOrDomain: string): Promise<{ em
   return { emails: [...emails], phones: [...phones], linkedin: foundLinkedin || undefined };
 }
 
-/** Find the company's real website (desc links → SERP → slug-guess) and crawl it. */
-export async function enrichCompany(name: string, country: string, descriptionHtml?: string): Promise<Enrichment> {
-  const [linkedin, serpHosts] = await Promise.all([
+/** Find the company's real website (deep biz lookup → desc links → SERP → slug-guess) and crawl it. */
+export async function enrichCompany(name: string, country: string, descriptionHtml?: string, vertical = "jobs"): Promise<Enrichment> {
+  const [linkedin, deepBiz] = await Promise.all([
     serpLinkedInLookup(name, country),
-    serpBusinessLookup(name, country),
+    serpDeepBusinessLookup(name, "", country, vertical),
   ]);
+
+  // If deep business lookup found a website or phones, use it as the base
+  if (deepBiz.website || deepBiz.phones.length > 0) {
+    // Still crawl the website if we got one but no phones yet
+    let emails = deepBiz.emails || [];
+    let phones = deepBiz.phones;
+    if (deepBiz.website && phones.length === 0) {
+      const crawled = await crawlWebsiteContacts(deepBiz.website);
+      emails = Array.from(new Set([...emails, ...crawled.emails])).slice(0, 5);
+      phones = Array.from(new Set([...phones, ...crawled.phones])).slice(0, 5);
+    }
+    return {
+      website: deepBiz.website,
+      linkedin: linkedin || deepBiz.linkedin || "",
+      emails,
+      phones,
+    };
+  }
+
+  // Fallback: description links → SERP domain lookup → slug guessing → crawl
+  const serpHosts = await serpBusinessLookup(name, country);
 
   const empty: Enrichment = { website: "", linkedin, emails: [], phones: [] };
   const hosts = [
@@ -700,7 +721,7 @@ export async function enrichLeads<T extends Lead>(leads: T[], maxEnrich = 20, co
       const n = names[cursor++];
       const e = byName.get(n)!;
       const [compRes, dmRes] = await Promise.all([
-        enrichCompany(n, e.country, e.desc),
+        enrichCompany(n, e.country, e.desc, e.vertical),
         findDecisionMaker(n, e.vertical, e.country),
       ]);
 
@@ -1006,13 +1027,13 @@ export function detectBlocked(html: string): string | null {
   return null;
 }
 
-/** Fetch a URL through the Bright Data Web Unlocker (zone "tds2"). */
+/** Fetch a URL through the Bright Data Web Unlocker (zone "web_unlocker1"). */
 export async function webUnlockerFetch(
   url: string,
   opts: { country?: string; timeoutMs?: number } = {}
 ): Promise<string | null> {
   const key = bdEnv("BRIGHTDATA_API_KEY");
-  const zone = bdEnv("BRIGHTDATA_UNLOCKER_ZONE") || "tds2";
+  const zone = bdEnv("BRIGHTDATA_UNLOCKER_ZONE") || "web_unlocker1";
   if (!key || !zone) return null;
   try {
     const body: Record<string, unknown> = { zone, url, format: "raw" };
