@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Apex Investments — TruDealer Proposal by Paul de Beer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+@page{size:A4 portrait;margin:0;}
+
+:root{
+  --paper:#F5F1E8;
+  --paper-2:#EBE5D8;
+  --paper-3:#E1DACB;
+  --night:#080C14;
+  --night-2:#0F1621;
+  --ink:#121A26;
+  --ink-2:#3A4553;
+  --muted:#6E6656;
+  --faint:#A79D8C;
+  --line:rgba(18,26,38,.14);
+  --line-soft:rgba(18,26,38,.07);
+  --cyan:#07889B;
+  --cyan-lit:#00E0F5;
+  --amber:#B07A26;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --s1:4pt; --s2:8pt; --s3:12pt; --s4:16pt; --s5:24pt; --s6:32pt; --s7:44pt;
+  --pad-x:17mm; --pad-t:16mm; --pad-b:20mm;
+  --ok:#10B981;
+  --flag:#EF4444;
+  --warn:#F59E0B;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--paper-3);}
+body{
+  background:var(--paper-3);color:var(--ink);
+  font-family:var(--sans);font-size:9.5pt;line-height:1.48;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-feature-settings:"kern","liga","ss01";
+}
+a{color:inherit;text-decoration:none;}
+img{display:block;max-width:100%;}
+
+h1,h2,h3,h4{font-family:var(--display);font-weight:400;color:var(--ink);letter-spacing:-.03em;}
+h1{font-variation-settings:"opsz" 144,"SOFT" 30;line-height:1;}
+h2{font-variation-settings:"opsz" 144,"SOFT" 30;line-height:1.06;}
+h3{font-variation-settings:"opsz" 72,"SOFT" 30;line-height:1.14;}
+h4{font-variation-settings:"opsz" 48,"SOFT" 30;line-height:1.18;}
+em{
+  font-family:var(--display);font-style:italic;color:var(--cyan);
+  font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;
+}
+
+/* ─── PAGE SHELL ─────────────────────────────── */
+.doc{width:210mm;margin:0 auto;}
+.page{
+  position:relative;width:210mm;min-height:297mm;
+  padding:var(--pad-t) var(--pad-x) var(--pad-b);
+  background:var(--paper);overflow:hidden;
+  break-after:page;page-break-after:always;
+}
+.page:last-child{break-after:auto;page-break-after:auto;}
+.page::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(70% 45% at 12% 8%,rgba(176,122,38,.045),transparent 60%),
+    radial-gradient(60% 40% at 92% 94%,rgba(7,136,155,.04),transparent 60%);
+}
+.page > *{position:relative;z-index:1;}
+
+/* ─── RUNNING HEAD / FOOT ────────────────────── */
+.rh{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:var(--s2);margin-bottom:var(--s4);
+  border-bottom:1px solid var(--line);
+}
+.rh-mark{display:flex;align-items:center;gap:6pt;}
+.rh-mark svg{width:13pt;height:13pt;flex:none;}
+.rh-mark .wm{font-family:var(--sans);font-size:11pt;font-weight:700;letter-spacing:-.03em;line-height:1;}
+.rh-mark .wm .t{color:var(--ink);}
+.rh-mark .wm .d{color:var(--cyan);}
+.rh-sec{font-family:var(--mono);font-size:6.8pt;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+
+.rf{
+  position:absolute;left:var(--pad-x);right:var(--pad-x);bottom:11mm;
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding-top:var(--s2);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:6.5pt;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);
+}
+.rf .n{color:var(--ink);font-weight:500;}
+
+/* ─── SHARED ATOMS ───────────────────────────── */
+.eyebrow{
+  font-family:var(--mono);font-size:7pt;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--cyan);font-weight:500;
+}
+.eyebrow.amber{color:var(--amber);}
+.eyebrow.dim{color:var(--muted);}
+
+.lead{margin-bottom:var(--s4);}
+.lead .eyebrow{margin-bottom:var(--s2);}
+.lead h2{font-size:22pt;margin-bottom:var(--s2);text-wrap:balance;max-width:160mm;}
+.lead h2 em{font-size:22pt;}
+.lead p{font-size:9.5pt;line-height:1.5;color:var(--ink-2);max-width:154mm;}
+
+.hr{height:1px;background:var(--line);margin:var(--s4) 0;}
+.fine{font-size:7.6pt;line-height:1.45;color:var(--muted);}
+
+.pill{
+  display:inline-block;font-family:var(--mono);font-size:6.2pt;letter-spacing:.12em;
+  text-transform:uppercase;padding:2.5pt 6.5pt;border-radius:100pt;font-weight:500;
+}
+.pill.ok{background:rgba(16,185,129,.14);color:#059669;}
+.pill.flag{background:rgba(239,68,68,.14);color:#DC2626;}
+.pill.warn{background:rgba(245,158,11,.14);color:#D97706;}
+.pill.cyan{background:rgba(7,136,155,.14);color:var(--cyan);}
+.pill.amber{background:rgba(176,122,38,.14);color:var(--amber);}
+
+/* ─── COVER ─────────────────────────────────── */
+.cover{
+  background:
+    radial-gradient(76% 52% at 26% 20%,#132132 0%,transparent 62%),
+    radial-gradient(60% 46% at 84% 88%,rgba(7,136,155,.20) 0%,transparent 62%),
+    linear-gradient(178deg,var(--night-2) 0%,var(--night) 100%);
+  color:var(--paper);
+  padding:18mm 17mm 15mm;
+  display:flex;flex-direction:column;
+}
+.cover::after{display:none;}
+.cover-grid{
+  position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:14mm 14mm;
+  -webkit-mask-image:radial-gradient(72% 55% at 30% 30%,#000,transparent 78%);
+  mask-image:radial-gradient(72% 55% at 30% 30%,#000,transparent 78%);
+}
+.cover > *{position:relative;z-index:1;}
+
+.cover-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.cover-chip{
+  font-family:var(--mono);font-size:6.8pt;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(245,241,232,.62);padding:5pt 11pt;
+  border:1px solid rgba(245,241,232,.20);border-radius:100pt;
+}
+.cover-icon{width:15mm;height:15mm;}
+
+.cover-logo{margin:auto 0 0;}
+.cover-logo img{width:110mm;height:auto;margin-left:-3mm;}
+
+.cover-title{margin-top:var(--s4);}
+.cover-title h1{
+  font-size:36pt;line-height:1.02;letter-spacing:-.038em;color:var(--paper);
+  max-width:166mm;
+}
+.cover-title h1 em{font-size:36pt;color:var(--cyan-lit);}
+.cover-sub{
+  font-size:10.8pt;line-height:1.44;color:rgba(245,241,232,.75);
+  max-width:148mm;margin-top:var(--s3);
+}
+.cover-sub em{font-size:10.8pt;color:var(--cyan-lit);}
+
+.cover-stats{
+  margin-top:var(--s5);padding-top:var(--s3);
+  border-top:1.6pt solid rgba(245,241,232,.85);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:5mm;
+}
+.cover-stats .k{
+  font-family:var(--mono);font-size:6.4pt;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(245,241,232,.52);margin-bottom:3pt;
+}
+.cover-stats .v{
+  font-family:var(--display);font-size:18pt;font-weight:400;color:var(--paper);
+  letter-spacing:-.035em;line-height:1;font-variation-settings:"opsz" 144,"SOFT" 30;
+}
+.cover-stats .v i{
+  font-style:italic;color:var(--cyan-lit);font-size:18pt;
+  font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;
+}
+
+.cover-meta{
+  margin-top:var(--s4);display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border:1px solid rgba(245,241,232,.18);border-radius:6pt;overflow:hidden;background:rgba(255,255,255,.03);
+}
+.cover-meta .cell{padding:10pt 13pt;}
+.cover-meta .cell + .cell{border-left:1px solid rgba(245,241,232,.18);}
+.cover-meta .lbl{font-family:var(--mono);font-size:6.5pt;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan-lit);}
+.cover-meta .val{font-family:var(--display);font-size:11.5pt;margin-top:2pt;color:var(--paper);}
+.cover-meta .sub{font-size:8pt;color:rgba(245,241,232,.6);margin-top:1pt;}
+
+.cover-foot{
+  margin-top:auto;padding-top:var(--s3);
+  border-top:1px solid rgba(245,241,232,.16);
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-family:var(--mono);font-size:6.8pt;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(245,241,232,.55);
+}
+.cover-foot .lit{color:var(--cyan-lit);}
+
+/* ─── TABLES & GRIDS ─────────────────────────── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin-bottom:var(--s4);}
+.kpi{
+  padding:10pt 10pt 9pt;border:1px solid var(--line);border-radius:4pt;
+  background:rgba(255,255,255,.45);position:relative;overflow:hidden;
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:100%;height:2.5pt;background:var(--cyan);}
+.kpi.flag::before{background:var(--flag);}
+.kpi.warn::before{background:var(--warn);}
+.kpi.ok::before{background:var(--ok);}
+.kpi .k-lbl{font-family:var(--mono);font-size:6.2pt;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.kpi .k-val{font-family:var(--display);font-size:18pt;font-weight:400;margin:4pt 0 2pt;line-height:1.05;color:var(--ink);}
+.kpi .k-sub{font-size:7.5pt;line-height:1.35;color:var(--ink-2);}
+
+.spec{border:1px solid var(--line);border-radius:4pt;overflow:hidden;margin-bottom:var(--s4);}
+.spec .row{display:grid;grid-template-columns:42mm 1fr;}
+.spec .row:nth-child(odd){background:rgba(255,255,255,.45);}
+.spec .row .k{padding:6pt 10pt;font-family:var(--mono);font-size:7pt;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--line);}
+.spec .row .v{padding:6pt 10pt;font-size:8.8pt;color:var(--ink);}
+
+table.tbl{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:4pt;overflow:hidden;margin-bottom:var(--s4);}
+table.tbl thead th{
+  background:var(--night-2);color:var(--paper);text-align:left;
+  font-family:var(--mono);font-size:6.6pt;letter-spacing:.16em;text-transform:uppercase;font-weight:500;
+  padding:7pt 9pt;
+}
+table.tbl tbody td{padding:6.5pt 9pt;font-size:8.4pt;border-top:1px solid var(--line);vertical-align:top;line-height:1.42;}
+table.tbl tbody tr:nth-child(even){background:rgba(255,255,255,.45);}
+
+.maptbl{border:1px solid var(--line);border-radius:4pt;overflow:hidden;margin-bottom:var(--s4);}
+.maptbl .hd{display:grid;grid-template-columns:1fr 1fr 1.2fr;background:var(--night-2);}
+.maptbl .hd div{padding:7pt 9pt;color:var(--paper);font-family:var(--mono);font-size:6.6pt;letter-spacing:.16em;text-transform:uppercase;}
+.maptbl .rw{display:grid;grid-template-columns:1fr 1fr 1.2fr;border-top:1px solid var(--line);}
+.maptbl .rw:nth-child(even){background:rgba(255,255,255,.45);}
+.maptbl .rw > div{padding:7.5pt 9pt;font-size:8.4pt;line-height:1.4;}
+.maptbl .prob{color:var(--muted);}
+.maptbl .sol{font-family:var(--display);font-weight:400;color:var(--cyan);}
+.maptbl .out{color:var(--ink);}
+
+.mods{display:grid;grid-template-columns:repeat(2,1fr);gap:4mm;margin-bottom:var(--s4);}
+.mod{
+  padding:9pt 10pt 10pt;border:1px solid var(--line);border-radius:4pt;
+  background:rgba(255,255,255,.42);display:flex;flex-direction:column;
+}
+.mod .tag{font-family:var(--mono);font-size:6.2pt;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:3pt;}
+.mod h3{font-size:12pt;margin-bottom:3pt;}
+.mod p{font-size:8.2pt;line-height:1.4;color:var(--ink-2);}
+
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:3.5mm;margin-bottom:var(--s4);}
+.step{padding:9pt 9pt 8pt;border:1px solid var(--line);border-radius:4pt;background:var(--paper-2);}
+.step .n{font-family:var(--mono);font-size:6.4pt;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:4pt;}
+.step h4{font-size:10.5pt;margin-bottom:3pt;}
+.step p{font-size:7.8pt;line-height:1.38;color:var(--ink-2);}
+
+.callout{
+  background:linear-gradient(178deg,var(--night-2),var(--night));
+  color:var(--paper);border-radius:5pt;padding:12pt 16pt;position:relative;overflow:hidden;margin-bottom:var(--s4);
+}
+.callout::before{content:'';position:absolute;left:0;top:0;height:100%;width:3.5pt;background:var(--cyan-lit);}
+.callout p{font-family:var(--display);font-size:11pt;line-height:1.5;font-variation-settings:"opsz" 72,"SOFT" 30;}
+.callout p em{color:var(--cyan-lit);font-size:11pt;}
+
+.banner{
+  background:linear-gradient(178deg,var(--paper-2),rgba(7,136,155,.07));
+  border:1.2pt solid var(--cyan);border-radius:5pt;padding:11pt 14pt;margin-bottom:var(--s3);
+}
+.banner h4{font-size:11.5pt;color:var(--ink);margin-bottom:3pt;display:flex;align-items:center;gap:6pt;}
+.banner p{font-size:8.4pt;color:var(--ink-2);line-height:1.45;}
+
+.sign-grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm;margin-top:var(--s4);}
+.sign-box{border:1px solid var(--line);border-radius:4pt;padding:10pt 12pt;background:rgba(255,255,255,.45);}
+.sign-line{height:30pt;border-bottom:1px dashed var(--muted);margin-bottom:6pt;}
+
+@media print{
+  html,body{background:#fff;padding:0;}
+  .doc{width:auto;}
+  .page{width:210mm;height:297mm;min-height:0;margin:0;box-shadow:none;break-after:page;page-break-after:always;}
+  .page:last-child{break-after:auto;page-break-after:auto;}
+  *,*::before,*::after{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;left:-9999px;" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="rhC1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8"/><stop offset="100%" stop-color="#121A26"/>
+    </linearGradient>
+    <linearGradient id="rhC2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22B8CC"/><stop offset="100%" stop-color="#065F73"/>
+    </linearGradient>
+    <linearGradient id="cvChrome" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="30%" stop-color="#CBD5E1"/>
+      <stop offset="65%" stop-color="#64748B"/><stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="cvCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/><stop offset="35%" stop-color="#38BDF8"/>
+      <stop offset="70%" stop-color="#00F2FE"/><stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="doc">
+
+<!-- ══ P1 · COVER ══════════════════════════════ -->
+<section class="page cover">
+  <div class="cover-grid"></div>
+
+  <div class="cover-top">
+    <svg class="cover-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="TruSaaS mark">
+      <circle cx="100" cy="100" r="82" fill="none" stroke="url(#cvCyan)" stroke-width="2" opacity=".9"/>
+      <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#cvChrome)" stroke="#1E293B" stroke-width="1"/>
+      <path d="M100 35 L145 60 L125 72 L100 58 Z" fill="#FFFFFF" opacity=".7"/>
+      <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#cvCyan)"/>
+      <line x1="100" y1="35" x2="100" y2="160" stroke="#E0F2FE" stroke-width="2.5" opacity=".8"/>
+    </svg>
+    <span class="cover-chip">Direct Proposal · 1-Month Switch Plan</span>
+  </div>
+
+  <div class="cover-logo">
+    <img src="trudealer-logo.webp" alt="TruDealer — Future Automotive"/>
+  </div>
+
+  <div class="cover-title">
+    <h1>With a web overhaul comes a <em>social media overhaul.</em></h1>
+    <p class="cover-sub">Prepared specifically by <b>Paul de Beer</b> for Davrin Hunter &amp; Curt Harvey at Apex Investments. TruInspect (Phase 1), TruLens (Phase 2), TruFlow Premium DMS + <b>Mobile DMS Companion App</b> included.</p>
+  </div>
+
+  <div class="cover-stats">
+    <div><div class="k">Monthly net</div><div class="v">R3,059<i>/mo</i></div></div>
+    <div><div class="k">Switch discount</div><div class="v">15<i>% off</i></div></div>
+    <div><div class="k">Rollout period</div><div class="v">30<i> days</i></div></div>
+    <div><div class="k">Initial load</div><div class="v">By<i> us</i></div></div>
+  </div>
+
+  <div class="cover-meta">
+    <div class="cell">
+      <div class="lbl">Prepared for</div>
+      <div class="val">Davrin Hunter &amp; Curt Harvey</div>
+      <div class="sub">Apex Investments (Pty) Ltd · Newton Park, Gqeberha</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">Prepared by</div>
+      <div class="val">Paul de Beer</div>
+      <div class="sub">TruDealer Partner &amp; SaaS Platform Lead · trudealer.tru-saas.com</div>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <span class="lit">trudealer.tru-saas.com</span>
+    <span>Cape Town · Gqeberha Deployment</span>
+    <span>01 / 07</span>
+  </div>
+</section>
+
+<!-- ══ P2 · EXECUTIVE SUMMARY & PROFILE ════════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">01 · Executive summary</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">My strategy for Apex Investments</div>
+    <h2>Rebuild the web. Rebrand the social. <em>Displace VMG in 30 days.</em></h2>
+    <p>Davrin, Curt — when I audited Apex’s digital setup in Newton Park, one truth stood out: <em>with a digital website overhaul comes a complete social media overhaul.</em> Rebuilding your storefront without transforming your social channels leaves buyers behind. Under my <b>Direct TruPro Switch Protocol</b>, we launch Apex on our flagship TruPro tier from Day 1, lock in a permanent 15% discount, deploy <b>TruInspect (Phase 1)</b> immediately, onboard <b>TruLens (Phase 2)</b> during camera studio setup, and provide <b>TruFlow Premium DMS + Mobile DMS Helper App</b> from day one.</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi warn">
+      <div class="k-lbl">Current Architecture</div>
+      <div class="k-val">WordPress</div>
+      <div class="k-sub">Autoart theme, heavy PHP rendering</div>
+    </div>
+    <div class="kpi flag">
+      <div class="k-lbl">AI Search / Schema</div>
+      <div class="k-val">0%</div>
+      <div class="k-sub">Missing JSON-LD Vehicle markup</div>
+    </div>
+    <div class="kpi flag">
+      <div class="k-lbl">Social Syndication</div>
+      <div class="k-val">Manual</div>
+      <div class="k-sub">TruSocial 4-platform auto-posting</div>
+    </div>
+    <div class="kpi ok">
+      <div class="k-lbl">DMS &amp; Mobile App</div>
+      <div class="k-val">TruFlow + Mobile</div>
+      <div class="k-sub">Initial load done by us; VMG pulled out W4</div>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:var(--s2);">Dealer profile &amp; custom agreement scope</div>
+  <div class="spec">
+    <div class="row"><div class="k">Legal Entity</div><div class="v">Apex Investments (Pty) Ltd</div></div>
+    <div class="row"><div class="k">Trading Premises</div><div class="v">17b Burt Drive, Newton Park, Gqeberha (Port Elizabeth), 6045</div></div>
+    <div class="row"><div class="k">Leadership Contacts</div><div class="v">Davrin Hunter (+27 72 604 7878) &amp; Curt Harvey (+27 76 852 2968)</div></div>
+    <div class="row"><div class="k">Financing Partners</div><div class="v">Approved Dealer with ABSA, WesBank, Standard Bank, Nedbank MFC</div></div>
+    <div class="row"><div class="k">Current Infrastructure</div><div class="v">WordPress site (apexinvest.co.za) + VMG Software DMS feed</div></div>
+    <div class="row"><div class="k">Commercial Structure</div><div class="v"><b>Phase 2 Paid from Start:</b> Direct TruPro Tier Deployment (No Tier Jumping)</div></div>
+    <div class="row"><div class="k">App Phase Rollout</div><div class="v"><b>TruInspect (PHASE 1)</b> yard PWA &amp; <b>TruLens (PHASE 2)</b> 360 photo studio PWA</div></div>
+    <div class="row"><div class="k">DMS &amp; Floor Mobile App</div><div class="v"><b>TruFlow Premium DMS + Mobile DMS Helper App</b> (Included with Premium)</div></div>
+    <div class="row"><div class="k">1-Month Migration Plan</div><div class="v"><b>Initial Load by TruDealer:</b> My team loads 100% of stock, photos &amp; customer records in W3</div></div>
+    <div class="row"><div class="k">Final Stage Cutover (W4)</div><div class="v">VMG Contract Termination &amp; Live <b>FLOW FEED</b> Cutover (Web, Portals &amp; Social)</div></div>
+    <div class="row"><div class="k">Switch Incentive Pricing</div><div class="v"><b>15% Monthly Discount Applied:</b> R3,059 / mo net (Was R3,599 / mo)</div></div>
+    <div class="row"><div class="k">Remote Support Commitment</div><div class="v"><b>Teams, WhatsApp &amp; Phone Priority Hotline:</b> Direct line to Paul de Beer</div></div>
+  </div>
+
+  <p class="fine">My commitment: By launching directly on TruPro, my team takes complete ownership of extracting your VMG databases and executing the initial stock load into TruFlow Premium DMS. In Week 4, VMG is pulled out and FLOW FEED activates live across your storefront, portal feeds, and social posts.</p>
+
+  <div class="callout" style="margin-top:var(--s3);">
+    <p><em>Already live in South Africa:</em> Apex joins a growing network of independent dealerships running TruDealer this quarter. Your referral partner is already using TruInspect, our embedded widget suite, and AEO search services — and has seen massive improvement in their digital workflow since switching. Ask them.</p>
+  </div>
+
+  <div class="rf"><span>Confidential · Prepared for Davrin Hunter &amp; Curt Harvey</span><span class="n">02 / 07</span></div>
+</section>
+
+<!-- ══ P3 · DIGITAL AUDIT & AEO CODE ═══════════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">02 · Digital footprint &amp; AEO audit</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">Digital Audit &amp; What We Are Fixing</div>
+    <h2>Fix the friction. <em>Capture the generative search AI wave.</em></h2>
+    <p>Davrin, Curt — I audited <code>apexinvest.co.za</code> and your current digital touchpoints. Here are the core friction points my platform fixes during our 30-day rollout:</p>
+  </div>
+
+  <table class="tbl">
+    <thead><tr><th style="width:28%">Touchpoint</th><th style="width:18%">Current State</th><th>My Engineering Upgrade</th></tr></thead>
+    <tbody>
+      <tr><td><b>Website Performance</b></td><td><span class="pill warn">WordPress Autoart</span></td><td>We replace heavy PHP rendering with an Edge PWA storefront loading in under 1 second on mobile in Newton Park.</td></tr>
+      <tr><td><b>AI Search Visibility</b></td><td><span class="pill flag">Zero Schema</span></td><td>We inject native <code>Vehicle</code> JSON-LD markup so ChatGPT, Perplexity, and Google Gemini cite Apex cars directly.</td></tr>
+      <tr><td><b>Social Media Footprint</b></td><td><span class="pill flag">Manual</span></td><td>With a web overhaul comes a social media overhaul. TruSocial auto-posts stock across Facebook, LinkedIn, GBP &amp; Instagram.</td></tr>
+      <tr><td><b>WhatsApp Link Sharing</b></td><td><span class="pill flag">Static Logo</span></td><td>When your sales team shares a car via WhatsApp, tru-share dynamically renders an OpenGraph image card with price &amp; mileage.</td></tr>
+      <tr><td><b>On-Site Finance UX</b></td><td><span class="pill flag">Static Form</span></td><td>We embed tru-afford and tru-repay sliders so buyers calculate SA bank repayments on your site instead of leaving.</td></tr>
+      <tr><td><b>Yard Appraisals (Phase 1)</b></td><td><span class="pill warn">Paper / Manual</span></td><td>Your floor staff use <b>TruInspect (PHASE 1)</b> PWA to generate digital 1–10 condition reports with damage pins &amp; customer e-signatures.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="eyebrow" style="margin-bottom:var(--s2);">AEO &amp; Search Engine Supremacy Audit</div>
+  <p style="font-size:9pt;line-height:1.45;color:var(--ink-2);margin-bottom:var(--s3);">Buyers in Gqeberha ask AI assistants: <i>"Where can I buy a clean SUV under R300k in Port Elizabeth?"</i> Here is how Apex's current code compares to TruDealer's AEO standard:</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm;">
+    <div>
+      <span class="pill flag" style="margin-bottom:4pt;">Current apexinvest.co.za Markup</span>
+      <div style="background:var(--night);color:#F8FAFC;border-radius:4pt;padding:8pt 10pt;font-family:var(--mono);font-size:7.4pt;line-height:1.45;">
+        <span style="color:#64748B;">&lt;!-- Unstructured WP Meta --&gt;</span><br/>
+        &lt;<span style="color:#38BDF8;">meta</span> name=<span style="color:#34D399;">"description"</span> content=<span style="color:#34D399;">"Find your Dream Car Fast... Audi BMW..."</span> /&gt;<br/>
+        &lt;<span style="color:#38BDF8;">meta</span> property=<span style="color:#34D399;">"og:image"</span> content=<span style="color:#34D399;">"https://apexinvest.co.za/.../Apex-Logo.png"</span> /&gt;<br/>
+        <span style="color:#64748B;">&lt;!-- Zero Vehicle schema found --&gt;</span>
+      </div>
+      <p class="fine" style="margin-top:4pt;">Result: AI search engines reject unstructured text string dumps. Apex inventory remains invisible in generative search summaries.</p>
+    </div>
+    <div>
+      <span class="pill ok" style="margin-bottom:4pt;">TruDealer Native AEO JSON-LD Standard</span>
+      <div style="background:var(--night);color:#F8FAFC;border-radius:4pt;padding:8pt 10pt;font-family:var(--mono);font-size:7.4pt;line-height:1.45;">
+        &lt;<span style="color:#38BDF8;">script</span> type=<span style="color:#34D399;">"application/ld+json"</span>&gt;<br/>
+        {<br/>
+        &nbsp;&nbsp;<span style="color:#38BDF8;">"@context"</span>: <span style="color:#34D399;">"https://schema.org"</span>,<br/>
+        &nbsp;&nbsp;<span style="color:#38BDF8;">"@type"</span>: <span style="color:#34D399;">"Vehicle"</span>,<br/>
+        &nbsp;&nbsp;<span style="color:#38BDF8;">"name"</span>: <span style="color:#34D399;">"2021 Volkswagen Polo Vivid"</span>,<br/>
+        &nbsp;&nbsp;<span style="color:#38BDF8;">"offers"</span>: { <span style="color:#38BDF8;">"price"</span>: <span style="color:#34D399;">"219900"</span>, <span style="color:#38BDF8;">"priceCurrency"</span>: <span style="color:#34D399;">"ZAR"</span> }<br/>
+        }<br/>
+        &lt;/<span style="color:#38BDF8;">script</span>&gt;
+      </div>
+      <p class="fine" style="margin-top:4pt;">Result: AI search engines directly parse car specs, pricing, and mileage, ranking Apex at the top of local AI query answers.</p>
+    </div>
+  </div>
+
+  <div class="rf"><span>Confidential · Prepared for Davrin Hunter &amp; Curt Harvey</span><span class="n">03 / 07</span></div>
+</section>
+
+<!-- ══ P4 · PHASE 1 FRONTEND & WIDGETS ═════════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">03 · Phase 1 Storefront &amp; TruInspect</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">Phase 1: Edge Storefront &amp; TruInspect App</div>
+    <h2>Custom Edge PWA storefront. <em>TruInspect (PHASE 1) active on Day 1.</em></h2>
+    <p>Starting in Week 1, we construct Apex’s custom Edge PWA site on TruPro architecture, coupled with a complete social media visual rebrand via <b>TruSocial</b> and immediate deployment of <b>TruInspect (PHASE 1)</b> for floor condition reports.</p>
+  </div>
+
+  <div class="maptbl">
+    <div class="hd"><div>Identified Friction</div><div>My Phase 1 Engineering Solution</div><div>Business Outcome</div></div>
+    <div class="rw"><div class="prob">Slow WordPress site</div><div class="sol">Edge PWA Architecture</div><div class="out">Sub-second mobile loading, 100% Lighthouse score, zero WP plugin updates.</div></div>
+    <div class="rw"><div class="prob">Manual social media</div><div class="sol">TruSocial Auto-Publishing</div><div class="out">Automated stock posting &amp; visual rebrand across Facebook, LinkedIn, GBP &amp; IG.</div></div>
+    <div class="rw"><div class="prob">Invisible to AI search</div><div class="sol">Native Vehicle JSON-LD AEO</div><div class="out">Automatic indexing by ChatGPT, Perplexity, and Google Gemini Overviews.</div></div>
+    <div class="rw"><div class="prob">Static link sharing</div><div class="sol">tru-share Dynamic Cards</div><div class="out">WhatsApp links automatically render dynamic visual cards with price &amp; mileage.</div></div>
+    <div class="rw"><div class="prob">Lost finance buyers</div><div class="sol">tru-afford &amp; tru-repay Widgets</div><div class="out">Interactive SA bank deposit, interest &amp; balloon sliders keep buyers on-page.</div></div>
+    <div class="rw"><div class="prob">Subjective trade-ins</div><div class="sol">TruInspect PWA (PHASE 1)</div><div class="out">Floor staff generate professional 1–10 condition reports with e-signatures.</div></div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:var(--s2);">Complete 8-Widget Ecosystem + TruSocial Included</div>
+  <div class="mods">
+    <div class="mod">
+      <span class="tag">Social · Zernio Engine</span>
+      <h3>1. TruSocial Media Engine</h3>
+      <p>Automated stock auto-publishing &amp; visual catalog rebrand across Facebook, LinkedIn, Google Business Profile &amp; Instagram.</p>
+    </div>
+    <div class="mod">
+      <span class="tag">Yard Appraisals · PHASE 1</span>
+      <h3>2. TruInspect (PHASE 1)</h3>
+      <p>Mobile yard PWA for 35-point checklist, panel damage pins, dispute-proof 1–10 vehicle grading reports, and inspector e-signature.</p>
+    </div>
+    <div class="mod">
+      <span class="tag">Finance UX</span>
+      <h3>3. tru-afford Widget</h3>
+      <p>Monthly payment slider matched against South African prime lending rates and major bank parameters.</p>
+    </div>
+    <div class="mod">
+      <span class="tag">Loan Amortization</span>
+      <h3>4. tru-repay Widget</h3>
+      <p>Full loan amortization table and balloon payment schedule visualizer for prospective buyers.</p>
+    </div>
+    <div class="mod">
+      <span class="tag">Trade Valuation</span>
+      <h3>5. tru-value (Imagin8)</h3>
+      <p>Instant live TransUnion trade-in valuation widget embedded directly on vehicle detail pages.</p>
+    </div>
+    <div class="mod">
+      <span class="tag">WhatsApp Edge</span>
+      <h3>6. tru-share Edge Cards</h3>
+      <p>Edge functions that inject custom OpenGraph price/mileage badges into WhatsApp shared links.</p>
+    </div>
+    <div class="mod">
+      <span class="tag">DeepSeek AI</span>
+      <h3>7. tru-chat AI Assistant</h3>
+      <p>24/7 intelligent lead qualifier and test-drive booking assistant integrated with WhatsApp.</p>
+    </div>
+    <div class="mod">
+      <span class="tag">Touch Capture</span>
+      <h3>8. tru-form Touch Modal</h3>
+      <p>Clean, instant 1-click lead capture modal optimized for mobile touchscreens.</p>
+    </div>
+  </div>
+
+  <div class="rf"><span>Confidential · Prepared for Davrin Hunter &amp; Curt Harvey</span><span class="n">04 / 07</span></div>
+</section>
+
+<!-- ══ P5 · PHASE 2 FLOW FEED, TRULENS & MOBILE DMS ═ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">04 · Phase 2 FLOW FEED, TruLens &amp; Mobile DMS</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">Phase 2: TruLens, FLOW FEED &amp; Mobile DMS Companion</div>
+    <h2>TruFlow Premium DMS + <em>Mobile DMS Helper App</em> included.</h2>
+    <p>Executing concurrently alongside Phase 1, <b>my engineering team performs 100% of your initial stock and customer data load</b> into TruFlow Premium DMS during Week 3. In Week 4, VMG is pulled out, <b>TruLens (PHASE 2)</b> studio PWA goes live, and <b>FLOW FEED</b> takes over as your master inventory engine.</p>
+  </div>
+
+  <div class="callout">
+    <p><em>Mobile DMS Companion Included:</em> <b>TruFlow Mobile DMS Helper App</b> (iOS &amp; Android) is included free with TruFlow Premium DMS. Davrin, Curt, and your sales team can add stock on the floor, manage leads, generate F&amp;I quotes, and send WhatsApp car blurbs directly from their phones anywhere on the lot.</p>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:var(--s2);">Phase 2 Operational Modules &amp; Applications</div>
+  <table class="tbl">
+    <thead><tr><th style="width:28%">Operational Module</th><th style="width:20%">Phase &amp; Inclusion</th><th>Scope &amp; Engineering Deliverable</th></tr></thead>
+    <tbody>
+      <tr><td><b>TruFlow Premium DMS</b></td><td><span class="pill cyan">Flagship Core</span></td><td>Central desktop command for inventory, deal jackets, F&amp;I calculators, OTP invoices &amp; audit trails.</td></tr>
+      <tr><td><b>Mobile DMS Helper App</b></td><td><span class="pill ok">With Flow Premium</span></td><td>iOS &amp; Android companion app for floor staff: manage leads, scan stock, send WhatsApp blurbs anywhere.</td></tr>
+      <tr><td><b>TruLens Studio PWA</b></td><td><span class="pill amber">PHASE 2 Rollout</span></td><td>28 guided photo shots, ghost alignment, licence-disc barcode scan, and TruOrbit 360° interactive spin generator.</td></tr>
+      <tr><td><b>Initial Data Load (Week 3)</b></td><td><span class="pill cyan">Executed by Us</span></td><td>My team extracts and loads 100% of current inventory, photos, specs, costs, and customer records into TruFlow DMS.</td></tr>
+      <tr><td><b>FLOW FEED Cutover (Week 4)</b></td><td><span class="pill ok">VMG Displaced</span></td><td>VMG contract is terminated. FLOW FEED activates live, powering your website, multi-portal feeds &amp; TruSocial.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="eyebrow" style="margin-bottom:var(--s2);">TransUnion eValue8 API Suite</div>
+  <table class="tbl">
+    <thead><tr><th>API Method</th><th>Call Tier</th><th>Dealer Function &amp; Capability</th></tr></thead>
+    <tbody>
+      <tr><td><code>getStaticInfo</code> / <code>getModels</code></td><td><span class="pill ok">Unlimited Free</span></td><td>Auto-populates full engine, trim, transmission, and body specs upon M&amp;M code entry.</td></tr>
+      <tr><td><code>getValues</code></td><td><span class="pill cyan">Gated Bundle</span></td><td>Returns live TransUnion Trade, Retail, New, and Estimator values tailored to mileage/year.</td></tr>
+      <tr><td><code>regCheck</code></td><td><span class="pill cyan">Gated Bundle</span></td><td>Executes SAPS stolen vehicle checks, deregistration checks, and microdot verification.</td></tr>
+      <tr><td><code>accidentReport</code></td><td><span class="pill cyan">Gated Bundle</span></td><td>Pulls insurance claim history, structural damage records, and historical payout figures by VIN.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rf"><span>Confidential · Prepared for Davrin Hunter &amp; Curt Harvey</span><span class="n">05 / 07</span></div>
+</section>
+
+<!-- ══ P6 · SCHEDULE, AEO & REMOTE SUPPORT ════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">05 · Implementation Schedule</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">Accelerated 30-Day Transition Schedule</div>
+    <h2>Four weeks. Zero downtime. <em>TruInspect Phase 1 &amp; TruLens Phase 2.</em></h2>
+    <p>Here is our week-by-week implementation roadmap for Apex Investments, clearly separating Phase 1 and Phase 2 milestones and supported directly by me via Teams, WhatsApp, and Phone Priority:</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="n">Week 01 (Phase 1)</div>
+      <h4>Storefront &amp; TruSocial</h4>
+      <p>Deploy custom Edge PWA site, inject JSON-LD AEO schema, configure TruSocial 4-platform sync (FB, LI, GBP, IG), and re-anchor Google Business Profile.</p>
+    </div>
+    <div class="step">
+      <div class="n">Week 02 (Phase 1)</div>
+      <h4>TruInspect &amp; Widgets</h4>
+      <p>Onboard floor staff with <b>TruInspect (PHASE 1)</b> yard PWA for digital condition reports and embed all 8 Pro widgets (tru-afford, tru-repay, tru-value, tru-share, TruChat AI).</p>
+    </div>
+    <div class="step">
+      <div class="n">Week 03 (Phase 2)</div>
+      <h4>Initial Data Load</h4>
+      <p>My engineering team performs 100% of the initial stock, photo, customer, and cost data load into TruFlow Premium DMS. Zero setup burden on Apex staff.</p>
+    </div>
+    <div class="step">
+      <div class="n">Week 04 (Phase 2)</div>
+      <h4>TruLens &amp; FLOW FEED</h4>
+      <p>Terminate VMG subscription. Deploy <b>TruLens (PHASE 2)</b> 360 spin studio PWA. Activate live <b>FLOW FEED</b> for web, portals &amp; TruSocial with <b>Mobile DMS App</b> online.</p>
+    </div>
+  </div>
+
+  <div class="banner">
+    <h4>⚡ Continual Monthly SEO &amp; AEO Optimization Retainer</h4>
+    <p>AEO is not a one-time setup; AI search models update constantly. My engineering team performs <b>monthly continuous SEO &amp; AEO engineering</b> for Apex Investments: tuning JSON-LD vehicle schema, auditing AI indexing across ChatGPT &amp; Gemini, optimizing Google Business Profile local ranking, and refining keyword placement at zero extra charge.</p>
+  </div>
+
+  <div class="banner">
+    <h4>💬 100% Remote Staff Training &amp; Priority Support Channel</h4>
+    <p>I provide <b>100% remote ongoing staff training and Priority Support</b> for Davrin Hunter, Curt Harvey, sales executives, and F&amp;I managers. Support is delivered instantly via <b>Teams, WhatsApp, and my Phone Priority Line</b> whenever questions arise or new team members join.</p>
+  </div>
+
+  <div class="rf"><span>Confidential · Prepared for Davrin Hunter &amp; Curt Harvey</span><span class="n">06 / 07</span></div>
+</section>
+
+<!-- ══ P7 · COMMERCIAL TERMS & SIGN-OFF ═══════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">06 · Commercial terms &amp; sign-off</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">Commercial Investment &amp; 15% Switch Discount</div>
+    <h2>Flagship TruPro tier. Paid from start. <em>Net R3,059 / mo.</em></h2>
+    <p>Apex Investments launches on our flagship <b>TruPro stack from start (Day 1)</b>, locking in an immediate <b>15% switch discount</b> guaranteed for the life of the agreement:</p>
+  </div>
+
+  <table class="tbl">
+    <thead><tr><th>Implementation Component</th><th>Scope &amp; Direct TruPro Billing Terms</th><th style="text-align:right">Monthly Investment</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Standard TruPro Flagship License</b><br/><span class="pill cyan">Paid from Start (Day 1)</span></td>
+        <td>Complete End-to-End Operating Stack: Custom Edge PWA Storefront, All 8 Pro Widgets, TruSocial Engine (FB, LI, GBP, IG), TruFlow Premium DMS, <b>Mobile DMS Helper App</b>, <b>TruInspect (PHASE 1)</b>, <b>TruLens (PHASE 2)</b>, Multi-Portal Feeds, Paperless F&amp;I.</td>
+        <td style="text-align:right;font-family:var(--mono);color:var(--muted);"><s style="color:var(--faint);">R 3,599 / pm</s></td>
+      </tr>
+      <tr>
+        <td><b>Immediate 15% Switch Incentive Discount</b><br/><span class="pill ok">15% Discount Applied</span></td>
+        <td>Special 15% discount applied directly to your monthly TruPro price from start. Guaranteed for the life of the agreement.</td>
+        <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--ok);">- R 540 / pm</td>
+      </tr>
+      <tr style="background:rgba(7,136,155,.08);">
+        <td><b>Net TruPro Monthly Investment</b><br/><span class="pill ok">Paid From Start</span></td>
+        <td><b>Full TruPro Operating Stack:</b> Edge PWA Storefront + 8 Widgets + TruSocial Engine (4 Platforms) + TruFlow Premium DMS + <b>Mobile DMS Helper App</b> + <b>TruInspect (PHASE 1)</b> + <b>TruLens (PHASE 2)</b> + Live FLOW FEED + Continual AEO + Priority Remote Support.</td>
+        <td style="text-align:right;font-family:var(--display);font-size:13pt;color:var(--ink);">R 3,059 / pm</td>
+      </tr>
+      <tr>
+        <td><b>Once-Off TruPro Setup &amp; Onboarding</b><br/><span class="pill amber">Includes Initial Load</span></td>
+        <td>Standard setup fee R4,500. Discounted by <b>50% down to R2,250</b>. Covers initial stock/data load performed by TruDealer team, TruSocial setup, custom domain &amp; FLOW FEED configuration.</td>
+        <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--amber);">R 2,250 <span style="font-size:7pt;color:var(--muted);">(Once-off)</span></td>
+      </tr>
+      <tr>
+        <td><b>Continual Monthly SEO/AEO Retainer</b><br/><span class="pill ok">Included Free</span></td>
+        <td>Monthly AI search schema tuning, ChatGPT/Gemini indexing audits, Google Business Profile local ranking optimization, link preview checks.</td>
+        <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--ok);">R 0 (INCLUDED)</td>
+      </tr>
+      <tr>
+        <td><b>Teams, WhatsApp &amp; Phone Priority Support</b><br/><span class="pill ok">Included Free</span></td>
+        <td>100% remote ongoing staff training and Priority Remote Support for Davrin Hunter, Curt Harvey, sales reps, and F&I personnel via Teams, WhatsApp, and Phone Priority Line.</td>
+        <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--ok);">R 0 (INCLUDED)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="fine">* All prices exclude VAT. No long-term lock-in contracts — TruDealer operates on flexible month-to-month agreements; cancel anytime with zero penalties.</p>
+
+  <div class="eyebrow" style="margin-top:var(--s3);margin-bottom:var(--s2);">VMG vs TruDealer — What Changes</div>
+  <table class="tbl">
+    <thead><tr><th style="width:32%">Capability</th><th style="width:34%">VMG Software</th><th style="width:34%">TruDealer TruPro</th></tr></thead>
+    <tbody>
+      <tr><td><b>Website</b></td><td>WordPress (slow, manual updates)</td><td><span class="pill ok">Edge PWA</span> Sub-second load, zero maintenance</td></tr>
+      <tr><td><b>AI Search / AEO</b></td><td>No JSON-LD schema</td><td><span class="pill ok">Native Vehicle Schema</span> ChatGPT, Gemini, Perplexity cite your cars</td></tr>
+      <tr><td><b>Social Media</b></td><td>Manual posting</td><td><span class="pill ok">TruSocial Auto-Post</span> 4 platforms simultaneously</td></tr>
+      <tr><td><b>Mobile App</b></td><td>No mobile companion</td><td><span class="pill ok">Mobile DMS App</span> Manage stock &amp; leads from the lot</td></tr>
+      <tr><td><b>Inspections</b></td><td>Paper / manual</td><td><span class="pill ok">TruInspect PWA</span> Digital VIR with e-signatures</td></tr>
+      <tr><td><b>Photo Studio</b></td><td>Not included</td><td><span class="pill ok">TruLens + TruOrbit 360°</span> Guided shoot + interactive spin</td></tr>
+      <tr><td><b>Finance Widgets</b></td><td>Static form</td><td><span class="pill ok">tru-afford + tru-repay</span> Interactive SA bank sliders</td></tr>
+      <tr><td><b>WhatsApp Sharing</b></td><td>Generic logo link</td><td><span class="pill ok">tru-share</span> Dynamic OpenGraph vehicle cards</td></tr>
+      <tr><td><b>AI Chat Assistant</b></td><td>Not included</td><td><span class="pill ok">TruChat AI</span> 24/7 lead qualifier on your site</td></tr>
+      <tr><td><b>Lock-in Contract</b></td><td>Annual contract</td><td><span class="pill ok">Month-to-month</span> Cancel anytime, zero penalties</td></tr>
+    </tbody>
+  </table>
+
+  <div class="eyebrow" style="margin-top:var(--s3);margin-bottom:var(--s2);">Proposal Acceptance &amp; Sign-Off</div>
+  <p style="font-size:9pt;line-height:1.45;color:var(--ink-2);">Davrin, Curt — by signing below, Apex Investments accepts this proposal and authorizes TruDealer to perform the 1-month accelerated transition, initial stock load, TruSocial setup across Facebook, LinkedIn, Google Business Profile &amp; Instagram, TruInspect (Phase 1) launch, TruLens (Phase 2) onboarding, and FLOW FEED cutover under TruPro terms with the 15% discount.</p>
+
+  <div class="sign-grid">
+    <div class="sign-box">
+      <div class="eyebrow" style="margin-bottom:6pt;">For: Apex Investments (Pty) Ltd</div>
+      <div class="sign-line"></div>
+      <div style="font-size:9pt;font-weight:600;color:var(--ink);">Authorized Representative (Davrin Hunter / Curt Harvey)</div>
+      <div style="font-size:8pt;color:var(--muted);margin-top:2pt;">Date: ________________________</div>
+    </div>
+    <div class="sign-box">
+      <div class="eyebrow" style="margin-bottom:6pt;">For: TruDealer (TruSaaS Platform)</div>
+      <div class="sign-line" style="display:flex;align-items:flex-end;padding-bottom:2pt;">
+        <span style="font-family:var(--display);font-style:italic;font-size:14pt;color:var(--cyan);">Paul de Beer</span>
+      </div>
+      <div style="font-size:9pt;font-weight:600;color:var(--ink);">Paul de Beer (TruDealer Partner)</div>
+      <div style="font-size:8pt;color:var(--muted);margin-top:2pt;">Date: September 1, 2026</div>
+    </div>
+  </div>
+
+  <div class="rf"><span>trudealer.tru-saas.com · Paul de Beer</span><span class="n">07 / 07</span></div>
+</section>
+
+</div>
+</body>
+</html>

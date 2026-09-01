@@ -1,0 +1,28 @@
+{
+  "name": "trudata-backend",
+  "version": "1.0.0",
+  "description": "TruData backend server",
+  "main": "dist/server.cjs",
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "build": "esbuild server/index.ts --bundle --platform=node --target=node20 --outfile=dist/server.cjs --external:firebase-admin --external:sharp",
+    "start": "node dist/server.cjs"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.0.0",
+    "nodemailer": "^6.9.13"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/nodemailer": "^6.4.14",
+    "esbuild": "^0.20.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.3"
+  }
+}
