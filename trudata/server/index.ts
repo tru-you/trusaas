@@ -16,9 +16,9 @@ import imagin8Routes from './routes/imagin8';
 import agencyRoutes from './routes/agency';
 import dealerCrmRoutes from './routes/dealer-crm';
 
-// Initialize DB (graceful — works without Firebase for local dev)
+// Initialize DB store
 import { initDb } from './lib/db';
-try { initDb(); } catch { console.warn('[trudata] Running without Firebase — orders will fail. Set GOOGLE_APPLICATION_CREDENTIALS for production.'); }
+initDb();
 
 const app = express();
 const PORT = process.env.PORT || 3001;

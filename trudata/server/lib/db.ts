@@ -1,10 +1,11 @@
-import * as admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
 
 export interface Order {
   id: string;
   email: string;
   name: string;
-  product: 'valuation' | 'leads_50' | 'leads_100' | 'audit';
+  product: 'valuation' | 'property' | 'leads_50' | 'leads_100' | 'audit' | 'fsbo' | 'legacy_sites' | 'custom_extract';
   params: any;
   amount: number;
   currency: 'ZAR';
@@ -15,97 +16,88 @@ export interface Order {
   deliveredAt?: Date;
 }
 
-const COLLECTION = 'trudata-orders';
+const DATA_DIR = process.env.DATA_DIR || path.resolve(process.cwd(), 'data');
+const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 
-export function initDb() {
-  if (admin.apps.length === 0) {
-    try {
-      admin.initializeApp({
-        credential: admin.credential.applicationDefault()
-      });
-      console.log('Firebase Admin initialized.');
-    } catch (error) {
-      console.warn('Failed to initialize Firebase Admin. Using mock DB if no credentials provided.', error);
+// In-memory cache for fast, zero-delay queries
+let ordersMemoryStore: Map<string, Order> = new Map();
+
+function ensureDataDir(): void {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
     }
+  } catch (err) {
+    console.warn('[TruData:db] Could not create DATA_DIR, using in-memory fallback:', err);
   }
 }
 
-function getDb() {
-  return admin.firestore();
+function loadOrders(): void {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(ORDERS_FILE)) {
+      const raw = fs.readFileSync(ORDERS_FILE, 'utf-8');
+      const list: any[] = JSON.parse(raw);
+      ordersMemoryStore.clear();
+      list.forEach((item) => {
+        ordersMemoryStore.set(item.id, {
+          ...item,
+          createdAt: new Date(item.createdAt),
+          paidAt: item.paidAt ? new Date(item.paidAt) : undefined,
+          deliveredAt: item.deliveredAt ? new Date(item.deliveredAt) : undefined,
+        });
+      });
+    }
+  } catch (err) {
+    console.warn('[TruData:db] Read error, initialized empty in-memory store:', err);
+  }
+}
+
+function persistOrders(): void {
+  try {
+    ensureDataDir();
+    const array = Array.from(ordersMemoryStore.values());
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(array, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[TruData:db] Persist error (retained in memory):', err);
+  }
+}
+
+export function initDb(): void {
+  loadOrders();
+  console.log('[TruData:db] JSON Store initialized with', ordersMemoryStore.size, 'existing orders.');
 }
 
 export async function createOrder(order: Order): Promise<void> {
-  try {
-    const db = getDb();
-    await db.collection(COLLECTION).doc(order.id).set({
-      ...order,
-      createdAt: admin.firestore.Timestamp.fromDate(order.createdAt)
-    });
-  } catch (error) {
-    console.error('Error saving order to DB:', error);
-    throw error;
-  }
+  ordersMemoryStore.set(order.id, order);
+  persistOrders();
 }
 
 export async function getOrder(orderId: string): Promise<Order | null> {
-  try {
-    const db = getDb();
-    const doc = await db.collection(COLLECTION).doc(orderId).get();
-    if (!doc.exists) return null;
-    
-    const data = doc.data() as any;
-    return {
-      ...data,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      paidAt: data.paidAt?.toDate(),
-      deliveredAt: data.deliveredAt?.toDate()
-    } as Order;
-  } catch (error) {
-    console.error('Error fetching order from DB:', error);
-    return null;
-  }
+  return ordersMemoryStore.get(orderId) || null;
 }
 
 export async function updateOrderStatus(orderId: string, status: Order['status'], downloadUrl?: string): Promise<void> {
-  try {
-    const db = getDb();
-    const updateData: any = { status };
-    
-    if (status === 'paid') {
-      updateData.paidAt = admin.firestore.FieldValue.serverTimestamp();
-    } else if (status === 'delivered') {
-      updateData.deliveredAt = admin.firestore.FieldValue.serverTimestamp();
-      if (downloadUrl) {
-        updateData.downloadUrl = downloadUrl;
-      }
-    }
+  const existing = ordersMemoryStore.get(orderId);
+  if (!existing) return;
 
-    await db.collection(COLLECTION).doc(orderId).update(updateData);
-  } catch (error) {
-    console.error('Error updating order status in DB:', error);
-    throw error;
+  existing.status = status;
+  if (status === 'paid') {
+    existing.paidAt = new Date();
+  } else if (status === 'delivered') {
+    existing.deliveredAt = new Date();
+    if (downloadUrl) {
+      existing.downloadUrl = downloadUrl;
+    }
   }
+
+  ordersMemoryStore.set(orderId, existing);
+  persistOrders();
 }
 
 export async function getOrdersByEmail(email: string): Promise<Order[]> {
-  try {
-    const db = getDb();
-    const snapshot = await db.collection(COLLECTION)
-      .where('email', '==', email)
-      .orderBy('createdAt', 'desc')
-      .get();
-      
-    return snapshot.docs.map(doc => {
-      const data = doc.data() as any;
-      return {
-        ...data,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        paidAt: data.paidAt?.toDate(),
-        deliveredAt: data.deliveredAt?.toDate()
-      } as Order;
-    });
-  } catch (error) {
-    console.error('Error fetching orders by email:', error);
-    return [];
-  }
+  const norm = String(email || '').trim().toLowerCase();
+  return Array.from(ordersMemoryStore.values())
+    .filter((o) => o.email.toLowerCase() === norm)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
