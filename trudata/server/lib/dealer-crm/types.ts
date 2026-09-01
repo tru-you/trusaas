@@ -39,18 +39,28 @@ export interface DealerContactProfile {
 
 export interface TruCrmLeadPayload {
   id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
+  reference?: string;
   company: string;
+  contact?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  formattedPhone?: string;
+  email?: string;
+  website?: string;
+  location?: string;
+  address?: string;
   source: string;
-  status: 'New' | 'Contacted';
-  assignedUserId?: string;
+  status?: string;
+  stage?: 'new' | 'contacted' | 'qualified' | 'meeting' | 'proposal' | 'won' | 'lost';
+  temperature?: 'Hot' | 'Warm' | 'Cold';
+  salespersonId?: string;
+  value?: number;
+  pitch?: string;
+  qualityScore?: number;
+  digitalScore?: number;
+  tags?: string[];
   notes: string;
-  address: string;
-  digitalScore: number;
-  dealershipId?: string;
   createdAt: string;
 }
 
