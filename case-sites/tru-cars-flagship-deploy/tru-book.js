@@ -117,8 +117,8 @@
       ink:    "#0E1A26",
       quiet:  "rgba(14,26,38,0.70)",
       mute:   "rgba(14,26,38,0.52)",
-      fill:   "rgba(14,26,38,0.04)",
-      fill2:  "rgba(14,26,38,0.08)",
+      fill:   "rgba(14,26,38,0.07)",
+      fill2:  "rgba(14,26,38,0.14)",
       onAcc:  "#FBF8F3",
       shadow: "0 32px 80px -16px rgba(14,26,38,0.35)"
     } : {

@@ -215,8 +215,7 @@ function openLightbox(images, startIdx) {
         advisories +
 
         '<div style="margin-top:20px;display:flex;flex-direction:column;gap:8px">' +
-          '<a class="btn btn-outline btn-block" id="virRequest" style="cursor:pointer;text-align:center" href="/vir-report.html?stock=' + encodeURIComponent(v.stockNumber || v.id) + '">View Full 114-Point VIR Inspection Report</a>' +
-          '<a class="link" style="text-align:center;font-size:12.5px;color:var(--ink-quiet);text-decoration:underline" href="/report.html?stock=' + encodeURIComponent(v.stockNumber || v.id) + '">View TruLens Studio Shoot & Web-Readiness Report</a>' +
+          '<a class="btn btn-outline btn-block" id="virRequest" style="cursor:pointer;text-align:center" href="/vir-report.html?stock=' + encodeURIComponent(v.stockNumber || v.id) + '">Request TruDealer Inspection Report</a>' +
         '</div>' +
         '<div class="widget-powered">Powered by TruDealer</div>' +
       '</div>'
@@ -1290,6 +1289,40 @@ function openLightbox(images, startIdx) {
           });
         } else {
           location.href = "/finance.html?stock=" + encodeURIComponent(v.stockNumber || v.id);
+        }
+      });
+    }
+
+    /* Share button — wire directly with the already-resolved vehicle so we
+       never go through TRU.get() which could return vehicles[0] when the
+       stock ID doesn't match the live-feed key format. */
+    var shareBtn = document.querySelector('[data-share="' + (v.stockNumber || v.id) + '"]');
+    if (!shareBtn) shareBtn = document.querySelector("[data-share]");
+    if (shareBtn) {
+      shareBtn.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation(); // prevent the delegated handler in bindCardTools
+        if (window.TruShare && typeof window.TruShare.open === "function") {
+          window.TruShare.open({
+            year: v.year,
+            make: v.make,
+            name: v.model,
+            variant: v.trim || v.variant || "",
+            price: v.truPrice || v.price,
+            km: v.mileage || v.km,
+            trans: v.transmission,
+            fuel: v.fuelType || v.fuel,
+            body: v.bodyType || v.body,
+            stock: v.stockNumber || v.id,
+            images: v.images && v.images.length ? v.images : (v.heroImage ? [v.heroImage] : []),
+          });
+        } else {
+          var url = location.origin + "/vehicle.html?stock=" + encodeURIComponent(v.stockNumber || v.id);
+          if (navigator.share) {
+            navigator.share({ title: TRU.title(v), url: url }).catch(function () {});
+          } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(url);
+          }
         }
       });
     }

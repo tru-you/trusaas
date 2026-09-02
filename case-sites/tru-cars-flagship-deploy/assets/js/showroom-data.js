@@ -125,8 +125,8 @@
       }
     }
 
-    // Fallback to first vehicle if requested or if no exact match found
-    if ((allowFallback !== false) && TRU.vehicles && TRU.vehicles.length > 0) {
+    // Fallback to first vehicle only when explicitly requested (e.g. VDP page)
+    if (allowFallback && TRU.vehicles && TRU.vehicles.length > 0) {
       var fallback = TRU.vehicles[0];
       enrichVehicleOrbit(fallback);
       return fallback;

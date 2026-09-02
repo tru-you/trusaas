@@ -387,7 +387,7 @@
       var btn = ev.target.closest("[data-share]");
       if (!btn) return;
       ev.preventDefault();
-      var v = TRU.get(btn.getAttribute("data-share"));
+      var v = TRU.get(btn.getAttribute("data-share"), false);
       if (!v) return;
 
       if (window.TruShare && typeof window.TruShare.open === "function") {
