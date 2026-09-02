@@ -1023,15 +1023,18 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('trudata_popup_dismissed', 'true');
   }
 
-  setTimeout(() => {
-    if (!popupShown) triggerPopup();
-  }, 18000);
+  // Only show exit-intent popup on desktop (touch devices have no mouse-leave)
+  if (!('ontouchstart' in window)) {
+    setTimeout(() => {
+      if (!popupShown) triggerPopup();
+    }, 18000);
 
-  document.addEventListener('mouseleave', (e) => {
-    if (e.clientY <= 0 && !popupShown) {
-      triggerPopup();
-    }
-  });
+    document.addEventListener('mouseleave', (e) => {
+      if (e.clientY <= 0 && !popupShown) {
+        triggerPopup();
+      }
+    });
+  }
 
   popupClose?.addEventListener('click', () => promoPopup.classList.add('hidden'));
   promoPopup?.addEventListener('click', (e) => {
