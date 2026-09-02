@@ -33,11 +33,14 @@ app.use(cors({ origin: process.env.NODE_ENV === 'production' ? ['https://data.tr
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Global rate limiter
-app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
+// Rate limiting (skip in development)
+const isProd = process.env.NODE_ENV === 'production';
+if (isProd) {
+  app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
+}
 
-// Strict rate limiter for expensive endpoints
-const strictLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
+// Strict rate limiter for expensive endpoints (production only)
+const strictLimiter = isProd ? rateLimit({ windowMs: 15 * 60 * 1000, max: 30 }) : (_req: any, _res: any, next: any) => next();
 
 import fs from 'fs';
 
