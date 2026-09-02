@@ -2507,7 +2507,7 @@ export default function App() {
                   {/* Retail specs */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Retail Price (ZAR)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Retail Price ({market.currency})</label>
                       <input
                         type="number"
                         value={newVehicleForm.retailPrice}
@@ -2516,7 +2516,7 @@ export default function App() {
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Cost Price (ZAR)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Cost Price ({market.currency})</label>
                       <input
                         type="number"
                         value={newVehicleForm.costPrice}
@@ -2525,7 +2525,7 @@ export default function App() {
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Mileage (km)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Mileage ({market.distanceUnit})</label>
                       <input
                         type="number"
                         value={newVehicleForm.mileage}

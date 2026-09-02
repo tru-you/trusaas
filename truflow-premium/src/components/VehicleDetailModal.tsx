@@ -1429,7 +1429,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                             <div>
                               <span className="font-semibold block">Profitability Target Violation</span>
                               <span className="text-[13px] text-[rgba(232,234,230,0.72)] block leading-normal">
-                                Projected deal margin of **{marginPercent.toFixed(1)}%** is below dealership threshold (10.0% / R25,000). Action required to protect commission pool.
+                                Projected deal margin of **{marginPercent.toFixed(1)}%** is below dealership threshold (10.0% / {money(targetProfitThreshold)}). Action required to protect commission pool.
                               </span>
                             </div>
                           </div>
