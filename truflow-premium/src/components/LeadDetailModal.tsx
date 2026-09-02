@@ -25,6 +25,7 @@ interface LeadDetailModalProps {
    *  DocHub instead of forcing a second click through Overview. */
   initialTab?: "overview" | "journey" | "comm" | "history" | "tasks" | "finance" | "deal" | "dochub";
   clients?: Client[];
+  onNotify?: (title: string, message: string, type?: "info" | "warning" | "error") => void;
 }
 
 export default function LeadDetailModal({
@@ -40,6 +41,7 @@ export default function LeadDetailModal({
   docHubPanel,
   initialTab,
   clients,
+  onNotify,
 }: LeadDetailModalProps) {
   const money = useMoney();
   const market = useMarket();
@@ -116,6 +118,14 @@ export default function LeadDetailModal({
   const [avsLoading, setAvsLoading] = useState(false);
   const [avsForm, setAvsForm] = useState({ bankAccount: "", branchCode: "", idNumber: "", initials: "", surname: "" });
 
+  const notify = (title: string, message: string, type: "info" | "warning" | "error" = "info") => {
+    if (onNotify) {
+      onNotify(title, message, type);
+    } else {
+      console.warn(`[LeadDetailModal] ${type.toUpperCase()}: ${title} - ${message}`);
+    }
+  };
+
   const handleAvs = async () => {
     if (!avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber) return;
     setAvsLoading(true);
@@ -130,7 +140,7 @@ export default function LeadDetailModal({
       if (!res.ok) throw new Error(data.error);
       setAvsResult(data);
     } catch (err: any) {
-      alert(err?.message || "AVS failed");
+      notify("AVS Verification", err?.message || "AVS failed", "error");
     } finally {
       setAvsLoading(false);
     }
@@ -292,7 +302,7 @@ export default function LeadDetailModal({
     }
 
     if (!content) {
-      alert("Please write the message first.");
+      notify("Message Required", "Please write the message first.", "warning");
       return;
     }
 
@@ -358,7 +368,7 @@ export default function LeadDetailModal({
       onRefresh();
       if (commChannel !== "whatsapp") onClose();
     } catch (err) {
-      alert("Could not log that message. It may not have been recorded.");
+      notify("Communication Error", "Could not log that message. It may not have been recorded.", "error");
     }
   };
 
@@ -376,13 +386,13 @@ export default function LeadDetailModal({
         status: "Pending",
         assignedUserId: lead.assignedUserId,
       });
-      alert("Follow-up task scheduled.");
+      notify("Task Scheduled", "Follow-up task scheduled.", "info");
       setNewTaskTitle("");
       setNewTaskDate("");
       setNewTaskPriority("Normal");
       onRefresh();
     } catch (err) {
-      alert("Task scheduling failed.");
+      notify("Task Error", "Task scheduling failed.", "error");
     }
   };
 
@@ -391,7 +401,7 @@ export default function LeadDetailModal({
       await updateTask(taskId, { status: "Completed" });
       onRefresh();
     } catch (err) {
-      alert("Failed to complete task.");
+      notify("Task Error", "Failed to complete task.", "error");
     }
   };
 
@@ -402,18 +412,20 @@ export default function LeadDetailModal({
          endpoints never run this file. Doing it here as well would race two
          writes on one JSON file and still leave those surfaces uncoupled. */
       const { coupledVehicle } = await updateLeadStatus(lead.id, leadStatus as any);
-      alert(
+      notify(
+        "Lead Status",
         coupledVehicle?.status === "SOLD"
           ? "Deal closed — lead marked Closed Won and the vehicle marked Sold."
           : coupledVehicle?.status === "INVENTORY"
           ? "Lead reopened — the vehicle has been returned to inventory."
           : "Lead stage updated.",
+        "info"
       );
 
       onRefresh();
       onClose();
     } catch (err) {
-      alert("Error saving lead details.");
+      notify("Save Error", "Error saving lead details.", "error");
     }
   };
 
@@ -421,11 +433,11 @@ export default function LeadDetailModal({
     if (confirm("Permanently delete and archive this lead file folder? This action is irreversible.")) {
       try {
         await deleteLead(lead.id);
-        alert("Lead deleted from database registry.");
+        notify("Lead Deleted", "Lead deleted from database registry.", "info");
         onRefresh();
         onClose();
       } catch (err) {
-        alert("Error deleting lead.");
+        notify("Delete Error", "Error deleting lead.", "error");
       }
     }
   };

@@ -99,11 +99,20 @@ interface VehicleDetailModalProps {
   truSocialEnabled?: boolean;
   hasLens?: boolean;
   dealership?: Dealership;
+  onNotify?: (title: string, message: string, type?: "info" | "warning" | "error") => void;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled, hasLens = true, dealership}: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled, hasLens = true, dealership, onNotify }: VehicleDetailModalProps) {
   const money = useMoney();
   const market = useMarket();
+
+  const notify = (title: string, message: string, type: "info" | "warning" | "error" = "info") => {
+    if (onNotify) {
+      onNotify(title, message, type);
+    } else {
+      console.warn(`[VehicleDetailModal] ${type.toUpperCase()}: ${title} - ${message}`);
+    }
+  };
   /* Legal docs keep cents — offers and settlements can't round. */
   const moneyDoc = (n: number) =>
     `${market.currency}${market.currency === "R" ? " " : ""}${(Number(n) || 0).toLocaleString(market.locale, { minimumFractionDigits: 2 })}`;
@@ -167,7 +176,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [suppRef, setSuppRef] = useState("");
 
   const handleTuValuation = useCallback(async () => {
-    if (!vehicle.mmCode) { alert("Select make/model/variant first to get an M&M code."); return; }
+    if (!vehicle.mmCode) { notify("M&M Code Required", "Select make/model/variant first to get an M&M code.", "warning"); return; }
     setTuValLoading(true);
     setTuValuation(null);
     try {
@@ -181,7 +190,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
       setTuValuation(data);
     } catch (err: any) {
-      alert(err?.message || "Valuation failed");
+      notify("Valuation Error", err?.message || "Valuation failed", "error");
     } finally {
       setTuValLoading(false);
     }
@@ -189,7 +198,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
   const handleRegCheck = useCallback(async () => {
     const id = vehicle.vin || (vehicle as any).registrationNumber;
-    if (!id) { alert("Enter a VIN or registration number first."); return; }
+    if (!id) { notify("Input Required", "Enter a VIN or registration number first.", "warning"); return; }
     setRegCheckLoading(true);
     setRegCheckResult(null);
     try {
@@ -204,7 +213,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
       setRegCheckResult(data);
     } catch (err: any) {
-      alert(err?.message || "Reg check failed");
+      notify("Reg Check Error", err?.message || "Reg check failed", "error");
     } finally {
       setRegCheckLoading(false);
     }
@@ -214,7 +223,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [accidentReportResult, setAccidentReportResult] = useState<any>(null);
   const handleAccidentReport = useCallback(async () => {
     const vin = vehicle.vin?.trim();
-    if (!vin) { alert("Enter a VIN number first to run an accident report."); return; }
+    if (!vin) { notify("VIN Required", "Enter a VIN number first to run an accident report.", "warning"); return; }
     setAccidentReportLoading(true);
     setAccidentReportResult(null);
     try {
@@ -225,14 +234,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
       setAccidentReportResult(data);
     } catch (err: any) {
-      alert(err?.message || "Accident report failed");
+      notify("Accident Report Error", err?.message || "Accident report failed", "error");
     } finally {
       setAccidentReportLoading(false);
     }
   }, [vehicle.vin]);
 
   const handleMarketValue = useCallback(async () => {
-    if (!vehicle.make || !vehicle.model) { alert("Please fill in Make and Model first."); return; }
+    if (!vehicle.make || !vehicle.model) { notify("Details Required", "Please fill in Make and Model first.", "warning"); return; }
     setMarketValLoading(true);
     setMarketValuation(null);
     try {
@@ -245,7 +254,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       if (!res.ok) throw new Error(data.error || "Market valuation failed");
       setMarketValuation(data);
     } catch (err: any) {
-      alert(err?.message || "Market valuation failed");
+      notify("Market Valuation Error", err?.message || "Market valuation failed", "error");
     } finally {
       setMarketValLoading(false);
     }
@@ -664,7 +673,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       feature="valuation"
                       bundles={imagin8Bundles}
                       onClick={handleTuValuation}
-                      onUnlock={() => alert("TransUnion official valuations are bundle-gated. Contact your TruSaaS account manager to activate live M&M valuations for this dealership.")}
+                      onUnlock={() => notify("TransUnion Bundle", "TransUnion official valuations are bundle-gated. Contact your TruSaaS account manager to activate live M&M valuations for this dealership.", "info")}
                       className="w-full"
                       icon={tuValLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <Zap size={14} />}
                     />
@@ -672,7 +681,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       feature="regCheck"
                       bundles={imagin8Bundles}
                       onClick={handleRegCheck}
-                      onUnlock={() => alert("Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.")}
+                      onUnlock={() => notify("TransUnion Bundle", "Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.", "info")}
                       className="w-full"
                       icon={regCheckLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <Shield size={14} />}
                     />
@@ -680,7 +689,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       feature="accidentReport"
                       bundles={imagin8Bundles}
                       onClick={handleAccidentReport}
-                      onUnlock={() => alert("Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.")}
+                      onUnlock={() => notify("TransUnion Bundle", "Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.", "info")}
                       className="w-full"
                       icon={accidentReportLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <History size={14} />}
                     />
@@ -1427,7 +1436,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           <button
                             onClick={async () => {
                               await onUpdateVehicle(vehicle.id, { retailPrice: suggestedHealthyPrice });
-                              alert(`Retail price adjusted to ${money(suggestedHealthyPrice)}! Target profit margin of 15% is now secured.`);
+                              notify("Price Adjusted", `Retail price adjusted to ${money(suggestedHealthyPrice)}! Target profit margin of 15% is now secured.`, "info");
                             }}
                             className="w-full py-2 bg-[color:var(--glass)] hover:bg-[color:var(--glass)] text-[color:var(--muted)] font-semibold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
                           >

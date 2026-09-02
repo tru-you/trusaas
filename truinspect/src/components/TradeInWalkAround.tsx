@@ -130,23 +130,36 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
   };
 
   const openCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
-      });
-      streamRef.current = stream;
-      setCameraActive(true);
-      // Wait for the video element to mount then attach the stream
-      requestAnimationFrame(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-      });
-    } catch {
-      // getUserMedia not available (desktop, denied permissions) — fall back to native
+    if (!navigator.mediaDevices?.getUserMedia) {
       fileInputRef.current?.click();
+      return;
     }
+
+    const attempts: MediaStreamConstraints[] = [
+      { audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
+      { audio: false, video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { audio: false, video: true },
+    ];
+
+    for (const constraints of attempts) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        streamRef.current = stream;
+        setCameraActive(true);
+        requestAnimationFrame(() => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play().catch(() => {});
+          }
+        });
+        return;
+      } catch {
+        // Try next fallback constraint
+      }
+    }
+
+    // All getUserMedia attempts exhausted — fall back to native input
+    fileInputRef.current?.click();
   };
 
   const capturePhoto = async () => {

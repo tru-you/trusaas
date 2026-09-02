@@ -2955,6 +2955,8 @@ export default function App() {
                                   </span>
                                 ) : (
                                   <span className="text-[13px] text-[color:var(--faint)]">—</span>
+                                );
+                              })()}
                             </td>
                             <td data-label="Status" className="py-3 px-4">
                               <span className="text-[13px] font-medium text-[color:var(--white)]">{l.status}</span>
@@ -4541,6 +4543,7 @@ export default function App() {
           clients={state.clients || []}
           onClose={() => { setLeadDetailId(null); setLeadInitialTab(undefined); }}
           onRefresh={loadAllState}
+          onNotify={addNotification}
           initialTab={leadInitialTab}
           documentsPanel={
             <DocumentsHub
@@ -4592,6 +4595,7 @@ export default function App() {
           dealershipId={dealershipId || selectedDetailVehicle?.dealershipId}
           hasLens={hasProduct("lens")}
           dealership={state.dealerships.find(d => d.id === dealershipId) || state.dealerships[0]}
+          onNotify={addNotification}
           truSocialEnabled={(() => {
             // Publish tab shows only for a dealer that both carries the "social"
             // product and has TruSocial switched on — the publish targets are

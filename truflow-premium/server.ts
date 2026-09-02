@@ -1953,7 +1953,7 @@ function mayTouchVehicle(v: any, auth: any): boolean {
  *  Flow<->Lens sync. Photos, damage findings, VIR, slot assessment and the
  *  condition declaration stay Lens-owned (they belong to the capture flow). */
 const FLOW_SYNCED_FIELDS = [
-  "make", "model", "year", "trim", "vin", "color",
+  "make", "model", "year", "trim", "vin", "color", "mmCode",
   "mileage", "transmission", "fuelType", "bodyType", "engine",
   "retailPrice", "showOnWebsite", "description", "status", "stockNumber",
 ] as const;
@@ -4791,6 +4791,7 @@ app.post("/api/sync/push-photos", (req, res) => {
         bodyType: vehicleMeta.vehicleType || vehicleMeta.bodyType || "",
         engine: vehicleMeta.engine || "",
         vin: vehicleMeta.vin || "",
+        mmCode: vehicleMeta.mmCode || undefined,
         color: vehicleMeta.color || "",
         images: mapped.images,
         damagePhotos: mapped.damagePhotos,
@@ -4857,6 +4858,7 @@ app.post("/api/sync/push-photos", (req, res) => {
     const pushNow = Date.now();
     const incoming: Record<string, any> = {};
     if (vehicleMeta.vin) incoming.vin = vehicleMeta.vin;
+    if (vehicleMeta.mmCode) incoming.mmCode = vehicleMeta.mmCode;
     if (vehicleMeta.color) incoming.color = vehicleMeta.color;
     if (vehicleMeta.make) incoming.make = tidyStr(vehicleMeta.make);
     if (vehicleMeta.model) incoming.model = cleanModelName(vehicleMeta.model);

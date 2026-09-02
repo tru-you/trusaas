@@ -328,7 +328,17 @@
       window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(text), "_blank", "noopener");
     }
 
-    close();
+    var modal = bg.querySelector(".tb-modal");
+    if (modal) {
+      modal.innerHTML = '<div style="padding:40px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">'
+        + '<div style="width:64px;height:64px;border-radius:50%;background:rgba(79,227,220,0.15);border:2px solid #4FE3DC;display:flex;align-items:center;justify-content:center;color:#4FE3DC;font-size:32px;">✓</div>'
+        + '<div style="font-size:18px;font-weight:700;color:inherit;">Booking Confirmed</div>'
+        + '<div style="font-size:13px;opacity:0.75;line-height:1.5;max-width:280px;">We have received your appointment request for <b>' + esc(when) + '</b>. The team will be in touch shortly.</div>'
+        + '</div>';
+      setTimeout(close, 2400);
+    } else {
+      close();
+    }
   }
 
   function open(opts) {

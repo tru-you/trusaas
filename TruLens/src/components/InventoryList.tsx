@@ -1572,9 +1572,9 @@ export default function InventoryList({
                                 setTimeout(() => setCopiedVinId(null), 2000);
                               }}
                               className="text-[12px] font-mono text-[rgba(232,234,230,0.42)] hover:text-[rgba(232,234,230,0.72)] flex items-center gap-1 min-h-[32px] px-2 -mx-2"
-                              title="Copy VIN"
+                              title={`Copy full VIN (${vehicle.vin})`}
                             >
-                              {vehicle.vin.substring(vehicle.vin.length - 6)}
+                              VIN: {vehicle.vin.substring(vehicle.vin.length - 6)}
                               {copiedVinId === vehicle.id ? <Check size={12} className="text-[#4FE3DC]" /> : <Copy size={12} />}
                             </button>
                           )}

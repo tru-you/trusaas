@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TruValue � instant trade-in / market-value widget (TruSaaS)
  *
  * CANONICAL SOURCE. Per-dealer copies under case-sites/ and truweb/ are deploy
@@ -125,7 +125,7 @@
   /* Currency + grouping follow the estimate's own market (the server returns
      it); pre-result calls fall back to the launch market (R / en-ZA). */
   var cur = (res && res.currency) || "R";
-  var locale = cur === "�" ? "en-GB" : cur === "$" ? "en-US" : "en-ZA";
+  var locale = cur === "£" ? "en-GB" : cur === "$" ? "en-US" : "en-ZA";
   var sep = cur === "R" ? " " : "";
   return cur + sep + Math.round(n || 0).toLocaleString(locale);
 }
