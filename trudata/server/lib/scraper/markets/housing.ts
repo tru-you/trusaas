@@ -4,27 +4,34 @@ import { MarketConfig } from "../engine";
  *  keyword and an address-ish number. Location is NOT required in the title —
  *  the search URL scopes the area, and SA listing titles name the suburb, not
  *  the city ('3 Bedroom House in Strandfontein'). */
-function propertyTitleMatch(title: string, _make: string, model: string, _year: string): boolean {
+function propertyTitleMatch(title: string, make: string, model: string, _year: string): boolean {
   const t = String(title || "").toLowerCase();
-  // When a specific property type is requested, prefer titles of that kind.
+  
+  // Verify that listing relates to properties
+  const isProperty = /(apartment|flat|house|villa|townhouse|unit|sectional|cluster|plot|land|property|erf|holding|residence)/.test(t);
+  if (!isProperty) return false;
+
+  // When a specific property type is requested, verify
   const modelTerm = String(model || "").toLowerCase().trim();
-  if (modelTerm && modelTerm !== "all") {
-    const typeOk = /(apartment|flat|house|villa|townhouse|unit|sectional|cluster)/.test(t);
+  if (modelTerm && modelTerm !== "property" && modelTerm !== "all") {
     const typeMatch = modelTerm === "apartment" || modelTerm === "flat"
       ? /(apartment|flat)/.test(t)
       : modelTerm === "house" || modelTerm === "villa"
         ? /(house|villa|home|townhouse|cluster)/.test(t)
         : true;
-    if (!typeOk || !typeMatch) return false;
-  } else if (!/(apartment|flat|house|villa|townhouse|unit|sectional|plot|land|property)/.test(t)) {
-    return false;
+    if (!typeMatch) return false;
   }
-  // anchor to a number (street number / bedrooms) so a stray word can't claim a hit
+
+  // Anchor to a number (bedrooms or price/address indicator)
   return /\b\d{1,4}\b/.test(t);
 }
 
-/** Housing — South Africa residential, ZAR. Both sites load at /for-sale; the
- *  request passes location (make) and property type (model) as hints. */
+/** Helper to slugify area name for portal URLs */
+function areaSlug(area: string): string {
+  return String(area || "").toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
+}
+
+/** Housing — South Africa residential, ZAR. */
 export const housingZa: MarketConfig = {
   id: "housing-za",
   currency: "R",
@@ -39,16 +46,26 @@ export const housingZa: MarketConfig = {
   classifieds: [
     {
       name: "Private Property",
-      url: (_make, _model, _year) => `https://www.privateproperty.co.za/for-sale`,
+      url: (make, _model, _year) => {
+        const slug = areaSlug(make);
+        return slug
+          ? `https://www.privateproperty.co.za/for-sale?search=${encodeURIComponent(make)}`
+          : `https://www.privateproperty.co.za/for-sale`;
+      },
       fetchConfig: {},
       selectors: '[class*="price"], [class*="Price"]'.split(","),
     },
     {
       name: "Property24",
-      url: (_make, _model, _year) => `https://www.property24.com/for-sale`,
+      url: (make, _model, _year) => {
+        const slug = areaSlug(make);
+        return slug
+          ? `https://www.property24.com/for-sale/search?sp=${encodeURIComponent(make)}`
+          : `https://www.property24.com/for-sale`;
+      },
       fetchConfig: {},
       selectors: '[class*="price"], [class*="Price"]'.split(","),
     },
   ],
-  searchUrl: (_make, _model, _year) => `https://www.property24.com/for-sale`,
+  searchUrl: (make, _model, _year) => `https://www.property24.com/for-sale/search?sp=${encodeURIComponent(make)}`,
 };

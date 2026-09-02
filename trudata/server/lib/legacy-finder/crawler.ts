@@ -176,14 +176,14 @@ async function auditDomain(
   country: 'za' | 'uk'
 ): Promise<LegacySiteTarget | null> {
   const t0 = Date.now();
-  const url = `https://${domain}`;
+  let activeUrl = `https://${domain}`;
 
   let html = '';
   let headers: Record<string, any> = {};
   let loadTimeMs = 2500;
 
   try {
-    const res = await axios.get(url, {
+    const res = await axios.get(activeUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       },
@@ -194,7 +194,7 @@ async function auditDomain(
     headers = res.headers;
     loadTimeMs = Date.now() - t0;
   } catch (err: any) {
-    // If HTTPS fails, try HTTP
+    // If HTTPS fails, try HTTP and update activeUrl
     try {
       const httpUrl = `http://${domain}`;
       const res = await axios.get(httpUrl, {
@@ -203,6 +203,7 @@ async function auditDomain(
         },
         timeout: 7000
       });
+      activeUrl = httpUrl;
       html = res.data;
       headers = res.headers;
       loadTimeMs = Date.now() - t0;
@@ -225,12 +226,12 @@ async function auditDomain(
   const contacts = parseContactPage($, country);
 
   // Perform technical defect audit
-  const audit = auditWebsite(url, html, headers, loadTimeMs, currency);
+  const audit = auditWebsite(activeUrl, html, headers, loadTimeMs, currency);
 
   // If no phone found on homepage, attempt to crawl first contact page
   if (contacts.phones.length === 0 && contacts.contactPagesFound.length > 0) {
     try {
-      const contactUrl = new URL(contacts.contactPagesFound[0], url).toString();
+      const contactUrl = new URL(contacts.contactPagesFound[0], activeUrl).toString();
       const contactRes = await axios.get(contactUrl, { timeout: 4000 });
       if (typeof contactRes.data === 'string') {
         const $c = cheerio.load(contactRes.data);

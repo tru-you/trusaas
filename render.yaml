@@ -1016,11 +1016,17 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    disk:
+      name: trudata-data
+      mountPath: /var/data
+      sizeGB: 5
     envVars:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
         value: "20.18.0"
+      - key: DATA_DIR
+        value: /var/data
       - key: BRIGHTDATA_API_KEY
         sync: false
       - key: BRIGHTDATA_UNLOCKER_ZONE

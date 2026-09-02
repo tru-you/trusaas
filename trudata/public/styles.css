@@ -1333,6 +1333,7 @@ body {
 
 .comparison-table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
   font-size: 0.8125rem;
 }
@@ -1896,7 +1897,9 @@ body {
   bottom: 60px;
   right: 0;
   width: 360px;
+  max-width: calc(100vw - 32px);
   height: 480px;
+  max-height: calc(100vh - 120px);
   background-color: var(--bg-surface);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
@@ -2331,8 +2334,9 @@ body {
   .metric-value { font-size: 1.25rem; }
   .metric-sub { font-size: 0.625rem; }
   
-  /* Property sub-tabs */
-  .suburb-metrics-table .table-row { grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.75rem; }
+  /* Property sub-tabs — horizontal scroll on mobile */
+  .suburb-metrics-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .suburb-metrics-table .table-row { min-width: 520px; font-size: 0.75rem; }
   
   /* B2B tables — horizontal scroll */
   .b2b-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }

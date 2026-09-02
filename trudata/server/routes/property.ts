@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { fetchValuation, markets } from '../lib/scraper/index';
+import { extractFsboLeads } from '../lib/scraper/fsbo-extractor';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.post('/comps', async (req, res) => {
     }
 
     // Use the housing market config with fetchValuation
-    // For property, "make" = property type (or suburb), "model" = city area, "year" = current
+    // For property, "make" = suburb, "model" = property type, "year" = current
     const searchTerm = `${suburb} ${city}`.trim();
     const result = await fetchValuation(
       searchTerm,
@@ -57,8 +58,28 @@ router.post('/comps', async (req, res) => {
       fallback: result.fallbackRequired,
     });
   } catch (err: any) {
-    console.error('[PropertyAPI] Error:', err.message);
+    console.error('[PropertyAPI] Comps error:', err.message);
     res.status(500).json({ error: 'Property valuation query failed' });
+  }
+});
+
+/**
+ * POST /api/property/fsbo
+ * Live Direct Private Property Sellers (FSBO) Lead Feed
+ */
+router.post('/fsbo', async (req, res) => {
+  try {
+    const { suburb = '', city = '', limit = 8 } = req.body;
+    if (!suburb) {
+      return res.status(400).json({ error: 'Missing required parameter: suburb' });
+    }
+
+    const cleanLimit = Math.min(25, Math.max(1, Number(limit) || 8));
+    const result = await extractFsboLeads(String(suburb).trim(), String(city).trim(), cleanLimit);
+    res.json(result);
+  } catch (err: any) {
+    console.error('[PropertyAPI] FSBO error:', err?.message || err);
+    res.status(500).json({ error: 'Failed to extract private seller leads' });
   }
 });
 

@@ -31,14 +31,19 @@ router.post('/crawl', async (req, res) => {
  */
 router.post('/export-csv', async (req, res) => {
   try {
-    const { city = 'Pretoria', industry = 'Commercial Services', country = 'za' } = req.body;
+    const { city = 'Pretoria', industry = 'Commercial Services', country = 'za', targets: inputTargets } = req.body;
 
-    const result = await crawlLegacySites({
-      city: String(city).trim(),
-      industry: String(industry).trim(),
-      country: country === 'uk' ? 'uk' : 'za',
-      maxResults: 20
-    });
+    let targetsToExport = Array.isArray(inputTargets) && inputTargets.length > 0 ? inputTargets : null;
+
+    if (!targetsToExport) {
+      const result = await crawlLegacySites({
+        city: String(city).trim(),
+        industry: String(industry).trim(),
+        country: country === 'uk' ? 'uk' : 'za',
+        maxResults: 20
+      });
+      targetsToExport = result.targets || [];
+    }
 
     // Generate CSV lines
     const headers = [
@@ -62,7 +67,7 @@ router.post('/export-csv', async (req, res) => {
       return `"${s}"`;
     };
 
-    const rows = result.targets.map(t => [
+    const rows = targetsToExport.map((t: any) => [
       csvSafe(t.businessName),
       csvSafe(t.domain),
       `${t.readinessScore}/100`,

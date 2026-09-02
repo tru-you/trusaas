@@ -410,7 +410,10 @@ export function parseSerpResults(json: any, make: string, model: string, year: s
 
 export async function fetchSerpListings(make: string, model: string, year: string, cfg: MarketConfig): Promise<Listing[]> {
   if (!serpConfigured()) return [];
-  const q = `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
+  const isHousing = cfg.id.startsWith("housing");
+  const q = isHousing
+    ? `${make} ${model === "property" ? "" : model} property for sale South Africa price`
+    : `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
   try {
     let json: any = null;
     if (getSerpProvider() === "brightdata") {
@@ -464,7 +467,12 @@ function priceFromText(text: string, cfg: MarketConfig): number | null {
 function jsonPrice(v: unknown, cfg: MarketConfig): number | null {
   let n: number;
   if (typeof v === "number") n = v;
-  else n = parseFloat(String(v ?? "").replace(/[^\d.,]/g, ""));
+  else {
+    const s = String(v ?? "").trim();
+    // Strip thousands-separator commas before extracting digits/decimals
+    const clean = s.replace(/,/g, "").replace(/[^\d.]/g, "");
+    n = parseFloat(clean);
+  }
   return Number.isFinite(n) && n >= cfg.minPrice && n <= cfg.maxPrice ? Math.round(n) : null;
 }
 

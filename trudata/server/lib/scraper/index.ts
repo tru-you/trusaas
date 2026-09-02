@@ -58,8 +58,8 @@ const SERP_TRIGGER_MAX = Number(process.env.SERP_TRIGGER_MAX) || 6;
 interface CacheEntry { data: ValuationResult; ts: number; }
 const cache = new Map<string, CacheEntry>();
 
-function cacheKey(marketId: string, make: string, model: string, year: string, vin?: string, dealerSlug?: string): string {
-  return `${marketId}|${(dealerSlug || "default").toLowerCase()}|${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || "novin").toUpperCase()}`;
+function cacheKey(marketId: string, make: string, model: string, year: string, vin?: string, dealerSlug?: string, mileage?: number): string {
+  return `${marketId}|${(dealerSlug || "default").toLowerCase()}|${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || "novin").toUpperCase()}|${mileage != null && Number.isFinite(mileage) ? Math.round(mileage) : "nomileage"}`;
 }
 function cacheGet(key: string): ValuationResult | null {
   const e = cache.get(key);
@@ -122,7 +122,8 @@ export async function fetchValuation(
 ): Promise<ValuationResult> {
   const cfg = market;
   const baseModel = modelCore(model);
-  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug);
+  const targetKm = Number(opts.mileage);
+  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug, targetKm);
   const cached = cacheGet(key);
   if (cached) return cached;
 
@@ -177,7 +178,6 @@ export async function fetchValuation(
   const dealerListings = dealerResults.flatMap((r) => r.listings);
   const dealerSources: SourceResult[] = dealerResults.map(({ name, count, avg }) => ({ name, count, avg }));
 
-  const targetKm = Number(opts.mileage);
   const kmOf = (ls: Listing[]) => median(ls.map((l) => l.km).filter((k): k is number => typeof k === "number"));
 
   if (dealerListings.length >= DEALER_FINAL_THRESHOLD) {

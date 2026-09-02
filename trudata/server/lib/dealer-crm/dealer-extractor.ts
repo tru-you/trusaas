@@ -69,7 +69,7 @@ export async function extractDealerProfile(
   let adminEmail = emails.find(e => e.includes('admin') || e.includes('manager') || e.includes('dp'));
 
   // 3. Physical Address Extraction
-  let physicalAddress = `${city}, Gauteng, South Africa`;
+  let physicalAddress = `${city}, South Africa`;
   $('[class*="address"], [class*="location"], [itemprop="address"], address').each((_, el) => {
     const t = $(el).text().trim().replace(/\s+/g, ' ');
     if (t.length > 10 && t.length < 180) {
@@ -83,35 +83,35 @@ export async function extractDealerProfile(
   const hasLiveChat = rawHtml.includes('livechat') || rawHtml.includes('tawk.to') || rawHtml.includes('intercom') || rawHtml.includes('zendesk');
   const hasViewport = $('meta[name="viewport"]').length > 0;
 
-  // Estimate Stock Count (looking for vehicle grid cards)
   let estimatedStockCount = 25;
-  const carCards = $('[class*="vehicle-card"], [class*="car-item"], [class*="stock-item"], [class*="listing-item"]').length;
-  if (carCards > 0) {
-    estimatedStockCount = Math.max(carCards, 18);
+  const stockMatches = rawHtml.match(/(\d{1,4})\s*(?:vehicles?|cars?|units?)\s*(?:in stock|available)/i);
+  if (stockMatches) {
+    estimatedStockCount = parseInt(stockMatches[1], 10);
+  } else {
+    const vehicleCards = $('[class*="vehicle"], [class*="car-card"], [class*="stock-item"]').length;
+    if (vehicleCards > 3) estimatedStockCount = vehicleCards * 2;
   }
 
-  // Calculate Readiness & Pain Points
+  // Calculate TruSaaS DMS & Inspection Readiness Score
+  let score = 50;
   const painPoints: string[] = [];
-  const recommendedProducts: ('TruFlow DMS' | 'TruLens Studio' | 'TruInspect VIR' | 'TruLive Video' | 'TruTrade')[] = [];
-  let score = 75;
+  const recommendedProducts: DealerContactProfile['recommendedTruSaasProducts'] = [];
 
   if (!hasViewport) {
-    painPoints.push('Website is broken on smartphones (missing mobile viewport)');
-    score -= 30;
-    recommendedProducts.push('TruFlow DMS');
+    painPoints.push('Non-responsive mobile website — losing phone shoppers');
+    score -= 20;
   }
   if (!hasMobileVir) {
-    painPoints.push('No digital vehicle inspection or condition reports on stock listings');
+    painPoints.push('No interactive vehicle inspection / condition reports');
     score -= 15;
     recommendedProducts.push('TruInspect VIR');
   }
-  if (rawHtml.includes('iframe') || !rawHtml.includes('360')) {
-    painPoints.push('Static flat vehicle photos without 360 spin studio or damage hot-spots');
-    score -= 15;
-    recommendedProducts.push('TruLens Studio');
+  if (!hasLiveChat) {
+    painPoints.push('Zero instant engagement / after-hours WhatsApp concierge');
+    score -= 10;
   }
   if (!hasOnlineFinanceForm) {
-    painPoints.push('No automated OTP or digital finance application capture');
+    painPoints.push('No direct digital vehicle finance application flow');
     score -= 10;
     recommendedProducts.push('TruTrade');
   }
@@ -129,7 +129,7 @@ export async function extractDealerProfile(
     websiteUrl: finalUrl,
     city,
     physicalAddress,
-    primaryMobile: primaryMobile || '+27 82 000 0000',
+    primaryMobile: primaryMobile || switchboard || '—',
     secondaryMobile: phones[1],
     switchboardPhone: switchboard,
     whatsAppDirectLink: whatsApp,

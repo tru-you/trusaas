@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
     // Handle different products
     if (product === 'valuation') {
       try {
-        const { fetchValuation, markets } = await import('../../../packages/market-scraper/index');
+        const { fetchValuation, markets } = await import('../lib/scraper/index');
         const result = await fetchValuation(
           String(params?.make || 'Toyota').trim(),
           String(params?.model || 'Hilux 2.8 GD-6').trim(),
@@ -65,6 +65,19 @@ router.post('/', async (req, res) => {
           }
         });
       }
+    } else if (product === 'fsbo') {
+      try {
+        const { extractFsboLeads } = await import('../lib/scraper/fsbo-extractor');
+        const fsboResult = await extractFsboLeads(String(params?.suburb || 'Camps Bay'), String(params?.city || 'Cape Town'), 3);
+        return res.json({
+          message: `Sample Private Sellers (FSBO) Lead Pack generated for ${fsboResult.suburb}!`,
+          data: fsboResult
+        });
+      } catch {
+        return res.json({
+          message: `Sample Private Sellers (FSBO) leads for ${params?.suburb || 'Camps Bay'} will be emailed to ${email} shortly.`
+        });
+      }
     } else if (product === 'property') {
       return res.json({
         message: `Sample Suburb Intelligence report (${params?.suburb || 'Camps Bay'}) will be emailed to ${email} shortly.`
@@ -75,7 +88,7 @@ router.post('/', async (req, res) => {
       });
     } else if (product === 'audit') {
       return res.json({
-        message: `Sample Agency Defect Audit report (5 local businesses) will be emailed to ${email} within 15 minutes.`
+        message: `Sample Agency Defect Audit report (5 local businesses in ${params?.city || 'Pretoria'}) will be emailed to ${email} within 15 minutes.`
       });
     } else {
       return res.json({

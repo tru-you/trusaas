@@ -16,11 +16,10 @@ export function generateSignature(data: Record<string, string>, passphrase?: str
   // 4. MD5 hash
 
   let pfOutput = '';
-  for (const key in data) {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
-      if (data[key] !== '') {
-        pfOutput += `${key}=${encodeURIComponent(data[key].trim()).replace(/%20/g, '+')}&`;
-      }
+  const sortedKeys = Object.keys(data).sort();
+  for (const key of sortedKeys) {
+    if (data[key] !== undefined && data[key] !== null && data[key] !== '') {
+      pfOutput += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`;
     }
   }
 
@@ -35,10 +34,16 @@ export function generateSignature(data: Record<string, string>, passphrase?: str
 
 const PAYFAST_IPS = ['197.97.145.144/28', '41.74.179.192/27'];
 
-function ipInRange(ip: string, cidr: string): boolean {
+function ipInRange(rawIp: string, cidr: string): boolean {
+  if (!rawIp) return false;
+  // Clean IPv6-mapped IPv4 e.g. ::ffff:197.97.145.145 and handle proxy list (first IP)
+  const cleanIp = rawIp.split(',')[0].trim().replace(/^::ffff:/, '');
+  const parts = cleanIp.split('.');
+  if (parts.length !== 4) return false;
+
   const [range, bits] = cidr.split('/');
   const mask = ~((1 << (32 - parseInt(bits, 10))) - 1);
-  const ipLong = ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
+  const ipLong = parts.reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
   const rangeLong = range.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
   return (ipLong & mask) === (rangeLong & mask);
 }
