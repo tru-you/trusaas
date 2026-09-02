@@ -17,6 +17,7 @@ interface DamageTaggerProps {
   onBack: () => void;
   onSave: (damageFindings: Record<string, DamageFinding[]>) => Promise<void> | void;
   onContinueToChecklist?: () => void;
+  initialSlotId?: string;
 }
 
 const TYPES: DamageFinding['damageType'][] = [
@@ -33,7 +34,7 @@ const SEVERITY_META: Record<number, { label: string; color: string }> = {
 
 const newId = () => `dmg_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
 
-export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChecklist }: DamageTaggerProps) {
+export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChecklist, initialSlotId }: DamageTaggerProps) {
   // Only slots that actually have a photo can be tagged.
   const shotSlots = React.useMemo(
     () => DEFAULT_TEMPLATE.slots.filter((s) => vehicle.photos?.[s.id]),
@@ -43,7 +44,9 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
   const [findings, setFindings] = React.useState<Record<string, DamageFinding[]>>(
     () => JSON.parse(JSON.stringify(vehicle.damageFindings || {})),
   );
-  const [slotId, setSlotId] = React.useState<string>(shotSlots[0]?.id || '');
+  const [slotId, setSlotId] = React.useState<string>(
+    (initialSlotId && shotSlots.find(s => s.id === initialSlotId) ? initialSlotId : shotSlots[0]?.id) || '',
+  );
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [savedFlash, setSavedFlash] = React.useState(false);
@@ -99,36 +102,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
   // Suggestions land as provisional marks the inspector must confirm — nothing
   // AI-guessed reaches the report until a human says so.
   const scanWithAI = async () => {
-    if (scanning || !photo) return;
-    setScanning(true);
-    setScanMsg(null);
-    try {
-      const res = await fetch('/api/inspect/damage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          base64Image: photo,
-          slotId,
-          slotName: slot?.name,
-          vehicleInfo: { year: vehicle.year, make: vehicle.make, model: vehicle.model },
-        }),
-      });
-      const data = await res.json();
-      const suggestions: DamageFinding[] = Array.isArray(data.findings) ? data.findings : [];
-      if (!data.aiMode) {
-        setScanMsg('AI damage detection is off — tag any damage by hand.');
-      } else if (!suggestions.length) {
-        setScanMsg('AI saw no clear damage in this photo. Tag anything it missed by hand.');
-      } else {
-        setFindings((prev) => ({ ...prev, [slotId]: [...(prev[slotId] || []), ...suggestions] }));
-        setScanMsg(`AI suggested ${suggestions.length} — review each, then confirm or remove.`);
-      }
-    } catch {
-      setScanMsg('Could not reach the AI service. Tag by hand.');
-    } finally {
-      setScanning(false);
-      setTimeout(() => setScanMsg(null), 4000);
-    }
+    // Removed
   };
 
   const handleSave = async (thenBack: boolean) => {
@@ -357,14 +331,16 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
         {scanMsg && (
           <p className="text-[13px] text-cyan-300/90 text-center leading-snug">{scanMsg}</p>
         )}
-        <button
-          type="button"
-          onClick={scanWithAI}
-          disabled={scanning || !photo}
-          className="w-full py-3 rounded-xl bg-neutral-900 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
-        >
-          {scanning ? <><Loader2 size={14} className="animate-spin" /> Scanning this photo…</> : <><Sparkles size={14} /> Scan this photo with AI</>}
-        </button>
+        {false && (
+          <button
+            type="button"
+            onClick={scanWithAI}
+            disabled={scanning || !photo}
+            className="w-full py-3 rounded-xl bg-neutral-900 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {scanning ? <><Loader2 size={14} className="animate-spin" /> Scanning this photo…</> : <><Sparkles size={14} /> Scan this photo with AI</>}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => handleSave(false)}

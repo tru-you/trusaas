@@ -60,7 +60,7 @@ export default function DiscScanner({
   const grabFrame = React.useCallback((): string | undefined => {
     const video = videoRef.current;
     if (!video || !video.videoWidth) return undefined;
-    const c = document.createElement('canvas');
+    const c = canvasRef.current || document.createElement('canvas');
     c.width = video.videoWidth;
     c.height = video.videoHeight;
     c.getContext('2d')?.drawImage(video, 0, 0);

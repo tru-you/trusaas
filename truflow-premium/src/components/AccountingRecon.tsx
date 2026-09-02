@@ -283,13 +283,23 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                       </td>
                       <td data-label="Status" className="py-3 text-center">
                         {e.reconciled ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)] font-semibold">
+                          <button 
+                            type="button"
+                            onClick={() => onReconcileExpense?.(e.id, false)}
+                            disabled={!onReconcileExpense}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)] font-semibold ${onReconcileExpense ? 'cursor-pointer hover:bg-[color:var(--cyan)] hover:text-white transition-colors' : ''}`}
+                          >
                             <Check size={8} /> Reconciled
-                          </span>
+                          </button>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] font-semibold">
+                          <button 
+                            type="button"
+                            onClick={() => onReconcileExpense?.(e.id, true)}
+                            disabled={!onReconcileExpense}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] font-semibold ${onReconcileExpense ? 'cursor-pointer hover:bg-white/10 transition-colors' : ''}`}
+                          >
                             <AlertCircle size={8} /> Open
-                          </span>
+                          </button>
                         )}
                       </td>
                     </tr>

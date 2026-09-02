@@ -522,6 +522,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
     <div class="brand">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><defs><radialGradient id="cb1" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#0E182A"/><stop offset="60%" stop-color="#04070D"/><stop offset="100%" stop-color="#000"/></radialGradient><linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFF"/><stop offset="18%" stop-color="#E0F2FE"/><stop offset="42%" stop-color="#38BDF8"/><stop offset="70%" stop-color="#00F2FE"/><stop offset="90%" stop-color="#0D9488"/><stop offset="100%" stop-color="#022C2A"/></linearGradient><linearGradient id="mt1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFF"/><stop offset="15%" stop-color="#CBD5E1"/><stop offset="40%" stop-color="#64748B"/><stop offset="75%" stop-color="#1E293B"/><stop offset="100%" stop-color="#0A0E17"/></linearGradient><linearGradient id="sw1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#FFF"/><stop offset="50%" stop-color="#A5F3FC"/><stop offset="100%" stop-color="rgba(255,255,255,0.2)"/></linearGradient><filter id="nb1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="16" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs><circle cx="256" cy="256" r="246" fill="url(#cb1)" stroke="rgba(255,255,255,0.12)" stroke-width="2"/><circle cx="256" cy="240" r="130" fill="url(#cg1)" opacity="0.25" filter="url(#nb1)"/><g transform="translate(256,256) rotate(-30)"><ellipse rx="212" ry="68" fill="none" stroke="url(#cg1)" stroke-width="7" filter="url(#nb1)" opacity="0.8"/><ellipse rx="212" ry="68" fill="none" stroke="#00F2FE" stroke-width="2.5" opacity="0.95"/><circle cx="190" cy="-28" r="8" fill="#FFF" filter="url(#nb1)"/></g><g transform="translate(256,245) scale(1.18)"><path d="M-88-65 L0-128 L0-25 L-48 38 L-88-10Z" fill="url(#mt1)" stroke="#090D16" stroke-width="1.5"/><path d="M-48 38 L0-25 L0 98 L-48 38Z" fill="url(#mt1)" opacity="0.9"/><path d="M88-65 L0-128 L0-25 L48 38 L88-10Z" fill="url(#cg1)"/><path d="M48 38 L0-25 L0 98 L48 38Z" fill="url(#cg1)"/><polygon points="0,-128 34,-92 0,-56 -34,-92" fill="#FFF"/><line x1="0" y1="-128" x2="0" y2="98" stroke="#FFF" stroke-width="3" opacity="0.95"/><path d="M-88-65 L0-128 L88-65" fill="none" stroke="url(#sw1)" stroke-width="2.5" opacity="0.9"/></g></svg>
     </div>
+    <span id="offlinePill" style="display:none;background:#f59e0b;color:#000;font-size:11px;padding:2px 8px;border-radius:99px;margin-left:8px;">Offline · Cached</span>
     <div class="sp"></div>
     <button class="guide-hdr-btn" id="guideBtn" aria-label="How do I…?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
     <button class="guide-hdr-btn" id="assistBtn" aria-label="Dealer Assist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button>
@@ -715,7 +716,10 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
     if(body)opts.body=JSON.stringify(body);
     return fetch(API+path,opts).then(function(r){
       if(r.status===401){doLogout();throw new Error("Session expired");}
-      return r.json();
+      return r.json().then(function(data){
+        if(!r.ok)throw new Error((data&&data.error)||("HTTP "+r.status));
+        return data;
+      });
     });
   }
 
@@ -786,7 +790,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
   // Android WebViews/PWAs report onLine=false while the device is actually
   // connected, which flashed "OFFLINE — SHOWING CACHED DATA" over live data.
   // A hard offline event still shows it immediately; a successful load clears it.
-  function setOffline(off){isOffline=off;}
+  function setOffline(off){isOffline=off;var p=$("#offlinePill");if(p)p.style.display=off?"inline-block":"none";}
   window.addEventListener("online",function(){if(TOKEN)loadAll();});
   window.addEventListener("offline",function(){setOffline(true);});
 
@@ -851,6 +855,13 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
   var debounceT={};
   function debounce(key,fn,ms){clearTimeout(debounceT[key]);debounceT[key]=setTimeout(fn,ms||180);}
 
+  function cleanWaPhone(p) {
+    var digits = (p||"").replace(/\D/g, "");
+    var code = {za:'27',uk:'44',us:'1'}[(MARKET||{}).id||'za']||'27';
+    if (digits.charAt(0)==='0') digits = code + digits.substring(1);
+    return digits;
+  }
+
   /* ── Vehicle helpers ── */
   function vName(v){return [v.year,v.make,v.model].filter(Boolean).join(" ").replace(/\s+/g," ").trim();}
   function vPrice(v){return v.retailPrice||v.price||0;}
@@ -894,7 +905,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
     r.innerHTML='<div class="lav" style="">'+esc(initials(nm))+'</div>'+
       '<div class="lb"><div class="lnm">'+esc(nm)+'</div><div class="li">'+esc(l.notes||l.source||"Website enquiry")+'</div>'+
       '<div class="lm"><span class="src">'+esc(l.source||"Website")+'</span>'+(phone?'<span>·</span><span>'+esc(phone)+'</span>':'')+'<span>·</span><span>'+timeAgo(l.createdAt)+'</span></div></div>'+
-      (st==="New"&&phone?'<a class="qa wa" href="https://wa.me/'+phone.replace(/\D/g,"")+'" target="_blank" rel="noopener" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>':'<span class="pill '+cls+' dot">'+esc(lbl)+'</span>');
+      (st==="New"&&phone?'<a class="qa wa" href="https://wa.me/'+cleanWaPhone(phone)+'" target="_blank" rel="noopener" onclick="event.stopPropagation();try{api(\'PUT\', \'/api/leads/\' + \''+l.id+'\', { lastContactedAt: new Date().toISOString() });}catch(e){}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>':'<span class="pill '+cls+' dot">'+esc(lbl)+'</span>');
     r.addEventListener("click",function(e){if(e.target.closest("a"))return;openLead(l.id);});
     pressable(r,"Lead: "+nm+", "+lbl);
     return r;
@@ -970,7 +981,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
       if(stockFilter==="Draft"&&(v.status==="SOLD"||isPub(v)))return false;
       if(stockFilter==="Sold"&&v.status!=="SOLD")return false;
       if(!q)return true;
-      return ((vName(v)+" "+(v.trim||"")+" "+(v.stockNumber||"")).toLowerCase().indexOf(q)>=0);
+      return ((vName(v)+" "+(v.trim||"")+" "+(v.stockNumber||"")+" "+(v.vin||"")+" "+(v.regNumber||v.registrationNumber||"")).toLowerCase().indexOf(q)>=0);
     });
     if(stockSort==="price-low")arr=arr.slice().sort(function(a,b){return vPrice(a)-vPrice(b);});
     else if(stockSort==="price-high")arr=arr.slice().sort(function(a,b){return vPrice(b)-vPrice(a);});
@@ -1293,7 +1304,10 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
   function findLead(id){for(var i=0;i<cachedLeads.length;i++){if(cachedLeads[i].id===id)return cachedLeads[i];}return null;}
   function vehById(id){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===id)return cachedStock[i];}return null;}
   function stampNow(){var d=new Date();return d.toLocaleDateString(MARKET.locale,{day:"numeric",month:"short"})+" · "+d.toLocaleTimeString(MARKET.locale,{hour:"2-digit",minute:"2-digit"});}
-  function todayISO(){return new Date().toISOString().slice(0,10);}
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
   function updateLeadCache(lead){for(var i=0;i<cachedLeads.length;i++){if(cachedLeads[i].id===lead.id){cachedLeads[i]=lead;return;}}}
   var svgCall='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>';
   var svgWa='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>';
@@ -1306,12 +1320,13 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
     var st=l.status||"New", cls=LEAD_PILL[st]||"neutral", lbl=LEAD_LBL[st]||st;
     var phone=(l.phone&&l.phone!=="N/A")?l.phone:"";
     var email=(l.email&&l.email!=="N/A")?l.email:"";
-    var pd=phone.replace(/\D/g,"");
+    var pd=cleanWaPhone(phone);
     var veh=l.vehicleId?vehById(l.vehicleId):null, vehLabel=veh?vName(veh):"";
 
+    var cl = "try{api('PUT', '/api/leads/' + '" + l.id + "', { lastContactedAt: new Date().toISOString() });}catch(e){}";
     var actions='<div class="ldact">';
-    if(phone)actions+='<a href="tel:'+esc(phone.replace(/\s/g,""))+'">'+svgCall+'Call</a>';
-    if(pd)actions+='<a class="wa" href="https://wa.me/'+pd+'" target="_blank" rel="noopener">'+svgWa+'WhatsApp</a>';
+    if(phone)actions+='<a href="tel:'+esc(phone.replace(/\s/g,""))+'" onclick="'+cl+'">'+svgCall+'Call</a>';
+    if(pd)actions+='<a class="wa" href="https://wa.me/'+pd+'" target="_blank" rel="noopener" onclick="'+cl+'">'+svgWa+'WhatsApp</a>';
     if(email)actions+='<a href="mailto:'+esc(email)+'">'+svgMail+'Email</a>';
     actions+='</div>';
     /* Trade-in cue: Inspect owns the deeper VIR + trade-in appraisal, standalone
@@ -1713,7 +1728,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       mileage:parseInt(g("aKm"),10)||0,retailPrice:price,truPrice:parseInt(g("aTru"),10)||undefined,status:"INVENTORY",showOnWebsite:false};
     var btn=e.target.querySelector("button[type=submit]");if(btn)btn.disabled=true;
     api("POST","/api/inventory",vehicle).then(function(){
-      toast(year+" "+make+" "+model+" added to inventory");e.target.reset();loadInventory();go("stock");if(btn)btn.disabled=false;
+      toast(year+" "+make+" "+model+" added to inventory");e.target.reset();var aMvOut=document.getElementById('aMvOut');if(aMvOut)aMvOut.innerHTML='';loadInventory();go("stock");if(btn)btn.disabled=false;
     }).catch(function(){toast("Couldn't add — check connection",true);if(btn)btn.disabled=false;});
   });
 
@@ -1758,13 +1773,40 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
 
   /* ── Walk-in lead (quick add from the floor) ── */
   $("#addLeadBtn").addEventListener("click",function(){
-    showModal({title:"Walk-in lead",message:"Add a customer who just walked in.",input:true,placeholder:"Customer name",confirmLabel:"Add"}).then(function(name){
-      if(!name)return;
-      var parts=name.trim().split(/\s+/), first=parts[0]||"Walk-in", last=parts.slice(1).join(" ")||"";
-      api("POST","/api/leads",{firstName:first,lastName:last,source:"Walk-in",status:"New",notes:"Added from the floor"}).then(function(res){
+    var ov=document.createElement("div");
+    ov.style.cssText="position:fixed;inset:0;z-index:100;background:rgba(4,6,10,.7);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;";
+    var box=document.createElement("div");
+    box.style.cssText="width:100%;max-width:400px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--ink-2);border-top-left-radius:24px;border-top-right-radius:24px;border-top:1px solid var(--glass-line2);padding:24px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -30px 60px -30px rgba(0,0,0,.9);animation:screenIn .28s var(--ease);";
+    var ist="width:100%;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;color:var(--paper);font-size:15px;outline:none;margin-bottom:12px";
+    box.innerHTML=
+      '<div style="font-weight:600;font-size:17px;margin-bottom:6px">Walk-in lead</div>'+
+      '<div style="font-size:13.5px;color:var(--dim);line-height:1.5;margin-bottom:16px">Add a customer who just walked in.</div>'+
+      '<input class="wi-name" style="'+ist+'" placeholder="Customer name" autofocus>'+
+      '<input class="wi-phone" style="'+ist+'" placeholder="Phone number (optional)" type="tel">'+
+      '<input class="wi-notes" style="'+ist+'" placeholder="Notes (optional)">'+
+      '<div style="display:flex;gap:10px">'+
+      '<button class="tru-btn-ghost modal-cancel" style="flex:1;height:48px;font-size:15px">Cancel</button>'+
+      '<button class="btn-primary modal-ok" style="flex:1;height:48px;font-size:15px">Add</button>'+
+      '</div>';
+    ov.appendChild(box);document.body.appendChild(ov);
+    var nameInp=box.querySelector(".wi-name"), phoneInp=box.querySelector(".wi-phone"), notesInp=box.querySelector(".wi-notes");
+    setTimeout(function(){nameInp.focus();},80);
+    function close(){document.body.removeChild(ov);}
+    function submit(){
+      var name=(nameInp.value||"").trim();
+      if(!name){nameInp.style.borderColor="var(--danger)";nameInp.focus();return;}
+      var parts=name.split(/\s+/), first=parts[0]||"Walk-in", last=parts.slice(1).join(" ")||"";
+      var phone=(phoneInp.value||"").trim()||"N/A";
+      var notes=(notesInp.value||"").trim()||"Added from the floor";
+      close();
+      api("POST","/api/leads",{firstName:first,lastName:last,phone:phone,email:"N/A",source:"Walk-in",status:"New",notes:notes}).then(function(res){
         toast(first+" added as a lead");loadLeads();
       }).catch(function(){toast("Couldn't add — check connection",true);});
-    });
+    }
+    box.querySelector(".modal-cancel").addEventListener("click",close);
+    ov.addEventListener("click",function(e){if(e.target===ov)close();});
+    box.querySelector(".modal-ok").addEventListener("click",submit);
+    notesInp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();submit();}});
   });
 
   /* ── Guide panel ("How do I…?") ── */
@@ -1938,7 +1980,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
   $("#stockSearch").addEventListener("input",function(){debounce("stock",renderStock);});
   $("#leadSortSel").addEventListener("change",function(){leadSort=this.value;renderLeads();});
   $("#stockSortSel").addEventListener("change",function(){stockSort=this.value;renderStock();});
-  chips($("#leadChips"),["All","New","Contacted","Negotiating","Closed Won"],function(v){leadFilter=v;renderLeads();});
+  chips($("#leadChips"),["All","New","Contacted","Test Drive Scheduled","Negotiating","Closed Won"],function(v){leadFilter=v;renderLeads();});
   chips($("#stockChips"),["All","In stock","Live","Draft","Sold"],function(v){stockFilter=v;renderStock();});
 
   (function restore(){

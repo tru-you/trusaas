@@ -15,7 +15,7 @@ interface InspectionSheetProps {
   vehicle: Vehicle;
   onBack: () => void;
   onSave: (points: Record<string, PointResult>) => Promise<void> | void;
-  onTagDamage: () => void;
+  onTagDamage: (slotId?: string) => void;
   onGenerateReport?: () => void;
 }
 
@@ -265,7 +265,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                     {p.photoSlotId && (
                       <button
                         type="button"
-                        onClick={onTagDamage}
+                        onClick={() => onTagDamage(p.photoSlotId)}
                         disabled={!hasPhoto}
                         className="mt-2 min-h-[36px] text-[13px] text-neutral-500 hover:text-cyan-300 disabled:hover:text-neutral-500 disabled:cursor-default flex items-center gap-2"
                       >

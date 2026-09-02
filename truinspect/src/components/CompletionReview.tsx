@@ -98,7 +98,7 @@ export default function CompletionReview({ vehicle, onBack, onSubmit, onRetakeSl
                 <button
                   key={slot.id}
                   type="button"
-                  onClick={() => photo && onRetakeSlot(slot.id)}
+                  onClick={() => onRetakeSlot(slot.id)}
                   className={`aspect-square rounded-lg overflow-hidden border relative ${
                     photo
                       ? 'border-[rgba(232,234,230,0.14)]'

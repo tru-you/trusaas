@@ -272,6 +272,26 @@
       document.head.appendChild(bTag);
     }
 
+    // TruValue
+    if (wanted.indexOf("value") !== -1 || wanted.indexOf("tru-value") !== -1) {
+      var valueSrc = widgetUrl("tru-value");
+      var vTag = document.createElement("script");
+      vTag.src = valueSrc;
+      vTag.setAttribute("data-dealer", globalCfg.dealer);
+      vTag.setAttribute("data-slug", globalCfg.slug);
+      vTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) vTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) vTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) vTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
+      vTag.setAttribute("data-wa", globalCfg.wa);
+      vTag.setAttribute("data-accent", globalCfg.accent);
+      vTag.setAttribute("data-brand", globalCfg.brand);
+      vTag.setAttribute("data-theme", globalCfg.theme);
+      applyGlobalStyle(vTag);
+      applyPrefixed(vTag, "value");
+      document.head.appendChild(vTag);
+    }
+
     // 6. TruShare — per-vehicle sharing. No OAuth, no tokens, no backend:
     //    the buttons are plain intent URLs and the native share sheet.
     //    Distinct from TruSocial (Zernio) in TruFlow Premium, which posts on
@@ -311,6 +331,7 @@
       if (w === "repay" && root.TruRepay) root.TruRepay.open(payload);
       if (w === "form" && root.TruForm) root.TruForm.open(payload);
       if (w === "book" && (root.TruBook || root.COCBook)) (root.TruBook || root.COCBook).open(payload);
+      if (w === "value" && root.TruValue) root.TruValue.open(payload);
       if (w === "chat" && root.TruChatUI) {
         var el = document.getElementById("tc-fab");
         if (el) el.click();
@@ -320,6 +341,7 @@
       if (root.TruAfford) root.TruAfford.close();
       if (root.TruRepay) root.TruRepay.close();
       if (root.TruForm) root.TruForm.close();
+      if (root.TruValue) root.TruValue.close();
     },
   };
 })(window);

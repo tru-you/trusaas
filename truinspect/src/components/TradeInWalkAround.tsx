@@ -6,7 +6,7 @@ import {
   TRADE_IN_ITEMS, createDefaultItems, getStatusOptions, needsReconCost,
   computeOverallRating, getConditionOptions, isTyreItem,
 } from '../types/inspection';
-import { useMoney } from '../contexts/MarketContext';
+import { useMoney, useMarket } from '../contexts/MarketContext';
 
 interface TradeInWalkAroundProps {
   vehicle: Vehicle;
@@ -31,6 +31,7 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploadPhoto }: TradeInWalkAroundProps) {
   const money = useMoney();
+  const market = useMarket();
   const [items, setItems] = React.useState<InspectionItem[]>(() => {
     const base: InspectionItem[] = vehicle.tradeInData?.items?.length
       ? JSON.parse(JSON.stringify(vehicle.tradeInData.items))
@@ -51,6 +52,9 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
     () => vehicle.tradeInData?.vehicleDetails?.isSmokerVehicle ?? false,
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [cameraActive, setCameraActive] = React.useState(false);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const item = items[currentStep];
   const statusOptions = getStatusOptions(item.id);
@@ -119,6 +123,60 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
     }
   };
 
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    setCameraActive(false);
+  };
+
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+      });
+      streamRef.current = stream;
+      setCameraActive(true);
+      // Wait for the video element to mount then attach the stream
+      requestAnimationFrame(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      });
+    } catch {
+      // getUserMedia not available (desktop, denied permissions) — fall back to native
+      fileInputRef.current?.click();
+    }
+  };
+
+  const capturePhoto = async () => {
+    if (!videoRef.current) return;
+    const v = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = v.videoWidth;
+    canvas.height = v.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(v, 0, 0);
+    const base64 = canvas.toDataURL('image/jpeg', 0.92);
+    stopCamera();
+
+    const itemId = item.id;
+    const blobUrl = base64; // already a data URL — use directly
+    updateItem({ photoUrl: blobUrl, isCompleted: true });
+
+    setUploading((u) => ({ ...u, [itemId]: true }));
+    try {
+      const ref = await onUploadPhoto(itemId, base64);
+      if (ref) setItemPhoto(itemId, ref);
+    } finally {
+      setUploading((u) => { const next = { ...u }; delete next[itemId]; return next; });
+    }
+  };
+
+  // Clean up camera on unmount
+  React.useEffect(() => () => { streamRef.current?.getTracks().forEach(t => t.stop()); }, []);
+
   const isUploading = Object.values(uploading).some(Boolean);
 
   const canSubmit = items.every((it) => {
@@ -185,14 +243,45 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
           {/* Photo */}
           <div className="mb-4">
-            {(() => {
+            {cameraActive ? (
+              <div className="relative">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-48 object-cover rounded-xl border border-cyan-500/40 bg-black"
+                />
+                <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={stopCamera}
+                    className="px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-neutral-400 border border-neutral-600"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={capturePhoto}
+                    className="w-14 h-14 rounded-full bg-white/90 border-4 border-cyan-400 shadow-lg shadow-cyan-500/20 active:scale-90 transition-transform"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { stopCamera(); fileInputRef.current?.click(); }}
+                    className="px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-neutral-400 border border-neutral-600"
+                  >
+                    <Upload size={14} />
+                  </button>
+                </div>
+              </div>
+            ) : (() => {
               const photoRequired = item.id === 'odometer' || item.id === 'vin_plate' || needsReconCost(item.status);
               return item.photoUrl ? (
                 <div className="relative">
                   <img src={item.photoUrl} alt={item.label} className="w-full h-48 object-cover rounded-xl border border-neutral-700" />
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={openCamera}
                     className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-cyan-300 border border-cyan-500/30"
                   >
                     Retake
@@ -201,7 +290,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
               ) : (
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={openCamera}
                   className={`w-full h-48 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors ${
                     photoRequired
                       ? 'border-rose-500/50 text-rose-400 hover:border-rose-400'
@@ -281,7 +370,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
           {/* Recon cost */}
           <div>
-            <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Estimated repair / replacement cost (R)</p>
+            <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Estimated repair / replacement cost ({market.currency})</p>
             <input
               type="number"
               min={0}

@@ -190,6 +190,9 @@
     bg.id = "truBookBg";
     document.body.appendChild(bg);
     bg.addEventListener("click", function (e) { if (e.target === bg) close(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && bg.classList.contains("open")) { close(); }
+    });
     return bg;
   }
 
@@ -300,22 +303,24 @@
     if (cfg.webhook || (cfg.slug && cfg.flowUrl)) {
       var names = name.split(/\s+/);
       var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
+      var payload = {
+        dealerSlug: cfg.slug,
+        firstName: names[0] || "TruBook",
+        lastName: names.slice(1).join(" ") || "Lead",
+        phone: phone,
+        source: "TruBook Widget",
+        notes: notes
+      };
       try {
         fetch(leadUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            dealerSlug: cfg.slug,
-            firstName: names[0] || "TruBook",
-            lastName: names.slice(1).join(" ") || "Lead",
-            phone: phone,
-            source: "TruBook Widget",
-            notes: notes
-          }),
+          body: JSON.stringify(payload),
           mode: "cors",
           keepalive: true
         }).catch(function () {});
       } catch (e) {}
+      try { window.dispatchEvent(new CustomEvent('tru:lead', { detail: { product: 'tru-book', dealer: cfg.slug || '', data: payload } })); } catch(e) {}
     }
 
     if (cfg.wa) {

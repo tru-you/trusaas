@@ -71,7 +71,7 @@
     cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),
     slug: attr("data-slug", ""),
     market: attr("data-market", "za"),
-    mount: attr("data-mount", "")
+    mount: attr("data-mount", "") || attr("data-target", "")
   };
 
   var preset = MARKETS[cfg.market] || MARKETS.za;
@@ -375,10 +375,30 @@
   function mount() {
     var hostEl = document.createElement("div");
     hostEl.id = ID + "-host";
-    var target = cfg.mount ? document.querySelector(cfg.mount) : null;
-    var inline = !!target;
-    if (inline) { hostEl.className = "ta-inline"; target.appendChild(hostEl); }
-    else { document.body.appendChild(hostEl); }
+    
+    function waitForTarget(selector, cb, timeout) {
+      timeout = timeout || 5000;
+      var el = document.querySelector(selector);
+      if (el) { cb(el); return; }
+      var obs = new MutationObserver(function() {
+        el = document.querySelector(selector);
+        if (el) { obs.disconnect(); cb(el); }
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function() { obs.disconnect(); }, timeout);
+    }
+    
+    var mountSelector = cfg.mount || cfg.target || '';
+    if (mountSelector) {
+      hostEl.className = "ta-inline";
+      waitForTarget(mountSelector, function(target) {
+        target.appendChild(hostEl);
+        root.classList.add("ta-inline", "is-open");
+        state.open = true;
+      });
+    } else {
+      document.body.appendChild(hostEl);
+    }
     shadow = hostEl.attachShadow({ mode: "open" });
 
     var style = document.createElement("style");
@@ -609,23 +629,25 @@
         if (cfg.webhook || (cfg.slug && cfg.flowUrl)) {
           var names = (state.name || "").trim().split(/\s+/);
           var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
+          var payload = {
+            dealerSlug: cfg.slug,
+            firstName: names[0] || "TruAfford",
+            lastName: names.slice(1).join(" ") || "Lead",
+            phone: state.phone || "",
+            email: "",
+            source: "TruAfford Widget",
+            notes: msg
+          };
           try {
             fetch(leadUrl, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                dealerSlug: cfg.slug,
-                firstName: names[0] || "TruAfford",
-                lastName: names.slice(1).join(" ") || "Lead",
-                phone: state.phone || "",
-                email: "",
-                source: "TruAfford Widget",
-                notes: msg
-              }),
+              body: JSON.stringify(payload),
               mode: "cors",
               keepalive: true
             }).catch(function () {});
           } catch (e) {}
+          try { window.dispatchEvent(new CustomEvent('tru:lead', { detail: { product: 'tru-afford', dealer: cfg.slug || '', data: payload } })); } catch(e) {}
         }
         if (!cfg.wa) return;
         window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");

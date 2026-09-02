@@ -348,8 +348,8 @@ export default function VehicleManager({
               <div><label className={labelCls}>Trim</label><input className={inputCls} value={form.trim} onChange={set('trim')} /></div>
               <div><label className={labelCls}>VIN</label><input className={inputCls} value={form.vin} onChange={set('vin')} style={{ fontFamily: 'var(--mono)' }} /></div>
               <div><label className={labelCls}>Colour</label><input className={inputCls} value={form.color} onChange={set('color')} /></div>
-              <div><label className={labelCls}>Price (R)</label><input className={inputCls} type="number" value={form.price} onChange={set('price')} /></div>
-              <div><label className={labelCls}>Mileage (km)</label><input className={inputCls} type="number" value={form.mileage} onChange={set('mileage')} /></div>
+              <div><label className={labelCls}>Price ({market.currency})</label><input className={inputCls} type="number" value={form.price} onChange={set('price')} /></div>
+              <div><label className={labelCls}>Mileage ({market.distanceUnit})</label><input className={inputCls} type="number" value={form.mileage} onChange={set('mileage')} /></div>
               <div>
                 <label className={labelCls}>Transmission</label>
                 <select className={inputCls} value={form.transmission} onChange={set('transmission')} style={{ minHeight: 40 }}>
@@ -516,7 +516,7 @@ export default function VehicleManager({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div><label className={labelCls}>Buyer / Dealership</label><input className={inputCls} value={offer.buyerName} onChange={(e) => setOffer((s) => ({ ...s, buyerName: e.target.value }))} placeholder="Name" /></div>
               <div><label className={labelCls}>Contact (optional)</label><input className={inputCls} value={offer.buyerContact} onChange={(e) => setOffer((s) => ({ ...s, buyerContact: e.target.value }))} placeholder="Phone / email" style={{ fontFamily: 'var(--mono)' }} /></div>
-              <div><label className={labelCls}>Amount (R)</label><input className={inputCls} type="number" value={offer.amount} onChange={(e) => setOffer((s) => ({ ...s, amount: e.target.value }))} placeholder="0" /></div>
+              <div><label className={labelCls}>Amount ({market.currency})</label><input className={inputCls} type="number" value={offer.amount} onChange={(e) => setOffer((s) => ({ ...s, amount: e.target.value }))} placeholder="0" /></div>
             </div>
             <div><label className={labelCls}>Note (optional)</label><input className={inputCls} value={offer.note} onChange={(e) => setOffer((s) => ({ ...s, note: e.target.value }))} placeholder="e.g. Valid 7 days, cash, subject to viewing" /></div>
             <div className="flex items-center gap-2">

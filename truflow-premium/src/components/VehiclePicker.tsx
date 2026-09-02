@@ -184,6 +184,13 @@ function SearchSelect({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search…"
               className="flex-1 bg-transparent text-[14px] text-white outline-none placeholder-white/30"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setOpen(false);
+                else if (e.key === 'Enter' && filtered.length > 0) {
+                  onChange(filtered[0]);
+                  setOpen(false);
+                }
+              }}
             />
             {query && (
               <button type="button" onClick={() => setQuery("")} className="cursor-pointer">

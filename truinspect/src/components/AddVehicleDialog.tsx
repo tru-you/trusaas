@@ -525,8 +525,9 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
         )}
 
         <div className="flex items-center justify-end gap-2 pt-2">
+          {!canSubmit && <p className="text-[12px] text-rose-400 mr-2">Please enter Make, Model, and Mileage</p>}
           <button type="button" onClick={onClose} className="tru-btn-ghost px-4 text-[13px] cursor-pointer" style={{ minHeight: 42 }}>Cancel</button>
-          <button type="submit" disabled={!canSubmit} className="btn-primary on-fill flex items-center gap-2 px-5 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 42 }}>
+          <button type="submit" disabled={!canSubmit} title={!canSubmit ? 'Please enter Make, Model, and Mileage' : undefined} className="btn-primary on-fill flex items-center gap-2 px-5 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 42 }}>
             <Plus size={15} /> Add Vehicle
           </button>
         </div>

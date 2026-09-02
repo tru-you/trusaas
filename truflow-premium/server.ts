@@ -184,7 +184,8 @@ function readImagin8Bundles(): Record<string, any> {
 }
 
 function writeImagin8Bundles(bundles: Record<string, any>) {
-  fs.writeFileSync(IMAGIN8_BUNDLES_FILE, JSON.stringify(bundles, null, 2));
+  fs.writeFileSync(IMAGIN8_BUNDLES_FILE + '.tmp', JSON.stringify(bundles, null, 2));
+  fs.renameSync(IMAGIN8_BUNDLES_FILE + '.tmp', IMAGIN8_BUNDLES_FILE);
 }
 
 /** The dealership whose id OR slug matches. The Imagin8 surfaces are called by
@@ -1627,6 +1628,9 @@ app.get("/api/state", (req: any, res) => {
   res.json({
     ...s,
     market: INSTANCE_MARKET,
+    dealerships: req.auth?.role === "admin"
+      ? s.dealerships
+      : (s.dealerships || []).filter((d: any) => d.id === req.auth?.dealershipId),
     vehicles: scopeToDealer(s.vehicles, req.auth),
     leads: scopeToDealer(s.leads, req.auth),
     tasks: scopeToDealer(s.tasks, req.auth),
@@ -3656,6 +3660,14 @@ app.put("/api/dealership/self", (req: any, res) => {
     if (typeof docSettings.ownershipClause === "string") next.ownershipClause = docSettings.ownershipClause.trim();
     if (typeof docSettings.footerNote === "string") next.footerNote = docSettings.footerNote.trim();
     if (typeof docSettings.warrantyTerms === "string") next.warrantyTerms = docSettings.warrantyTerms.trim();
+    if (typeof docSettings.invoicePrefix === "string") next.invoicePrefix = docSettings.invoicePrefix.trim();
+    if (typeof docSettings.nextInvoiceNumber === "number") next.nextInvoiceNumber = docSettings.nextInvoiceNumber;
+    if (Array.isArray(docSettings.invoiceExtrasDefaults)) {
+      next.invoiceExtrasDefaults = docSettings.invoiceExtrasDefaults;
+    }
+    if (Array.isArray(docSettings.otpOutrightTerms)) {
+      next.otpOutrightTerms = docSettings.otpOutrightTerms.filter((t: any) => typeof t === "string" && t.trim()).map((t: string) => t.trim());
+    }
     d.docSettings = next;
   }
 
@@ -6943,7 +6955,8 @@ function writeTradeReports(m: Record<string, any>) {
       keys.sort((a, b) => (m[a].createdAt || 0) - (m[b].createdAt || 0));
       for (const k of keys.slice(0, keys.length - 1000)) delete m[k];
     }
-    fs.writeFileSync(TRADE_REPORTS_FILE, JSON.stringify(m));
+    fs.writeFileSync(TRADE_REPORTS_FILE + '.tmp', JSON.stringify(m));
+    fs.renameSync(TRADE_REPORTS_FILE + '.tmp', TRADE_REPORTS_FILE);
   } catch (e: any) { console.warn("[trade-report] save failed:", e?.message || e); }
 }
 function newReportId(): string {

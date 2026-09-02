@@ -13,6 +13,7 @@ import { useAuth } from './contexts/AuthContext';
 import DealerSelect from './components/DealerSelect';
 import GuidePanel from './components/GuidePanel';
 import DealerAssist from './components/DealerAssist';
+import { autoEnhance } from './components/auto-enhance';
 import SetupPrompt from './components/SetupPrompt';
 import {
   fetchSetupStatus,
@@ -222,7 +223,7 @@ export default function App() {
         setSyncStatus('synced');
         if (initialPhotos) {
           for (const [slotId, base64] of Object.entries(initialPhotos)) {
-            uploadPhotoToServer(newVehicle.id, slotId, base64, undefined as any);
+            await uploadPhotoToServer(newVehicle.id, slotId, base64, undefined as any);
           }
         }
       } else {
@@ -367,10 +368,18 @@ export default function App() {
   // so the dealer can check the shot and rotate before it saves, matching the
   // TruInspect SlotReview flow.
   const handlePhotoCaptured = (slotId: string, base64Image: string, qualityReport: QualityReport) => {
-    setActiveSlotId(slotId);
-    setActiveImageSrc(base64Image);
-    setActiveQualityReport(qualityReport);
-    setActiveView('editor');
+    if (!activeVehicleId || !user) return;
+    // Optimistic local update — keep photographer in the camera viewfinder
+    setVehicles(prev => prev.map(v => {
+      if (v.id !== activeVehicleId) return v;
+      return {
+        ...v,
+        photos: { ...(v.photos || {}), [slotId]: base64Image },
+        quality: { ...(v.quality || {}), [slotId]: qualityReport },
+      };
+    }));
+    // Upload in background without leaving camera
+    uploadPhotoToServer(activeVehicleId, slotId, base64Image, qualityReport);
   };
 
   /** Open the editor for a slot on demand (the optional "Edit" button). */
@@ -421,6 +430,8 @@ export default function App() {
     setSyncStatus('syncing');
     setUploadError(null);
     try {
+      const enhanced = await autoEnhance(base64Image);
+      const enhancedCloseups = closeupPhotos ? await Promise.all(closeupPhotos.map(c => autoEnhance(c))) : closeupPhotos;
       const token = await user.getIdToken();
       const res = await fetch('/api/inventory/upload-photo', {
         method: 'POST',
@@ -428,7 +439,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ vehicleId, slotId, base64Image, qualityReport, assessment, closeups: closeupPhotos }),
+        body: JSON.stringify({ vehicleId, slotId, base64Image: enhanced, qualityReport, assessment, closeups: enhancedCloseups }),
       });
       if (res.ok) {
         const result = await res.json();

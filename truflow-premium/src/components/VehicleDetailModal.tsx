@@ -1354,7 +1354,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   const adjustedCostBasis = vehicle.costPrice + totalReconCost;
                   const profit = vehicle.retailPrice - adjustedCostBasis;
                   const marginPercent = vehicle.retailPrice > 0 ? (profit / vehicle.retailPrice) * 100 : 0;
-                  const targetProfitThreshold = 25000; // R25,000 target
+                  const targetProfitThreshold = { za: 25000, uk: 1200, us: 1500 }[market?.id || 'za'] || 25000; // market-scaled target
                   const targetMarginThreshold = 10; // 10% target
                   const isBelowTarget = profit < targetProfitThreshold || marginPercent < targetMarginThreshold;
                   const suggestedHealthyPrice = Math.round((vehicle.costPrice + totalReconCost) * 1.15); // 15% margin markup

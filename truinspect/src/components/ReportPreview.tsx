@@ -324,6 +324,27 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               Condition {condition.stars.toFixed(1)}/5
             </span>
             <button
+              onClick={() => {
+                const text = `VIR Report for ${vehicle.year} ${vehicle.make} ${vehicle.model}\nURL: ${window.location.href}`;
+                navigator.clipboard.writeText(text).then(() => {
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                });
+              }}
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-[rgba(232,234,230,0.72)]"
+            >
+              {linkCopied ? <Check size={12} /> : <Copy size={12} />} {linkCopied ? 'Copied' : 'Copy Summary'}
+            </button>
+            <button
+              onClick={() => {
+                const text = encodeURIComponent(`Here is the VIR report for ${vehicle.year} ${vehicle.make} ${vehicle.model}: ${window.location.href}`);
+                window.open(`https://wa.me/?text=${text}`, '_blank');
+              }}
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-[rgba(232,234,230,0.72)]"
+            >
+              <Share2 size={12} /> Share WhatsApp
+            </button>
+            <button
               onClick={exportHtml}
               disabled={exporting}
               title="Downloads a single file with every photo embedded — opens offline and survives being emailed"

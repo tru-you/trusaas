@@ -1,9 +1,9 @@
 /**
- * TruValue — instant trade-in / market-value widget (TruSaaS)
+ * TruValue ï¿½ instant trade-in / market-value widget (TruSaaS)
  *
  * CANONICAL SOURCE. Per-dealer copies under case-sites/ and truweb/ are deploy
- * artefacts — fix bugs here, then re-copy. Standalone script AND WordPress (the
- * WP rig loads this same file — one core, two wrappers, no fork).
+ * artefacts ï¿½ fix bugs here, then re-copy. Standalone script AND WordPress (the
+ * WP rig loads this same file ï¿½ one core, two wrappers, no fork).
  *
  * Drop-in:
  *   <script src="tru-value.js"
@@ -13,13 +13,13 @@
  *           data-flow="https://premium.tru-saas.com"
  *           data-accent="#e30613"></script>
  *
- *   data-flow   TruFlow base URL — powers the live estimate + lead capture.
+ *   data-flow   TruFlow base URL ï¿½ powers the live estimate + lead capture.
  *   data-slug   dealer slug for the lead funnel (webhook-lead).
  *   data-wa     dealer WhatsApp number (handoff to book the assessment).
  *   data-accent brand colour; every shade derives from it. Default cyan.
  *
  * The number shown is an INDICATIVE market estimate, always captioned
- * "subject to full assessment" — the firm offer follows the dealer's physical
+ * "subject to full assessment" ï¿½ the firm offer follows the dealer's physical
  * check. Lead is captured BEFORE the WhatsApp handoff, never gated behind it.
  */
 (function () {
@@ -38,7 +38,7 @@
       new Image().src =
         "https://api.callmebot.com/whatsapp.php?phone=" + cfg.cmbPhone +
         "&apikey=" + encodeURIComponent(cfg.cmbKey) +
-        "&text=" + encodeURIComponent("New " + source + " lead — " + (cfg.dealer || "") + "\n" + (text || ""));
+        "&text=" + encodeURIComponent("New " + source + " lead ï¿½ " + (cfg.dealer || "") + "\n" + (text || ""));
     } catch (e) {}
   }
 
@@ -61,7 +61,7 @@
     mount: attr("data-mount", ""),   // CSS selector ? render inline in-page instead of a floating launcher
     theme: attr("data-theme", ""),   // "light" ? light surface to match a light host page
     font: attr("data-font", ""),     // override font-family to match the host page
-    margin: attr("data-margin", "15"), // dealer trade margin % — retail less this = shown trade estimate
+    margin: attr("data-margin", "15"), // dealer trade margin % ï¿½ retail less this = shown trade estimate
     market: (attr("data-market", "") || "").toLowerCase() // za/uk/us - empty = the Flow instance's own market
   };
 
@@ -125,7 +125,7 @@
   /* Currency + grouping follow the estimate's own market (the server returns
      it); pre-result calls fall back to the launch market (R / en-ZA). */
   var cur = (res && res.currency) || "R";
-  var locale = cur === "£" ? "en-GB" : cur === "$" ? "en-US" : "en-ZA";
+  var locale = cur === "ï¿½" ? "en-GB" : cur === "$" ? "en-US" : "en-ZA";
   var sep = cur === "R" ? " " : "";
   return cur + sep + Math.round(n || 0).toLocaleString(locale);
 }
@@ -232,7 +232,7 @@
     "#" + ID + "-root .tv-launcher>span:last-child{display:none}",
     "#" + ID + "-root .tv-panel{width:calc(100vw - 24px);max-width:400px;max-height:min(82vh,680px)}}",
     "@media (prefers-reduced-motion:reduce){#" + ID + "-root *{animation:none!important;transition-duration:.01ms!important}}",
-    /* Light theme — cream/white surface to match a light host page. Overrides
+    /* Light theme ï¿½ cream/white surface to match a light host page. Overrides
        only the dark-assuming surfaces; the accent gradient (header, CTA) stays. */
     "#" + ID + "-root.is-light{--tv-text:#14141F;--tv-muted:rgba(84,98,120,.95);--tv-faint:rgba(84,98,120,.65);--tv-surface:#fff}",
     "#" + ID + "-root.is-light .tv-panel{background:#FBF9F3;border-color:rgba(20,20,31,.10);color:#14141F;box-shadow:0 24px 60px -26px rgba(20,20,31,.28),0 2px 10px rgba(20,20,31,.06)}",
@@ -252,7 +252,7 @@
     "#" + ID + "-root.is-light .tv-result{background:linear-gradient(160deg,rgb(var(--tv-signal-rgb)/.12),rgba(20,20,31,.015));border-color:rgb(var(--tv-signal-rgb)/.28)}",
     "#" + ID + "-root.is-light .tv-big{-webkit-text-fill-color:initial;background:none;color:var(--tv-signal-deep)}",
     cfg.font ? "#" + ID + "-root,#" + ID + "-root .tv-panel{font-family:" + cfg.font + "}" : "",
-    /* Inline (in-page) mode — no floating launcher, panel sits in the flow. */
+    /* Inline (in-page) mode ï¿½ no floating launcher, panel sits in the flow. */
     ":host(.is-inline){position:static!important;inset:auto!important;max-width:none!important;width:100%!important;display:block!important;pointer-events:auto!important}",
     "#" + ID + "-root.is-inline{align-items:stretch!important;pointer-events:auto!important}",
     "#" + ID + "-root.is-inline .tv-launcher{display:none!important}",
@@ -296,21 +296,21 @@
         '<div class="tv-panel" role="dialog" aria-label="What\'s my car worth" aria-hidden="true">' +
           '<div class="tv-head">' +
             '<div class="tv-ico">' + carIco + "</div>" +
-            "<div><b>What’s my car worth?</b><span>" + esc(cfg.dealer) + " · Instant estimate</span></div>" +
-            '<button type="button" class="tv-x" id="' + ID + '-close" aria-label="Close">×</button>' +
+            "<div><b>Whatï¿½s my car worth?</b><span>" + esc(cfg.dealer) + " ï¿½ Instant estimate</span></div>" +
+            '<button type="button" class="tv-x" id="' + ID + '-close" aria-label="Close">ï¿½</button>' +
           "</div>" +
           '<div class="tv-steps" id="' + ID + '-steps" aria-hidden="true">' +
             '<div class="tv-step-dot on"></div><div class="tv-step-dot"></div><div class="tv-step-dot"></div>' +
           "</div>" +
           '<div class="tv-body" id="' + ID + '-body"></div>' +
-          '<div class="tv-foot">Powered by <b>TruSaaS TruValue</b> · Indicative estimate · Subject to full assessment</div>' +
+          '<div class="tv-foot">Powered by <b>TruSaaS TruValue</b> ï¿½ Indicative estimate ï¿½ Subject to full assessment</div>' +
         "</div>" +
         '<button type="button" class="tv-launcher" id="' + ID + '-open" aria-label="What\'s my car worth">' +
           '<span class="tv-ico">' + carIco + "</span>" +
           "<span>" +
-            '<span class="tv-ltitle">What’s my car worth?</span>' +
+            '<span class="tv-ltitle">Whatï¿½s my car worth?</span>' +
             '<span class="tv-lsub">Instant trade-in estimate in ~30s.</span>' +
-            '<span class="tv-badge">TruValue · Est.</span>' +
+            '<span class="tv-badge">TruValue ï¿½ Est.</span>' +
           "</span>" +
         "</button>" +
       "</div>"
@@ -362,12 +362,12 @@
     var html = "";
 
     if (state.loading) {
-      html = '<div class="tv-view"><div class="tv-spin"><i></i><span>Checking the market…</span></div></div>';
+      html = '<div class="tv-view"><div class="tv-spin"><i></i><span>Checking the marketï¿½</span></div></div>';
     } else if (state.step === 1) {
       html =
         '<div class="tv-view">' +
         '<div class="tv-h">Instant trade-in estimate</div>' +
-        '<p class="tv-p">Verified against the <b>live market value</b> of your car. Get your figure and a full trade-in report — then WhatsApp ' + esc(cfg.dealer) + " to book your assessment.</p>" +
+        '<p class="tv-p">Verified against the <b>live market value</b> of your car. Get your figure and a full trade-in report ï¿½ then WhatsApp ' + esc(cfg.dealer) + " to book your assessment.</p>" +
         '<div class="tv-soft">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' +
         "<div>Your <b>report is sent to you</b> after you submit. The figure is an estimate, <b>subject to a full assessment</b> of the vehicle.</div>" +
@@ -389,7 +389,7 @@
         '<div class="tv-field"><label>Reg number</label><input type="text" id="tv-reg" placeholder="e.g. CA 123-456" value="' + esc(state.reg) + '" autocomplete="off"></div>' +
         '<div class="tv-field"><label>VIN</label><input type="text" id="tv-vin" placeholder="17 characters" value="' + esc(state.vin) + '" autocomplete="off"></div>' +
         "</div>" +
-        '<div class="tv-field"><label>Condition (1 poor – 5 excellent)</label><div class="tv-pills" id="tv-cond">' +
+        '<div class="tv-field"><label>Condition (1 poor ï¿½ 5 excellent)</label><div class="tv-pills" id="tv-cond">' +
         [1, 2, 3, 4, 5].map(function (n) {
           return '<button type="button" class="tv-pill' + (state.condition === n ? " on" : "") + '" data-cond="' + n + '">' + n + "</button>";
         }).join("") +
@@ -406,30 +406,30 @@
       if (r.ok) {
         resultBlock =
           '<div class="tv-result">' +
-          '<div class="tv-band">Trade estimate · subject to full assessment</div>' +
-          '<div style="font-size:11px;color:var(--tv-muted);font-weight:700">Estimated trade-in · ' + esc(vehLine) + "</div>" +
-          '<div class="tv-big">' + money(r.low, r) + " – " + money(r.high, r) + "</div>" +
+          '<div class="tv-band">Trade estimate ï¿½ subject to full assessment</div>' +
+          '<div style="font-size:11px;color:var(--tv-muted);font-weight:700">Estimated trade-in ï¿½ ' + esc(vehLine) + "</div>" +
+          '<div class="tv-big">' + money(r.low, r) + " ï¿½ " + money(r.high, r) + "</div>" +
           '<div class="tv-range">Verified against ' + (r.listingsFound || 0) + " live market listing" + ((r.listingsFound === 1) ? "" : "s") +
-            (r.mileageAdjusted ? " · mileage-adjusted" : "") + "</div>" +
-          '<p class="tv-hint">?? Your trade-in report is ready — we’ll send it to you on WhatsApp.</p>' +
+            (r.mileageAdjusted ? " ï¿½ mileage-adjusted" : "") + "</div>" +
+          '<p class="tv-hint">?? Your trade-in report is ready ï¿½ weï¿½ll send it to you on WhatsApp.</p>' +
           "</div>";
       } else {
         resultBlock =
           '<div class="tv-result">' +
-          '<div class="tv-band">Let’s value it in person</div>' +
+          '<div class="tv-band">Letï¿½s value it in person</div>' +
           '<div class="tv-big" style="font-size:18px">' + esc(vehLine || "Your vehicle") + "</div>" +
-          '<div class="tv-range">We couldn’t pull enough live comps for an instant figure — send it through on WhatsApp and the team will value it with a full assessment.</div>' +
+          '<div class="tv-range">We couldnï¿½t pull enough live comps for an instant figure ï¿½ send it through on WhatsApp and the team will value it with a full assessment.</div>' +
           "</div>";
       }
       html =
         '<div class="tv-view">' + resultBlock +
         '<div class="tv-field"><label>Your name</label><input type="text" id="tv-name" placeholder="Full name" value="' + esc(state.name) + '" autocomplete="name"></div>' +
-        '<div class="tv-field"><label>Mobile</label><input type="tel" id="tv-phone" placeholder="06…" value="' + esc(state.phone) + '" autocomplete="tel"></div>' +
+        '<div class="tv-field"><label>Mobile</label><input type="tel" id="tv-phone" placeholder="06ï¿½" value="' + esc(state.phone) + '" autocomplete="tel"></div>' +
         '<div class="tv-actions">' +
         '<button type="button" class="tv-btn tv-btn-ghost" data-go="2">Back</button>' +
         '<button type="button" class="tv-btn tv-btn-wa" id="tv-wa">WhatsApp ' + esc(cfg.dealer.length > 12 ? "the team" : cfg.dealer) + "</button>" +
         "</div>" +
-        '<p class="tv-fine">Indicative market estimate only — not a firm offer. The final trade-in value is subject to a full physical assessment by ' +
+        '<p class="tv-fine">Indicative market estimate only ï¿½ not a firm offer. The final trade-in value is subject to a full physical assessment by ' +
         esc(cfg.dealer) + ". Figures derive from live market listings and may vary with condition, service history and demand.</p>" +
         "</div>";
     }
@@ -479,30 +479,30 @@
     state.phone = (($("#tv-phone") || {}).value || "").trim();
     var r = state.result || {};
     var vehLine = [state.year, state.make, state.model].filter(Boolean).join(" ");
-    var estLine = r.ok ? (money(r.low, r) + " – " + money(r.high, r) + " (subject to full assessment)") : "Pending full assessment";
+    var estLine = r.ok ? (money(r.low, r) + " ï¿½ " + money(r.high, r) + " (subject to full assessment)") : "Pending full assessment";
     var msg = [
-      "Hi " + cfg.dealer + " — TruValue trade-in enquiry",
-      "Name: " + (state.name || "—"),
-      "Phone: " + (state.phone || "—"),
-      "Vehicle: " + (vehLine || "—"),
-      "Mileage: " + (state.mileage ? (Number(state.mileage).toLocaleString(distLocale) + " " + distUnit) : "—"),
-      "Reg: " + (state.reg || "—"),
-      "VIN: " + (state.vin || "—"),
+      "Hi " + cfg.dealer + " ï¿½ TruValue trade-in enquiry",
+      "Name: " + (state.name || "ï¿½"),
+      "Phone: " + (state.phone || "ï¿½"),
+      "Vehicle: " + (vehLine || "ï¿½"),
+      "Mileage: " + (state.mileage ? (Number(state.mileage).toLocaleString(distLocale) + " " + distUnit) : "ï¿½"),
+      "Reg: " + (state.reg || "ï¿½"),
+      "VIN: " + (state.vin || "ï¿½"),
       "Condition: " + state.condition + "/5",
-      "Damage/notes: " + (state.damage || "—"),
+      "Damage/notes: " + (state.damage || "ï¿½"),
       "Est. trade-in value: " + estLine,
       (r.reportUrl ? "My trade-in report: " + r.reportUrl : "Please send my trade-in report."),
-      "(Indicative estimate — subject to full assessment)"
+      "(Indicative estimate ï¿½ subject to full assessment)"
     ].join("\n");
 
     cmbNotify(cfg, "TruValue", [
-      "Name: " + (state.name || "—"),
-      "Phone: " + (state.phone || "—"),
-      "Vehicle: " + (vehLine || "—"),
+      "Name: " + (state.name || "ï¿½"),
+      "Phone: " + (state.phone || "ï¿½"),
+      "Vehicle: " + (vehLine || "ï¿½"),
       "Est: " + estLine
     ].join("\n"));
 
-    // Capture the lead FIRST — the WhatsApp redirect is a bonus, not a gate.
+    // Capture the lead FIRST ï¿½ the WhatsApp redirect is a bonus, not a gate.
     if (cfg.webhook || (cfg.slug && cfg.flowUrl)) {
       var names = (state.name || "").trim().split(/\s+/);
       var leadUrl = cfg.webhook || (cfg.flowUrl + "/api/integration/webhook-lead");
@@ -524,6 +524,7 @@
         }).catch(function () {});
       } catch (e) {}
     }
+      try { window.dispatchEvent(new CustomEvent('tru:lead', { detail: { product: 'tru-value', dealer: cfg.slug || '', data: { dealerSlug: cfg.slug, firstName: names[0] || "TruValue", lastName: names.slice(1).join(" ") || "Lead", phone: state.phone || "", email: "", source: "TruValue Widget", notes: msg } } })); } catch(e) {}
     if (!cfg.wa) return;
     window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
   }
@@ -570,3 +571,5 @@
 
   window.TruValue = { open: open, close: close, config: cfg };
 })();
+
+

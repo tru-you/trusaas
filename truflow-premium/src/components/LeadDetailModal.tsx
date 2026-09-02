@@ -296,7 +296,8 @@ export default function LeadDetailModal({
       return;
     }
 
-    const digits = (lead.phone || "").replace(/[^0-9]/g, "").replace(/^0/, "27");
+    const dialCode = { za: '27', uk: '44', us: '1' }[market?.id || 'za'] || '27';
+    const digits = (lead.phone || "").replace(/[^0-9]/g, "").replace(/^0/, dialCode);
 
     try {
       // A call is logged after the fact — there's nothing to hand off.

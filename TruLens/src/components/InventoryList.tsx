@@ -91,6 +91,8 @@ export default function InventoryList({
   const [exportingId, setExportingId] = React.useState<string | null>(null);
   const [publishingId, setPublishingId] = React.useState<string | null>(null);
   const [exportToast, setExportToast] = React.useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [deletingVehicleId, setDeletingVehicleId] = React.useState<string | null>(null);
+  const [copiedVinId, setCopiedVinId] = React.useState<string | null>(null);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -845,8 +847,18 @@ export default function InventoryList({
               placeholder="Search VIN, stock, make…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-11 bg-[rgba(232,234,230,0.04)] text-[15px] text-neutral-200 pl-10 pr-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] focus:border-[#4FE3DC] outline-none placeholder-neutral-500 font-mono transition-colors"
+              className="w-full h-11 bg-[rgba(232,234,230,0.04)] text-[15px] text-neutral-200 pl-10 pr-10 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] focus:border-[#4FE3DC] outline-none placeholder-neutral-500 font-mono transition-colors"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
+                aria-label="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
           <button
             onClick={() => { setEditingVehicle(null); setShowAddForm(!showAddForm); }}
@@ -1222,9 +1234,14 @@ export default function InventoryList({
                     type="text"
                     placeholder="17 characters"
                     value={vin}
-                    onChange={(e) => setVin(e.target.value.toUpperCase())}
+                    onChange={(e) => setVin(e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '').slice(0, 17))}
                     className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                   />
+                  {vin && vehicles.some((v) => v.vin === vin && v.id !== editingVehicle?.id) && (
+                    <p className="text-[12px] text-[#C07676] mt-1 flex items-center gap-1">
+                      <AlertCircle size={12} /> VIN already exists in inventory
+                    </p>
+                  )}
                 </div>
                 {/* Auto-filled by the make/model picker above (the M&M code it
                     resolves); editable for a hand correction. SA-only concept —
@@ -1544,6 +1561,24 @@ export default function InventoryList({
                             {vehicle.stockNumber}
                             {copiedStockId === vehicle.id ? <Check size={12} className="text-[#4FE3DC]" /> : <Copy size={12} />}
                           </button>
+
+                          {vehicle.vin && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(vehicle.vin || '');
+                                setCopiedVinId(vehicle.id);
+                                setTimeout(() => setCopiedVinId(null), 2000);
+                              }}
+                              className="text-[12px] font-mono text-[rgba(232,234,230,0.42)] hover:text-[rgba(232,234,230,0.72)] flex items-center gap-1 min-h-[32px] px-2 -mx-2"
+                              title="Copy VIN"
+                            >
+                              {vehicle.vin.substring(vehicle.vin.length - 6)}
+                              {copiedVinId === vehicle.id ? <Check size={12} className="text-[#4FE3DC]" /> : <Copy size={12} />}
+                            </button>
+                          )}
+
                           {/* The vehicle.status chip stood here. It is a field somebody
                               sets by hand, while the chip beside it is derived from the
                               photos, score, checklist and signature actually on the
@@ -1581,18 +1616,40 @@ export default function InventoryList({
                       >
                         <Pencil size={16} />
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Remove ${vehicle.year} ${vehicle.make} from the catalogue?`)) {
-                            onDeleteVehicle(vehicle.id);
-                          }
-                        }}
-                        className="flex items-center justify-center h-11 w-11 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
-                        title="Delete vehicle"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {deletingVehicleId === vehicle.id ? (
+                        <div className="flex items-center gap-1 bg-[rgba(184,106,106,0.14)] rounded-[12px] p-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteVehicle(vehicle.id);
+                              setDeletingVehicleId(null);
+                            }}
+                            className="flex items-center justify-center h-9 px-3 rounded-[8px] text-[13px] font-semibold text-[#E8EAE6] bg-[#C07676] hover:bg-[#d68585] cursor-pointer transition-colors"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingVehicleId(null);
+                            }}
+                            className="flex items-center justify-center h-9 px-3 rounded-[8px] text-[13px] font-semibold text-[rgba(232,234,230,0.7)] hover:text-[#E8EAE6] hover:bg-[rgba(232,234,230,0.1)] cursor-pointer transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingVehicleId(vehicle.id);
+                          }}
+                          className="flex items-center justify-center h-11 w-11 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
+                          title="Delete vehicle"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -2021,15 +2078,9 @@ export default function InventoryList({
                     <p className="text-[13px] font-bold text-neutral-200">Currency</p>
                     <p className="text-[13px] text-neutral-500">Global display currency for valuations</p>
                   </div>
-                  <select 
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-neutral-900 border border-neutral-800 rounded min-h-[44px] px-3 text-[13px] text-[#E8EAE6]"
-                  >
-                    <option value="ZAR">South African Rand (R)</option>
-                    <option value="USD">US Dollar ($)</option>
-                    <option value="GBP">British Pound (£)</option>
-                  </select>
+                  <div className="bg-neutral-900 border border-neutral-800 rounded min-h-[44px] flex items-center px-3 text-[13px] text-[#E8EAE6] opacity-70 cursor-not-allowed" title="Currency is resolved from server market settings">
+                    {market.label} ({market.currency})
+                  </div>
                 </div>
               </div>
             </div>

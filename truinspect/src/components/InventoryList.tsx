@@ -49,7 +49,6 @@ interface InventoryListProps {
 
 const DMS_PRESETS = {
   premium: { label: 'TruFlow Premium', url: 'http://localhost:3001' },
-  lite: { label: 'TruFlow Lite', url: 'http://localhost:3002' },
   custom: { label: 'Custom URL', url: '' },
 } as const;
 
@@ -236,9 +235,8 @@ export default function InventoryList({
   const [dmsUrl, setDmsUrl] = React.useState(() =>
     localStorage.getItem('trulens_dms_url') || DEFAULT_DMS_URL
   );
-  const [dmsPreset, setDmsPreset] = React.useState<'premium' | 'lite' | 'custom'>(() => {
+  const [dmsPreset, setDmsPreset] = React.useState<'premium' | 'custom'>(() => {
     const saved = localStorage.getItem('trulens_dms_url') || DEFAULT_DMS_URL;
-    if (saved.includes(':3002')) return 'lite';
     if (saved.includes(':3001') || saved === DEFAULT_DMS_URL) return 'premium';
     return 'custom';
   });
@@ -630,9 +628,9 @@ export default function InventoryList({
     }
   };
 
-  const applyDmsPreset = (preset: 'premium' | 'lite' | 'custom') => {
+  const applyDmsPreset = (preset: 'premium' | 'custom') => {
     setDmsPreset(preset);
-    if (preset === 'premium' || preset === 'lite') {
+    if (preset === 'premium') {
       const url = DMS_PRESETS[preset].url;
       setDmsUrl(url);
       localStorage.setItem('trulens_dms_url', url);
@@ -645,8 +643,7 @@ export default function InventoryList({
     const cleaned = dmsUrl.trim().replace(/\/$/, '') || DEFAULT_DMS_URL;
     setDmsUrl(cleaned);
     localStorage.setItem('trulens_dms_url', cleaned);
-    if (cleaned.includes(':3002')) setDmsPreset('lite');
-    else if (cleaned.includes(':3001')) setDmsPreset('premium');
+    if (cleaned.includes(':3001')) setDmsPreset('premium');
     else setDmsPreset('custom');
     setDmsUrlSaved(true);
     setTimeout(() => setDmsUrlSaved(false), 2000);

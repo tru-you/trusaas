@@ -35,9 +35,9 @@ function truw_sanitize($input) {
                     'repay_mode', 'repay_target',
                     'repay_vehicle', 'book_address', 'share_vehicle_path',
                     // per-page targeting: <widget>_show (mode) + <widget>_match (path/ids)
-                    'afford_show', 'repay_show', 'form_show', 'book_show', 'share_show',
-                    'afford_match', 'repay_match', 'form_match', 'book_match', 'share_match');
-    $checks = array('use_text', 'w_afford', 'w_repay', 'w_form', 'w_book', 'w_share');
+                    'afford_show', 'repay_show', 'form_show', 'book_show', 'share_show', 'value_show',
+                    'afford_match', 'repay_match', 'form_match', 'book_match', 'share_match', 'value_match');
+    $checks = array('use_text', 'w_afford', 'w_repay', 'w_form', 'w_book', 'w_share', 'w_value');
 
     foreach ($text as $k)  { if (isset($input[$k])) $out[$k] = sanitize_text_field($input[$k]); }
     foreach ($checks as $k) { $out[$k] = (!empty($input[$k])) ? '1' : ''; }
@@ -88,7 +88,7 @@ function truw_settings_page() {
         $hook    = truw_opt('webhook') !== '';
         $cmb_ok  = truw_opt('callmebot_key') && (preg_replace('/\D/', '', truw_opt('callmebot_phone', '')) !== '' || $wa_set);
         $lead_widget_on = truw_opt('w_afford') === '1' || truw_opt('w_repay') === '1' ||
-                          truw_opt('w_form') === '1' || truw_opt('w_book') === '1';
+                          truw_opt('w_form') === '1' || truw_opt('w_book') === '1' || truw_opt('w_value') === '1';
         if ($lead_widget_on && !$wa_set && !$hook && !$cmb_ok) {
             echo '<div class="notice notice-error"><p><strong>Leads have nowhere to go.</strong> '
                . 'A lead widget is enabled but no destination is set — submissions will silently do nothing. '
@@ -125,8 +125,9 @@ function truw_settings_page() {
                 truw_field('w_form', 'TruForm', 'checkbox', array('cblabel' => 'Enquiry capture (floating launcher)'));
                 truw_field('w_book', 'TruBook', 'checkbox', array('cblabel' => 'Test-drive booking (needs a trigger button — see help below)'));
                 truw_field('w_share', 'TruShare', 'checkbox', array('cblabel' => 'Per-vehicle share (needs a trigger button per car)'));
+                truw_field('w_value', 'TruValue', 'checkbox', array('cblabel' => 'Vehicle valuation (needs a trigger button)'));
                 ?>
-                <tr><td colspan="2"><p class="description">TruForm mounts its own launcher. <strong>TruBook</strong> opens via <code>TruDealer.open('book')</code> and <strong>TruShare</strong> via <code>TruShare.open({…})</code> — add those buttons to your pages/vehicle template.</p></td></tr>
+                <tr><td colspan="2"><p class="description">TruForm mounts its own launcher. <strong>TruBook</strong> opens via <code>TruDealer.open('book')</code>, <strong>TruValue</strong> via <code>TruDealer.open('value')</code>, and <strong>TruShare</strong> via <code>TruShare.open({…})</code> — add those buttons to your pages/vehicle template.</p></td></tr>
             </tbody></table>
 
             <h2 class="title">Placement</h2>
@@ -150,7 +151,7 @@ function truw_settings_page() {
             <table class="form-table"><tbody>
                 <?php
                 $show_opts = array('everywhere', 'home', 'singular', 'path', 'ids');
-                foreach (array('afford' => 'TruAfford', 'repay' => 'TruRepay', 'form' => 'TruForm', 'book' => 'TruBook', 'share' => 'TruShare') as $wk => $wl) {
+                foreach (array('afford' => 'TruAfford', 'repay' => 'TruRepay', 'form' => 'TruForm', 'book' => 'TruBook', 'share' => 'TruShare', 'value' => 'TruValue') as $wk => $wl) {
                     truw_field($wk . '_show', $wl . ' — show on', 'select', array('options' => $show_opts, 'default' => 'everywhere'));
                     truw_field($wk . '_match', '↳ URL contains / IDs', 'text', array('placeholder' => '/vehicle   or   12, 48, 91', 'help' => 'Used only for "path" or "ids" above.'));
                 }

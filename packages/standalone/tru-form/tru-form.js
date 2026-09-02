@@ -94,7 +94,7 @@
     position: attr("data-position", "right"),
     offsetBottom: attr("data-bottom", "24px"),
     mode: attr("data-mode", "float"),
-    target: attr("data-target", ""),
+    target: attr("data-target", "") || attr("data-mount", ""),
     vehicle: attr("data-vehicle", ""),
     accent: attr("data-accent", "#1466E0"),
     accent2: attr("data-accent-2", ""),
@@ -790,6 +790,14 @@
     setSelect("tf-interest", attr("data-interest", ""));
 
     /* ---- validation ---- */
+    ["tf-fn", "tf-ph", "tf-em"].forEach(function(id) {
+      var field = shadow.getElementById(id);
+      if (field) {
+        field.addEventListener("input", function() {
+          setErr(id, false);
+        });
+      }
+    });
     function validate() {
       var ok = true;
       if (!val("tf-fn")) { setErr("tf-fn", true); ok = false; } else { setErr("tf-fn", false); }

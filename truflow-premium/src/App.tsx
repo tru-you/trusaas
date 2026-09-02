@@ -2079,7 +2079,7 @@ export default function App() {
                         v.trim || "",
                         v.transmission || "",
                         v.fuelType || "",
-                        v.colour || "",
+                        (v as any).color || (v as any).colour || "",
                         Number(v.mileage || 0).toLocaleString(),
                         Number(v.retailPrice || 0).toLocaleString(),
                         Number(v.costPrice || 0).toLocaleString(),
@@ -2108,7 +2108,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Grid list — paginated so 100+ cars don't render at once */}
+{/* Grid list — paginated so 100+ cars don't render at once */}
             {(() => {
               const filteredInventory = state.vehicles
                 .filter((v) => {
@@ -2124,7 +2124,13 @@ export default function App() {
                   const mSearch =
                     (v.make || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
                     (v.model || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
-                    (v.stockNumber || "").toLowerCase().includes(inventorySearch.toLowerCase());
+                    (v.stockNumber || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                    ((v as any).vin || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                    ((v as any).registrationNumber || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                    String(v.year || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                    (v.trim || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                    ((v as any).color || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                    ((v as any).colour || "").toLowerCase().includes(inventorySearch.toLowerCase());
                   const mStatus =
                     inventoryStatusFilter === "ALL" ||
                     inventoryStatusFilter === "ARCHIVED" ||
@@ -2880,7 +2886,8 @@ export default function App() {
                                     className="text-[13px] font-semibold px-2 py-0.5 rounded bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"
                                     title="WhatsApp this lead"
                                     onClick={() => {
-                                      const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
+                                      const dialCode = { za: '27', uk: '44', us: '1' }[market?.id || 'za'] || '27';
+                                      const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, dialCode);
                                       const interest = getVehicleLabel(l.vehicleId);
                                       const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
                                       window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
@@ -2948,8 +2955,6 @@ export default function App() {
                                   </span>
                                 ) : (
                                   <span className="text-[13px] text-[color:var(--faint)]">—</span>
-                                );
-                              })()}
                             </td>
                             <td data-label="Status" className="py-3 px-4">
                               <span className="text-[13px] font-medium text-[color:var(--white)]">{l.status}</span>
@@ -2960,7 +2965,8 @@ export default function App() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
+                                    const dialCode = { za: '27', uk: '44', us: '1' }[market?.id || 'za'] || '27';
+                                    const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, dialCode);
                                     const interest = getVehicleLabel(l.vehicleId);
                                     const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
                                     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
@@ -4703,7 +4709,10 @@ export default function App() {
               <button 
                 type="button" 
                 onClick={() => {
-                  addNotification("EOD Summary Dispatched", "The compiled daily operations summary has been emailed to stakeholders.", "info");
+                  const { sold, totalRevenue, totalProfit, reconTotal } = eodTotals;
+                  const text = `TruFlow EOD Summary - ${new Date().toISOString().split('T')[0]}\nLeads Worked: ${state.leads.length}\nVehicles Sold: ${sold.length}\nRecon Outlay: ${money(reconTotal)}\nGross Revenue: ${money(totalRevenue)}\nTotal Profit: ${money(totalProfit)}`;
+                  navigator.clipboard.writeText(text);
+                  addNotification("Summary Copied", "EOD summary copied to clipboard.", "info");
                   setShowEODReport(false);
                 }} 
                 className="px-4 py-2 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan-bright)] hover:bg-[color:var(--cyan-soft)] rounded-xl text-[13px] font-semibold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
@@ -4730,7 +4739,9 @@ export default function App() {
           <div 
             key={notif.id} 
             className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-xl animate-in slide-in-from-right-10 duration-500 flex flex-col gap-2 transition-all ${
-              notif.type === 'warning' 
+              notif.type === 'error'
+                ? 'bg-red-500/20 border-red-500/40 text-red-300'
+                : notif.type === 'warning' 
                 ? 'bg-[color:var(--glass)] border-[color:var(--glass-line)] text-[color:var(--warning)]' 
                 : 'bg-[color:var(--cyan-faint)] border-[color:var(--cyan-soft)] text-[color:var(--blue)]'
             }`}

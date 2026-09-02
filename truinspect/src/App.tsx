@@ -17,6 +17,7 @@ import DamageTagger from './components/DamageTagger';
 import TradeInWalkAround from './components/TradeInWalkAround';
 import TradeInValuation from './components/TradeInValuation';
 import TradeInSummary from './components/TradeInSummary';
+import { autoEnhance } from './components/auto-enhance';
 import { Vehicle, QualityReport, DmsExportResult, PointResult } from './types';
 import type { InspectionItem, ValuationState, TradeInData } from './types/inspection';
 import { createDefaultItems } from './types/inspection';
@@ -106,6 +107,9 @@ export default function App() {
   // Trade-in flow state (carried between the 3 screens)
   const [tradeInItems, setTradeInItems] = React.useState<InspectionItem[]>([]);
   const [tradeInValuation, setTradeInValuation] = React.useState<ValuationState | null>(null);
+
+  // Damage tagger — which slot to open on (set by InspectionSheet "Tag damage" click)
+  const [damageInitialSlot, setDamageInitialSlot] = React.useState<string | undefined>(undefined);
 
   // Editor view states
   const [activeSlotId, setActiveSlotId] = React.useState<string | null>(null);
@@ -347,6 +351,7 @@ export default function App() {
     setSyncStatus('syncing');
     setUploadError(null);
     try {
+      const enhanced = await autoEnhance(base64Image);
       const token = await user.getIdToken();
       const res = await fetch('/api/inventory/upload-photo', {
         method: 'POST',
@@ -354,7 +359,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ vehicleId, slotId, base64Image, qualityReport }),
+        body: JSON.stringify({ vehicleId, slotId, base64Image: enhanced, qualityReport }),
       });
       if (res.ok) {
         const result = await res.json();
@@ -532,11 +537,12 @@ export default function App() {
   const uploadTradePhoto = async (itemId: string, base64Image: string): Promise<string | null> => {
     if (!user || !activeVehicleId) return null;
     try {
+      const enhanced = await autoEnhance(base64Image);
       const token = await user.getIdToken();
       const res = await fetch('/api/inventory/upload-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ vehicleId: activeVehicleId, slotId: itemId, base64Image }),
+        body: JSON.stringify({ vehicleId: activeVehicleId, slotId: itemId, base64Image: enhanced }),
       });
       if (!res.ok) return null;
       const result = await res.json();
@@ -675,7 +681,7 @@ export default function App() {
               onSave={async (points) => {
                 await handleUpdateVehicle(activeVehicle, { inspectionPoints: points });
               }}
-              onTagDamage={() => setActiveView('damage')}
+              onTagDamage={(slotId) => { setDamageInitialSlot(slotId); setActiveView('damage'); }}
               onGenerateReport={() => setActiveView('report')}
             />
           )}
@@ -688,6 +694,7 @@ export default function App() {
                 await handleUpdateVehicle(activeVehicle, { damageFindings });
               }}
               onContinueToChecklist={() => setActiveView('checklist')}
+              initialSlotId={damageInitialSlot}
             />
           )}
 
@@ -866,7 +873,7 @@ export default function App() {
               onSave={async (points) => {
                 await handleUpdateVehicle(activeVehicle, { inspectionPoints: points });
               }}
-              onTagDamage={() => setActiveView('damage')}
+              onTagDamage={(slotId) => { setDamageInitialSlot(slotId); setActiveView('damage'); }}
               onGenerateReport={() => setActiveView('report')}
             />
           )}
@@ -879,6 +886,7 @@ export default function App() {
                 await handleUpdateVehicle(activeVehicle, { damageFindings });
               }}
               onContinueToChecklist={() => setActiveView('checklist')}
+              initialSlotId={damageInitialSlot}
             />
           )}
 

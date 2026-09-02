@@ -96,7 +96,7 @@
     text: attr("data-text", ""),   // override primary text colour
     scale: attr("data-scale", ""), // launcher size multiplier
     mode: attr("data-mode", "inline"),
-    target: attr("data-target", ""),
+    target: attr("data-target", "") || attr("data-mount", ""),
     position: attr("data-position", "right"),
     offsetBottom: attr("data-bottom", "24px"),
     heading: attr("data-heading", "Finance Calculator"),
@@ -279,7 +279,7 @@
     ".tr-range .top label{font-size:11px;font-weight:700;color:var(--tr-muted);text-transform:none;letter-spacing:0}",
     ".tr-range .top b{font-size:13px;font-weight:800}",
     "input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:100px;",
-    "background:linear-gradient(90deg,var(--tr-signal),var(--tr-signal-bright));outline:none;margin:6px 0}",
+    "background:linear-gradient(90deg,var(--tr-signal) var(--fill, 50%),var(--tr-fill-2) var(--fill, 50%));outline:none;margin:6px 0}",
     "input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--tr-thumb);",
     "border:3px solid var(--tr-signal);box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer}",
     "input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--tr-thumb);border:3px solid var(--tr-signal);cursor:pointer}",
@@ -362,12 +362,28 @@
   }
 
   function mount() {
-    var hostEl;
-    if (isInline && cfg.target) {
-      hostEl = document.querySelector(cfg.target);
-      if (!hostEl) { hostEl = document.createElement("div"); hostEl.id = ID + "-host"; document.body.appendChild(hostEl); }
+    var hostEl = document.createElement("div");
+    hostEl.id = ID + "-host";
+
+    function waitForTarget(selector, cb, timeout) {
+      timeout = timeout || 5000;
+      var el = document.querySelector(selector);
+      if (el) { cb(el); return; }
+      var obs = new MutationObserver(function() {
+        el = document.querySelector(selector);
+        if (el) { obs.disconnect(); cb(el); }
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function() { obs.disconnect(); }, timeout);
+    }
+    
+    var mountSelector = cfg.target || cfg.mount || '';
+    if (isInline && mountSelector) {
+      waitForTarget(mountSelector, function(target) {
+        target.appendChild(hostEl);
+      });
     } else {
-      hostEl = document.createElement("div"); hostEl.id = ID + "-host"; document.body.appendChild(hostEl);
+      document.body.appendChild(hostEl);
     }
     shadow = hostEl.attachShadow({ mode: "open" });
     var style = document.createElement("style"); style.textContent = CSS; shadow.appendChild(style);
@@ -534,6 +550,15 @@
         "Indicative only — not a quote, credit approval, or offer of finance. Excludes initiation (~" +
         money(cfg.initFee) + ") and monthly admin (~" + money(cfg.adminFee) +
         "). The final rate is risk-based and set by the bank.";
+        
+      ["tr-dep", "tr-term", "tr-bal", "tr-rate"].forEach(function(pid) {
+        var input = id(pid);
+        if (input) {
+          var min = +input.min, max = +input.max, val = +input.value;
+          var pct = ((val - min) / (max - min)) * 100;
+          input.style.setProperty("--fill", pct + "%");
+        }
+      });
     }
 
     ["tr-price", "tr-dep", "tr-term", "tr-bal", "tr-rate"].forEach(function (i) {
@@ -626,15 +651,22 @@
         "Name: " + (val("tr-name") || "—") +
         "\nPhone: " + (val("tr-phone") || "—") +
         "\n" + notes());
-      if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) return Promise.resolve(false);
+      if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) return Promise.resolve(!!(cfg.cmbKey && cfg.cmbPhone));
       var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
       var ctrl = ("AbortController" in window) ? new AbortController() : null;
       var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
+      var pl = payload(source);
       return fetch(leadUrl, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload(source)), mode: "cors", signal: ctrl ? ctrl.signal : undefined
-      }).then(function (res) { if (timer) clearTimeout(timer); return !!(res && res.ok); })
-        .catch(function () { if (timer) clearTimeout(timer); return false; });
+        body: JSON.stringify(pl), mode: "cors", signal: ctrl ? ctrl.signal : undefined
+      }).then(function (res) {
+        if (timer) clearTimeout(timer);
+        if (res && res.ok) {
+          try { window.dispatchEvent(new CustomEvent('tru:lead', { detail: { product: 'tru-repay', dealer: cfg.slug || '', data: pl } })); } catch(e) {}
+          return true;
+        }
+        return false;
+      }).catch(function () { if (timer) clearTimeout(timer); return false; });
     }
     function showState(cls) {
       root.classList.remove("is-sent", "is-error");

@@ -256,13 +256,23 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       lightingCheck: { status: 'Perfect', brightness: 135, contrast: 120, feedback: 'Imported photo.' },
       angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Imported photo.' },
     };
-    const readDataUrl = (f: File) =>
-      new Promise<string>((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(String(r.result));
-        r.onerror = () => reject(r.error);
-        r.readAsDataURL(f);
+    const compressImageFile = (file: File, maxDim = 1920, quality = 0.85): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('No canvas context')); return; }
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
       });
+    };
 
     setBulkProgress({ current: 0, total: usable, status: 'syncing' });
     const token = await user?.getIdToken();
@@ -271,7 +281,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       setBulkProgress((p) => ({ ...p, current: i + 1 }));
       const slot = targets[i];
       try {
-        const base64 = await readDataUrl(files[i]); // one at a time — no base64 pile-up
+        const base64 = await compressImageFile(files[i]); // one at a time — compressed
         const res = await fetch('/api/inventory/upload-photo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

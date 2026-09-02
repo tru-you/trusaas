@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) exit;
 
 /** The enabled widgets, as an array, from the per-widget checkboxes. */
 function truw_enabled_list() {
-    $all = array('afford', 'repay', 'form', 'book', 'share');
+    $all = array('afford', 'repay', 'form', 'book', 'share', 'value');
     $on  = array();
     foreach ($all as $w) {
         if (truw_opt('w_' . $w, '') === '1') $on[] = $w;
@@ -125,6 +125,7 @@ function truw_inject() {
             $attrs['data-share-vehicle-path'] = truw_opt('share_vehicle_path');
         }
     }
+    // CW-09: shortcode support skipped per instruction
 
     // Build and print.
     $out = "\n<!-- TruWidgets " . esc_attr(TRUW_VER) . " -->\n<script src=\"" . esc_url($src) . "\"";

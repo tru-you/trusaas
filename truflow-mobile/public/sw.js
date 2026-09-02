@@ -42,8 +42,10 @@ self.addEventListener("fetch", function (e) {
   if (url.origin === self.location.origin && url.pathname.indexOf("/api/") === 0) {
     e.respondWith(
       fetch(req).then(function (res) {
-        var copy = res.clone();
-        caches.open(VERSION).then(function (c) { c.put(req, copy); });
+        if (res.status === 200) {
+          var copy = res.clone();
+          caches.open(VERSION).then(function (c) { c.put(req, copy); });
+        }
         return res;
       }).catch(function () { return caches.match(req); })
     );
