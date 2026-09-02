@@ -243,38 +243,43 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
           {/* Photo */}
           <div className="mb-4">
-            {cameraActive ? (
-              <div className="relative">
+            {cameraActive && (
+              <div className="fixed inset-0 z-50 bg-black flex flex-col">
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-48 object-cover rounded-xl border border-cyan-500/40 bg-black"
+                  className="flex-1 w-full object-cover"
                 />
-                <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-3">
+                <div className="absolute top-4 left-4">
+                  <span className="text-white/70 text-[13px] font-medium bg-black/50 px-3 py-1.5 rounded-lg">{item.label}</span>
+                </div>
+                <div className="flex items-center justify-center gap-8 py-6 bg-black/80">
                   <button
                     type="button"
                     onClick={stopCamera}
-                    className="px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-neutral-400 border border-neutral-600"
+                    className="w-12 h-12 rounded-full bg-white/10 border border-white/20 text-white/70 text-[12px] font-medium flex items-center justify-center"
                   >
-                    Cancel
+                    ✕
                   </button>
                   <button
                     type="button"
                     onClick={capturePhoto}
-                    className="w-14 h-14 rounded-full bg-white/90 border-4 border-cyan-400 shadow-lg shadow-cyan-500/20 active:scale-90 transition-transform"
+                    className="w-18 h-18 rounded-full bg-white border-4 border-cyan-400 shadow-lg shadow-cyan-500/30 active:scale-90 transition-transform"
+                    style={{ width: 72, height: 72 }}
                   />
                   <button
                     type="button"
                     onClick={() => { stopCamera(); fileInputRef.current?.click(); }}
-                    className="px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-neutral-400 border border-neutral-600"
+                    className="w-12 h-12 rounded-full bg-white/10 border border-white/20 text-white/70 flex items-center justify-center"
                   >
-                    <Upload size={14} />
+                    <Upload size={18} />
                   </button>
                 </div>
               </div>
-            ) : (() => {
+            )}
+            {!cameraActive && (() => {
               const photoRequired = item.id === 'odometer' || item.id === 'vin_plate' || needsReconCost(item.status);
               return item.photoUrl ? (
                 <div className="relative">
