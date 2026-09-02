@@ -71,7 +71,7 @@ export async function crawlLegacySites(request: CrawlRequest): Promise<CrawlResu
 }
 
 /**
- * Discover business domains via SERP / DuckDuckGo / Bright Data
+ * Discover business domains via Bright Data SERP / Google Search
  */
 async function discoverBusinessDomains(
   industry: string,
@@ -81,45 +81,87 @@ async function discoverBusinessDomains(
 ): Promise<{ domain: string; title: string }[]> {
   const domains: { domain: string; title: string }[] = [];
   const queryStr = `${industry} ${city} contact`;
+  const serpApiKey = process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || '';
+  const serpZone = process.env.SERP_ZONE || 'serp_api1';
+  const googleDomain = country === 'uk' ? 'google.co.uk' : 'google.co.za';
+  const gl = country === 'uk' ? 'gl=gb' : 'gl=za';
 
-  try {
-    // Query Google / DuckDuckGo HTML endpoint
-    const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(queryStr)}`;
-    const res = await axios.get(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9'
-      },
-      timeout: 8000
-    });
+  // 1. Primary: Bright Data SERP (Live Google Search)
+  if (serpApiKey) {
+    try {
+      const googleUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(queryStr)}&${gl}&num=20&brd_json=1`;
+      const res = await axios.post('https://api.brightdata.com/request', {
+        zone: serpZone,
+        url: googleUrl,
+        format: 'raw'
+      }, {
+        headers: {
+          'Authorization': `Bearer ${serpApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 12000
+      });
 
-    const $ = cheerio.load(res.data);
-    $('.result__body, .result').each((_, el) => {
-      if (domains.length >= limit) return;
-      const title = $(el).find('.result__title, a.result__url').text().trim();
-      let rawUrl = $(el).find('a.result__url, .result__title a').attr('href') || '';
+      const body = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+      const organic = body?.organic_results || body?.organic || [];
 
-      // Decode DDG redirect URL if needed
-      if (rawUrl.includes('uddg=')) {
-        const match = rawUrl.match(/uddg=([^&]+)/);
-        if (match) rawUrl = decodeURIComponent(match[1]);
-      }
-
-      try {
-        if (rawUrl.startsWith('http')) {
-          const u = new URL(rawUrl);
-          const domain = u.hostname.replace(/^www\./, '').toLowerCase();
-
-          // Check if it's a directory / excluded domain
-          const isDirectory = DIRECTORY_DOMAINS.some(d => domain.includes(d));
-          if (!isDirectory && !domains.some(d => d.domain === domain)) {
-            domains.push({ domain, title: title || domain });
-          }
+      for (const r of Array.isArray(organic) ? organic : []) {
+        if (domains.length >= limit) break;
+        const link = String(r?.link || r?.url || '');
+        const title = String(r?.title || '');
+        if (link.startsWith('http')) {
+          try {
+            const u = new URL(link);
+            const domain = u.hostname.replace(/^www\./, '').toLowerCase();
+            const isDirectory = DIRECTORY_DOMAINS.some(d => domain.includes(d));
+            if (!isDirectory && !domains.some(d => d.domain === domain)) {
+              domains.push({ domain, title: title || domain });
+            }
+          } catch {}
         }
-      } catch (e) {}
-    });
-  } catch (err: any) {
-    console.warn('[LegacyFinder] SERP query failed or blocked, proceeding with candidate pool:', err.message);
+      }
+    } catch (err: any) {
+      console.warn('[LegacyFinder] Bright Data SERP note:', err.message);
+    }
+  }
+
+  // 2. Secondary fallback if SERP returned few results
+  if (domains.length < 3) {
+    try {
+      const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(queryStr)}`;
+      const res = await axios.get(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept-Language': 'en-US,en;q=0.9'
+        },
+        timeout: 6000
+      });
+
+      const $ = cheerio.load(res.data);
+      $('.result__body, .result').each((_, el) => {
+        if (domains.length >= limit) return;
+        const title = $(el).find('.result__title, a.result__url').text().trim();
+        let rawUrl = $(el).find('a.result__url, .result__title a').attr('href') || '';
+
+        if (rawUrl.includes('uddg=')) {
+          const match = rawUrl.match(/uddg=([^&]+)/);
+          if (match) rawUrl = decodeURIComponent(match[1]);
+        }
+
+        try {
+          if (rawUrl.startsWith('http')) {
+            const u = new URL(rawUrl);
+            const domain = u.hostname.replace(/^www\./, '').toLowerCase();
+            const isDirectory = DIRECTORY_DOMAINS.some(d => domain.includes(d));
+            if (!isDirectory && !domains.some(d => d.domain === domain)) {
+              domains.push({ domain, title: title || domain });
+            }
+          }
+        } catch (e) {}
+      });
+    } catch (err: any) {
+      console.warn('[LegacyFinder] HTML search fallback note:', err.message);
+    }
   }
 
   return domains;

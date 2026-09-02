@@ -15,6 +15,7 @@ import sampleRoutes from './routes/sample';
 import imagin8Routes from './routes/imagin8';
 import agencyRoutes from './routes/agency';
 import dealerCrmRoutes from './routes/dealer-crm';
+import propertyRoutes from './routes/property';
 
 // Initialize DB store
 import { initDb } from './lib/db';
@@ -52,6 +53,7 @@ app.use('/api/sample', sampleRoutes);
 app.use('/api/imagin8', imagin8Routes);
 app.use('/api/agency', agencyRoutes);
 app.use('/api/dealer-crm', dealerCrmRoutes);
+app.use('/api/property', propertyRoutes);
 
 // SPA fallback — serve index.html for non-API routes
 app.get('*', (req, res) => {
