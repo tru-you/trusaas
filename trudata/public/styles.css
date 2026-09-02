@@ -297,12 +297,14 @@ body {
   height: 64px;
   display: flex;
   align-items: center;
+  overflow: visible;
 }
 
 .nav-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
 }
 
 .brand-group {
@@ -2379,5 +2381,29 @@ body {
   .nav-actions .btn-neon span { font-size: 0.75rem; }
   .env-badge { display: none; }
   .logo-name { font-size: 1rem; }
+  
+  /* Cookie banner stacks on small screens */
+  .cookie-container { flex-direction: column; text-align: center; gap: 10px; }
+  .cookie-text { min-width: unset; }
+  .cookie-actions { justify-content: center; }
+}
+
+/* ========== TOUCH TARGETS & MOBILE POLISH ========== */
+@media (pointer: coarse) {
+  /* Minimum 44px tap targets */
+  .tab-btn { min-height: 44px; }
+  .chip-btn { min-height: 36px; padding: 6px 12px; }
+  .btn, .btn-neon, .btn-ghost { min-height: 44px; }
+  .nav-link { min-height: 44px; display: flex; align-items: center; }
+  .dropdown-item { min-height: 44px; }
+  
+  /* Prevent iOS zoom on input focus */
+  .console-input, .market-select, input, select, textarea { font-size: 16px !important; }
+}
+
+/* Safe area for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .cookie-banner { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .footer { padding-bottom: calc(36px + env(safe-area-inset-bottom)); }
 }
 
