@@ -1,15 +1,13 @@
-import express from 'express';
-import cors from 'cors';
+// Load environment variables FIRST — must run before any module that reads process.env at import time
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-
-// Load environment variables
 dotenv.config();
 
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 // Import routes
 import valuationRoutes from './routes/valuation';
 import ordersRoutes from './routes/orders';

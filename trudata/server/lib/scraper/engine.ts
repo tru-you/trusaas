@@ -199,11 +199,12 @@ const SERP_PROVIDER = (
 ).toLowerCase();
 const SERP_TIMEOUT_MS = Number(process.env.SERP_TIMEOUT_MS) || 12000;
 
-const BD_API_KEY = process.env.BRIGHTDATA_API_KEY || SERP_API_KEY;
-const UNLOCKER_ZONE = process.env.UNLOCKER_ZONE || process.env.BRIGHTDATA_UNLOCKER_ZONE || "unlocker";
-const UNLOCKER_ENABLED = /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || "");
-const UNLOCKER_TIMEOUT_MS = Number(process.env.UNLOCKER_TIMEOUT_MS) || 20000;
-const UNLOCKER_MAX_PAGES = Math.max(1, Number(process.env.UNLOCKER_MAX_PAGES) || 1);
+// Bright Data env — lazy getters because dotenv.config() may run after this module loads
+function getBdApiKey() { return process.env.BRIGHTDATA_API_KEY || process.env.SERP_API_KEY || ""; }
+function getUnlockerZone() { return process.env.UNLOCKER_ZONE || process.env.BRIGHTDATA_UNLOCKER_ZONE || "unlocker"; }
+function isUnlockerEnabled() { return /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || ""); }
+const UNLOCKER_TIMEOUT_MS = 20000;
+const UNLOCKER_MAX_PAGES = 1;
 
 /* ────────────────────────────────────────────────
    SMALL HELPERS
@@ -339,11 +340,12 @@ async function renderViaWorker(url: string, maxMs?: number): Promise<string | nu
 }
 
 async function brightDataFetch(targetUrl: string, zone: string, country: string, timeoutMs: number): Promise<string | null> {
-  if (!BD_API_KEY) return null;
+  const apiKey = getBdApiKey();
+  if (!apiKey) return null;
   try {
     const res = await fetch(SERP_API_URL || "https://api.brightdata.com/request", {
       method: "POST",
-      headers: { Authorization: `Bearer ${BD_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ zone, url: targetUrl, format: "raw", country }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -369,12 +371,13 @@ async function brightDataFetch(targetUrl: string, zone: string, country: string,
 }
 
 export function unlockerConfigured(): boolean {
-  return UNLOCKER_ENABLED && !!BD_API_KEY;
+  return isUnlockerEnabled() && !!getBdApiKey();
 }
 
 export async function renderViaUnlocker(url: string, country: string, maxMs?: number): Promise<string | null> {
   if (!unlockerConfigured()) return null;
-  return brightDataFetch(url, UNLOCKER_ZONE, country, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
+  console.log(`[scraper] Attempting Bright Data unlocker for: ${url}`);
+  return brightDataFetch(url, getUnlockerZone(), country, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
 }
 
 export function serpConfigured(): boolean {
