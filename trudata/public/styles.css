@@ -2232,21 +2232,152 @@ body {
    RESPONSIVE BREAKPOINTS
    ========================================================================== */
 
+/* ========== HAMBURGER MENU ========== */
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+/* ========== TABLET (max-width: 992px) ========== */
 @media (max-width: 992px) {
   .charts-row { grid-template-columns: 1fr; }
   .footer-container { grid-template-columns: 1fr; }
   .extraction-grid { grid-template-columns: 1fr; }
   .desktop-only { display: none !important; }
+  .hamburger-btn { display: block; }
+  
+  /* Comparison table */
+  .comparison-grid { grid-template-columns: 1fr; }
+  
+  /* Pricing */
+  .pricing-grid { grid-template-columns: 1fr !important; }
+  
+  /* Solutions */
+  .solutions-grid { grid-template-columns: 1fr; }
+  
+  /* Footer */
+  .footer-links-grid { grid-template-columns: repeat(2, 1fr); }
+  
+  /* Section padding */
+  .engines-section, .solutions-section, .ticker-section { padding: 48px 0; }
+
+  /* Mobile nav drawer */
+  .nav-links.mobile-open {
+    display: flex !important;
+    flex-direction: column;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background-color: rgba(7, 9, 14, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-strong);
+    padding: 16px 24px;
+    gap: 12px;
+    z-index: 499;
+  }
+  .nav-links.mobile-open .nav-item.has-dropdown .dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    margin-top: 8px;
+    width: 100%;
+    box-shadow: none;
+    border: 1px solid var(--border-subtle);
+  }
 }
 
+/* ========== MOBILE (max-width: 768px) ========== */
 @media (max-width: 768px) {
+  /* Container */
+  .container { padding: 0 16px; }
+  
+  /* Hero */
+  .hero { padding: 36px 0 24px; }
+  .hero-subtitle { font-size: 0.9375rem; margin-bottom: 24px; }
+  
+  /* Console card */
+  .console-card { padding: 4px 4px 10px; }
   .console-search-form { flex-direction: column; }
-  .search-controls { flex-direction: column; }
+  .search-controls { flex-direction: column; width: 100%; }
   #console-submit-btn { width: 100%; }
+  .console-input { height: 46px; font-size: 0.8125rem; }
+  .market-select { width: 100%; height: 46px; }
+  
+  /* Console tabs — scroll horizontally */
+  .tab-btn { flex: 0 0 auto; padding: 7px 10px; font-size: 0.75rem; gap: 5px; }
+  .tab-tag { font-size: 0.5625rem; }
+  
+  /* Suggestion chips */
+  .suggestion-chips { padding: 8px 4px 0; }
+  .chips-label { font-size: 0.625rem; }
+  
+  /* Form rows */
   .form-row-2 { grid-template-columns: 1fr; }
-  .suburb-metrics-table .table-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+  
+  /* Metric cards */
+  .metrics-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metric-card { padding: 12px 14px; }
+  .metric-value { font-size: 1.25rem; }
+  .metric-sub { font-size: 0.625rem; }
+  
+  /* Property sub-tabs */
+  .suburb-metrics-table .table-row { grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.75rem; }
+  
+  /* B2B tables — horizontal scroll */
+  .b2b-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .b2b-table { min-width: 600px; }
+  .b2b-table th, .b2b-table td { padding: 8px 10px; font-size: 0.75rem; }
+  
+  /* API playground */
   .api-code-grid { grid-template-columns: 1fr; }
-  .footer-links-grid { grid-template-columns: 1fr; }
+  .api-controls-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
+  
+  /* Charts */
+  .charts-row { gap: 12px; }
+  
+  /* Ticker */
+  .ticker-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .ticker-value { font-size: 1.5rem; }
+  
+  /* Engines deep-dive cards */
+  .engines-grid { grid-template-columns: 1fr; gap: 12px; }
+  .engine-card { padding: 18px; }
+  
+  /* Pricing */
+  .pricing-grid { grid-template-columns: 1fr !important; }
+  
+  /* Footer */
+  .footer { padding: 36px 0 24px; }
+  .footer-links-grid { grid-template-columns: 1fr; gap: 20px; }
+  
+  /* Chat window */
   .chat-window { width: calc(100vw - 32px); right: -8px; }
+  
+  /* Modal */
+  .modal-card { padding: 20px; margin: 0 8px; }
+  
+  /* Sections padding */
+  .section-title-center { font-size: 1.5rem; }
+  .section-subtitle-center { font-size: 0.875rem; margin-bottom: 24px; }
+  .engines-section { padding: 36px 0; }
+}
+
+/* ========== SMALL MOBILE (max-width: 480px) ========== */
+@media (max-width: 480px) {
+  .hero-title { font-size: 1.75rem; }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .ticker-grid { grid-template-columns: 1fr; }
+  .nav-actions .btn-neon span { font-size: 0.75rem; }
+  .env-badge { display: none; }
+  .logo-name { font-size: 1rem; }
 }
 

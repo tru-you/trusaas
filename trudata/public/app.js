@@ -118,6 +118,23 @@ document.addEventListener('DOMContentLoaded', () => {
     return currency === 'GBP' || currency === '£' ? formatGBP.format(amount) : formatZAR.format(amount);
   }
 
+  // Hamburger menu toggle
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const navLinks = document.querySelector('.nav-links');
+  if (hamburgerBtn && navLinks) {
+    hamburgerBtn.addEventListener('click', () => {
+      navLinks.classList.toggle('mobile-open');
+      hamburgerBtn.textContent = navLinks.classList.contains('mobile-open') ? '✕' : '☰';
+    });
+    // Close menu on link click
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('mobile-open');
+        hamburgerBtn.textContent = '☰';
+      });
+    });
+  }
+
   // --------------------------------------------------------------------------
   // Tab Switching & Omnibox Controller
   // --------------------------------------------------------------------------
