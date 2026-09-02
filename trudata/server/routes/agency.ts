@@ -54,17 +54,25 @@ router.post('/export-csv', async (req, res) => {
       'Estimated Pitch Value'
     ];
 
+    // Sanitize CSV cells to prevent formula injection in Excel/Sheets
+    const csvSafe = (val: string): string => {
+      const s = val.replace(/"/g, '""');
+      // Prefix formula-triggering characters with a tab
+      if (/^[=+\-@]/.test(s)) return `"\t${s}"`;
+      return `"${s}"`;
+    };
+
     const rows = result.targets.map(t => [
-      `"${t.businessName.replace(/"/g, '""')}"`,
-      `"${t.domain}"`,
+      csvSafe(t.businessName),
+      csvSafe(t.domain),
       `${t.readinessScore}/100`,
-      `"${t.defects.map(d => d.title).join('; ').replace(/"/g, '""')}"`,
-      `"${t.contacts.phones[0] || ''}"`,
-      `"${t.contacts.phones[1] || ''}"`,
-      `"${t.contacts.whatsAppLinks[0] || ''}"`,
-      `"${t.contacts.emails[0] || ''}"`,
-      `"${(t.contacts.address || `${t.city}, South Africa`).replace(/"/g, '""')}"`,
-      `"${t.estimatedPitchValue}"`
+      csvSafe(t.defects.map(d => d.title).join('; ')),
+      csvSafe(t.contacts.phones[0] || ''),
+      csvSafe(t.contacts.phones[1] || ''),
+      csvSafe(t.contacts.whatsAppLinks[0] || ''),
+      csvSafe(t.contacts.emails[0] || ''),
+      csvSafe(t.contacts.address || `${t.city}, South Africa`),
+      csvSafe(t.estimatedPitchValue)
     ]);
 
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');

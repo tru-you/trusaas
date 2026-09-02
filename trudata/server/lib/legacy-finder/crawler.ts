@@ -29,17 +29,22 @@ export async function crawlLegacySites(request: CrawlRequest): Promise<CrawlResu
 
   const targets: LegacySiteTarget[] = [];
 
-  // 2. Audit each candidate domain
-  for (const domainInfo of candidateDomains) {
+  // 2. Audit candidate domains in parallel (max 5 concurrent)
+  const CONCURRENCY = 5;
+  const candidates = candidateDomains.slice(0, maxResults * 3);
+  for (let i = 0; i < candidates.length; i += CONCURRENCY) {
     if (targets.length >= maxResults) break;
-
-    try {
-      const target = await auditDomain(domainInfo.domain, domainInfo.title, city, industry, currency, country);
-      if (target) {
-        targets.push(target);
+    const batch = candidates.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map(domainInfo =>
+        auditDomain(domainInfo.domain, domainInfo.title, city, industry, currency, country)
+      )
+    );
+    for (const r of results) {
+      if (targets.length >= maxResults) break;
+      if (r.status === 'fulfilled' && r.value) {
+        targets.push(r.value);
       }
-    } catch (err: any) {
-      console.warn(`[LegacyFinder] Failed to audit ${domainInfo.domain}:`, err.message);
     }
   }
 
