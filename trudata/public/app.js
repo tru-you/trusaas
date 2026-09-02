@@ -347,9 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return { make, model, year };
   }
 
-    return base;
-  }
-
   function loadAutoTelemetrySync(query, extraParams = {}) {
     const elMedian = document.getElementById('auto-median');
     if (elMedian) elMedian.textContent = '—';
@@ -401,9 +398,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const speedSeconds = firstTarget.techStack?.estimatedLoadSeconds || 'N/A';
 
           activeTelemetryData = crawlData;
-          if (elScore) elScore.textContent = ${score} / 100;
+          if (elScore) elScore.textContent = `${score} / 100`;
           if (elMobile) elMobile.textContent = isMobileFail ? 'Non-Responsive (Failed)' : 'Responsive (Pass)';
-          if (elSpeed) elSpeed.textContent = speedSeconds === 'N/A' ? 'N/A' : ${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (s LCP);
+          if (elSpeed) elSpeed.textContent = speedSeconds === 'N/A' ? 'N/A' : `${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (s LCP)`;
           if (elPitch) elPitch.textContent = pitchVal;
 
           if (defectListBox && firstTarget.defects) {
@@ -413,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
               item.className = 'defect-item';
               const badgeClass = d.severity === 'CRITICAL' ? 'red' : 'amber';
               const badge = document.createElement('span');
-              badge.className = defect-badge ;
+              badge.className = `defect-badge ${badgeClass}`;
               badge.textContent = d.severity;
               const info = document.createElement('div');
               info.className = 'defect-info';
@@ -422,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const pDesc = document.createElement('p');
               pDesc.textContent = (d.description || '') + ' ';
               const emAngle = document.createElement('em');
-              emAngle.textContent = Pitch angle: ;
+              emAngle.textContent = 'Pitch angle';
               pDesc.appendChild(emAngle);
               info.append(strongTitle, pDesc);
               item.append(badge, info);
@@ -470,9 +467,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const speedSeconds = firstTarget.techStack?.estimatedLoadSeconds || 'N/A';
 
           activeTelemetryData = crawlData;
-          if (elScore) elScore.textContent = ${score} / 100;
+          if (elScore) elScore.textContent = `${score} / 100`;
           if (elMobile) elMobile.textContent = isMobileFail ? 'Non-Responsive (Failed)' : 'Responsive (Pass)';
-          if (elSpeed) elSpeed.textContent = speedSeconds === 'N/A' ? 'N/A' : ${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (s LCP);
+          if (elSpeed) elSpeed.textContent = speedSeconds === 'N/A' ? 'N/A' : `${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (s LCP)`;
           if (elPitch) elPitch.textContent = pitchVal;
 
           if (defectListBox && firstTarget.defects) {
@@ -482,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
               item.className = 'defect-item';
               const badgeClass = d.severity === 'CRITICAL' ? 'red' : 'amber';
               const badge = document.createElement('span');
-              badge.className = defect-badge ;
+              badge.className = `defect-badge ${badgeClass}`;
               badge.textContent = d.severity;
               const info = document.createElement('div');
               info.className = 'defect-info';
@@ -491,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const pDesc = document.createElement('p');
               pDesc.textContent = (d.description || '') + ' ';
               const emAngle = document.createElement('em');
-              emAngle.textContent = Pitch angle: ;
+              emAngle.textContent = 'Pitch angle';
               pDesc.appendChild(emAngle);
               info.append(strongTitle, pDesc);
               item.append(badge, info);

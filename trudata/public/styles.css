@@ -289,7 +289,7 @@ body {
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 500;
   background-color: rgba(7, 9, 14, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -391,6 +391,7 @@ body {
   visibility: hidden;
   transform: translateY(6px);
   transition: all 0.15s ease;
+  z-index: 501;
 }
 
 .nav-item:hover .dropdown-menu {
@@ -496,6 +497,7 @@ body {
   padding: 6px 6px 14px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
   position: relative;
+  z-index: 10;
 }
 
 /* Console Tabs */
