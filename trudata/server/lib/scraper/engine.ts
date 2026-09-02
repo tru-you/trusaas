@@ -190,14 +190,15 @@ const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAG
 const SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
 const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
 
-const SERP_API_URL = process.env.SERP_API_URL || "";
-const SERP_API_KEY = process.env.SERP_API_KEY || "";
-const SERP_ZONE = process.env.SERP_ZONE || "serp";
-const SERP_PROVIDER = (
-  process.env.SERP_PROVIDER ||
-  (SERP_API_URL.includes("brightdata") ? "brightdata" : SERP_API_URL.includes("serpapi") ? "serpapi" : "")
-).toLowerCase();
-const SERP_TIMEOUT_MS = Number(process.env.SERP_TIMEOUT_MS) || 12000;
+// SERP env — lazy getters (same dotenv load-order issue as unlocker vars)
+function getSerpApiUrl() { return process.env.SERP_API_URL || ""; }
+function getSerpApiKey() { return process.env.SERP_API_KEY || ""; }
+function getSerpZone() { return process.env.SERP_ZONE || "serp"; }
+function getSerpProvider() {
+  const url = getSerpApiUrl();
+  return (process.env.SERP_PROVIDER || (url.includes("brightdata") ? "brightdata" : url.includes("serpapi") ? "serpapi" : "")).toLowerCase();
+}
+const SERP_TIMEOUT_MS = 12000;
 
 // Bright Data env — lazy getters because dotenv.config() may run after this module loads
 function getBdApiKey() { return process.env.BRIGHTDATA_API_KEY || process.env.SERP_API_KEY || ""; }
@@ -343,7 +344,7 @@ async function brightDataFetch(targetUrl: string, zone: string, country: string,
   const apiKey = getBdApiKey();
   if (!apiKey) return null;
   try {
-    const res = await fetch(SERP_API_URL || "https://api.brightdata.com/request", {
+    const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ zone, url: targetUrl, format: "raw", country }),
@@ -381,7 +382,7 @@ export async function renderViaUnlocker(url: string, country: string, maxMs?: nu
 }
 
 export function serpConfigured(): boolean {
-  return !!SERP_API_KEY && (SERP_PROVIDER === "brightdata" || SERP_PROVIDER === "serpapi");
+  return !!getSerpApiKey() && (getSerpProvider() === "brightdata" || getSerpProvider() === "serpapi");
 }
 
 export function parseSerpResults(json: any, make: string, model: string, year: string, cfg: MarketConfig): Listing[] {
@@ -412,20 +413,20 @@ export async function fetchSerpListings(make: string, model: string, year: strin
   const q = `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
   try {
     let json: any = null;
-    if (SERP_PROVIDER === "brightdata") {
+    if (getSerpProvider() === "brightdata") {
       const googleUrl = `https://${cfg.googleDomain}/search?q=${encodeURIComponent(q)}&${cfg.googleGl}&num=20&brd_json=1`;
-      const res = await fetch(SERP_API_URL || "https://api.brightdata.com/request", {
+      const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
         method: "POST",
-        headers: { Authorization: `Bearer ${SERP_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ zone: SERP_ZONE, url: googleUrl, format: "raw" }),
+        headers: { Authorization: `Bearer ${getSerpApiKey()}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ zone: getSerpZone(), url: googleUrl, format: "raw" }),
         signal: AbortSignal.timeout(SERP_TIMEOUT_MS),
       });
       if (!res.ok) return [];
       const body = await res.text();
       try { json = JSON.parse(body); } catch { return []; }
     } else {
-      const base = SERP_API_URL || "https://serpapi.com/search.json";
-      const url = `${base}?engine=google&google_domain=${cfg.googleDomain}&${cfg.googleGl}&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(SERP_API_KEY)}`;
+      const base = getSerpApiUrl() || "https://serpapi.com/search.json";
+      const url = `${base}?engine=google&google_domain=${cfg.googleDomain}&${cfg.googleGl}&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(getSerpApiKey())}`;
       const res = await fetch(url, { signal: AbortSignal.timeout(SERP_TIMEOUT_MS) });
       if (!res.ok) return [];
       json = await res.json();
