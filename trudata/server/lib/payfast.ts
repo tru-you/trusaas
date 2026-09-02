@@ -33,12 +33,22 @@ export function generateSignature(data: Record<string, string>, passphrase?: str
   return crypto.createHash('md5').update(getString).digest('hex');
 }
 
+const PAYFAST_IPS = ['197.97.145.144/28', '41.74.179.192/27'];
+
+function ipInRange(ip: string, cidr: string): boolean {
+  const [range, bits] = cidr.split('/');
+  const mask = ~((1 << (32 - parseInt(bits, 10))) - 1);
+  const ipLong = ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
+  const rangeLong = range.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
+  return (ipLong & mask) === (rangeLong & mask);
+}
+
 export function generatePaymentUrl(order: PayFastOrder): string {
   const merchantId = process.env.PAYFAST_MERCHANT_ID || '';
   const merchantKey = process.env.PAYFAST_MERCHANT_KEY || '';
   const passphrase = process.env.PAYFAST_PASSPHRASE || '';
   const isSandbox = process.env.PAYFAST_SANDBOX === 'true';
-  const baseUrl = process.env.TRUDATA_BASE_URL || 'http://localhost:3001';
+  const baseUrl = process.env.TRUDATA_BASE_URL || (process.env.NODE_ENV !== 'production' ? 'http://localhost:3001' : '');
 
   const data: Record<string, string> = {
     merchant_id: merchantId,
@@ -69,8 +79,14 @@ export async function verifyITN(body: any, headers: any, sourceIp: string): Prom
     const isSandbox = process.env.PAYFAST_SANDBOX === 'true';
     const pfHost = isSandbox ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
     
-    // Note: IP verification logic would go here in production
-    // Checking sourceIp against known PayFast IPs
+    // IP verification
+    if (!isSandbox) {
+      const isValidIp = PAYFAST_IPS.some(cidr => ipInRange(sourceIp, cidr));
+      if (!isValidIp) {
+        console.error(`PayFast ITN request from invalid IP: ${sourceIp}`);
+        return false;
+      }
+    }
 
     // Verify signature
     const receivedSignature = body.signature;

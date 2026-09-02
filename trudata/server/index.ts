@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
 // Load environment variables
 dotenv.config();
 
@@ -25,9 +28,16 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? ['https://data.tru-saas.com'] : true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Global rate limiter
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
+
+// Strict rate limiter for expensive endpoints
+const strictLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 
 import fs from 'fs';
 
@@ -46,20 +56,29 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'trudata', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/valuation', valuationRoutes);
+app.use('/api/valuation', strictLimiter, valuationRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/payfast', payfastRoutes);
 app.use('/api/sample', sampleRoutes);
 app.use('/api/imagin8', imagin8Routes);
-app.use('/api/agency', agencyRoutes);
-app.use('/api/dealer-crm', dealerCrmRoutes);
-app.use('/api/property', propertyRoutes);
+app.use('/api/agency', strictLimiter, agencyRoutes);
+app.use('/api/dealer-crm', strictLimiter, dealerCrmRoutes);
+app.use('/api/property', strictLimiter, propertyRoutes);
+
+// API 404 handler
+app.all('/api/*', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 // SPA fallback — serve index.html for non-API routes
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
     res.sendFile(path.join(publicDir, 'index.html'));
   }
+});
+
+// Global error handler
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start server

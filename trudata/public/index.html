@@ -96,7 +96,7 @@
           </div>
           <span class="logo-name">TRU<span class="text-neon">DATA</span></span>
         </a>
-        <span class="env-badge font-mono">PROD v2.4</span>
+        <span class="env-badge font-mono">BETA</span>
       </div>
 
       <div class="nav-links desktop-only">
@@ -173,7 +173,7 @@
       <div class="hero-badge-wrapper">
         <div class="hero-pill">
           <span class="pulse-dot"></span>
-          <span>MULTI-VERTICAL MARKET INTELLIGENCE · ZA &amp; UK</span>
+          <span>MARKET INTELLIGENCE · SOUTH AFRICA</span>
         </div>
       </div>
 
@@ -283,7 +283,7 @@
         <div class="telemetry-toolbar">
           <div class="telemetry-heading">
             <span class="status-indicator live"></span>
-            <h3 id="telemetry-title">LIVE TELEMETRY: TOYOTA HILUX 2.8 GD-6 (2023)</h3>
+            <h3 id="telemetry-title">Search for a vehicle to see live market data</h3>
           </div>
           
           <div class="telemetry-view-modes">
@@ -308,10 +308,10 @@
               <div class="metric-card highlight">
                 <div class="metric-header">
                   <span class="metric-label">LIVE MARKET MEDIAN</span>
-                  <span class="badge badge-neon" id="auto-confidence">HIGH CONFIDENCE</span>
+                  <span class="badge badge-neon" id="auto-confidence">SEARCHING...</span>
                 </div>
-                <div class="metric-value font-mono text-neon" id="auto-median">R 619,900</div>
-                <div class="metric-sub font-mono" id="auto-sample-info">Based on 34 verified active listings</div>
+                <div class="metric-value font-mono text-neon" id="auto-median">—</div>
+                <div class="metric-sub font-mono" id="auto-sample-info">Loading live data...</div>
               </div>
 
               <div class="metric-card">
@@ -319,7 +319,7 @@
                   <span class="metric-label">MARKET IQR RANGE</span>
                   <span class="badge badge-dim">IQR SPREAD</span>
                 </div>
-                <div class="metric-value font-mono" id="auto-range">R 575,000 - R 668,000</div>
+                <div class="metric-value font-mono" id="auto-range">—</div>
                 <div class="metric-sub font-mono">10% - 90% Market Percentile</div>
               </div>
 
@@ -328,7 +328,7 @@
                   <span class="metric-label">LIQUIDITY VELOCITY</span>
                   <span class="badge badge-cyan">HIGH DEMAND</span>
                 </div>
-                <div class="metric-value font-mono" id="auto-velocity">18 Days</div>
+                <div class="metric-value font-mono" id="auto-velocity">—</div>
                 <div class="metric-sub font-mono">Avg time to turn stock</div>
               </div>
 
@@ -337,7 +337,7 @@
                   <span class="metric-label">ARBITRAGE SPREAD</span>
                   <span class="badge badge-neon">PROFIT SIGNAL</span>
                 </div>
-                <div class="metric-value font-mono text-cyan" id="auto-spread">+R 48,200</div>
+                <div class="metric-value font-mono text-cyan" id="auto-spread">—</div>
                 <div class="metric-sub font-mono">Private vs Dealer retail gap</div>
               </div>
             </div>
@@ -363,9 +363,9 @@
                     <canvas id="distribution-canvas" width="600" height="180"></canvas>
                   </div>
                   <div class="canvas-labels font-mono">
-                    <span>Low: <b id="chart-label-low">R 540k</b></span>
-                    <span class="text-neon">Median: <b id="chart-label-mid">R 620k</b></span>
-                    <span>High: <b id="chart-label-high">R 690k</b></span>
+                    <span>Low: <b id="chart-label-low">—</b></span>
+                    <span class="text-neon">Median: <b id="chart-label-mid">—</b></span>
+                    <span>High: <b id="chart-label-high">—</b></span>
                   </div>
                 </div>
 
@@ -398,7 +398,7 @@
                       <span class="metric-label" id="bureau-val-label-1">OFFICIAL TRADE VALUE</span>
                       <span class="badge badge-dim" id="bureau-code-tag">M&amp;M: 60024820</span>
                     </div>
-                    <div class="metric-value font-mono text-cyan" id="bureau-trade">R 545,500</div>
+                    <div class="metric-value font-mono text-cyan" id="bureau-trade">—</div>
                     <div class="metric-sub font-mono">Dealer trade-in baseline</div>
                   </div>
 
@@ -407,7 +407,7 @@
                       <span class="metric-label" id="bureau-val-label-2">OFFICIAL RETAIL VALUE</span>
                       <span class="badge badge-neon">BUREAU RETAIL</span>
                     </div>
-                    <div class="metric-value font-mono text-neon" id="bureau-retail">R 628,000</div>
+                    <div class="metric-value font-mono text-neon" id="bureau-retail">—</div>
                     <div class="metric-sub font-mono">Official book benchmark</div>
                   </div>
 
@@ -416,8 +416,8 @@
                       <span class="metric-label" id="bureau-val-label-3">POLICE / TITLE STATUS</span>
                       <span class="badge badge-neon">SAPS CLEAR</span>
                     </div>
-                    <div class="metric-value font-mono text-neon" id="bureau-stolen">CLEAR</div>
-                    <div class="metric-sub font-mono" id="bureau-stolen-sub">No police stolen interest</div>
+                    <div class="metric-value font-mono text-neon" id="bureau-stolen">—</div>
+                    <div class="metric-sub font-mono" id="bureau-stolen-sub">—</div>
                   </div>
 
                   <div class="metric-card">
@@ -425,7 +425,7 @@
                       <span class="metric-label" id="bureau-val-label-4">BANK FINANCE / HPI</span>
                       <span class="badge badge-neon">CLEAR TITLE</span>
                     </div>
-                    <div class="metric-value font-mono text-cyan" id="bureau-finance">NO ENCUMBRANCE</div>
+                    <div class="metric-value font-mono text-cyan" id="bureau-finance">—</div>
                     <div class="metric-sub font-mono">No active bank settlement owed</div>
                   </div>
                 </div>
@@ -437,24 +437,7 @@
                     <span>Verification Result</span>
                     <span>Status</span>
                   </div>
-                  <div class="table-row font-mono" id="bureau-row-1">
-                    <span>VIN &amp; Engine Match</span>
-                    <span>National Transport Register (NaTIS / DVLA)</span>
-                    <span>Matched 1GD•••••••• to Chassis</span>
-                    <td><span class="badge badge-neon">VERIFIED</span></td>
-                  </div>
-                  <div class="table-row font-mono" id="bureau-row-2">
-                    <span>Insurance Claims History</span>
-                    <span>National Insurance Claims Database</span>
-                    <span>1 Minor Cosmetic Claim (R14,250) · No Structural Damage</span>
-                    <td><span class="badge badge-neon">PASSED</span></td>
-                  </div>
-                  <div class="table-row font-mono" id="bureau-row-3">
-                    <span>Microdot &amp; Odometer Audit</span>
-                    <span>Microdot Registry / MOT History</span>
-                    <span>Genuine Microdots · Mileage Audit Consistent</span>
-                    <td><span class="badge badge-neon">PASSED</span></td>
-                  </div>
+                  
                 </div>
               </div>
             </div>
@@ -468,7 +451,7 @@
                   <span class="metric-label">MEDIAN ASKING PRICE</span>
                   <span class="badge badge-neon">SUBURB BENCHMARK</span>
                 </div>
-                <div class="metric-value font-mono text-neon" id="prop-median">R 4,850,000</div>
+                <div class="metric-value font-mono text-neon" id="prop-median">—</div>
                 <div class="metric-sub font-mono">Atlantic Coastal Suburb Benchmark</div>
               </div>
 
@@ -477,7 +460,7 @@
                   <span class="metric-label">AVG PRICE PER M²</span>
                   <span class="badge badge-cyan">SQUARE METER</span>
                 </div>
-                <div class="metric-value font-mono" id="prop-sqm">R 38,400 /m²</div>
+                <div class="metric-value font-mono" id="prop-sqm">—</div>
                 <div class="metric-sub font-mono">+4.8% YoY growth rate</div>
               </div>
 
@@ -486,7 +469,7 @@
                   <span class="metric-label">EST. GROSS RENTAL YIELD</span>
                   <span class="badge badge-neon">STRONG CASHFLOW</span>
                 </div>
-                <div class="metric-value font-mono text-cyan" id="prop-yield">8.2% p.a.</div>
+                <div class="metric-value font-mono text-cyan" id="prop-yield">—</div>
                 <div class="metric-sub font-mono">Long-term residential model</div>
               </div>
 
@@ -495,7 +478,7 @@
                   <span class="metric-label">PORTAL SUPPLY INDEX</span>
                   <span class="badge badge-dim">MULTI-FEED AGGREGATE</span>
                 </div>
-                <div class="metric-value font-mono" id="prop-supply">84 Properties</div>
+                <div class="metric-value font-mono" id="prop-supply">—</div>
                 <div class="metric-sub font-mono">Avg 42 days on market</div>
               </div>
             </div>
@@ -524,24 +507,7 @@
                       <span>Rental / Mo</span>
                       <span>12-Mo Capital Trend</span>
                     </div>
-                    <div class="table-row font-mono">
-                      <span>2-Bed Apartment</span>
-                      <span>R 3,450,000</span>
-                      <span>R 24,000</span>
-                      <span class="text-neon">+7.2% ▲</span>
-                    </div>
-                    <div class="table-row font-mono">
-                      <span>3-Bed Freestanding</span>
-                      <span>R 6,900,000</span>
-                      <span>R 48,000</span>
-                      <span class="text-neon">+5.9% ▲</span>
-                    </div>
-                    <div class="table-row font-mono">
-                      <span>Luxury Penthouse / Villa</span>
-                      <span>R 16,500,000</span>
-                      <span>R 110,000</span>
-                      <span class="text-cyan">+9.4% ▲</span>
-                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -570,35 +536,7 @@
                         <th>Action</th>
                       </tr>
                     </thead>
-                    <tbody id="fsbo-table-body">
-                      <tr>
-                        <td><strong>3-Bed Freestanding House</strong><br><span class="text-muted">Camps Bay, Cape Town</span></td>
-                        <td>David M. (Private Owner)</td>
-                        <td>+27 82 ••• •912</td>
-                        <td class="text-neon">R 6,450,000</td>
-                        <td>14 Days</td>
-                        <td><span class="badge badge-dim">Direct Portal</span></td>
-                        <td><button class="btn btn-sm btn-outline-neon open-modal-btn" data-product="fsbo">Claim Lead</button></td>
-                      </tr>
-                      <tr>
-                        <td><strong>2-Bed Luxury Apartment</strong><br><span class="text-muted">Sandton CBD, JHB</span></td>
-                        <td>Sarah T. (Direct Seller)</td>
-                        <td>+27 83 ••• •441</td>
-                        <td class="text-neon">R 2,890,000</td>
-                        <td>9 Days</td>
-                        <td><span class="badge badge-dim">Direct Portal</span></td>
-                        <td><button class="btn btn-sm btn-outline-neon open-modal-btn" data-product="fsbo">Claim Lead</button></td>
-                      </tr>
-                      <tr>
-                        <td><strong>4-Bed Family Residence</strong><br><span class="text-muted">Umhlanga Rocks, Durban</span></td>
-                        <td>Kevin P. (Private Seller)</td>
-                        <td>+27 71 ••• •780</td>
-                        <td class="text-neon">R 5,200,000</td>
-                        <td>21 Days</td>
-                        <td><span class="badge badge-dim">Direct Portal</span></td>
-                        <td><button class="btn btn-sm btn-outline-neon open-modal-btn" data-product="fsbo">Claim Lead</button></td>
-                      </tr>
-                    </tbody>
+                    <tbody id="fsbo-table-body"></tbody>
                   </table>
                 </div>
               </div>
@@ -613,7 +551,7 @@
                   <span class="metric-label">DIGITAL READINESS SCORE</span>
                   <span class="badge badge-red">CRITICAL FLAWS</span>
                 </div>
-                <div class="metric-value font-mono text-red" id="agency-score">28 / 100</div>
+                <div class="metric-value font-mono text-red" id="agency-score">—</div>
                 <div class="metric-sub font-mono">High opportunity for agency pitch</div>
               </div>
 
@@ -622,7 +560,7 @@
                   <span class="metric-label">MOBILE RESPONSIVENESS</span>
                   <span class="badge badge-red">FAILED</span>
                 </div>
-                <div class="metric-value font-mono text-red" id="agency-mobile">Non-Responsive</div>
+                <div class="metric-value font-mono text-red" id="agency-mobile">—</div>
                 <div class="metric-sub font-mono">Viewport overflow &amp; unscaled tap targets</div>
               </div>
 
@@ -631,7 +569,7 @@
                   <span class="metric-label">SPEED &amp; CORE WEB VITALS</span>
                   <span class="badge badge-amber">SLOW (6.4s LCP)</span>
                 </div>
-                <div class="metric-value font-mono text-amber" id="agency-speed">F-Grade</div>
+                <div class="metric-value font-mono text-amber" id="agency-speed">—</div>
                 <div class="metric-sub font-mono">Unoptimized 12MB uncompressed assets</div>
               </div>
 
@@ -640,7 +578,7 @@
                   <span class="metric-label">EST. AGENCY PITCH VALUE</span>
                   <span class="badge badge-neon">HIGH WIN RATE</span>
                 </div>
-                <div class="metric-value font-mono text-neon" id="agency-pitch-val">R 25,000 - R 45,000</div>
+                <div class="metric-value font-mono text-neon" id="agency-pitch-val">—</div>
                 <div class="metric-sub font-mono">Recommended retainer &amp; rebuild scope</div>
               </div>
             </div>
@@ -650,14 +588,7 @@
                 <h4>Instant Agency Outbound Lead Radar: Regional Services Group</h4>
                 <button class="btn btn-sm btn-neon open-modal-btn" data-product="audit">Unlock Full 50-Business Audit Pack →</button>
               </div>
-              <div class="defect-list">
-                <div class="defect-item">
-                  <span class="defect-badge red">BROKEN</span>
-                  <div class="defect-info">
-                    <strong>No Mobile Viewport or Click-to-Call Button</strong>
-                    <p>68% of commercial search traffic originates on mobile. Significant loss in direct client calls.</p>
-                  </div>
-                </div>
+              <div class="defect-list"></div>
                 <div class="defect-item">
                   <span class="defect-badge red">SECURITY</span>
                   <div class="defect-info">
@@ -684,7 +615,7 @@
                   <span class="metric-label">VERIFIED DIRECT DIALS</span>
                   <span class="badge badge-neon">100% PHONE VERIFIED</span>
                 </div>
-                <div class="metric-value font-mono text-neon">8,420 Contacts</div>
+                <div class="metric-value font-mono text-neon">—</div>
                 <div class="metric-sub font-mono">Regional Automotive &amp; Commercial Principals</div>
               </div>
 
@@ -693,7 +624,7 @@
                   <span class="metric-label">DELIVERABILITY INDEX</span>
                   <span class="badge badge-cyan">SMTP HANDSHAKE</span>
                 </div>
-                <div class="metric-value font-mono text-cyan">98.6%</div>
+                <div class="metric-value font-mono text-cyan">—</div>
                 <div class="metric-sub font-mono">Zero hard bounce guarantee</div>
               </div>
 
@@ -702,7 +633,7 @@
                   <span class="metric-label">DIRECT DECISION MAKERS</span>
                   <span class="badge badge-dim">C-SUITE &amp; OWNERS</span>
                 </div>
-                <div class="metric-value font-mono">Owner / GM / DP</div>
+                <div class="metric-value font-mono">—</div>
                 <div class="metric-sub font-mono">Filtered by verified purchasing authority</div>
               </div>
 
@@ -711,7 +642,7 @@
                   <span class="metric-label">EXPORT FORMATS</span>
                   <span class="badge badge-dim">INSTANT CSV / JSON</span>
                 </div>
-                <div class="metric-value font-mono">CRM Ready</div>
+                <div class="metric-value font-mono">—</div>
                 <div class="metric-sub font-mono">Pre-mapped CRM column structures</div>
               </div>
             </div>
@@ -733,32 +664,7 @@
                       <th>Status</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr>
-                      <td>J. van R.</td>
-                      <td>Dealer Principal</td>
-                      <td>Metropolitan Automotive Group</td>
-                      <td>+27 82 ••• •842</td>
-                      <td>j•••••@m•••••••••.co.za</td>
-                      <td><span class="badge badge-neon">VERIFIED</span></td>
-                    </tr>
-                    <tr>
-                      <td>M. du P.</td>
-                      <td>Managing Director</td>
-                      <td>National Commercial Logistics</td>
-                      <td>+27 83 ••• •119</td>
-                      <td>m•••••@n•••••••••.co.za</td>
-                      <td><span class="badge badge-neon">VERIFIED</span></td>
-                    </tr>
-                    <tr>
-                      <td>C. Naidoo</td>
-                      <td>Chief Executive Officer</td>
-                      <td>Coastal Commercial Group</td>
-                      <td>+27 71 ••• •390</td>
-                      <td>c•••••@c•••••••••.co.za</td>
-                      <td><span class="badge badge-neon">VERIFIED</span></td>
-                    </tr>
-                  </tbody>
+                  <tbody></tbody>
                 </table>
               </div>
             </div>
@@ -822,25 +728,25 @@
       <div class="ticker-grid">
         
         <div class="ticker-item">
-          <div class="ticker-value font-mono text-neon">3,240,000+</div>
+          <div class="ticker-value font-mono text-neon">—</div>
           <div class="ticker-label">Daily Listings Analyzed</div>
           <div class="ticker-sub">Multi-platform automotive and property feeds</div>
         </div>
 
         <div class="ticker-item">
-          <div class="ticker-value font-mono text-cyan">142,000+</div>
+          <div class="ticker-value font-mono text-cyan">—</div>
           <div class="ticker-label">Verified B2B Decision Dials</div>
           <div class="ticker-sub">Direct phone &amp; C-level email records</div>
         </div>
 
         <div class="ticker-item">
-          <div class="ticker-value font-mono text-neon">28,500+</div>
+          <div class="ticker-value font-mono text-neon">—</div>
           <div class="ticker-label">Legacy Sites Scored</div>
           <div class="ticker-sub">Catalogued for agency outbound sales</div>
         </div>
 
         <div class="ticker-item">
-          <div class="ticker-value font-mono text-cyan">&lt; 85ms</div>
+          <div class="ticker-value font-mono text-cyan">—</div>
           <div class="ticker-label">Average API Latency</div>
           <div class="ticker-sub">High-concurrency cloud gateway</div>
         </div>
@@ -1307,7 +1213,7 @@
         </p>
         <div class="status-badge font-mono">
           <span class="pulse-dot"></span>
-          <span>ALL SYSTEMS OPERATIONAL · 99.98% UPTIME</span>
+          
         </div>
       </div>
 
@@ -1514,7 +1420,7 @@
           </div>
           <div>
             <div class="chat-title font-mono">TruData Intelligence Desk</div>
-            <div class="chat-status"><span class="pulse-dot"></span> Live Data Pipeline · &lt;85ms</div>
+            <div class="chat-status"><span class="pulse-dot"></span> </div>
           </div>
         </div>
         <button class="chat-close-btn" id="chat-close-btn">✕</button>
