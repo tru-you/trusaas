@@ -280,14 +280,14 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
 
   /* Worst condition in the category wins the pill — a category with one
      "Poor" item should not read as Good because the rest are fine. */
-  const conditionRank: Record<string, number> = { Showroom: 0, Good: 1, Average: 2, Poor: 3 };
+  const conditionRank: Record<string, number> = { Showroom: 0, New: 0, Good: 1, Used: 1, Average: 2, Poor: 3, 'Needs Replacing': 3 };
   const categoryGrade = (catItems: InspectionItem[]): { label: string; cls: string } => {
     if (!catItems.length) return { label: '—', cls: 'good' };
-    const worst = catItems.reduce((w, i) => (conditionRank[i.condition] > conditionRank[w] ? i.condition : w), 'Showroom');
-    if (worst === 'Showroom') return { label: 'Showroom', cls: 'good' };
-    if (worst === 'Good') return { label: 'Good', cls: 'good' };
+    const worst = catItems.reduce((w, i) => ((conditionRank[i.condition] ?? 1) > (conditionRank[w] ?? 1) ? i.condition : w), 'Showroom');
+    if (worst === 'Showroom' || worst === 'New') return { label: worst, cls: 'good' };
+    if (worst === 'Good' || worst === 'Used') return { label: worst, cls: 'good' };
     if (worst === 'Average') return { label: 'Average', cls: 'fair' };
-    return { label: 'Poor', cls: 'poor' };
+    return { label: worst, cls: 'poor' };
   };
 
   /* Valuation build-up: market average, then each item carrying a recon
@@ -620,6 +620,12 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               <div className="adj" key={it.id}>
                 <span className="desc">
                   {it.label} — {it.status.replace(/_/g, ' ').toLowerCase()}
+                  {it.condition && (it.condition !== 'Good' && it.condition !== 'Showroom') && (
+                    <span className="recon-note"> · {it.condition}</span>
+                  )}
+                  {it.treadDepth != null && (
+                    <span className="recon-note"> · Tread: {it.treadDepth} mm</span>
+                  )}
                   {it.reconNote && it.reconNote.trim() && (
                     <span className="recon-note">{it.reconNote.trim()}</span>
                   )}

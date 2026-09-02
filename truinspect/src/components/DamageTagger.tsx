@@ -379,7 +379,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
             type="button"
             onClick={async () => { await handleSave(false); onContinueToChecklist(); }}
             disabled={saving}
-            className="w-full py-3 rounded-xl bg-neutral-900 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+            className="tl-attention-pulse w-full py-3 rounded-xl bg-neutral-900 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
           >
             <ClipboardCheck size={14} /> Continue to Checklist
           </button>

@@ -645,12 +645,26 @@ export default function App() {
               vehicle={activeVehicle}
               onBack={() => setActiveView('camera')}
               onPublish={() => setActiveView('report')}
+              onTagDamage={() => setActiveView('damage')}
+              onSwapPhotos={async (slotA, slotB) => {
+                try {
+                  const token = await user.getIdToken();
+                  const res = await fetch('/api/inventory/swap-photos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ vehicleId: activeVehicle.id, slotA, slotB }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.vehicle) {
+                      setVehicles(prev => prev.map(v => v.id === data.vehicle.id ? data.vehicle : v));
+                      return data.vehicle;
+                    }
+                  }
+                  return null;
+                } catch { return null; }
+              }}
               onExport={async () => {
-                // Actually push to the DMS (was a nav-only stub). Awaited so the
-                // gate can show a "Sending…" state and only leave once it's done —
-                // landing on the inventory list, where the used-state DMS button
-                // confirms it went. The result is returned so the gate can surface
-                // a failure instead of silently navigating away.
                 const r = await handleExportToDms(activeVehicle);
                 if (r.success) setActiveView('inventory');
                 return r;

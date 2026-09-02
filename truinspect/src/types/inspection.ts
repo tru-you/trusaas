@@ -2,11 +2,15 @@ export type InspectionStatus =
   | 'OK' | 'DAMAGED'
   | 'PRESENT' | 'NOT_PRESENT'
   | 'VALID' | 'EXPIRED' | 'MISSING'
-  | 'FSH' | 'PARTIAL' | 'NO_BOOK';
+  | 'FSH' | 'PARTIAL' | 'NO_BOOK'
+  | 'MATCHES' | 'MISMATCH' | 'NOT_FOUND';
 
-export type InspectionCondition = 'Showroom' | 'Good' | 'Average' | 'Poor';
+export type InspectionCondition = 'Showroom' | 'Good' | 'Average' | 'Poor' | 'New' | 'Used' | 'Needs Replacing';
 
 export type ItemType = 'visual_panel' | 'accessory' | 'documentation' | 'verification';
+
+const TYRE_ITEM_IDS = new Set(['wheel_front_right', 'wheel_rear_right', 'wheel_rear_left', 'wheel_front_left']);
+export function isTyreItem(itemId: string): boolean { return TYRE_ITEM_IDS.has(itemId); }
 
 export type ItemCategory = 'Front & Engine' | 'Clockwise Exterior' | 'Interior, History & Verification';
 
@@ -27,6 +31,8 @@ export interface InspectionItem {
   lastServicedDate?: string;
   serviceDue?: boolean;
   serviceComments?: string;
+  /** Tyre tread depth in mm — only on wheel/tyre items. */
+  treadDepth?: number;
   isCompleted: boolean;
 }
 
@@ -116,6 +122,13 @@ export function getStatusOptions(itemId: string): StatusOption[] {
       { value: 'NOT_PRESENT', label: 'Not Present' },
     ];
   }
+  if (itemId === 'vin_plate') {
+    return [
+      { value: 'MATCHES', label: 'Matches' },
+      { value: 'MISMATCH', label: "Doesn't Match" },
+      { value: 'NOT_FOUND', label: 'Not Found' },
+    ];
+  }
   return [
     { value: 'OK', label: 'OK / No Damage' },
     { value: 'DAMAGED', label: 'Damaged / Needs Recon' },
@@ -123,7 +136,28 @@ export function getStatusOptions(itemId: string): StatusOption[] {
 }
 
 export function needsReconCost(status: InspectionStatus): boolean {
-  return status === 'DAMAGED' || status === 'NOT_PRESENT' || status === 'EXPIRED' || status === 'NO_BOOK' || status === 'MISSING';
+  return status === 'DAMAGED' || status === 'NOT_PRESENT' || status === 'EXPIRED' || status === 'NO_BOOK' || status === 'MISSING' || status === 'MISMATCH' || status === 'NOT_FOUND';
+}
+
+export interface ConditionOption {
+  value: InspectionCondition;
+  label: string;
+}
+
+export function getConditionOptions(itemId: string): ConditionOption[] {
+  if (isTyreItem(itemId)) {
+    return [
+      { value: 'New', label: 'New' },
+      { value: 'Used', label: 'Used' },
+      { value: 'Needs Replacing', label: 'Needs Replacing' },
+    ];
+  }
+  return [
+    { value: 'Showroom', label: 'Showroom' },
+    { value: 'Good', label: 'Good' },
+    { value: 'Average', label: 'Average' },
+    { value: 'Poor', label: 'Poor' },
+  ];
 }
 
 export type TradeInItemDef = Pick<InspectionItem, 'id' | 'label' | 'category' | 'itemType'>;
@@ -170,8 +204,9 @@ export function createDefaultItems(): InspectionItem[] {
     status: def.itemType === 'accessory' ? 'PRESENT' as InspectionStatus :
             def.id === 'license_disc' ? 'VALID' as InspectionStatus :
             def.id === 'service_book' ? 'FSH' as InspectionStatus :
+            def.id === 'vin_plate' ? 'MATCHES' as InspectionStatus :
             'OK' as InspectionStatus,
-    condition: 'Good' as InspectionCondition,
+    condition: (isTyreItem(def.id) ? 'Used' : 'Good') as InspectionCondition,
     photoUrl: null,
     estimatedRepairCost: 0,
     isCompleted: false,
@@ -192,16 +227,16 @@ export function computeOverallRating(items: InspectionItem[]): number {
   const penalties: number[] = [];
   for (const item of items) {
     // Status is the primary fault signal.
-    if (item.status === 'DAMAGED' || item.status === 'EXPIRED' || item.status === 'NO_BOOK') {
+    if (item.status === 'DAMAGED' || item.status === 'EXPIRED' || item.status === 'NO_BOOK' || item.status === 'MISMATCH') {
       penalties.push(0.5);
-    } else if (item.status === 'NOT_PRESENT' || item.status === 'MISSING') {
+    } else if (item.status === 'NOT_PRESENT' || item.status === 'MISSING' || item.status === 'NOT_FOUND') {
       penalties.push(0.25);
     } else if (item.status === 'PARTIAL') {
       penalties.push(0.15);
     }
     // Condition only adds on top for a genuinely poor item, and never double
     // counts a DAMAGED status (the fault is already captured above).
-    if (item.condition === 'Poor' && item.status !== 'DAMAGED') {
+    if ((item.condition === 'Poor' || item.condition === 'Needs Replacing') && item.status !== 'DAMAGED') {
       penalties.push(0.2);
     }
     // 'Average' is normal for a used car — not a fault, so no penalty.

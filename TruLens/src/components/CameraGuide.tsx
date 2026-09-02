@@ -246,7 +246,10 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
 
     const emptyCore = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core' && !photos[s.id]);
     const emptyOther = DEFAULT_TEMPLATE.slots.filter((s) => s.tier !== 'core' && !photos[s.id]);
-    const targets = [...emptyCore, ...emptyOther, ...DEFAULT_TEMPLATE.slots];
+    const targets = [...emptyCore, ...emptyOther];
+    // Never more photos than empty slots — extras are silently skipped, not
+    // wrapped around to overwrite occupied slots.
+    const usable = Math.min(files.length, targets.length);
 
     const importReport: QualityReport = {
       overallScore: 90,
@@ -261,12 +264,12 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         r.readAsDataURL(f);
       });
 
-    setBulkProgress({ current: 0, total: files.length, status: 'syncing' });
+    setBulkProgress({ current: 0, total: usable, status: 'syncing' });
     const token = await user?.getIdToken();
     let latest = vehicle;
-    for (let i = 0; i < files.length; i++) {
+    for (let i = 0; i < usable; i++) {
       setBulkProgress((p) => ({ ...p, current: i + 1 }));
-      const slot = targets[i] || DEFAULT_TEMPLATE.slots[i % DEFAULT_TEMPLATE.slots.length];
+      const slot = targets[i];
       try {
         const base64 = await readDataUrl(files[i]); // one at a time — no base64 pile-up
         const res = await fetch('/api/inventory/upload-photo', {

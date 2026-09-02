@@ -1624,6 +1624,62 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
   }
 });
 
+// 3b. Swap photos between two vehicle slots
+app.post('/api/inventory/swap-photos', authenticate, async (req: any, res) => {
+  try {
+    const { vehicleId, slotA, slotB } = req.body;
+    const userId = req.user.uid;
+
+    if (!vehicleId || !slotA || !slotB) {
+      return res.status(400).json({ error: 'vehicleId, slotA, and slotB are required' });
+    }
+
+    const existingData = await getVehicle(vehicleId, req.user);
+    if (!existingData) {
+      return res.status(404).json({ error: 'Vehicle not found' });
+    }
+    if (
+      !LOCAL_MODE &&
+      existingData.ownerId &&
+      existingData.ownerId !== userId
+    ) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const swapField = (obj: Record<string, any>) => {
+      const valA = obj[slotA];
+      const valB = obj[slotB];
+      if (valB !== undefined) { obj[slotA] = valB; } else { delete obj[slotA]; }
+      if (valA !== undefined) { obj[slotB] = valA; } else { delete obj[slotB]; }
+    };
+
+    const photos = { ...(existingData.photos || {}) };
+    const quality = { ...(existingData.quality || {}) };
+    const slotAssessment = { ...((existingData as any).slotAssessment || {}) };
+    const closeups = { ...((existingData as any).closeups || {}) };
+
+    swapField(photos);
+    swapField(quality);
+    swapField(slotAssessment);
+    swapField(closeups);
+
+    const updated = {
+      ...existingData,
+      photos,
+      quality,
+      slotAssessment,
+      closeups,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const saved = await saveVehicle(updated);
+    res.json({ success: true, vehicle: saved });
+  } catch (error) {
+    console.error('POST /api/inventory/swap-photos - Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // 4. Delete vehicle
 app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
   try {

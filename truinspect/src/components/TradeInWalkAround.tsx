@@ -4,7 +4,7 @@ import { Vehicle } from '../types';
 import {
   InspectionItem, InspectionCondition,
   TRADE_IN_ITEMS, createDefaultItems, getStatusOptions, needsReconCost,
-  computeOverallRating,
+  computeOverallRating, getConditionOptions, isTyreItem,
 } from '../types/inspection';
 import { useMoney } from '../contexts/MarketContext';
 
@@ -256,14 +256,14 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           <div className="mb-4">
             <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Condition</p>
             <div className="flex gap-2">
-              {(['Showroom', 'Good', 'Average', 'Poor'] as InspectionCondition[]).map((c) => {
-                const active = item.condition === c;
-                const acceptable = c === 'Showroom' || c === 'Good';
+              {getConditionOptions(item.id).map((opt) => {
+                const active = item.condition === opt.value;
+                const acceptable = opt.value === 'Showroom' || opt.value === 'Good' || opt.value === 'New' || opt.value === 'Used';
                 return (
                   <button
-                    key={c}
+                    key={opt.value}
                     type="button"
-                    onClick={() => updateItem({ condition: c })}
+                    onClick={() => updateItem({ condition: opt.value })}
                     className={`flex-1 min-h-[46px] rounded-lg text-[12px] font-medium border transition-colors ${
                       active
                         ? acceptable
@@ -272,7 +272,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
                         : 'bg-neutral-950 border-neutral-800 text-neutral-400'
                     }`}
                   >
-                    {c}
+                    {opt.label}
                   </button>
                 );
               })}
@@ -307,9 +307,26 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
                 rows={2}
                 value={item.reconNote || ''}
                 onChange={(e) => updateItem({ reconNote: e.target.value })}
-                placeholder="e.g. Repaint front bumper — deep scratch across panel"
+                placeholder={isTyreItem(item.id) ? 'e.g. Tyre worn below legal limit, sidewall cracking' : 'e.g. Repaint front bumper — deep scratch across panel'}
                 className="w-full px-4 py-3 rounded-xl text-[14px] leading-snug border resize-none bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
               />
+            </div>
+          )}
+          {/* Tread depth — shown on tyre items regardless of status */}
+          {isTyreItem(item.id) && (
+            <div className="mt-4">
+              <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Tread depth (mm)</p>
+              <input
+                type="number"
+                min={0}
+                max={12}
+                step={0.5}
+                value={item.treadDepth ?? ''}
+                onChange={(e) => updateItem({ treadDepth: e.target.value ? Math.max(0, Number(e.target.value)) : undefined })}
+                placeholder="e.g. 4.5"
+                className="w-full px-4 min-h-[46px] rounded-xl text-[15px] font-medium border bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              />
+              <p className="text-[11px] text-[rgba(232,234,230,0.35)] mt-1.5">Legal minimum: 1.6 mm · New tyre: ~8 mm</p>
             </div>
           )}
           {/* Service book specific fields */}
@@ -414,7 +431,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
             onClick={() => onComplete(items, { isSmokerVehicle })}
             className="btn-primary on-fill flex-1 min-h-[52px] text-[15px] flex items-center justify-center gap-2 disabled:opacity-40"
           >
-            <CheckCircle2 size={14} /> {isUploading ? 'Saving photos…' : 'Continue to Valuation'}
+            {isUploading ? 'Saving photos…' : 'Continue to Valuation'} <CheckCircle2 size={14} />
           </button>
         )}
       </div>

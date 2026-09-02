@@ -113,7 +113,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
         <button
           type="button"
           onClick={onTagDamage}
-          className="flex-1 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2"
+          className="tl-attention-pulse flex-1 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2"
         >
           <Camera size={15} /> Tag damage
         </button>

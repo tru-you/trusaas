@@ -259,6 +259,19 @@
   background: linear-gradient(160deg, rgb(var(--tru-cyan-800-rgb) / 0.35), rgb(var(--tru-ink-900-rgb) / 0.9)) !important;
 }
 
+/* Gentle attention pulse — 2 cyan flashes over 1.5s then stops. */
+@keyframes tl-attention-pulse {
+  0%   { box-shadow: 0 0 0 0 transparent; }
+  15%  { box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35); }
+  30%  { box-shadow: 0 0 0 0 transparent; }
+  55%  { box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.35); }
+  75%  { box-shadow: 0 0 0 0 transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.tl-attention-pulse {
+  animation: tl-attention-pulse 1.5s ease-in-out 1;
+}
+
 /* Moulded control surfaces — matches the chrome/cyan of the TruSaaS 3D lockups.
    Plain (unlayered) CSS, so these win over the Tailwind bg-* utilities on the
    same element without needing the classNames stripped. */
