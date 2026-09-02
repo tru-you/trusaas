@@ -48,7 +48,7 @@ export function generatePaymentUrl(order: PayFastOrder): string {
   const merchantKey = process.env.PAYFAST_MERCHANT_KEY || '';
   const passphrase = process.env.PAYFAST_PASSPHRASE || '';
   const isSandbox = process.env.PAYFAST_SANDBOX === 'true';
-  const baseUrl = process.env.TRUDATA_BASE_URL || (process.env.NODE_ENV !== 'production' ? 'http://localhost:3001' : '');
+  const baseUrl = process.env.TRUDATA_BASE_URL || (process.env.NODE_ENV !== 'production' ? 'http://localhost:3001' : 'https://data.tru-saas.com');
 
   const data: Record<string, string> = {
     merchant_id: merchantId,

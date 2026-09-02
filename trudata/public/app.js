@@ -94,6 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const canvas = document.getElementById('distribution-canvas');
 
+  // HTML escape helper
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
   // Formatters
   const formatZAR = new Intl.NumberFormat('en-ZA', {
     style: 'currency',
@@ -479,8 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.medianAskingPrice && data.totalActiveListings > 0) {
           if (elPropMedian) elPropMedian.textContent = formatMoney(data.medianAskingPrice);
-          if (elPropSqm) elPropSqm.textContent = data.medianAskingPrice > 0 ? formatMoney(Math.round(data.medianAskingPrice / 120)) + '/m²' : '—';
-          if (elPropYield) elPropYield.textContent = data.medianAskingPrice > 0 ? ((data.medianAskingPrice * 0.065 / 12 / data.medianAskingPrice) * 100 * 12).toFixed(1) + '%' : '—';
+          if (elPropSqm) elPropSqm.textContent = '—'; // No size data from scrapers
+          if (elPropYield) elPropYield.textContent = '—'; // No rental data from scrapers
           if (elPropSupply) elPropSupply.textContent = `${data.totalActiveListings} active listings`;
 
           // Populate source breakdown in benchmark table
@@ -518,6 +525,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // 3. Agency Site Audit Telemetry (Live Crawler)
+  async function loadAgencyTelemetry(query = 'Commercial Services Pretoria', extraParams = {}, isLiveSearch = true) {
+    telemetryTitle.textContent = `LIVE AGENCY AUDIT: ${query.toUpperCase()}`;
+
+    let city = 'Pretoria';
+    let industry = query;
+    if (extraParams.city) city = extraParams.city;
+    if (extraParams.niche) industry = extraParams.niche;
+    else if (/in\s+(.+)$/i.test(query)) {
+      city = query.match(/in\s+(.+)$/i)[1].trim();
+      industry = query.replace(/\s+in\s+.+$/i, '').trim();
+    }
+
+    try {
+      setLoadingState(true);
+      const res = await fetch('/api/agency/crawl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, industry })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        activeTelemetryData = data;
+
+        const elScore = document.getElementById('agency-score');
+        const elMobile = document.getElementById('agency-mobile');
+        const elSpeed = document.getElementById('agency-speed');
+        const elPitch = document.getElementById('agency-pitch-val');
+        const defectList = document.querySelector('.defect-list');
+
+        if (data.targets && data.targets.length > 0) {
+          const firstTarget = data.targets[0];
+          const score = firstTarget.readinessScore || 'N/A';
+          const pitchVal = firstTarget.estimatedPitchValue || 'N/A';
+          const isMobileFail = firstTarget.techStack ? !firstTarget.techStack.hasViewportMeta : true;
+          const speedSeconds = firstTarget.techStack?.estimatedLoadSeconds || 'N/A';
+
+          if (elScore) elScore.textContent = `${score} / 100`;
+          if (elMobile) elMobile.textContent = isMobileFail ? 'Non-Responsive (Failed)' : 'Responsive (Pass)';
+          if (elSpeed) elSpeed.textContent = speedSeconds === 'N/A' ? 'N/A' : `${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (${speedSeconds}s LCP)`;
+          if (elPitch) elPitch.textContent = typeof pitchVal === 'number' ? formatMoney(pitchVal) : pitchVal;
+
+          if (defectList && firstTarget.defects) {
+            defectList.innerHTML = '';
+            firstTarget.defects.slice(0, 6).forEach(d => {
+              const item = document.createElement('div');
+              item.className = 'defect-item';
+              const badge = document.createElement('span');
+              badge.className = `defect-badge ${d.severity === 'CRITICAL' ? 'red' : 'amber'}`;
+              badge.textContent = d.severity;
+              const info = document.createElement('div');
+              info.className = 'defect-info';
+              const title = document.createElement('strong');
+              title.textContent = d.title;
+              const desc = document.createElement('p');
+              desc.textContent = d.description || '';
+              info.append(title, desc);
+              item.append(badge, info);
+              defectList.appendChild(item);
+            });
+          }
+        } else {
+          if (elScore) elScore.textContent = 'No sites found';
+          if (defectList) defectList.innerHTML = '';
+        }
+        updateRawJson(data);
+      }
+    } catch (e) {
+      console.warn('Agency crawl note:', e);
+    } finally {
+      setLoadingState(false);
+    }
+  }
+
   // 4. B2B Leads Telemetry (Live Dealer CRM Scanner)
   async function loadB2BTelemetry(query = 'Used Car Dealerships Johannesburg') {
     const market = marketSelect?.value || 'za';
@@ -529,8 +611,6 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (/durban/i.test(query)) city = 'Durban';
     else if (/pretoria/i.test(query)) city = 'Pretoria';
     else if (/gauteng/i.test(query)) city = 'Johannesburg';
-    else if (/london/i.test(query)) city = 'London';
-    else if (/birmingham/i.test(query)) city = 'Birmingham';
 
     try {
       setLoadingState(true);
@@ -540,20 +620,43 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ city, country, maxResults: 5 })
       });
 
-      let data = null;
       if (res.ok) {
-        data = await res.json();
-      }
+        const data = await res.json();
+        activeTelemetryData = data;
 
-      if (!data || !data.prospects) {
-        document.querySelector('#view-b2b .metrics-grid').innerHTML = '<div>No data available</div>';
+        const prospects = data.prospects || [];
+        const metricsGrid = document.querySelector('#view-b2b .metrics-grid');
         const tbody = document.querySelector('#view-b2b tbody');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="6">Search returned no results</td></tr>';
-        return;
-      }
 
-      activeTelemetryData = data;
-      updateRawJson(data);
+        // Update metric cards
+        const metricValues = metricsGrid?.querySelectorAll('.metric-value');
+        if (metricValues && metricValues.length >= 4) {
+          metricValues[0].textContent = `${prospects.length} contacts`;
+          metricValues[1].textContent = prospects.length > 0 ? 'VERIFIED' : '—';
+          metricValues[2].textContent = `${prospects.filter(p => p.ownerName || p.contactName).length} decision makers`;
+          metricValues[3].textContent = 'CSV / JSON';
+        }
+
+        // Populate table
+        if (tbody) {
+          tbody.innerHTML = '';
+          if (prospects.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No dealers found — try a different city</td></tr>';
+          } else {
+            prospects.forEach(p => {
+              const tr = document.createElement('tr');
+              const name = p.ownerName || p.contactName || '—';
+              const title = p.ownerTitle || 'Principal';
+              const company = p.dealerName || p.domain || '—';
+              const phone = p.phone || '—';
+              const email = p.email || '—';
+              tr.innerHTML = `<td>${escapeHtml(name)}</td><td>${escapeHtml(title)}</td><td>${escapeHtml(company)}</td><td>${escapeHtml(phone)}</td><td>${escapeHtml(email)}</td><td><span class="badge badge-neon">VERIFIED</span></td>`;
+              tbody.appendChild(tr);
+            });
+          }
+        }
+        updateRawJson(data);
+      }
     } catch (e) {
       console.warn('B2B Telemetry note:', e);
     } finally {

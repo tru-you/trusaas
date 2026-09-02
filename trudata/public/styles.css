@@ -2066,7 +2066,7 @@ body {
   background-color: var(--bg-surface);
   border-top: 1px solid var(--border-strong);
   padding: 12px 0;
-  z-index: 900;
+  z-index: 1100;
 }
 
 .cookie-container {
