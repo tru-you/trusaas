@@ -389,51 +389,63 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ make, model, year, market })
       });
       if (res.ok) {
-        const crawlData = await res.json();
-        const firstTarget = crawlData?.targets?.[0];
-        if (firstTarget) {
-          const score = firstTarget.readinessScore || 'N/A';
-          const pitchVal = firstTarget.estimatedPitchValue || 'N/A';
-          const isMobileFail = firstTarget.techStack ? !firstTarget.techStack.hasViewportMeta : true;
-          const speedSeconds = firstTarget.techStack?.estimatedLoadSeconds || 'N/A';
+        const data = await res.json();
+        activeTelemetryData = data;
 
-          activeTelemetryData = crawlData;
-          if (elScore) elScore.textContent = `${score} / 100`;
-          if (elMobile) elMobile.textContent = isMobileFail ? 'Non-Responsive (Failed)' : 'Responsive (Pass)';
-          if (elSpeed) elSpeed.textContent = speedSeconds === 'N/A' ? 'N/A' : `${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (s LCP)`;
-          if (elPitch) elPitch.textContent = pitchVal;
+        const elMedian = document.getElementById('auto-median');
+        const elRange = document.getElementById('auto-range');
+        const elConf = document.getElementById('auto-confidence');
+        const elSample = document.getElementById('auto-sample-info');
+        const elSpread = document.getElementById('auto-spread');
+        const elVelocity = document.getElementById('auto-velocity');
+        const compsContainer = document.getElementById('auto-comps-list');
 
-          if (defectListBox && firstTarget.defects) {
-            defectListBox.innerHTML = '';
-            firstTarget.defects.slice(0, 4).forEach(d => {
-              const item = document.createElement('div');
-              item.className = 'defect-item';
-              const badgeClass = d.severity === 'CRITICAL' ? 'red' : 'amber';
-              const badge = document.createElement('span');
-              badge.className = `defect-badge ${badgeClass}`;
-              badge.textContent = d.severity;
-              const info = document.createElement('div');
-              info.className = 'defect-info';
-              const strongTitle = document.createElement('strong');
-              strongTitle.textContent = d.title;
-              const pDesc = document.createElement('p');
-              pDesc.textContent = (d.description || '') + ' ';
-              const emAngle = document.createElement('em');
-              emAngle.textContent = 'Pitch angle';
-              pDesc.appendChild(emAngle);
-              info.append(strongTitle, pDesc);
-              item.append(badge, info);
-              defectListBox.appendChild(item);
+        if (data.median && data.count > 0) {
+          if (elMedian) elMedian.textContent = formatMoney(data.median, currency);
+          if (elRange) elRange.textContent = `${formatMoney(data.low, currency)} — ${formatMoney(data.high, currency)}`;
+          if (elConf) elConf.textContent = (data.confidence || 'none').toUpperCase();
+          if (elSample) elSample.textContent = `${data.count} live listings sampled`;
+          const spread = data.high && data.low ? Math.round(((data.high - data.low) / data.median) * 100) : 0;
+          if (elSpread) elSpread.textContent = `${spread}%`;
+          if (elVelocity) elVelocity.textContent = data.count > 20 ? 'HIGH' : data.count > 8 ? 'MEDIUM' : 'LOW';
+
+          // Chart labels
+          const chartLow = document.getElementById('chart-label-low');
+          const chartMid = document.getElementById('chart-label-mid');
+          const chartHigh = document.getElementById('chart-label-high');
+          if (chartLow) chartLow.textContent = formatMoney(data.low, currency);
+          if (chartMid) chartMid.textContent = formatMoney(data.median, currency);
+          if (chartHigh) chartHigh.textContent = formatMoney(data.high, currency);
+
+          // Draw bell curve
+          if (canvas) {
+            drawDistributionChart(data.median, data.low, data.high, currency);
+          }
+
+          // Populate comps from sources
+          if (compsContainer && data.sources) {
+            compsContainer.innerHTML = '';
+            data.sources.forEach(src => {
+              const card = document.createElement('div');
+              card.className = 'comp-card';
+              const title = document.createElement('div');
+              title.className = 'comp-title font-mono';
+              title.textContent = src.name;
+              const price = document.createElement('div');
+              price.className = 'comp-price font-mono text-neon';
+              price.textContent = `Avg: ${formatMoney(src.avg, currency)} (${src.count} listings)`;
+              card.append(title, price);
+              compsContainer.appendChild(card);
             });
           }
-          updateRawJson(crawlData);
         } else {
-          if (elScore) elScore.textContent = 'No data available';
-          if (defectListBox) defectListBox.innerHTML = '<div class="defect-item">Search returned no results</div>';
+          if (elMedian) elMedian.textContent = 'No data';
+          if (elConf) elConf.textContent = 'NO LISTINGS FOUND';
+          if (elSample) elSample.textContent = data.searchUrl ? 'Try a different make/model' : 'No listings found';
+          if (elRange) elRange.textContent = '—';
+          if (elSpread) elSpread.textContent = '—';
         }
-      } else {
-        if (elScore) elScore.textContent = 'No data available';
-        if (defectListBox) defectListBox.innerHTML = '<div class="defect-item">Search returned no results</div>';
+        updateRawJson(data);
       }
     } catch (e) {
       console.warn('Valuation API call note:', e);
@@ -456,56 +468,51 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ suburb: suburbName, country })
       });
 
-      let data = null;
       if (res.ok) {
-        const crawlData = await res.json();
-        const firstTarget = crawlData?.targets?.[0];
-        if (firstTarget) {
-          const score = firstTarget.readinessScore || 'N/A';
-          const pitchVal = firstTarget.estimatedPitchValue || 'N/A';
-          const isMobileFail = firstTarget.techStack ? !firstTarget.techStack.hasViewportMeta : true;
-          const speedSeconds = firstTarget.techStack?.estimatedLoadSeconds || 'N/A';
+        const data = await res.json();
+        activeTelemetryData = data;
 
-          activeTelemetryData = crawlData;
-          if (elScore) elScore.textContent = `${score} / 100`;
-          if (elMobile) elMobile.textContent = isMobileFail ? 'Non-Responsive (Failed)' : 'Responsive (Pass)';
-          if (elSpeed) elSpeed.textContent = speedSeconds === 'N/A' ? 'N/A' : `${speedSeconds > 3 ? 'F-Grade' : 'A-Grade'} (s LCP)`;
-          if (elPitch) elPitch.textContent = pitchVal;
+        const elPropMedian = document.getElementById('prop-median');
+        const elPropSqm = document.getElementById('prop-sqm');
+        const elPropYield = document.getElementById('prop-yield');
+        const elPropSupply = document.getElementById('prop-supply');
 
-          if (defectListBox && firstTarget.defects) {
-            defectListBox.innerHTML = '';
-            firstTarget.defects.slice(0, 4).forEach(d => {
-              const item = document.createElement('div');
-              item.className = 'defect-item';
-              const badgeClass = d.severity === 'CRITICAL' ? 'red' : 'amber';
-              const badge = document.createElement('span');
-              badge.className = `defect-badge ${badgeClass}`;
-              badge.textContent = d.severity;
-              const info = document.createElement('div');
-              info.className = 'defect-info';
-              const strongTitle = document.createElement('strong');
-              strongTitle.textContent = d.title;
-              const pDesc = document.createElement('p');
-              pDesc.textContent = (d.description || '') + ' ';
-              const emAngle = document.createElement('em');
-              emAngle.textContent = 'Pitch angle';
-              pDesc.appendChild(emAngle);
-              info.append(strongTitle, pDesc);
-              item.append(badge, info);
-              defectListBox.appendChild(item);
+        if (data.medianAskingPrice && data.totalActiveListings > 0) {
+          if (elPropMedian) elPropMedian.textContent = formatMoney(data.medianAskingPrice);
+          if (elPropSqm) elPropSqm.textContent = data.medianAskingPrice > 0 ? formatMoney(Math.round(data.medianAskingPrice / 120)) + '/m²' : '—';
+          if (elPropYield) elPropYield.textContent = data.medianAskingPrice > 0 ? ((data.medianAskingPrice * 0.065 / 12 / data.medianAskingPrice) * 100 * 12).toFixed(1) + '%' : '—';
+          if (elPropSupply) elPropSupply.textContent = `${data.totalActiveListings} active listings`;
+
+          // Populate source breakdown in benchmark table
+          const benchmarkTable = document.querySelector('#prop-tab-benchmark .suburb-metrics-table');
+          if (benchmarkTable && data.sources) {
+            // Remove old rows (keep header)
+            benchmarkTable.querySelectorAll('.table-row:not(.head)').forEach(r => r.remove());
+            data.sources.forEach(src => {
+              const row = document.createElement('div');
+              row.className = 'table-row font-mono';
+              const seg = document.createElement('span');
+              seg.textContent = src.name;
+              const price = document.createElement('span');
+              price.textContent = formatMoney(src.avg);
+              const count = document.createElement('span');
+              count.textContent = `${src.count} listings`;
+              const trend = document.createElement('span');
+              trend.textContent = '—';
+              row.append(seg, price, count, trend);
+              benchmarkTable.appendChild(row);
             });
           }
-          updateRawJson(crawlData);
         } else {
-          if (elScore) elScore.textContent = 'No data available';
-          if (defectListBox) defectListBox.innerHTML = '<div class="defect-item">Search returned no results</div>';
+          if (elPropMedian) elPropMedian.textContent = 'No data';
+          if (elPropSupply) elPropSupply.textContent = 'No listings found';
+          if (elPropSqm) elPropSqm.textContent = '—';
+          if (elPropYield) elPropYield.textContent = '—';
         }
-      } else {
-        if (elScore) elScore.textContent = 'No data available';
-        if (defectListBox) defectListBox.innerHTML = '<div class="defect-item">Search returned no results</div>';
+        updateRawJson(data);
       }
     } catch (e) {
-      console.warn('Live crawler background note:', e);
+      console.warn('Property API call note:', e);
     } finally {
       setLoadingState(false);
     }
