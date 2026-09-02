@@ -25,9 +25,23 @@
       .m-view { display: none; }
       .m-view.m-active { display: block; }
     }
-    .stat-tile { background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--r-sm); padding: 12px 14px; }
-    .stat-label { font-size: var(--t-micro); color: var(--muted); font-family: var(--mono); }
-    .stat-value { font-size: var(--t-h3); font-weight: var(--w-semibold); color: var(--white); margin-top: 2px; font-family: var(--mono); }
+    .stat-tile {
+      background: linear-gradient(180deg, rgba(232, 234, 230, 0.04) 0%, rgba(232, 234, 230, 0.015) 100%);
+      border: 1px solid var(--glass-line);
+      border-radius: var(--r-card);
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-tile::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(79, 227, 220, 0.3), transparent);
+    }
+    .stat-label { font-size: var(--t-micro); color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+    .stat-value { font-size: 28px; font-weight: 600; color: var(--white); margin-top: 6px; font-family: var(--mono); letter-spacing: -0.02em; }
     .otp-big {
       font-family: var(--mono); font-size: 34px; font-weight: 600; letter-spacing: 0.35em;
       color: var(--accent); background: var(--accent-surface);
@@ -39,15 +53,23 @@
       background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--r-sm);
       padding: 12px 14px; max-height: 220px; overflow-y: auto; user-select: all;
     }
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; }
     .modal { width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
     .scanlog { max-height: 128px; overflow-y: auto; }
-    .deals-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    .deals-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
     @media (min-width: 768px) { .deals-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (min-width: 1280px) { .deals-grid { grid-template-columns: repeat(3, 1fr); } }
-    .finbox { border-radius: 12px; padding: 12px 14px; margin-top: 14px; border: 1px solid var(--glass-line); background: var(--bg-base); display: grid; gap: 6px; }
+    .finbox {
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      border: 1px solid rgba(232, 234, 230, 0.09);
+      background: rgba(6, 8, 13, 0.65);
+      display: grid;
+      gap: 8px;
+    }
     .finrow { display: flex; align-items: center; justify-content: space-between; font-size: var(--t-small); }
-    .finlabel { color: var(--muted); }
+    .finlabel { color: var(--muted); font-size: 12px; }
     details.mfilters > summary { list-style: none; cursor: pointer; }
     details.mfilters > summary::-webkit-details-marker { display: none; }
     /* Loading skeleton shimmer */
@@ -183,14 +205,20 @@
             <p class="text-[12px] font-medium truncate" style="color: var(--muted)" id="headerDealerName">—</p>
           </div>
         </div>
+        <div class="hidden lg:flex items-center gap-1 bg-[rgba(232,234,230,0.04)] border border-[rgba(232,234,230,0.1)] p-1 rounded-xl">
+          <button onclick="setTab('viewDeals')" id="tab_viewDeals" class="nav-tab px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all" style="background: var(--accent-surface); color: var(--accent);">Live Deals</button>
+          <button onclick="setTab('viewSearch')" id="tab_viewSearch" class="nav-tab px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all" style="color: var(--muted);">Price Check</button>
+          <button onclick="setTab('viewWatch')" id="tab_viewWatch" class="nav-tab px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all" style="color: var(--muted);">Watchlist</button>
+          <button onclick="setTab('viewStock')" id="tab_viewStock" class="nav-tab px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all" style="color: var(--muted);">My Stock</button>
+        </div>
         <div class="flex items-center gap-2 shrink-0">
           <button onclick="triggerScan()" id="scanBtn" class="btn-primary">
             <span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span>
             <span>Scan Market</span>
           </button>
           <button onclick="openBuyBoxModal()" class="btn-secondary" title="Deal criteria + webhook" aria-label="Buy-Box settings"><svg class="icon"><use href="#i-sliders"/></svg></button>
-            <button onclick="resetData()" class="btn-danger hidden md:inline-flex" title="Clear this dealer's deals and tracked vehicles" aria-label="Reset data"><svg class="icon"><use href="#i-trash"/></svg></button>
-            <span id="resetError" class="hidden text-[12px] ml-2" style="color: var(--state-error)" role="alert"></span>
+          <button onclick="resetData()" class="btn-danger hidden md:inline-flex" title="Clear this dealer's deals and tracked vehicles" aria-label="Reset data"><svg class="icon"><use href="#i-trash"/></svg></button>
+          <span id="resetError" class="hidden text-[12px] ml-2" style="color: var(--state-error)" role="alert"></span>
           <button onclick="logout()" class="btn-ghost hidden md:inline-flex">Sign out</button>
         </div>
       </div>
@@ -253,22 +281,22 @@
       <section id="viewDeals" class="view m-view pt-6 pb-4">
         <!-- Stats -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <div class="tru-panel p-4">
+          <div class="stat-tile">
             <span class="stat-label">Profit identified</span>
             <div class="stat-value" style="color: var(--accent)" id="statTotalProfit">R0</div>
             <span class="text-[12px] mt-1 block" style="color: var(--muted)">Net margin on qualified deals</span>
           </div>
-          <div class="tru-panel p-4">
+          <div class="stat-tile">
             <span class="stat-label">Active deals</span>
             <div class="stat-value" id="statActiveDeals">0</div>
             <span class="text-[12px] mt-1 block" style="color: var(--muted)">Confidence-gated opportunities</span>
           </div>
-          <div class="tru-panel p-4">
+          <div class="stat-tile">
             <span class="stat-label">Avg net margin</span>
             <div class="stat-value" id="statAvgMargin">R0</div>
             <span class="text-[12px] mt-1 block" style="color: var(--muted)">After dynamic recon</span>
           </div>
-          <div class="tru-panel p-4">
+          <div class="stat-tile">
             <span class="stat-label">Motivated sellers</span>
             <div class="stat-value" style="color: var(--state-attention)" id="statDistress">0</div>
             <span class="text-[12px] mt-1 block" style="color: var(--muted)">40d+ listed or heavy price cuts</span>
@@ -549,6 +577,7 @@
       document.getElementById('headerDealerName').textContent = `${auth.name || auth.slug} • sourcing radar`;
       document.getElementById('accountDealerLine').textContent = `${auth.name || auth.slug} (${auth.slug})`;
       initLastVisit();
+      setTab('viewDeals');
       loadDeals();
       loadBuyBox();
       loadLookupMakes();
@@ -585,10 +614,40 @@
     document.getElementById('loginCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') doFormLogin(); });
     document.getElementById('loginSlug').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('loginCode').focus(); });
 
+    // ── Tab / View Switcher (Desktop & Mobile) ───────────────────────────
+    function setTab(id) {
+      // Desktop tab pill styling
+      ['viewDeals', 'viewSearch', 'viewWatch', 'viewStock'].forEach(tabId => {
+        const btn = document.getElementById('tab_' + tabId);
+        if (btn) {
+          if (tabId === id) {
+            btn.style.background = 'var(--accent-surface)';
+            btn.style.color = 'var(--accent)';
+          } else {
+            btn.style.background = 'transparent';
+            btn.style.color = 'var(--muted)';
+          }
+        }
+      });
+      // Toggle view sections
+      ['viewDeals', 'viewSearch', 'viewWatch', 'viewStock'].forEach(viewId => {
+        const el = document.getElementById(viewId);
+        if (el) {
+          if (viewId === id) {
+            el.style.display = 'block';
+          } else {
+            el.style.display = 'none';
+          }
+        }
+      });
+      setMobileView(id);
+    }
+
     // ── Mobile views ──────────────────────────────────────────────────────
     function setMobileView(id) {
       document.querySelectorAll('.m-view').forEach(v => v.classList.remove('m-active'));
-      document.getElementById(id).classList.add('m-active');
+      const activeEl = document.getElementById(id);
+      if (activeEl) activeEl.classList.add('m-active');
       document.querySelectorAll('#mBottomNav button').forEach(b => {
         const on = b.dataset.mview === id;
         if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -773,28 +832,33 @@
         else if (deal.dealCategory === 'price_drop_velocity') { catTag = 'Major price cut'; catCls = 'chip'; }
 
         return `
-          <div class="tru-card p-5 flex flex-col justify-between">
-            ${img ? `<div class="card-thumb" onclick="openDealLightbox('${deal.id}')" role="button" tabindex="0" onkeydown="thumbKey(event,'${deal.id}')" aria-label="View photos"><span class="thumb-fallback"><svg class="icon-lg" style="color:var(--faint)"><use href="#i-image"/></svg></span><img src="${img}" alt="${v.year} ${v.make} ${v.model}" loading="lazy" onerror="this.remove()">${images.length > 1 ? `<span class="thumb-count">${images.length}</span>` : ''}</div>` : ''}
-            <div class="flex items-center justify-between gap-2 mb-3 flex-wrap${img ? ' mt-3' : ''}">
-              <span class="chip ${src.color}">${src.label}</span>
-              <span class="chip ${catCls}">${catTag}</span>
-              ${isNew ? '<span class="chip chip-accent">New</span>' : ''}
-              <button onclick="toggleWatch('${deal.fingerprint}')" class="btn-ghost" title="Pin this car to the watchlist" style="min-height:0;padding:3px 10px;font-size:12px;margin-left:auto;${watched ? 'color:var(--accent)' : ''}">${watched ? 'Watched' : 'Watch'}</button>
+          <div class="tru-card p-5 flex flex-col justify-between group">
+            ${img ? `<div class="card-thumb" onclick="openDealLightbox('${deal.id}')" role="button" tabindex="0" onkeydown="thumbKey(event,'${deal.id}')" aria-label="View photos"><span class="thumb-fallback"><svg class="icon-lg" style="color:var(--faint)"><use href="#i-image"/></svg></span><img src="${img}" alt="${v.year} ${v.make} ${v.model}" loading="lazy" onerror="this.remove()">${images.length > 1 ? `<span class="thumb-count">${images.length} photos</span>` : ''}</div>` : ''}
+            <div class="flex items-center justify-between gap-2 mb-3 flex-wrap${img ? ' mt-4' : ''}">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="chip ${src.color}">${src.label}</span>
+                <span class="chip ${catCls}">${catTag}</span>
+                ${isNew ? '<span class="chip chip-accent">★ New</span>' : ''}
+              </div>
+              <button onclick="toggleWatch('${deal.fingerprint}')" class="btn-ghost" title="Pin to watchlist" style="min-height:0;padding:4px 10px;font-size:12px;${watched ? 'color:var(--accent);background:var(--accent-surface)' : ''}">${watched ? '✓ Watched' : '+ Watch'}</button>
             </div>
             <div>
-              <div class="text-[12px]" style="color: var(--muted)">${v.location || 'South Africa'} • <span style="color: var(--white-dim)">${v.sellerName || 'Direct seller'}</span></div>
-              <h3 class="text-[17px] font-semibold mt-1">${v.year} ${v.make} ${v.model}</h3>
-              <p class="text-[12px] mt-0.5" style="color: var(--muted)">${v.trim || 'Market listing'} • <span class="font-mono-code" style="color: var(--white-dim)">${kmText}</span></p>
-              ${deal.tuSpecs ? `<p class="text-[12px] mt-1 font-mono-code" style="color: var(--cyan-soft)">${(deal.tuSpecs.cc/1000).toFixed(1)}L ${deal.tuSpecs.fuelType === 'D' ? 'Diesel' : 'Petrol'} · ${deal.tuSpecs.kw}kW${deal.tuSpecs.bodyType ? ' · '+deal.tuSpecs.bodyType : ''}${deal.tuSpecs.axle && deal.tuSpecs.axle !== '-' ? ' · '+deal.tuSpecs.axle : ''}</p>` : ''}
+              <div class="text-[12px] flex items-center justify-between" style="color: var(--muted)">
+                <span>${v.location || 'South Africa'}</span>
+                <span style="color: var(--white-dim)" class="font-medium">${v.sellerName || 'Direct seller'}</span>
+              </div>
+              <h3 class="text-[18px] font-semibold tracking-tight mt-1 text-white">${v.year} ${v.make} ${v.model}</h3>
+              <p class="text-[13px] mt-0.5" style="color: var(--muted)">${v.trim || 'Standard variant'} • <span class="font-mono-code font-medium" style="color: var(--white)">${kmText}</span></p>
+              ${deal.tuSpecs ? `<p class="text-[12px] mt-1.5 font-mono-code" style="color: var(--cyan-soft)">${(deal.tuSpecs.cc/1000).toFixed(1)}L ${deal.tuSpecs.fuelType === 'D' ? 'Diesel' : 'Petrol'} · ${deal.tuSpecs.kw}kW${deal.tuSpecs.bodyType ? ' · '+deal.tuSpecs.bodyType : ''}${deal.tuSpecs.axle && deal.tuSpecs.axle !== '-' ? ' · '+deal.tuSpecs.axle : ''}</p>` : ''}
               <div class="finbox">
-                <div class="finrow"><span class="finlabel">Listed asking</span><span class="font-mono-code font-semibold">R${asking}</span></div>
+                <div class="finrow"><span class="finlabel">Listed asking</span><span class="font-mono-code font-semibold text-white">R${asking}</span></div>
                 <div class="finrow"><span class="finlabel">Live market retail</span><span class="font-mono-code" style="color: var(--white-dim)">R${retail}</span></div>
-                <div class="finrow"><span class="finlabel">Recon buffer</span><span class="font-mono-code" style="color: var(--muted)">-R${(deal.reconBuffer || 0).toLocaleString('en-ZA')}</span></div>
-                <div class="finrow" style="border-top: 1px solid var(--glass-line); padding-top: 8px;">
-                  <span class="font-mono-code text-[12px] font-semibold tracking-wider" style="color: ${isProfit ? 'var(--accent)' : 'var(--muted)'}">${isProfit ? 'Est. net profit' : 'Net position'}</span>
-                  <span class="font-mono-code text-[17px] font-semibold" style="color: ${isProfit ? 'var(--accent)' : 'var(--danger)'}">${isProfit ? '+' : '-'}R${netProfit}</span>
+                <div class="finrow"><span class="finlabel">Dynamic recon buffer</span><span class="font-mono-code" style="color: var(--muted)">-R${(deal.reconBuffer || 0).toLocaleString('en-ZA')}</span></div>
+                <div class="finrow pt-2 mt-1" style="border-top: 1px solid rgba(232, 234, 230, 0.12)">
+                  <span class="font-mono-code text-[12px] font-semibold uppercase tracking-wider" style="color: ${isProfit ? 'var(--accent)' : 'var(--muted)'}">${isProfit ? 'Est. net profit' : 'Net position'}</span>
+                  <span class="font-mono-code text-[19px] font-semibold tracking-tight" style="color: ${isProfit ? 'var(--accent)' : 'var(--danger)'}">${isProfit ? '+' : '-'}R${netProfit}</span>
                 </div>
-                <div class="finrow text-[12px]">
+                <div class="finrow text-[12px] pt-1">
                   <span class="finlabel">${days}d listed • ${deal.sampleCompsCount || 0} comps</span>
                   <span class="chip ${pct >= 80 ? 'chip-accent' : 'chip-attention'}" title="Valuation confidence (sample size + price-band tightness)"><svg class="icon" style="width:12px;height:12px"><use href="#i-shield"/></svg> ${pct}% conf</span>
                 </div>
@@ -802,10 +866,10 @@
             </div>
             <div class="mt-4 pt-3 flex items-center gap-2 flex-wrap" style="border-top: 1px solid var(--glass-line)">
               ${claimed
-                ? '<span class="chip chip-claimed" style="padding:10px 14px">Claimed</span>'
+                ? '<span class="chip chip-claimed flex-1 text-center justify-center" style="padding:10px 14px">Claimed</span>'
                 : `<button onclick="setDealStatus('${deal.id}','claimed')" class="btn-primary flex-1">Claim deal</button>`}
-              <a href="${v.url || '#'}" target="_blank" rel="noopener" class="btn-secondary" aria-label="View listing"><svg class="icon"><use href="#i-external"/></svg></a>
-              <button onclick="makeOffer('${deal.id}')" class="btn-secondary" title="Generate offer + OTP">Make offer</button>
+              <a href="${v.url || '#'}" target="_blank" rel="noopener" class="btn-secondary" title="Open source listing" aria-label="View listing"><svg class="icon"><use href="#i-external"/></svg></a>
+              <button onclick="makeOffer('${deal.id}')" class="btn-secondary" title="Generate offer + OTP negotiation text">Make offer</button>
               <button onclick="setDealStatus('${deal.id}','archived')" class="btn-ghost" title="Archive" aria-label="Archive deal" style="color: var(--muted)"><svg class="icon"><use href="#i-archive"/></svg></button>
             </div>
           </div>`;

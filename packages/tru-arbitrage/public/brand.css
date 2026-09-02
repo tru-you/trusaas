@@ -99,12 +99,12 @@
   --track-h2: -0.015em;
   --track-h3: -0.01em;
 
-  --shadow-card:  0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
-  --shadow-lift:  0 1px 0 rgba(232,234,230,0.09) inset, 0 26px 50px -28px rgba(0,0,0,0.9);
-  --shadow-modal: 0 40px 90px -40px rgba(0,0,0,0.95);
+  --shadow-card:  0 1px 0 rgba(232,234,230,0.08) inset, 0 20px 45px -20px rgba(0,0,0,0.85);
+  --shadow-lift:  0 1px 0 rgba(79,227,220,0.25) inset, 0 0 25px -5px rgba(79,227,220,0.15), 0 28px 60px -25px rgba(0,0,0,0.95);
+  --shadow-modal: 0 0 0 1px rgba(79,227,220,0.2), 0 40px 90px -40px rgba(0,0,0,0.95);
 
-  --r-sm:   8px;
-  --r-card: 18px;
+  --r-sm:   10px;
+  --r-card: 20px;
   --r-pill: 100px;
 
   color-scheme: dark;
@@ -113,7 +113,7 @@
 /* ---------- Base ---------- */
 html { background: var(--bg-base); }
 body {
-  background: var(--bg-base);
+  background: radial-gradient(circle at 50% 0%, rgba(79, 227, 220, 0.035) 0%, transparent 45%), var(--bg-base);
   color: var(--text-primary);
   font-family: var(--sans);
   font-size: var(--t-body);
@@ -122,6 +122,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
+  min-height: 100vh;
 }
 ::selection { background: var(--accent); color: var(--text-on-accent); }
 
@@ -174,23 +175,30 @@ select optgroup {
 
 /* ---------- Surfaces ---------- */
 .tru-panel {
-  background: var(--bg-raised);
+  background: linear-gradient(180deg, rgba(232, 234, 230, 0.03) 0%, rgba(232, 234, 230, 0.015) 100%), var(--bg-raised);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-card);
   box-shadow: var(--shadow-card);
+  backdrop-filter: blur(16px);
 }
 .tru-card {
-  background: var(--bg-raised);
+  background: linear-gradient(180deg, rgba(232, 234, 230, 0.035) 0%, rgba(232, 234, 230, 0.01) 100%), var(--bg-raised);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-card);
   box-shadow: var(--shadow-card);
-  transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  transition: border-color 200ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease;
+  position: relative;
+  overflow: hidden;
 }
-.tru-card:hover { border-color: var(--cyan-soft); transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+.tru-card:hover {
+  border-color: var(--cyan-soft);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
 .glass-nav {
-  background: rgba(6, 8, 13, 0.85);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  background: rgba(6, 8, 13, 0.82);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
   border-bottom: 1px solid var(--glass-line);
 }
 

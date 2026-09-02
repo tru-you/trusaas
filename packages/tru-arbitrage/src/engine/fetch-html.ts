@@ -153,6 +153,12 @@ async function fetchViaUnlocker(url: string): Promise<string | null> {
         html = raw.body ?? raw.html ?? raw.result ?? JSON.stringify(raw);
       }
       if (html) {
+        // Bright Data error responses (e.g. 407 account suspended or proxy auth error body)
+        if (html.includes('Account is suspended') || html.includes('Residential Failed') || html.includes('http_request_denied')) {
+          console.warn('[fetch-html] Bright Data Unlocker error:', html.slice(0, 150));
+          recordFailure('unlocker');
+          return null;
+        }
         recordSuccess('unlocker');
         return html;
       }
@@ -164,6 +170,17 @@ async function fetchViaUnlocker(url: string): Promise<string | null> {
   return null;
 }
 
+// ── Cloudflare challenge detector ──
+function isCloudflareChallenge(html: string): boolean {
+  if (!html) return false;
+  return (
+    html.includes('<title>Just a moment...</title>') ||
+    html.includes('challenges.cloudflare.com') ||
+    html.includes('cf-browser-verification') ||
+    (html.includes('id="challenge-running"') && html.length < 50000)
+  );
+}
+
 // ── Public API ──
 
 /**
@@ -173,15 +190,21 @@ async function fetchViaUnlocker(url: string): Promise<string | null> {
 export async function fetchHtmlWithFallback(url: string): Promise<string | null> {
   // Tier 1: Headless worker
   const workerHtml = await renderViaHeadlessWorker(url);
-  if (workerHtml && workerHtml.length > 200) return workerHtml;
+  if (workerHtml && workerHtml.length > 200 && !isCloudflareChallenge(workerHtml)) {
+    return workerHtml;
+  }
 
   // Tier 2: Direct HTTP
   const directHtml = await fetchDirect(url);
-  if (directHtml) return directHtml;
+  if (directHtml && !isCloudflareChallenge(directHtml)) {
+    return directHtml;
+  }
 
   // Tier 3: Bright Data Unlocker
   const unlockerHtml = await fetchViaUnlocker(url);
-  if (unlockerHtml) return unlockerHtml;
+  if (unlockerHtml && !isCloudflareChallenge(unlockerHtml)) {
+    return unlockerHtml;
+  }
 
   return null;
 }
