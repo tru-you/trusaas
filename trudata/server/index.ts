@@ -17,10 +17,16 @@ import imagin8Routes from './routes/imagin8';
 import agencyRoutes from './routes/agency';
 import dealerCrmRoutes from './routes/dealer-crm';
 import propertyRoutes from './routes/property';
+import catalogueRoutes from './routes/catalogue';
+import chatRoutes from './routes/chat';
+import safepayRoutes from './routes/safepay';
 
 // Initialize DB store
 import { initDb } from './lib/db';
 initDb();
+
+import { initWallets } from './lib/credits';
+initWallets();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -65,6 +71,9 @@ app.use('/api/imagin8', imagin8Routes);
 app.use('/api/agency', strictLimiter, agencyRoutes);
 app.use('/api/dealer-crm', strictLimiter, dealerCrmRoutes);
 app.use('/api/property', strictLimiter, propertyRoutes);
+app.use('/api/catalogue', catalogueRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/safepay', strictLimiter, safepayRoutes);
 
 // API 404 handler
 app.all('/api/*', (req, res) => res.status(404).json({ error: 'Not found' }));

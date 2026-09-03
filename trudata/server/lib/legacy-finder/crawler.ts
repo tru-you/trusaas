@@ -83,8 +83,35 @@ async function discoverBusinessDomains(
   const googleDomain = country === 'uk' ? 'google.co.uk' : 'google.co.za';
   const gl = country === 'uk' ? 'gl=gb' : 'gl=za';
 
-  // 1. Primary: Bright Data SERP (Live Google Search)
-  if (serpApiKey) {
+  // 1. Primary: Serper.dev (when configured)
+  if (process.env.SERPER_API_KEY && domains.length < limit) {
+    try {
+      const { serperSearch } = await import('../serper');
+      // Use a relative path that resolves from legacy-finder to lib/serper
+      const result = await serperSearch(queryStr, {
+        gl: country === 'uk' ? 'gb' : 'za',
+        num: 20,
+      });
+      for (const r of result.organic) {
+        if (domains.length >= limit) break;
+        if (r.link.startsWith('http')) {
+          try {
+            const u = new URL(r.link);
+            const domain = u.hostname.replace(/^www\./, '').toLowerCase();
+            const isDirectory = DIRECTORY_DOMAINS.some(d => domain.includes(d));
+            if (!isDirectory && !domains.some(d => d.domain === domain)) {
+              domains.push({ domain, title: r.title || domain });
+            }
+          } catch {}
+        }
+      }
+    } catch (err: any) {
+      console.warn('[LegacyFinder] Serper.dev note:', err.message);
+    }
+  }
+
+  // 2. Fallback: Bright Data SERP (when Serper not available or returned few results)
+  if (!process.env.SERPER_API_KEY && serpApiKey && domains.length < limit) {
     try {
       const googleUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(queryStr)}&${gl}&num=20&brd_json=1`;
       const res = await axios.post('https://api.brightdata.com/request', {
@@ -246,7 +273,7 @@ async function auditDomain(
   return {
     id: crypto.randomUUID(),
     domain,
-    url,
+    url: activeUrl,
     businessName,
     city,
     industry,

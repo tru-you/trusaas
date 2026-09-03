@@ -203,7 +203,7 @@ function renderVehicleResults(data) {
   if (titleEl) titleEl.textContent = `${data.make || ''} ${data.model || ''} ${data.year || ''} Market Value`;
   
   const countEl = document.getElementById('results-count');
-  if (countEl) countEl.textContent = `${data.count || 0} listings found`;
+  if (countEl) countEl.textContent = `${(data.totalActiveListings || data.count) || 0} listings found`;
   
   const sourceEl = document.getElementById('results-source');
   if (sourceEl) sourceEl.textContent = 'Sources: AutoTrader, Cars.co.za';
@@ -214,15 +214,15 @@ function renderVehicleResults(data) {
       <div class="results-grid">
         <div class="metric-card">
           <span class="metric-label">Median Price</span>
-          <span class="metric-value">R ${numberFormat(data.median)}</span>
+          <span class="metric-value">R ${numberFormat((data.medianAskingPrice || data.median))}</span>
         </div>
         <div class="metric-card">
           <span class="metric-label">Price Range</span>
-          <span class="metric-value">R ${numberFormat(data.low)} – R ${numberFormat(data.high)}</span>
+          <span class="metric-value">R ${numberFormat((data.priceRange?.min || data.low))} – R ${numberFormat((data.priceRange?.max || data.high))}</span>
         </div>
         <div class="metric-card">
           <span class="metric-label">Listings Found</span>
-          <span class="metric-value">${data.count || 0}</span>
+          <span class="metric-value">${(data.totalActiveListings || data.count) || 0}</span>
         </div>
         <div class="metric-card">
           <span class="metric-label">Confidence</span>
@@ -261,48 +261,97 @@ if (formProperty) {
   formProperty.addEventListener('submit', async (e) => {
     e.preventDefault();
     const inputEl = document.getElementById('suburb-search');
+    const typeEl = document.getElementById('property-type');
+    const modeEl = document.getElementById('property-mode');
+    
     if (!inputEl) return;
     const suburb = inputEl.value.trim();
     if (!suburb) return;
     
+    const propertyType = typeEl ? typeEl.value : 'Any';
+    const mode = modeEl ? modeEl.value : 'comps';
+    
     showResults('property');
     setResultsLoading(true);
     try {
-      const res = await fetch('/api/property/comps', {
+      const res = await fetch(`/api/property/${mode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ suburb })
+        body: JSON.stringify({ suburb, propertyType })
       });
       if (!res.ok) throw new Error('Property search failed');
       const data = await res.json();
       
       const titleEl = document.getElementById('results-title');
-      if (titleEl) titleEl.textContent = `${suburb} Property Value`;
+      if (titleEl) titleEl.textContent = mode === 'comps' ? `${suburb} Property Value` : `${suburb} Private Sellers`;
       
-      const countEl = document.getElementById('results-count');
-      if (countEl) countEl.textContent = `${data.count || 0} listings found`;
-      
-      const sourceEl = document.getElementById('results-source');
-      if (sourceEl) sourceEl.textContent = 'Sources: Property24, Private Property';
-      
-      const content = document.getElementById('results-content');
-      if (content) {
-        content.innerHTML = `
-          <div class="results-grid">
-            <div class="metric-card">
-              <span class="metric-label">Median Price</span>
-              <span class="metric-value">R ${numberFormat(data.median)}</span>
+      if (mode === 'comps') {
+        const countEl = document.getElementById('results-count');
+        if (countEl) countEl.textContent = `${data.totalActiveListings || data.count || 0} listings found`;
+        
+        const sourceEl = document.getElementById('results-source');
+        if (sourceEl) sourceEl.textContent = 'Sources: Property24, Private Property';
+        
+        const content = document.getElementById('results-content');
+        if (content) {
+          content.innerHTML = `
+            <div class="results-grid">
+              <div class="metric-card">
+                <span class="metric-label">Median Asking Price</span>
+                <span class="metric-value">R ${numberFormat(data.medianAskingPrice || data.median)}</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Price Range</span>
+                <span class="metric-value">R ${numberFormat(data.priceRange?.min || data.low)} - R ${numberFormat(data.priceRange?.max || data.high)}</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Active Listings</span>
+                <span class="metric-value">${data.totalActiveListings || data.count || 0}</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Confidence</span>
+                <span class="metric-value confidence-${data.confidence || 'none'}">${(data.confidence || 'none').toUpperCase()}</span>
+              </div>
             </div>
-            <div class="metric-card">
-              <span class="metric-label">Price Range</span>
-              <span class="metric-value">R ${numberFormat(data.low)} – R ${numberFormat(data.high)}</span>
-            </div>
-            <div class="metric-card">
-              <span class="metric-label">Listings Found</span>
-              <span class="metric-value">${data.count || 0}</span>
-            </div>
-          </div>
-        `;
+          `;
+        }
+      } else {
+        // FSBO
+        const countEl = document.getElementById('results-count');
+        if (countEl) countEl.textContent = `${data.count || 0} owner sellers found`;
+        
+        const sourceEl = document.getElementById('results-source');
+        if (sourceEl) sourceEl.textContent = 'Sources: Private Property, Gumtree';
+        
+        const content = document.getElementById('results-content');
+        if (content) {
+          if (!data.leads || data.leads.length === 0) {
+            content.innerHTML = `<div class="empty-state">No private sellers found in this area right now.</div>`;
+          } else {
+            content.innerHTML = `
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Headline</th>
+                    <th>Price</th>
+                    <th>Owner</th>
+                    <th>Contact</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.leads.map(l => `
+                    <tr>
+                      <td>${esc(l.headline)}</td>
+                      <td>${esc(l.formattedPrice)}</td>
+                      <td>${esc(l.ownerName)}</td>
+                      <td>${esc(l.phone || 'Unknown')} ${l.whatsAppUrl ? `<a href="${esc(l.whatsAppUrl)}" target="_blank" style="color:#22c55e">[WhatsApp]</a>` : ''}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          }
+        }
       }
       
       const pricingDiv = document.getElementById('results-pricing');
@@ -311,7 +360,7 @@ if (formProperty) {
       const leadCountEl = document.getElementById('lead-count');
       if (leadCountEl) leadCountEl.textContent = '1';
       
-const leadCostEl = document.getElementById('lead-cost');
+      const leadCostEl = document.getElementById('lead-cost');
       if (leadCostEl) leadCostEl.textContent = 'R' + creditCostRounded('property');
 
       const btnOrder = document.getElementById('btn-order');
@@ -370,9 +419,9 @@ if (formBusiness) {
               <thead><tr><th>Name</th><th>Contact</th><th>Defect Score</th></tr></thead>
               <tbody>
                 ${businesses.map(b => `<tr>
-                  <td><strong>${esc(b.name)}</strong></td>
-                  <td>${esc(b.phone || 'N/A')}<br><small>${esc(b.email || '')}</small></td>
-                  <td>${esc(b.defectScore || '0')}</td>
+                  <td><strong>${esc((b.businessName || b.name))}</strong></td>
+                  <td>${esc((b.contacts?.phones?.[0] || b.phone) || 'N/A')}<br><small>${esc(b.email || '')}</small></td>
+                  <td>${esc((b.readinessScore || b.defectScore) || '0')}</td>
                 </tr>`).join('')}
               </tbody>
             </table>

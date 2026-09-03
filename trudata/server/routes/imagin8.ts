@@ -26,7 +26,7 @@ router.use((req, res, next) => {
 
 // API key gating
 router.use((req, res, next) => {
-  if (req.path === '/static') {
+  if (req.path === '/static' || req.path === '/models') {
     return next();
   }
   const expectedKey = process.env.TRUDATA_API_KEY;
@@ -53,6 +53,23 @@ router.get('/static', async (req, res) => {
     res.json(info);
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Error fetching static info' });
+  }
+});
+
+/**
+ * GET /api/imagin8/models
+ * Free / unlimited flat-fee live models search
+ */
+router.get('/models', async (req, res) => {
+  try {
+    const { make } = req.query;
+    if (!make || typeof make !== 'string') {
+      return res.status(400).json({ error: 'Missing make query parameter' });
+    }
+    const models = await getModels(make, getPlatformOpts());
+    res.json(models);
+  } catch (err: any) {
+    res.status(502).json({ error: 'Failed to load models from TransUnion', details: err.message });
   }
 });
 

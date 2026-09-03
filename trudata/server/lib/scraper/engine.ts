@@ -14,6 +14,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import * as cheerio from "cheerio";
 import fs from "fs";
 import path from "path";
+import type { SerperResponse } from '../serper';
 
 /* ────────────────────────────────────────────────
    TYPES
@@ -195,6 +196,7 @@ function getSerpApiUrl() { return process.env.SERP_API_URL || ""; }
 function getSerpApiKey() { return process.env.SERP_API_KEY || ""; }
 function getSerpZone() { return process.env.SERP_ZONE || "serp"; }
 function getSerpProvider() {
+  if (process.env.SERPER_API_KEY) return 'serper';  // Serper.dev is primary when configured
   const url = getSerpApiUrl();
   return (process.env.SERP_PROVIDER || (url.includes("brightdata") ? "brightdata" : url.includes("serpapi") ? "serpapi" : "")).toLowerCase();
 }
@@ -382,7 +384,7 @@ export async function renderViaUnlocker(url: string, country: string, maxMs?: nu
 }
 
 export function serpConfigured(): boolean {
-  return !!getSerpApiKey() && (getSerpProvider() === "brightdata" || getSerpProvider() === "serpapi");
+  return !!process.env.SERPER_API_KEY || (!!getSerpApiKey() && (getSerpProvider() === "brightdata" || getSerpProvider() === "serpapi"));
 }
 
 export function parseSerpResults(json: any, make: string, model: string, year: string, cfg: MarketConfig): Listing[] {
@@ -416,7 +418,16 @@ export async function fetchSerpListings(make: string, model: string, year: strin
     : `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
   try {
     let json: any = null;
-    if (getSerpProvider() === "brightdata") {
+    
+    // 1. Primary: Serper.dev (cheapest, fastest)
+    if (process.env.SERPER_API_KEY) {
+      const { serperSearch, toEngineFormat } = await import('../serper');
+      const glCode = cfg.googleGl?.replace('gl=', '') || 'za';
+      const result = await serperSearch(q, { gl: glCode, num: 20 });
+      json = toEngineFormat(result);
+    }
+    // 2. Fallback: Bright Data SERP
+    else if (getSerpProvider() === "brightdata") {
       const googleUrl = `https://${cfg.googleDomain}/search?q=${encodeURIComponent(q)}&${cfg.googleGl}&num=20&brd_json=1`;
       const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
         method: "POST",
@@ -427,7 +438,9 @@ export async function fetchSerpListings(make: string, model: string, year: strin
       if (!res.ok) return [];
       const body = await res.text();
       try { json = JSON.parse(body); } catch { return []; }
-    } else {
+    }
+    // 3. Fallback: SerpAPI
+    else {
       const base = getSerpApiUrl() || "https://serpapi.com/search.json";
       const url = `${base}?engine=google&google_domain=${cfg.googleDomain}&${cfg.googleGl}&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(getSerpApiKey())}`;
       const res = await fetch(url, { signal: AbortSignal.timeout(SERP_TIMEOUT_MS) });

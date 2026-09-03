@@ -342,3 +342,64 @@ function toBool(v: unknown): boolean {
   if (typeof v === "string") return v.toLowerCase() === "true" || v === "1" || v.toLowerCase() === "yes";
   return !!v;
 }
+
+export function getImagin8Opts(): Imagin8Opts | null {
+  const apiKey = process.env.IMAGIN8_API_KEY;
+  const customerId = process.env.IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) return null;
+
+  return {
+    apiKey,
+    customerId,
+    userName: process.env.IMAGIN8_USERNAME,
+    password: process.env.IMAGIN8_PASSWORD,
+    appName: process.env.IMAGIN8_APP_NAME,
+    sandbox: process.env.NODE_ENV !== "production"
+  };
+}
+
+// Bank AVS — Account Verification Service
+export interface AvsResult {
+  valid: boolean;
+  accountExists: boolean;
+  accountOpen: boolean;
+  idMatch: boolean;
+  nameMatch: boolean;
+  initials: string | null;
+  surname: string | null;
+  accountType: string | null;
+  acceptsCredits: boolean;
+  acceptsDebits: boolean;
+  accountAge: string | null;
+}
+
+export async function bankAvs(
+  bankAccount: string,
+  branchCode: string,
+  idNumber: string,
+  initials: string,
+  surname: string,
+  opts: Imagin8Opts,
+): Promise<AvsResult> {
+  const data = await get('im8bank_api', 'avsr', {
+    accountnumber: bankAccount,
+    branchcode: branchCode,
+    idnumber: idNumber,
+    initials,
+    surname,
+  }, opts);
+
+  return {
+    valid: toBool(data?.Valid),
+    accountExists: toBool(data?.AccountExists),
+    accountOpen: toBool(data?.AccountOpen),
+    idMatch: toBool(data?.IDMatch),
+    nameMatch: toBool(data?.NameMatch),
+    initials: data?.Initials || null,
+    surname: data?.Surname || null,
+    accountType: data?.AccountType || null,
+    acceptsCredits: toBool(data?.AcceptsCredits),
+    acceptsDebits: toBool(data?.AcceptsDebits),
+    accountAge: data?.AccountAge || null,
+  };
+}

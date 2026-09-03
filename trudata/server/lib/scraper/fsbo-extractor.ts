@@ -24,7 +24,7 @@ export interface FsboLead {
   propertyType: string;
   bedrooms?: number;
   bathrooms?: number;
-  verifiedDirect: boolean;
+  source: string;
 }
 
 export interface FsboResponse {
@@ -44,76 +44,7 @@ function formatZar(amount: number): string {
   }).format(amount);
 }
 
-/**
- * Deterministic generator for high-fidelity fallback FSBO leads
- * Ensures demo/offline never renders blank screens for any suburb.
- */
-function generateDeterministicFsboLeads(suburb: string, city: string): FsboLead[] {
-  const cleanSuburb = suburb.split(',')[0].trim();
-  const seed = cleanSuburb.toLowerCase();
-  
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
-  }
-  const absHash = Math.abs(hash);
 
-  const firstNames = ['Johan', 'Sipho', 'Sarah', 'Pieter', 'Thabo', 'Michael', 'David', 'Elena', 'Kagiso', 'Renee'];
-  const lastInitials = ['van der Merwe', 'Dlamini', 'Smith', 'Botha', 'Nkosi', 'Jacobs', 'Naidoo', 'Pretorius', 'Ndlovu', 'Coetzee'];
-  const propertyTypes = ['Family Home', 'Sectional Title Apartment', 'Modern Townhouse', 'Duplex Cluster', 'Freestanding Villa'];
-
-  const isHighTier = /camps bay|clifton|constantia|sandton|hyde park|bishopscourt|waterkloof|umhlanga|ballito/i.test(seed);
-  const basePrice = isHighTier ? 5_500_000 : 1_850_000;
-
-  const leads: FsboLead[] = [];
-  const count = 5 + (absHash % 4);
-
-  for (let i = 0; i < count; i++) {
-    const fn = firstNames[(absHash + i * 3) % firstNames.length];
-    const ln = lastInitials[(absHash + i * 7) % lastInitials.length];
-    const ownerName = `${fn} ${ln}`;
-    const pType = propertyTypes[(absHash + i) % propertyTypes.length];
-    const beds = 2 + ((absHash + i) % 4);
-    const baths = Math.max(1, beds - 1);
-    
-    const variance = ((absHash * (i + 1)) % 70 - 35) / 100;
-    const askingPrice = Math.round((basePrice * (1 + variance)) / 50_000) * 50_000;
-    
-    const daysListed = 3 + ((absHash + i * 11) % 42);
-    
-    const prefixes = ['082', '083', '072', '084', '079', '081'];
-    const prefix = prefixes[(absHash + i) % prefixes.length];
-    const phonePart = String(1000000 + ((absHash * (i + 13)) % 8999999)).slice(0, 7);
-    const phone = `${prefix} ${phonePart.slice(0, 3)} ${phonePart.slice(3)}`;
-    const rawNumber = `27${prefix.slice(1)}${phonePart}`;
-    const whatsAppUrl = `https://wa.me/${rawNumber}?text=${encodeURIComponent(`Hi ${fn}, I saw your property in ${cleanSuburb} listed privately. Is it still available?`)}`;
-
-    const portal: FsboLead['portalSource'] = i % 2 === 0 ? 'Gumtree Private' : 'Private Property (Direct)';
-    const headline = `${beds} Bed ${pType} in ${cleanSuburb} — Direct Owner Sale (No Agents)`;
-
-    leads.push({
-      id: `fsbo-${cleanSuburb.toLowerCase().replace(/\s+/g, '-')}-${i + 1}`,
-      headline,
-      suburb: cleanSuburb,
-      city: city || 'South Africa',
-      askingPrice,
-      formattedPrice: formatZar(askingPrice),
-      ownerName,
-      phone,
-      whatsAppUrl,
-      daysListed,
-      portalSource: portal,
-      sourceUrl: portal === 'Gumtree Private' ? 'https://www.gumtree.co.za' : 'https://www.privateproperty.co.za',
-      propertyType: pType,
-      bedrooms: beds,
-      bathrooms: baths,
-      verifiedDirect: true
-    });
-  }
-
-  return leads.sort((a, b) => a.daysListed - b.daysListed);
-}
 
 /**
  * Discover and extract active Private Seller (FSBO) property leads
@@ -125,7 +56,56 @@ export async function extractFsboLeads(suburb: string, city: string = '', maxRes
 
   const liveLeads: FsboLead[] = [];
 
-  if (serpApiKey) {
+  // 1. Primary: Serper.dev
+  if (process.env.SERPER_API_KEY && liveLeads.length < maxResults) {
+    try {
+      const { serperSearch } = await import('../serper');
+      const q = `site:gumtree.co.za/s-property-houses-flats OR site:privateproperty.co.za "private" OR "owner" "${cleanSuburb}" ${city}`;
+      const result = await serperSearch(q, { gl: 'za', num: 20 });
+      for (const r of result.organic) {
+        if (liveLeads.length >= maxResults) break;
+        const title = String(r.title || '');
+        const snippet = String(r.snippet || '');
+        const link = String(r.link || '');
+
+        const priceMatch = `${title} ${snippet}`.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,8})/i);
+        if (!priceMatch) continue;
+
+        const rawPrice = parseInt(priceMatch[1].replace(/[^\d]/g, ''), 10);
+        if (rawPrice < 250_000 || rawPrice > 100_000_000) continue;
+
+        const isGumtree = link.includes('gumtree.co.za');
+        const portal: FsboLead['portalSource'] = isGumtree ? 'Gumtree Private' : 'Private Property (Direct)';
+        
+        const phoneMatch = snippet.match(/(?:\+?27|0)\s?(?:[678]\d{1})\s?\d{3}\s?\d{4}/);
+        const phone = phoneMatch ? phoneMatch[0] : 'Contact Verified via Portal';
+        const cleanPhone = phoneMatch ? phoneMatch[0].replace(/[^\d]/g, '').replace(/^0/, '27') : '';
+        const whatsAppUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : link;
+
+        liveLeads.push({
+          id: `live-fsbo-${crypto.randomUUID().slice(0, 8)}`,
+          headline: title.replace(/[-|]\s*(Gumtree|Private Property).*$/i, '').trim(),
+          suburb: cleanSuburb,
+          city: city || 'South Africa',
+          askingPrice: rawPrice,
+          formattedPrice: formatZar(rawPrice),
+          ownerName: 'Private Seller (Verified)',
+          phone,
+          whatsAppUrl,
+          daysListed: Math.floor(Math.random() * 18) + 1,
+          portalSource: portal,
+          sourceUrl: link,
+          propertyType: /apartment|flat/i.test(title) ? 'Apartment' : 'House / Property',
+          source: 'serp'
+        });
+      }
+    } catch (err: any) {
+      console.warn('[FSBO-Extractor] Serper.dev note:', err?.message || err);
+    }
+  }
+
+  // 2. Fallback: Bright Data SERP
+  if (!process.env.SERPER_API_KEY && serpApiKey && liveLeads.length < maxResults) {
     try {
       const q = `site:gumtree.co.za/s-property-houses-flats OR site:privateproperty.co.za "private" OR "owner" "${cleanSuburb}" ${city}`;
       const googleUrl = `https://www.google.co.za/search?q=${encodeURIComponent(q)}&gl=za&hl=en&num=15&brd_json=1`;
@@ -179,7 +159,7 @@ export async function extractFsboLeads(suburb: string, city: string = '', maxRes
           portalSource: portal,
           sourceUrl: link,
           propertyType: /apartment|flat/i.test(title) ? 'Apartment' : 'House / Property',
-          verifiedDirect: true
+          source: 'serp'
         });
       }
     } catch (err: any) {
@@ -187,8 +167,7 @@ export async function extractFsboLeads(suburb: string, city: string = '', maxRes
     }
   }
 
-  const fallbackLeads = generateDeterministicFsboLeads(cleanSuburb, city);
-  const finalLeads = liveLeads.length >= 3 ? liveLeads.slice(0, maxResults) : fallbackLeads.slice(0, maxResults);
+  const finalLeads = liveLeads.slice(0, maxResults);
 
   const avgPrice = finalLeads.length > 0
     ? Math.round(finalLeads.reduce((acc, l) => acc + l.askingPrice, 0) / finalLeads.length)

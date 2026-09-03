@@ -10,7 +10,7 @@ const router = Router();
  */
 router.post('/comps', async (req, res) => {
   try {
-    const { suburb = '', city = '', country = 'za' } = req.body;
+    const { suburb = '', city = '', propertyType = 'property' } = req.body;
 
     if (!suburb) {
       return res.status(400).json({ error: 'Missing required parameter: suburb' });
@@ -19,9 +19,11 @@ router.post('/comps', async (req, res) => {
     // Use the housing market config with fetchValuation
     // For property, "make" = suburb, "model" = property type, "year" = current
     const searchTerm = `${suburb} ${city}`.trim();
+    const typeParam = propertyType && propertyType !== 'Any' ? propertyType : 'property';
+    
     const result = await fetchValuation(
       searchTerm,
-      'property',
+      typeParam,
       String(new Date().getFullYear()),
       {},
       markets.housingZa

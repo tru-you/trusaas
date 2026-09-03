@@ -5,7 +5,7 @@ export interface Order {
   id: string;
   email: string;
   name: string;
-  product: 'valuation' | 'property' | 'leads_50' | 'leads_100' | 'audit' | 'fsbo' | 'legacy_sites' | 'custom_extract';
+  product: 'valuation' | 'property' | 'business_audit' | 'business_contacts' | 'bureau_valuation' | 'bureau_regcheck' | 'bureau_accident' | 'safepay' | 'credit_pack';
   params: any;
   amount: number;
   currency: 'ZAR';
@@ -14,6 +14,8 @@ export interface Order {
   createdAt: Date;
   paidAt?: Date;
   deliveredAt?: Date;
+  leadCount?: number;
+  credits?: number;
 }
 
 const DATA_DIR = process.env.DATA_DIR || path.resolve(process.cwd(), 'data');
