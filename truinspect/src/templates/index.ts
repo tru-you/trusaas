@@ -1,8 +1,9 @@
-import { vehicleTemplate } from '../template';
+import { vehicleTemplate, motoTemplate, getTemplateForVertical } from '../template';
 import type { InspectionTemplate } from '../template';
 
 const TEMPLATES: Record<string, InspectionTemplate> = {
   [vehicleTemplate.id]: vehicleTemplate,
+  [motoTemplate.id]: motoTemplate,
 };
 
 /** Only ever called with one id today — shaped so a future template (e.g. a
@@ -14,4 +15,5 @@ export function getTemplate(id: string = vehicleTemplate.id): InspectionTemplate
   return t;
 }
 
+export { getTemplateForVertical };
 export const DEFAULT_TEMPLATE = getTemplate();
