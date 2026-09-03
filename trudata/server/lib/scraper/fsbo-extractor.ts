@@ -60,54 +60,70 @@ export async function extractFsboLeads(suburb: string, city: string = '', maxRes
   if (process.env.SERPER_API_KEY && liveLeads.length < maxResults) {
     try {
       const { serperSearch } = await import('../serper');
-      const q = `site:gumtree.co.za/s-property-houses-flats OR site:privateproperty.co.za "private" OR "owner" "${cleanSuburb}" ${city}`;
-      const result = await serperSearch(q, { gl: 'za', num: 20 });
-      for (const r of result.organic) {
+      const queries = [
+        `${cleanSuburb} property for sale private seller`,
+        `${cleanSuburb} property for sale owner Gumtree`,
+        `${cleanSuburb} house for sale private seller South Africa`
+      ];
+      
+      for (const q of queries) {
         if (liveLeads.length >= maxResults) break;
-        const title = String(r.title || '');
-        const snippet = String(r.snippet || '');
-        const link = String(r.link || '');
+        const result = await serperSearch(q, { gl: 'za', num: 20 });
+        for (const r of result.organic) {
+          if (liveLeads.length >= maxResults) break;
+          const title = String(r.title || '');
+          const snippet = String(r.snippet || '');
+          const link = String(r.link || '');
 
-        const priceMatch = `${title} ${snippet}`.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,8})/i);
-        if (!priceMatch) continue;
+          const priceMatch = `${title} ${snippet}`.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,8})/i);
+          if (!priceMatch) continue;
 
-        const rawPrice = parseInt(priceMatch[1].replace(/[^\d]/g, ''), 10);
-        if (rawPrice < 250_000 || rawPrice > 100_000_000) continue;
+          const rawPrice = parseInt(priceMatch[1].replace(/[^\d]/g, ''), 10);
+          if (rawPrice < 150_000 || rawPrice > 100_000_000) continue;
 
-        const isGumtree = link.includes('gumtree.co.za');
-        const portal: FsboLead['portalSource'] = isGumtree ? 'Gumtree Private' : 'Private Property (Direct)';
-        
-        const phoneMatch = snippet.match(/(?:\+?27|0)\s?(?:[678]\d{1})\s?\d{3}\s?\d{4}/);
-        const phone = phoneMatch ? phoneMatch[0] : 'Contact Verified via Portal';
-        const cleanPhone = phoneMatch ? phoneMatch[0].replace(/[^\d]/g, '').replace(/^0/, '27') : '';
-        const whatsAppUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : link;
+          const isGumtree = link.includes('gumtree.co.za');
+          const isPrivateProp = link.includes('privateproperty.co.za');
+          const portal: FsboLead['portalSource'] = isGumtree 
+            ? 'Gumtree Private' 
+            : isPrivateProp 
+              ? 'Private Property (Direct)' 
+              : 'Direct Classifieds';
+          
+          const phoneMatch = `${title} ${snippet}`.match(/(?:\+?27|0)\s?(?:[678]\d{1})\s?\d{3}\s?\d{4}/);
+          const phone = phoneMatch ? phoneMatch[0] : 'Inquire via portal';
+          const cleanPhone = phoneMatch ? phoneMatch[0].replace(/[^\d]/g, '').replace(/^0/, '27') : '';
+          const whatsAppUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : link;
 
-        liveLeads.push({
-          id: `live-fsbo-${crypto.randomUUID().slice(0, 8)}`,
-          headline: title.replace(/[-|]\s*(Gumtree|Private Property).*$/i, '').trim(),
-          suburb: cleanSuburb,
-          city: city || 'South Africa',
-          askingPrice: rawPrice,
-          formattedPrice: formatZar(rawPrice),
-          ownerName: 'Private Seller (Verified)',
-          phone,
-          whatsAppUrl,
-          daysListed: Math.floor(Math.random() * 18) + 1,
-          portalSource: portal,
-          sourceUrl: link,
-          propertyType: /apartment|flat/i.test(title) ? 'Apartment' : 'House / Property',
-          source: 'serp'
-        });
+          // Deduplicate by link or headline
+          if (liveLeads.some(l => l.sourceUrl === link || l.headline === title)) continue;
+
+          liveLeads.push({
+            id: `live-fsbo-${crypto.randomUUID().slice(0, 8)}`,
+            headline: title.replace(/[-|]\s*(Gumtree|Private Property|Property24).*$/i, '').trim(),
+            suburb: cleanSuburb,
+            city: city || 'South Africa',
+            askingPrice: rawPrice,
+            formattedPrice: formatZar(rawPrice),
+            ownerName: 'Private Seller (Verified)',
+            phone,
+            whatsAppUrl,
+            daysListed: Math.floor(Math.random() * 18) + 1,
+            portalSource: portal,
+            sourceUrl: link,
+            propertyType: /apartment|flat/i.test(title) ? 'Apartment' : 'House / Property',
+            source: 'serp'
+          });
+        }
       }
     } catch (err: any) {
       console.warn('[FSBO-Extractor] Serper.dev note:', err?.message || err);
     }
   }
 
-  // 2. Fallback: Bright Data SERP
-  if (!process.env.SERPER_API_KEY && serpApiKey && liveLeads.length < maxResults) {
+  // 2. Fallback: Bright Data SERP (if Serper returned 0 leads or is not configured)
+  if (liveLeads.length < maxResults && serpApiKey) {
     try {
-      const q = `site:gumtree.co.za/s-property-houses-flats OR site:privateproperty.co.za "private" OR "owner" "${cleanSuburb}" ${city}`;
+      const q = `"${cleanSuburb}" property for sale "private seller" OR "by owner"`;
       const googleUrl = `https://www.google.co.za/search?q=${encodeURIComponent(q)}&gl=za&hl=en&num=15&brd_json=1`;
       
       const res = await axios.post('https://api.brightdata.com/request', {

@@ -320,19 +320,19 @@ if (vehicleForm) {
     }
     
     const v = modelGroups[selectedGroup][Number(variantIdx)];
-    const modelToSearch = v?.model || selectedGroup;
-    runVehicleValuation(make, modelToSearch, year);
+    const variantName = v?.model || '';
+    runVehicleValuation(make, selectedGroup, year, variantName);
   });
 }
 
-async function runVehicleValuation(make, model, year) {
+async function runVehicleValuation(make, model, year, variant) {
   showResults('vehicle');
   setResultsLoading(true);
   try {
     const res = await fetch('/api/valuation/quick', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ make, model, year })
+      body: JSON.stringify({ make, model, year, variant })
     });
     if (!res.ok) throw new Error('Valuation failed');
     const data = await res.json();
@@ -346,7 +346,8 @@ async function runVehicleValuation(make, model, year) {
 
 function renderVehicleResults(data) {
   const titleEl = document.getElementById('results-title');
-  if (titleEl) titleEl.textContent = `${data.make || ''} ${data.model || ''} ${data.year || ''} Market Value`;
+  const displayModel = data.variant ? `${data.model || ''} (${data.variant})` : (data.model || '');
+  if (titleEl) titleEl.textContent = `${data.make || ''} ${displayModel} ${data.year || ''} Market Value`;
   
   const countEl = document.getElementById('results-count');
   if (countEl) countEl.textContent = `${data.sampleSize || data.totalActiveListings || data.count || 0} listings found`;
@@ -557,7 +558,7 @@ if (formBusiness) {
       });
       if (!res.ok) throw new Error('Business search failed');
       const data = await res.json();
-      const businesses = data.results || [];
+      const businesses = data.targets || data.results || [];
       
       const titleEl = document.getElementById('results-title');
       if (titleEl) titleEl.textContent = `${industry} in ${city}`;
@@ -566,7 +567,7 @@ if (formBusiness) {
       if (countEl) countEl.textContent = `${businesses.length} businesses found`;
       
       const sourceEl = document.getElementById('results-source');
-      if (sourceEl) sourceEl.textContent = 'Sources: Google Maps, Yellow Pages, Local Directories';
+      if (sourceEl) sourceEl.textContent = 'Sources: Google Search, Technical Site Audit, Contact Extraction';
       
       const content = document.getElementById('results-content');
       if (content) {
@@ -575,13 +576,42 @@ if (formBusiness) {
         } else {
           content.innerHTML = `
             <table class="data-table">
-              <thead><tr><th>Name</th><th>Contact</th><th>Defect Score</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Business / Website</th>
+                  <th>Contact Info</th>
+                  <th>Audit & Defects</th>
+                </tr>
+              </thead>
               <tbody>
-                ${businesses.map(b => `<tr>
-                  <td><strong>${esc((b.businessName || b.name))}</strong></td>
-                  <td>${esc((b.contacts?.phones?.[0] || b.phone) || 'N/A')}<br><small>${esc(b.email || '')}</small></td>
-                  <td>${esc((b.readinessScore || b.defectScore) || '0')}</td>
-                </tr>`).join('')}
+                ${businesses.map(b => {
+                  const name = b.businessName || b.name || b.domain || 'Local Business';
+                  const domain = b.domain || '';
+                  const phone = b.contacts?.phones?.[0] || b.phone || '';
+                  const email = b.contacts?.emails?.[0] || b.email || '';
+                  const wa = b.contacts?.whatsAppLinks?.[0] || '';
+                  const score = b.readinessScore != null ? b.readinessScore : (b.defectScore || 0);
+                  const defectCount = b.defects?.length || 0;
+                  const pitch = b.estimatedPitchValue || '';
+
+                  return `<tr>
+                    <td>
+                      <strong>${esc(name)}</strong><br>
+                      ${domain ? `<a href="https://${esc(domain)}" target="_blank" rel="noopener" style="color:var(--volt,#22c55e);font-size:0.8rem">${esc(domain)}</a>` : ''}
+                    </td>
+                    <td>
+                      ${phone ? `<div>📞 ${esc(phone)}</div>` : ''}
+                      ${email ? `<div>✉️ <small>${esc(email)}</small></div>` : ''}
+                      ${wa ? `<div><a href="${esc(wa)}" target="_blank" style="color:#22c55e;font-size:0.8rem">[WhatsApp]</a></div>` : ''}
+                      ${!phone && !email && !wa ? '<span style="color:#71717a">Portal Contact</span>' : ''}
+                    </td>
+                    <td>
+                      <div><strong>Health Score:</strong> ${score}/100</div>
+                      <small style="color:${defectCount > 0 ? '#ef4444' : '#22c55e'}">${defectCount} issue${defectCount === 1 ? '' : 's'} identified</small>
+                      ${pitch ? `<br><small style="color:#a1a1aa">Pitch: ${esc(pitch)}</small>` : ''}
+                    </td>
+                  </tr>`;
+                }).join('')}
               </tbody>
             </table>
           `;

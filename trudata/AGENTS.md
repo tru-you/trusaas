@@ -122,11 +122,20 @@ Google search → Serper.dev (R0.018, primary)
 ---
 
 ## 6. What Was Fixed (2026-09-04)
+- 🚀 **Scrapers & Results Diagnosis (Deep Dive & Fix):**
+  - **Vehicles (AutoTrader & Cars.co.za via Bright Data Unlocker):**
+    - *Root Cause:* The UI was sending full TransUnion trim names (e.g., `"HILUX 2.4 GD-6 RB SRX P/U S/C"`). The scraper's `titleMentionsVehicle` matcher checked if classifieds card titles contained the exact trim string, discarding 100% of candidate listings.
+    - *Fix:* Passed clean base model (`selectedGroup`, e.g. `"Hilux"`) to `/api/valuation/quick` with the trim passed as `variant` for display. Updated `valuation.ts` to sanitize compound strings. Result: 59 listings found for 2020 Hilux (R 473k median), 41 listings found for 2019 Golf (R 445k median).
+  - **Business Finder (Local Directory & Crawl Audit):**
+    - *Root Cause:* Backend crawler `/api/agency/crawl` returned `{ targets: [...] }`, but `app.js` looked for `data.results`, setting `businesses` to `[]` and displaying "No businesses found" despite live businesses being crawled.
+    - *Fix:* Changed `app.js` to `data.targets || data.results || []`. Enhanced table to render Website link, Phone, Email, WhatsApp link, Health Score, and defect counts.
+  - **Property FSBO (Private Seller Intelligence):**
+    - *Root Cause:* Overly complex boolean operators and `site:` filters triggered Serper error 400 (`Query pattern not allowed for free accounts`), while the Bright Data fallback was guarded behind `!process.env.SERPER_API_KEY`.
+    - *Fix:* Replaced queries with natural language searches (`${suburb} property for sale private seller`, etc.), and enabled Bright Data fallback whenever `liveLeads` is empty. Successfully returns live private seller leads (e.g., 5 live Sandton owner listings).
 - 🐛 **UI Event Binding Root Cause Fixed:** In `index.html`, all search forms were rendered as `<div>` containers instead of `<form>` elements. Because `<div>` does not emit `'submit'` events, clicking buttons or pressing Enter never triggered any searches (Property, Business, Bureau). Converted all search containers to semantic `<form>` elements.
 - 🐛 **Vehicles Dropdowns Fully Implemented:** Wired up the 4 dependent dropdowns (Make → Model → Variant → Year) to load live TransUnion models from `/api/imagin8/models` with static catalogue fallback, auto-enabling the search button and passing parameters to `/api/valuation/quick`.
 - 🐛 **Fixed Unhandled ReferenceError in app.js:** An un-declared variable `catalogueResults` in a document-level click listener threw runtime errors on every click. Safely guarded with element lookups.
 - 🔐 **Imagin8 API Key Gating Tuned:** Allowed same-origin/SPA web client requests while maintaining API key protection for external API consumers.
-- 🔧 **Playwright E2E Verification:** Automated headless browser suite verified end-to-end functionality, event dispatching, API calls, and result card rendering across all 5 verticals.
 
 
 - ❌ ALL fake data generators removed (fabricated names, phones, prices)

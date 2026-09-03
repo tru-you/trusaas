@@ -6,7 +6,7 @@ const router = Router();
 
 router.post('/quick', async (req, res) => {
   try {
-    const { make, model, year, market: marketCode, mileage } = req.body;
+    const { make, model, variant, year, market: marketCode, mileage } = req.body;
 
     if (!make || !model || !year) {
       return res.status(400).json({ error: 'Missing required parameters: make, model, year' });
@@ -15,9 +15,15 @@ router.post('/quick', async (req, res) => {
     // Pick market config (default SA)
     const cfg = markets.za;
 
+    // Use clean base model for classifieds search (fallback to modelCore if noisy)
+    const rawModel = String(model).trim();
+    const cleanModel = rawModel.includes(' ') && rawModel.length > 15 
+      ? (rawModel.split(' ')[0] || rawModel) 
+      : rawModel;
+
     const result: ValuationResult = await fetchValuation(
       String(make).trim(),
-      String(model).trim(),
+      cleanModel,
       String(year).trim(),
       { mileage: mileage ? Number(mileage) : undefined },
       cfg
@@ -30,7 +36,7 @@ router.post('/quick', async (req, res) => {
       .sort((a, b) => a! - b!);
 
     res.json({
-      make, model, year,
+      make, model, variant: variant || undefined, year,
       median: result.averageRetailPrice,
       low: sourceExtremes.length ? sourceExtremes[0] : result.averageRetailPrice,
       high: sourceExtremes.length ? sourceExtremes[sourceExtremes.length - 1] : result.averageRetailPrice,
