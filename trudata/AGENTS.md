@@ -122,6 +122,11 @@ Google search → Serper.dev (R0.018, primary)
 ---
 
 ## 6. What Was Fixed (2026-09-03)
+- 🔧 Property search UI now natively supports Property Type (House/Apartment) dropdown and FSBO (Owner Seller) mode.
+- 🔧 Fixed UI mappings for Property and Business Finder which previously displayed NaN (medianAskingPrice, totalActiveListings).
+- 🔧 Fixed Bureau Reports JSON payload structure (now correctly maps valuation to mmCode/year, regcheck to identifier/type).
+- 🔧 Reverted Vehicles UI to single input box (TruLens/TruFlow handle advanced vehicle models natively).
+
 
 - ❌ ALL fake data generators removed (fabricated names, phones, prices)
 - ❌ ALL AI jargon stripped (Intelligence Engine, Telemetry, Gaussian, Arbitrage)
