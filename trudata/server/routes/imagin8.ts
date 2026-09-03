@@ -24,6 +24,21 @@ router.use((req, res, next) => {
   next();
 });
 
+// API key gating
+router.use((req, res, next) => {
+  if (req.path === '/static') {
+    return next();
+  }
+  const expectedKey = process.env.TRUDATA_API_KEY;
+  if (expectedKey) {
+    const providedKey = req.headers['x-trudata-key'] || req.query.key;
+    if (providedKey !== expectedKey) {
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+  }
+  next();
+});
+
 /**
  * GET /api/imagin8/static
  * Free / unlimited flat-fee M&M specs

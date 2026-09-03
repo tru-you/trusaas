@@ -76,6 +76,18 @@ router.post('/fsbo', async (req, res) => {
 
     const cleanLimit = Math.min(25, Math.max(1, Number(limit) || 8));
     const result = await extractFsboLeads(String(suburb).trim(), String(city).trim(), cleanLimit);
+
+    if (result.count === 0) {
+      return res.json({
+        suburb: result.suburb,
+        city: result.city,
+        count: 0,
+        leads: [],
+        message: 'No private sellers found in this area at this time.',
+        scannedAt: result.scannedAt
+      });
+    }
+
     res.json(result);
   } catch (err: any) {
     console.error('[PropertyAPI] FSBO error:', err?.message || err);

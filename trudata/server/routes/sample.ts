@@ -54,15 +54,8 @@ router.post('/', async (req, res) => {
           }
         });
       } catch (err) {
-        return res.json({
-          message: 'Sample valuation generated and emailed to your address! ⚡',
-          data: {
-            make: params?.make || 'Toyota',
-            model: params?.model || 'Hilux 2.8 GD-6',
-            year: params?.year || '2023',
-            median: 619900,
-            confidence: 'high'
-          }
+        return res.status(503).json({
+          message: 'Valuation service temporarily unavailable. Please try again.',
         });
       }
     } else if (product === 'fsbo') {
@@ -80,19 +73,19 @@ router.post('/', async (req, res) => {
       }
     } else if (product === 'property') {
       return res.json({
-        message: `Sample Suburb Intelligence report (${params?.suburb || 'Camps Bay'}) will be emailed to ${email} shortly.`
+        message: 'Property samples coming soon. Try a live search on the main page.'
       });
     } else if (product === 'leads' || product === 'leads_50' || product === 'leads_100') {
       return res.json({
-        message: `Sample of 10 verified decision-maker records will be emailed to ${email} within 15 minutes.`
+        message: 'Business contact samples coming soon. Try a live search on the main page.'
       });
     } else if (product === 'audit') {
       return res.json({
-        message: `Sample Agency Defect Audit report (5 local businesses in ${params?.city || 'Pretoria'}) will be emailed to ${email} within 15 minutes.`
+        message: 'Website audit samples coming soon. Try a live search on the main page.'
       });
     } else {
       return res.json({
-        message: `Free sample data packet will be emailed to ${email} shortly.`
+        message: 'Free sample data packet will be emailed to your address shortly.'
       });
     }
 

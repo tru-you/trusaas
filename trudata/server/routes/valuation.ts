@@ -13,9 +13,7 @@ router.post('/quick', async (req, res) => {
     }
 
     // Pick market config (default SA)
-    const cfg = marketCode === 'uk' ? markets.uk
-              : marketCode === 'us' ? markets.us
-              : markets.za;
+    const cfg = markets.za;
 
     const result: ValuationResult = await fetchValuation(
       String(make).trim(),
@@ -25,17 +23,17 @@ router.post('/quick', async (req, res) => {
       cfg
     );
 
-    // Build price range from sources
-    const sourceAvgs = result.sources
-      .filter(s => s.count > 0 && s.avg != null)
-      .map(s => s.avg as number)
-      .sort((a, b) => a - b);
+    // Build price range from source extremes
+    const sourceExtremes = result.sources
+      .flatMap(s => [s.min, s.max])
+      .filter(val => val != null)
+      .sort((a, b) => a! - b!);
 
     res.json({
       make, model, year,
       median: result.averageRetailPrice,
-      low: sourceAvgs.length ? sourceAvgs[0] : result.averageRetailPrice,
-      high: sourceAvgs.length ? sourceAvgs[sourceAvgs.length - 1] : result.averageRetailPrice,
+      low: sourceExtremes.length ? sourceExtremes[0] : result.averageRetailPrice,
+      high: sourceExtremes.length ? sourceExtremes[sourceExtremes.length - 1] : result.averageRetailPrice,
       count: result.listingsFound,
       confidence: result.listingsFound >= 15 ? 'high'
                 : result.listingsFound >= 5  ? 'medium'
