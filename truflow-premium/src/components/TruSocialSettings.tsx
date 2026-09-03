@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Share2, Unlink, ExternalLink, Loader2, Sparkles, CheckCircle2, ShoppingBag, ShieldCheck } from "lucide-react";
+import { Share2, Unlink, ExternalLink, Loader2, Sparkles, CheckCircle2, ShoppingBag, ShieldCheck, Facebook, Instagram, Globe } from "lucide-react";
 import { authFetch } from "../lib/session";
 
 interface SocialAccount {
@@ -11,9 +11,9 @@ interface SocialAccount {
 }
 
 const PLATFORMS = [
-  { id: "facebook", label: "Facebook Page", icon: "📘", desc: "Auto-publishes new stock announcements" },
-  { id: "instagram", label: "Instagram", icon: "📷", desc: "Posts vehicle cards to Instagram feed" },
-  { id: "google-business", label: "Google Business", icon: "📍", desc: "Publishes Google Maps product updates" },
+  { id: "facebook", label: "Facebook Page", icon: Facebook, color: "#1877F2", desc: "Auto-publishes new stock announcements" },
+  { id: "instagram", label: "Instagram", icon: Instagram, color: "#E4405F", desc: "Posts vehicle cards to Instagram feed" },
+  { id: "google-business", label: "Google Business", icon: Globe, color: "#4285F4", desc: "Publishes Google Maps product updates" },
 ];
 
 export default function TruSocialSettings({
@@ -180,13 +180,16 @@ export default function TruSocialSettings({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {accounts.map((a) => {
                     const plat = PLATFORMS.find((p) => p.id === a.platform);
+                    const IconComponent = plat?.icon || Share2;
                     return (
                       <div
                         key={a.accountId}
                         className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[color:var(--ink-2)] px-3.5 py-2.5"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="text-[16px]">{plat?.icon || "🔗"}</span>
+                          <span style={{ color: plat?.color || "var(--cyan)" }}>
+                            <IconComponent size={16} />
+                          </span>
                           <div>
                             <div className="text-[12.5px] font-semibold text-[color:var(--white)]">
                               {plat?.label || a.platform}
@@ -222,6 +225,7 @@ export default function TruSocialSettings({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {PLATFORMS.map((p) => {
                   const alreadyConnected = accounts.some((a) => a.platform === p.id);
+                  const IconComp = p.icon;
                   return (
                     <button
                       key={p.id}
@@ -236,7 +240,7 @@ export default function TruSocialSettings({
                       }
                     >
                       <div className="flex items-center justify-between w-full mb-1">
-                        <span className="text-base">{p.icon}</span>
+                        <span style={{ color: p.color }}><IconComp size={18} /></span>
                         {alreadyConnected ? (
                           <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/20 px-1.5 py-0.2 rounded">Connected</span>
                         ) : connecting === p.id ? (

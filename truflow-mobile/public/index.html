@@ -1104,7 +1104,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
       '<div class="vhead"><div class="vt">'+esc(name||"Vehicle")+(v.trim?'<div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:5px;font-weight:400">'+esc(v.trim)+'</div>':'')+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+
       '<div class="meta">'+meta.join("")+'</div>'+
       '<button type="button" class="share-row" id="shareBtn">'+SVG_SHARE+'Share this car<span class="sr-hint">WhatsApp · link</span></button>'+
-      '<button type="button" class="share-row" id="socialBtn" style="margin-top:8px;">'+SVG_SHARE+'TruSocial 1-Click Pack<span class="sr-hint">Marketplace · IG</span></button>'+
+      '<button type="button" class="share-row" id="socialBtn" style="margin-top:8px;">'+SVG_SPARKLES+'TruSocial 1-Click Hub<span class="sr-hint">Marketplace · IG</span></button>'+
       '<div class="lbl">Listing</div>'+
       '<div class="listing">'+
         '<div class="lrow"><div class="a">Live on website</div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch" tabindex="0" aria-checked="'+(pub?"true":"false")+'" aria-label="Live on website"></div></div>'+
@@ -1582,6 +1582,10 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
   var SVG_TREND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7h-9"/><path d="M14 17h5"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>';
   var SVG_RADIO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>';
   var SVG_SHARE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></svg>';
+  var SVG_MARKETPLACE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>';
+  var SVG_INSTAGRAM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>';
+  var SVG_EXTERNAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>';
+  var SVG_SPARKLES='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>';
   function runMV(params,out,btn,curPrice,onUse){
     var key=[params.year,params.make,params.model,params.mileage||0].join("|").toLowerCase();
     var orig=btn.innerHTML;
@@ -1695,39 +1699,49 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       var isMoto=VERTICAL==="moto"||v.vertical==="moto";
       var name=[v.year,v.make,v.model,v.trim].filter(Boolean).join(" ").trim()||"Vehicle";
       var priceStr=vPrice(v)?money(vPrice(v)):"Contact for price";
+      var dealerTitle=(AUTH&&AUTH.label)||"Our Dealership";
       
-      var mpText="VEHICLE DETAILS:\n" +
-        "• Vehicle: "+name+"\n" +
-        "• Price: "+priceStr+"\n" +
-        "• Mileage: "+odo(v.mileage)+"\n" +
-        "• Transmission: "+(v.transmission||"N/A")+"\n" +
-        "• Fuel Type: "+(v.fuelType||"N/A")+"\n\n" +
-        "Clean condition, fully verified, roadworthy certified.\n" +
-        "Trade-ins welcome. Finance available.\n" +
-        "Viewing & test drives available daily.";
+      var mpText=name+"\n\n" +
+        "Price: "+priceStr+"\n" +
+        "Mileage: "+odo(v.mileage)+"\n" +
+        "Transmission: "+(v.transmission||"Standard")+"\n" +
+        "Fuel Type: "+(v.fuelType||"Standard")+"\n" +
+        "Stock Ref: #"+(v.stockNumber||v.id)+"\n\n" +
+        "Key Details & Features:\n" +
+        "- Comprehensive multi-point inspection report completed\n" +
+        "- Full service history and roadworthy certificate included\n" +
+        "- Trade-ins welcome with immediate appraisals\n" +
+        "- Finance available through all major vehicle finance institutions\n\n" +
+        "Available for viewing & test drives at "+dealerTitle+".";
       
-      var igText="🔥 NEW ARRIVAL: "+name+"\n\n" +
-        "💰 "+priceStr+"\n" +
-        "📍 "+odo(v.mileage)+" · "+(v.transmission||"")+" · "+(v.fuelType||"")+"\n\n" +
-        "✨ Fully inspected & certified.\n" +
-        "📲 DM us or tap link in bio for instant finance application.\n\n" +
-        "#usedcars #cardealership #carsforsale #dealership #autosales";
+      var igText=name.toUpperCase()+"\n.\n" +
+        "Price: "+priceStr+"\n" +
+        "Mileage: "+odo(v.mileage)+" · "+(v.transmission||"")+" · "+(v.fuelType||"")+"\n.\n" +
+        "• Inspected & approved (TruInspect VIR)\n" +
+        "• Full service history & roadworthy\n" +
+        "• Trade-ins welcome & finance arranged\n.\n" +
+        "Available now at "+dealerTitle+".\n" +
+        "DM or visit the link in our bio for the full 360° spin & condition report.\n.\n" +
+        "#usedcars #dealership #carsforsale #autosales #TruDealer";
 
-      var body = '<div style="padding:16px 20px;">' +
-        '<div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px;">TruSocial 1-Click Pack</div>' +
-        '<div style="font-size:12px;color:var(--faint);margin-bottom:18px;">'+esc(name)+'</div>' +
+      var body = '<div style="padding:18px 20px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
+          '<div style="font-size:16px;font-weight:700;color:var(--white);letter-spacing:-0.01em;">TruSocial 1-Click Hub</div>' +
+          '<span class="pill cyan dot" style="font-size:10px;">1-Click</span>' +
+        '</div>' +
+        '<div style="font-size:12.5px;color:var(--dim);margin-bottom:18px;">'+esc(name)+' · <span style="font-family:var(--mono);color:var(--cyan);">'+priceStr+'</span></div>' +
         '<div style="display:flex;flex-direction:column;gap:10px;">' +
-          '<button type="button" class="share-row" id="tsCopyMp">🛒 Copy Facebook Marketplace Pack<span class="sr-hint">Specs</span></button>' +
-          '<button type="button" class="share-row" id="tsCopyIg">📷 Copy Instagram Caption<span class="sr-hint">Bio</span></button>' +
-          '<button type="button" class="share-row" id="tsOpenMp">↗ Open FB Marketplace Composer<span class="sr-hint">Create</span></button>' +
+          '<button type="button" class="share-row" id="tsCopyMp">'+SVG_MARKETPLACE+'Facebook Marketplace Specs<span class="sr-hint">Copy specs</span></button>' +
+          '<button type="button" class="share-row" id="tsCopyIg">'+SVG_INSTAGRAM+'Instagram Caption<span class="sr-hint">Copy caption</span></button>' +
+          '<button type="button" class="share-row" id="tsOpenMp">'+SVG_EXTERNAL+'Open Facebook Marketplace<span class="sr-hint">Create listing</span></button>' +
         '</div>' +
       '</div>';
 
       $("#sheetBody").innerHTML = body;
-      $("#sheetFoot").innerHTML = '<button type="button" class="btn" id="tsClose">Back to vehicle</button>';
-      $("#tsClose").addEventListener("click", function(){ openVehicle(v.id); });
-      $("#tsCopyMp").addEventListener("click", function(){ copyText(mpText, "Marketplace specs copied!"); });
-      $("#tsCopyIg").addEventListener("click", function(){ copyText(igText, "Instagram caption copied!"); });
+      $("#sheetFoot").innerHTML = '<button type="button" class="btn-primary" style="width:100%" id="tsClose">Back to vehicle</button>';
+      $("#tsClose").addEventListener("click", function(){ openVeh(v); });
+      $("#tsCopyMp").addEventListener("click", function(){ copyText(mpText, "Marketplace specs copied to clipboard"); });
+      $("#tsCopyIg").addEventListener("click", function(){ copyText(igText, "Instagram caption copied to clipboard"); });
       $("#tsOpenMp").addEventListener("click", function(){
         copyText(mpText, "Specs copied — opening Marketplace");
         setTimeout(function(){ window.open("https://www.facebook.com/marketplace/create/vehicle","_blank","noopener"); }, 300);

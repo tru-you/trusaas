@@ -94,15 +94,15 @@ export function buildFacebookPagePost(
   const link = buildVehicleShareUrl(vehicle, dealer);
 
   const headline = isMoto
-    ? `🏍️ NEW IN STOCK | ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim()
-    : `🚨 NEW ARRIVAL | ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim();
+    ? `NEW IN STOCK | ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim()
+    : `NEW ARRIVAL | ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim();
 
   const specs = [
-    odo ? `🛣️ Odometer: ${odo}` : null,
-    vehicle.transmission ? `⚙️ Gearbox: ${vehicle.transmission}` : null,
-    vehicle.fuelType ? `⛽ Fuel: ${vehicle.fuelType}` : null,
-    `📋 Condition: Inspected & Approved (TruInspect VIR Certified)`,
-    `🔑 Stock Ref: #${vehicle.stockNumber}`,
+    odo ? `• Odometer: ${odo}` : null,
+    vehicle.transmission ? `• Transmission: ${vehicle.transmission}` : null,
+    vehicle.fuelType ? `• Fuel Type: ${vehicle.fuelType}` : null,
+    `• Condition: Inspected & Approved (TruInspect Certified)`,
+    `• Stock Ref: #${vehicle.stockNumber}`,
   ].filter(Boolean).join('\n');
 
   const hashtags = isMoto
@@ -111,18 +111,19 @@ export function buildFacebookPagePost(
 
   return `${headline}
 
-Looking for a meticulously maintained ${vehicle.year} ${vehicle.make} ${vehicle.model}? This vehicle just arrived on our floor at ${dealerTitle} and passed our comprehensive multi-point inspection.
+Looking for a meticulously maintained ${vehicle.year} ${vehicle.make} ${vehicle.model}? This vehicle just arrived on our showroom floor at ${dealerTitle} and passed our comprehensive multi-point inspection.
 
-💰 Cash Price: ${priceFormatted}
-⚡ Estimated Instalment: From ${instalmentFormatted}/pm (10% dep · 72 mo)
+Cash Price: ${priceFormatted}
+Estimated Instalment: From ${instalmentFormatted}/pm (10% deposit · 72 months)
 
+Specifications:
 ${specs}
 
-👉 Explore the full 360° tour, detailed photos & inspection report:
+Explore the full 360° tour, detailed photos & inspection report:
 ${link}
 
-📍 Visit our showroom: ${dealer.address || dealer.location || 'Contact for address'}
-📲 Message or WhatsApp us: ${dealer.whatsapp || dealer.phone || 'Contact us today'}
+Showroom: ${dealer.address || dealer.location || 'Contact for showroom address'}
+Enquiries & WhatsApp: ${dealer.whatsapp || dealer.phone || 'Contact us today'}
 
 ${hashtags}`;
 }
@@ -148,7 +149,7 @@ export function buildFacebookMarketplacePack(
   const odo = vehicle.mileage != null ? formatDistance(vehicle.mileage, market.distanceUnit, market.locale) : null;
   const link = buildVehicleShareUrl(vehicle, dealer);
 
-  // Meta Marketplace algorithm favors clean, standard format titles
+  // Meta Marketplace algorithm favors clean, standard format titles without spam
   const suggestedTitle = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim().slice(0, 100);
 
   const keyDetails = [
@@ -169,20 +170,20 @@ Price: ${priceFormatted}
 Mileage: ${odo || 'Contact for details'}
 Transmission: ${vehicle.transmission || 'Standard'}
 Fuel Type: ${vehicle.fuelType || 'Standard'}
-Stock #: ${vehicle.stockNumber}
+Stock Ref: #${vehicle.stockNumber}
 
-Condition & Features:
+Key Details & Features:
 - Comprehensive multi-point inspection report completed
 - Full service history and roadworthy certificate included
-- Trade-ins welcome with on-the-spot appraisals
-- Finance available through all major vehicle finance houses
-- Extended warranty options available
+- Trade-ins welcome with immediate appraisals
+- Finance available through all major vehicle finance institutions
+- Extended warranty and service plan options available
 
 Available for viewing and test drives at ${dealerTitle}${dealer.location ? ` in ${dealer.location}` : ''}.
 
-Please message via Messenger or WhatsApp (${dealer.whatsapp || dealer.phone || 'Contact for number'}) for test drive bookings.
+Please message via Messenger or WhatsApp (${dealer.whatsapp || dealer.phone || 'Contact for number'}) for appointments.
 
-More details and full gallery:
+Full vehicle specs and digital gallery:
 ${link}`;
 
   return {
@@ -209,22 +210,21 @@ export function buildInstagramPost(
   const odo = vehicle.mileage != null ? formatDistance(vehicle.mileage, market.distanceUnit, market.locale) : null;
   const link = buildVehicleShareUrl(vehicle, dealer);
 
-  const headerEmoji = isMoto ? '🏍️' : '✨';
   const title = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim();
 
-  const caption = `${headerEmoji} ${title.toUpperCase()}
+  const caption = `${title.toUpperCase()}
 .
 Price: ${priceFormatted}
-Finance: Est. ${instalmentFormatted}/pm
+Finance: Est. ${instalmentFormatted}/pm (10% dep · 72 mo)
 .
-Specs at a glance:
-${odo ? `▫️ Mileage: ${odo}\n` : ''}▫️ Transmission: ${vehicle.transmission || 'Automatic'}
-▫️ Fuel: ${vehicle.fuelType || 'Petrol'}
-▫️ Condition: Certified Grade A (TruInspect VIR)
-▫️ Stock Reference: #${vehicle.stockNumber}
+Specifications:
+${odo ? `• Mileage: ${odo}\n` : ''}• Transmission: ${vehicle.transmission || 'Automatic'}
+• Fuel: ${vehicle.fuelType || 'Petrol'}
+• Condition: Certified Grade A (TruInspect VIR)
+• Stock Reference: #${vehicle.stockNumber}
 .
-${vehicle.description ? `${vehicle.description.slice(0, 180)}...\n.\n` : ''}📍 Available now at ${dealerTitle}.
-📲 DM us directly or tap the link in our bio for the full 360° spin & condition report!
+${vehicle.description ? `${vehicle.description.slice(0, 180)}...\n.\n` : ''}Available now at ${dealerTitle}.
+Direct message or visit the link in bio for the complete condition report & 360° spin.
 .
 #${vehicle.make.replace(/\s+/g, '')} #${vehicle.make.replace(/\s+/g, '')}${vehicle.model.replace(/\s+/g, '')} #CarsOfInstagram #Dealership #UsedCarsForSale #CarSales #${dealerTitle.replace(/\s+/g, '')} #TruDealer`;
 
@@ -282,9 +282,9 @@ export function buildGoogleBusinessPost(
   const odo = vehicle.mileage != null ? formatDistance(vehicle.mileage, market.distanceUnit, market.locale) : null;
   const link = buildVehicleShareUrl(vehicle, dealer);
 
-  const summary = `Now Available at ${dealerTitle}: ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}. 
+  const summary = `Now Available at ${dealerTitle}: ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}.
 
-Priced at ${priceFormatted}${odo ? ` with only ${odo}` : ''}. This vehicle has undergone a rigorous digital condition inspection and comes with verified service records. Trade-ins welcomed and competitive finance arranged. Visit us or book a test drive today!`;
+Priced at ${priceFormatted}${odo ? ` with only ${odo}` : ''}. This vehicle has undergone a rigorous digital condition inspection and comes with verified service records. Trade-ins welcomed and competitive finance arranged. Visit our showroom or book a test drive today.`;
 
   return {
     summary,
@@ -309,19 +309,17 @@ export function buildWhatsAppStatusPost(
   const odo = vehicle.mileage != null ? formatDistance(vehicle.mileage, market.distanceUnit, market.locale) : null;
   const link = buildVehicleShareUrl(vehicle, dealer);
 
-  const icon = isMoto ? '🏍️' : '🔥';
-
-  return `${icon} *JUST IN | ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}*
+  return `*JUST IN | ${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}*
 ───────────────────────────
-💰 *Cash Price:* ${priceFormatted}
-⚡ *Est. Instalment:* From ${instalmentFormatted}/pm (10% dep)
-${odo ? `🛣️ *Mileage:* ${odo}\n` : ''}⚙️ *Gearbox:* ${vehicle.transmission || 'Automatic'}
-⛽ *Fuel:* ${vehicle.fuelType || 'Petrol'}
-📋 *Status:* Certified Grade A (TruInspect VIR)
+*Cash Price:* ${priceFormatted}
+*Est. Instalment:* From ${instalmentFormatted}/pm (10% deposit)
+${odo ? `*Mileage:* ${odo}\n` : ''}*Transmission:* ${vehicle.transmission || 'Automatic'}
+*Fuel:* ${vehicle.fuelType || 'Petrol'}
+*Status:* Certified Grade A (TruInspect VIR)
 ───────────────────────────
-📲 *View 360° Orbit Spin & Condition Report:*
+*View 360° Orbit Spin & Condition Report:*
 ${link}
 
-📍 *${dealerTitle}*
-💬 Tap below or message us to book your test drive!`;
+*${dealerTitle}*
+Contact or message us to book your test drive.`;
 }

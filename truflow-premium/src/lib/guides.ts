@@ -170,7 +170,7 @@ export const GUIDES: Guide[] = [
         app: "flow",
         title: "Connect your accounts (once)",
         detail:
-          "Connect through the secure sign-in popup. It's one connection — approve it and all of your channels come through together, carried by Zernio. You don't link each network separately.",
+          "Connect through the secure sign-in popup. It's one connection — approve it and all of your channels come through together, carried securely by TruSocial. You don't link each network separately.",
       },
       {
         app: "flow",
