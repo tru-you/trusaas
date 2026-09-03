@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18395587079');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TruFlow Premium Guide</title>
+<meta name="description" content="The full guide to TruFlow Premium — the dealer DMS on desktop and tablet: stock, leads, deals, documents, finance and web.">
+<meta name="theme-color" content="#F3F0E7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TruDealer design system — cream ground · teal accent · Fraunces
+   ============================================================ */
+:root{
+  --ink:#F3F0E7; --ink-2:#EAE6DA; --card:#FBF9F3; --card-2:#EFEBE0;
+  --white:#14141F; --white-dim:rgba(20,20,31,.78);
+  --muted:rgba(64,78,100,.92); --faint:rgba(64,78,100,.58);
+  --cyan:#0B7C72; --cyan-2:#0D9488; --cyan-hi:#5EEAD4;
+  --cyan-soft:rgba(13,148,136,.18); --cyan-glow:rgba(13,148,136,.2); --cyan-faint:rgba(13,148,136,.06);
+  --amber:#D4942A; --amber-soft:rgba(212,148,42,.2); --amber-glow:rgba(212,148,42,.18); --amber-faint:rgba(212,148,42,.08);
+  --border:rgba(0,0,0,.08); --border-warm:rgba(60,50,30,.1); --glass-line:rgba(0,0,0,.08);
+  --danger:#B0413E; --danger-faint:rgba(176,65,62,.07);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --wrap:860px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:16px;line-height:1.62;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan-2)}
+::selection{background:var(--cyan);color:#fff}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+img{max-width:100%;display:block}
+.accent{color:var(--cyan-2);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
+
+/* ---- nav ---- */
+.nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 12px 9px 20px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:99px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:var(--wrap);width:calc(100% - 40px)}
+.nav-brand{font-family:var(--display);font-size:20px;font-weight:500;letter-spacing:-.02em;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.nav-brand .i{color:var(--cyan)}
+.nav-brand .tier{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);border:1px solid var(--cyan-soft);background:var(--cyan-faint);border-radius:100px;padding:2px 7px}
+.nav-links{display:flex;gap:20px;font-size:13px;color:var(--white-dim)}
+.nav-links a{color:var(--white-dim);position:relative;padding-bottom:3px;white-space:nowrap}
+.nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{right:0}
+.nav-links a.route{color:var(--cyan);font-weight:600}
+.nav-links a.route::after{right:0;background:var(--cyan-soft)}
+.nav-links a.route:hover::after{background:var(--cyan)}
+.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:8px 15px;border:1px solid var(--cyan);border-radius:100px;color:var(--cyan);white-space:nowrap;transition:all .2s}
+.nav-cta:hover{background:var(--cyan);color:#fff}
+@media(max-width:900px){.nav-links a:not(.route){display:none}}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---- two-routes fork ---- */
+.routes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:40px 0 8px}
+@media(max-width:640px){.routes{grid-template-columns:1fr}}
+.route-card{display:block;position:relative;padding:26px 26px 22px;border-radius:20px;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 14px rgba(60,50,30,.06);overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .3s}
+.route-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.route-card:hover{transform:translateY(-4px);border-color:var(--cyan-soft);box-shadow:0 20px 46px -20px var(--cyan-glow)}
+.route-card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:12px}
+.route-card h3{font-family:var(--display);font-size:25px;font-weight:500;letter-spacing:-.02em;margin:0 0 6px;font-variation-settings:"opsz" 72,"SOFT" 30}
+.route-card .out{font-size:14px;color:var(--white-dim);margin:0 0 16px;line-height:1.5}
+.route-card .chain{list-style:none;display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 18px;padding:0}
+.route-card .chain li{padding:5px 9px;border-radius:100px;border:1px solid var(--border-warm);background:rgba(0,0,0,.02);white-space:nowrap}
+.route-card .chain li.arw{border:none;background:none;padding:5px 0;color:var(--faint)}
+.route-card .go{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:inline-flex;align-items:center;gap:8px}
+.route-card.b2::before{background:var(--amber)}
+.route-card.b2 .tag,.route-card.b2 .go{color:#B07B1E}
+.route-card.b2:hover{border-color:var(--amber-soft);box-shadow:0 20px 46px -20px var(--amber-glow)}
+
+/* ---- layout ---- */
+main{max-width:var(--wrap);margin:0 auto;padding:0 28px 100px}
+section{scroll-margin-top:88px}
+
+/* ---- hero ---- */
+.hero{position:relative;padding:150px 0 52px;border-bottom:1px solid var(--border);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 90% 70% at 20% 0%,#F6F4EE 0%,transparent 60%)}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 11px;border:1px solid var(--cyan-soft);border-radius:100px;background:var(--cyan-faint);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:26px}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(13,148,136,.5);animation:ping 1.9s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(13,148,136,.5)}70%{box-shadow:0 0 0 11px rgba(13,148,136,0)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
+h1{font-family:var(--display);font-size:clamp(38px,6.4vw,62px);line-height:1.02;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30,"WONK" 0;margin-bottom:22px;text-wrap:balance}
+.lede{font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:var(--white-dim);max-width:62ch;text-wrap:pretty}
+.hero-ticker{display:flex;flex-wrap:wrap;gap:7px 20px;margin-top:34px;padding-top:22px;border-top:1px solid var(--glass-line);font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.hero-ticker .d{color:var(--cyan)}
+
+/* ---- contents ---- */
+.toc{margin:36px 0 8px;padding:10px 26px;border:1px solid var(--border-warm);border-radius:18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.06);display:grid;grid-template-columns:repeat(2,1fr);gap:0 32px}
+@media(max-width:560px){.toc{grid-template-columns:1fr}}
+.toc a{display:flex;gap:14px;align-items:baseline;padding:11px 0;color:var(--white-dim);border-bottom:1px solid var(--glass-line)}
+.toc a:hover{color:var(--white)}
+.toc .n{font-family:var(--mono);font-size:12px;color:var(--cyan);width:22px;flex:none}
+
+/* ---- section heads ---- */
+.sec-head{padding:64px 0 6px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+h2{font-family:var(--display);font-size:clamp(27px,4.2vw,42px);line-height:1.07;letter-spacing:-.03em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:14px;text-wrap:balance}
+.sec-intro{font-size:17px;color:var(--white-dim);max-width:66ch;line-height:1.6}
+h3{font-family:var(--display);font-size:22px;font-weight:500;letter-spacing:-.015em;font-variation-settings:"opsz" 72,"SOFT" 30;margin:36px 0 10px}
+p{margin:0 0 16px}
+strong{font-weight:600}
+
+/* ---- steps ---- */
+ol.steps{list-style:none;counter-reset:s;margin:22px 0 8px}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 24px 58px}
+ol.steps>li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:-1px;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft)}
+ol.steps>li::after{content:"";position:absolute;left:17.5px;top:38px;bottom:2px;width:1px;background:linear-gradient(var(--border-warm),transparent)}
+ol.steps>li:last-child::after{display:none}
+ol.steps>li .st{font-family:var(--display);font-weight:500;font-size:18px;letter-spacing:-.01em;color:var(--white);display:block;margin-bottom:4px;font-variation-settings:"opsz" 48,"SOFT" 30}
+ol.steps>li p{margin:0}
+ol.steps>li p+p{margin-top:9px}
+ul.plain{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px}
+ul.plain li{position:relative;padding-left:20px;color:var(--white-dim)}
+ul.plain li::before{content:"→";position:absolute;left:0;color:var(--faint);font-family:var(--mono)}
+
+/* ---- pills ---- */
+.ui{font-weight:600;font-size:.92em;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:7px;padding:1px 8px;white-space:nowrap}
+kbd{font-family:var(--mono);font-size:.82em;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-bottom-width:2px;border-radius:6px;padding:1px 7px}
+code{font-family:var(--mono);font-size:.85em;color:var(--cyan);background:var(--cyan-faint);padding:1px 6px;border-radius:5px}
+.desk{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#B07B1E;background:var(--amber-faint);border:1px solid var(--amber-soft);border-radius:100px;padding:2px 9px;white-space:nowrap;vertical-align:middle}
+
+/* ---- callouts ---- */
+.note,.tip,.warn{border-radius:16px;padding:16px 20px;margin:22px 0;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 12px rgba(60,50,30,.05);font-size:14.5px;color:var(--white-dim)}
+.note{border-left:3px solid var(--cyan)}
+.tip{border-left:3px solid var(--cyan-2)}
+.warn{border-left:3px solid var(--amber);background:var(--amber-faint)}
+.note .lab,.tip .lab,.warn .lab{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:7px}
+.note .lab,.tip .lab{color:var(--cyan)}
+.warn .lab{color:#B07B1E}
+.note p:last-child,.tip p:last-child,.warn p:last-child{margin-bottom:0}
+
+/* ---- legend cards ---- */
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0}
+@media(max-width:560px){.legend{grid-template-columns:1fr}}
+.legend .b{border:1px solid var(--border-warm);border-radius:16px;padding:16px 18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.05)}
+.legend .b .t{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:500;font-size:18px;color:var(--white);margin-bottom:6px;font-variation-settings:"opsz" 48}
+.legend .b small{color:var(--muted);font-size:13.5px;line-height:1.5;display:block}
+.glyph{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;font-size:14px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);color:var(--cyan);font-family:var(--mono)}
+
+/* ---- table ---- */
+.tablewrap{overflow-x:auto;margin:24px 0;border:1px solid var(--border-warm);border-radius:16px;box-shadow:0 2px 12px rgba(60,50,30,.05)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px;background:var(--card)}
+th,td{text-align:left;padding:13px 18px;border-bottom:1px solid var(--glass-line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:500;background:rgba(13,148,136,.03)}
+tr:last-child td{border-bottom:none}
+td b{color:var(--white);font-weight:600}
+
+/* ---- field list ---- */
+.fields{margin:16px 0;border-top:1px solid var(--glass-line)}
+.fields .f{display:flex;gap:18px;padding:13px 0;border-bottom:1px solid var(--glass-line)}
+.fields .f .k{flex:0 0 32%;min-width:140px;font-family:var(--display);font-weight:500;font-size:16px;color:var(--white);font-variation-settings:"opsz" 36}
+.fields .f .v{color:var(--white-dim);font-size:14.5px}
+@media(max-width:520px){.fields .f{flex-direction:column;gap:4px}.fields .f .k{flex:none}}
+
+.pillrow{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 14px;align-items:center}
+.opt{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--muted);background:#fff;border:1px solid var(--border-warm);border-radius:100px;padding:4px 11px}
+.opt.good{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint)}
+.opt.bad{color:var(--danger);border-color:rgba(176,65,62,.3);background:var(--danger-faint)}
+.opt.arw{border:none;background:none;color:var(--faint);padding:4px 2px}
+.opt.tag{border:none;background:none;color:var(--faint);padding-left:2px}
+
+.formula{font-family:var(--mono);font-size:14px;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-radius:14px;padding:16px 18px;margin:14px 0;overflow-x:auto;box-shadow:inset 0 1px 3px rgba(60,50,30,.04)}
+.formula .hl{color:var(--cyan)}
+
+/* ---- footer ---- */
+footer{background:#1A2332;color:#F1F5F9;margin-top:24px}
+.foot-inner{max-width:var(--wrap);margin:0 auto;padding:52px 28px 44px}
+.foot-mark{font-family:var(--display);font-size:30px;letter-spacing:-.02em;margin-bottom:14px}
+.foot-mark .tru{color:#E2E8F0}.foot-mark .i{color:var(--cyan-hi)}
+.foot-inner p{color:rgba(241,245,249,.62);font-size:14px;max-width:64ch}
+.foot-inner a{color:var(--cyan-hi)}
+.foot-inner a:hover{color:#fff}
+.foot-bottom{margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(148,163,184,.7)}
+
+/* ---- print ---- */
+@page{size:A4;margin:15mm 14mm}
+@media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  html,body{background:#fff !important}
+  body{font-size:11px;line-height:1.5}
+  .nav{display:none}
+  .hero{padding:8px 0 24px}.hero::before{display:none}.hero-ticker{display:none}
+  main{padding:0 0 20px}
+  section,.card,.note,.tip,.warn,.legend .b,.tablewrap,ol.steps>li,.fields .f,.route-card{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  .sec-head{padding-top:22px}
+  a{color:var(--cyan)}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand">Tru<span class="i">Flow</span><span class="tier">Premium</span></span>
+  <div class="nav-links">
+    <a href="#signin">Sign in</a>
+    <a href="#workspace">Workspace</a>
+    <a class="route" href="#stock">Stock</a>
+    <a class="route" href="#leads">Leads</a>
+    <a class="route" href="#deals">Deals</a>
+    <a href="#finance">Finance</a>
+    <a href="#help">Help</a>
+  </div>
+  <a class="nav-cta" href="https://premium.tru-saas.com">Open TruFlow ↗</a>
+</nav>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <span class="badge"><span class="dot"></span>TruFlow Premium · dealer guide</span>
+    <h1>Run the whole dealership <span class="accent">from one screen</span>.</h1>
+    <p class="lede">TruFlow Premium is your DMS — stock, leads, deals, documents, finance and your website, in one place. This guide walks every screen, in the order a dealer actually works: get a car listed, then win the deal, then know your money. It runs on <strong>desktop and tablet</strong>; your phone gets the companion app.</p>
+    <div class="hero-ticker">
+      <span><span class="d">◆</span> premium.tru-saas.com</span>
+      <span><span class="d">◆</span> Desktop &amp; tablet</span>
+      <span><span class="d">◆</span> Phone → app.tru-saas.com</span>
+    </div>
+  </section>
+
+  <!-- ============ TWO SPINES ============ -->
+  <section aria-label="The two everyday journeys">
+    <div class="routes">
+      <a class="route-card" href="#stock">
+        <span class="tag">Journey A · Get a car listed</span>
+        <h3>Stock → <span class="accent">website</span></h3>
+        <p class="out">A new arrival goes from the floor to live on your showroom site.</p>
+        <ul class="chain"><li>Add vehicle</li><li class="arw">→</li><li>Shoot in TruLens</li><li class="arw">→</li><li>Web-ready</li><li class="arw">→</li><li>Publish</li></ul>
+        <span class="go">Work the stock flow ↓</span>
+      </a>
+      <a class="route-card b2" href="#deals">
+        <span class="tag">Journey B · Close a deal</span>
+        <h3>Lead → <span class="accent">sold</span></h3>
+        <p class="out">An enquiry becomes a signed, compliant, closed deal.</p>
+        <ul class="chain"><li>Lead</li><li class="arw">→</li><li>Negotiating</li><li class="arw">→</li><li>Deal Readiness</li><li class="arw">→</li><li>DocHub</li><li class="arw">→</li><li>Sold</li></ul>
+        <span class="go">Work the deal flow ↓</span>
+      </a>
+    </div>
+    <div class="note"><span class="lab">There's a guide inside TruFlow too</span><p>The top bar has a <span class="ui">Guides</span> button — it opens the <strong>“How do I…?”</strong> panel, a set of short job walkthroughs tuned to the screen you're on (the main one is badged <strong>Start here</strong>). It can print itself or Save-as-PDF, and if a written step isn't enough it hands off to <span class="ui">Ask Dealer Assist</span>. This document is the deep version of the same thing.</p></div>
+  </section>
+
+  <!-- ============ CONTENTS ============ -->
+  <nav class="toc" aria-label="Contents">
+    <a href="#need"><span class="n">00</span><span>Where it runs &amp; who it's for</span></a>
+    <a href="#signin"><span class="n">01</span><span>Sign in</span></a>
+    <a href="#workspace"><span class="n">02</span><span>The workspace</span></a>
+    <a href="#dashboard"><span class="n">03</span><span>Dashboard (Overview)</span></a>
+    <a href="#stock"><span class="n">04</span><span>Stock &amp; inventory</span></a>
+    <a href="#leads"><span class="n">05</span><span>Leads &amp; CRM</span></a>
+    <a href="#deals"><span class="n">06</span><span>Deals &amp; documents</span></a>
+    <a href="#finance"><span class="n">07</span><span>Finance, recon &amp; stock health</span></a>
+    <a href="#web"><span class="n">08</span><span>Media, web &amp; TruSocial</span></a>
+    <a href="#team"><span class="n">09</span><span>Team &amp; Users</span></a>
+    <a href="#settings"><span class="n">10</span><span>Settings &amp; branding</span></a>
+    <a href="#mobile"><span class="n">11</span><span>TruFlow on your phone</span></a>
+    <a href="#help"><span class="n">12</span><span>Getting help</span></a>
+  </nav>
+
+  <!-- ============ 00 ============ -->
+  <section id="need">
+    <div class="sec-head">
+      <p class="eyebrow">00 · Before you start</p>
+      <h2>Where it runs &amp; who it's for</h2>
+      <p class="sec-intro">TruFlow Premium is the full DMS, built for a <strong>desktop or tablet</strong> — that's where you'll run stock, leads, deals and the books. Open a phone browser to it and it sends you to the companion app instead.</p>
+    </div>
+    <div class="fields">
+      <div class="f"><div class="k">Desktop / tablet</div><div class="v">Go to <code>https://premium.tru-saas.com</code> in any modern browser. The deep workflows — <strong>Deal Readiness</strong> and <strong>Documents (DocHub)</strong> — need the room a desktop or tablet gives, so they're desktop/tablet jobs.</div></div>
+      <div class="f"><div class="k">Phone</div><div class="v">On a phone the site hands you straight to the companion app at <code>app.tru-saas.com</code> — see <a href="#mobile">TruFlow on your phone</a>.</div></div>
+      <div class="f"><div class="k">Your access code</div><div class="v">One dealer code — the <strong>same code across the TruDealer apps</strong>. Your dealer principal issues it; there's no self-signup.</div></div>
+      <div class="f"><div class="k">Your role</div><div class="v">What you see depends on your role. <strong>Salespeople</strong> get the floor: stock, leads, deals, documents. <strong>Managers / owners</strong> also get Stock health, Team &amp; Users and Settings, and can see cost prices.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ 01 SIGN IN ============ -->
+  <section id="signin">
+    <div class="sec-head">
+      <p class="eyebrow">01 · Get in</p>
+      <h2>Sign in</h2>
+      <p class="sec-intro">One field, no password. The splash reads “<em>Dealer management — stock, leads, F&amp;I and reporting</em>.”</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Enter your access code</span><p>Type it into <span class="ui">Dealership access code</span> (“Enter your code”). Tap the eye to reveal it; a note warns if <kbd>Caps Lock</kbd> is on.</p></li>
+      <li><span class="st">Choose whether to stay signed in</span><p>Tick <span class="ui">Keep me signed in on this device</span> on your own machine; leave it off on a shared one.</p></li>
+      <li><span class="st">Tap “Enter”</span><p>It shows <span class="ui">Checking…</span>, then lands you on your <strong>Overview</strong>. If it says “<em>Sign-in failed. Try again</em>,” the code is wrong or not set up — check with your dealer principal.</p></li>
+    </ol>
+  </section>
+
+  <!-- ============ 02 WORKSPACE ============ -->
+  <section id="workspace">
+    <div class="sec-head">
+      <p class="eyebrow">02 · The lay of the land</p>
+      <h2>The workspace</h2>
+      <p class="sec-intro">A fixed <strong>sidebar</strong> on the left, a <strong>top bar</strong> across the top, and the screen you're working in filling the rest. The sidebar is grouped by what you're trying to do.</p>
+    </div>
+
+    <h3>The sidebar</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Group</th><th>Screens</th></tr></thead>
+        <tbody>
+          <tr><td><b>Showroom Floor</b></td><td>Overview · All Vehicles · Add vehicle · Bulk Import</td></tr>
+          <tr><td><b>Operations &amp; CRM</b></td><td>Lead CRM · Clients · Tasks · Showroom Diary · Stock health · Finance &amp; Recon</td></tr>
+          <tr><td><b>Deals &amp; Finance</b></td><td>Deal Readiness · Documents · Repayment calculator</td></tr>
+          <tr><td><b>Media &amp; Web</b></td><td>Web Management</td></tr>
+          <tr><td><b>Dealer Settings</b></td><td>Team &amp; Users · Settings</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Sidebar items carry an <strong>attention badge</strong> when something needs you — a count on <span class="ui">Lead CRM</span> for unanswered replies, on <span class="ui">Tasks</span> for overdue items, and on <span class="ui">All Vehicles</span> for cars blocked on photos. At the bottom sit <span class="ui">Support</span> (WhatsApp) and <span class="ui">Log out</span>.</p>
+
+    <h3>The top bar</h3>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">◷</span> Live strip</div><small>Your dealership name, a live dot, and today's date — a quick “you're on the right dealership” check.</small></div>
+      <div class="b"><div class="t"><span class="glyph">?</span> Guides</div><small>Opens the in-app <strong>“How do I…?”</strong> panel of job walkthroughs for the screen you're on.</small></div>
+      <div class="b"><div class="t"><span class="glyph">✦</span> Assist</div><small>Opens <strong>Dealer Assist</strong>, the AI that can see your stock, leads and today's jobs.</small></div>
+      <div class="b"><div class="t"><span class="glyph">▤</span> EOD</div><small>Managers &amp; owners only — the end-of-day summary.</small></div>
+    </div>
+
+    <div class="note"><span class="lab">Roles shape the sidebar</span><p>Salespeople don't see <span class="ui">Stock health</span>, <span class="ui">Team &amp; Users</span> or <span class="ui">Settings</span>, and cost-price columns stay hidden for them. Managers and owners see everything. If a screen named here isn't in your sidebar, that's your role — ask a manager.</p></div>
+  </section>
+
+  <!-- ============ 03 DASHBOARD ============ -->
+  <section id="dashboard">
+    <div class="sec-head">
+      <p class="eyebrow">03 · Your morning read</p>
+      <h2>Dashboard (Overview)</h2>
+      <p class="sec-intro">The landing screen — <strong>“Dealership overview”</strong> — is a triage board. Read it top to bottom and you know what needs you before you've touched a menu. <span class="ui">New inventory</span> at the top jumps straight to Add vehicle.</p>
+    </div>
+    <h3>The five numbers</h3>
+    <div class="pillrow">
+      <span class="opt good">Needs reply</span><span class="opt good">Due today</span><span class="opt">In stock</span><span class="opt">Sold</span><span class="opt">Gross after recon</span>
+    </div>
+    <p>Each tile carries a one-line read underneath — “oldest {wait}” or “all clear,” “{n} late” or “on track,” “{n} aged” or “fresh,” “{pct}% moved,” “{n} deals.” They're your priorities in five glances.</p>
+    <h3>Below the numbers</h3>
+    <ul class="plain">
+      <li><strong>Today's activity</strong> — counters for test drives, visits, trade-ins and new leads; click any to jump to it.</li>
+      <li><strong>Leads</strong> — the newest enquiries with <span class="ui">Open Pipelines</span> and a <span class="ui">Review File</span> on each row.</li>
+      <li><strong>Recent Showroom Inventory</strong> — latest units with age (60+ days flagged amber) and <span class="ui">View Database</span>.</li>
+      <li><strong>Web readiness</strong> — either “all cars have galleries” or counters for <em>not online</em>, <em>no photos</em>, <em>short</em> and <em>ready</em>, with <span class="ui">Manage</span> into Web Management.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 04 STOCK ============ -->
+  <section id="stock">
+    <div class="sec-head">
+      <p class="eyebrow">04 · Journey A</p>
+      <h2>Stock &amp; inventory</h2>
+      <p class="sec-intro">Everything about the cars on your floor: create them, shoot them, get them web-ready, publish them, and sell them. Photos are never captured here — they're shot in <strong>TruLens</strong> and flow back automatically.</p>
+    </div>
+
+    <h3>Add a vehicle</h3>
+    <ol class="steps">
+      <li><span class="st">Pick a showroom category</span><p>On <span class="ui">Add vehicle</span>, leave <span class="ui">Auto — decide from price &amp; model</span> and your website guesses the tier, or set <span class="ui">Premium Used</span> / <span class="ui">Premium Select</span> / <span class="ui">Premium Performance</span> to override.</p></li>
+      <li><span class="st">Fill the specs and price</span><p>Complete the <strong>Showroom Vehicle Specifications</strong> (year, make, model, trim, engine, transmission, fuel, body), then <span class="ui">Retail Price (ZAR)</span>, <span class="ui">Cost Price (ZAR)</span>, <span class="ui">Mileage (km)</span> and a <span class="ui">Stock Number</span>. The stock number is how the car is matched everywhere else — get it right.</p></li>
+      <li><span class="st">Publish to Active Stock</span><p>Tap <span class="ui">Publish to Active Stock</span> and the unit lands on the floor. If you run TruLens, it offers to open TruLens to shoot this stock number now — photos come from there via <span class="ui">Export to DMS</span> and appear against the car automatically.</p></li>
+    </ol>
+    <div class="tip"><span class="lab">Bringing a floor across?</span><p><span class="ui">Bulk Import</span> takes a CSV — “switch from VMG, an AutoTrader export, or your own spreadsheet.” Drop the file, map the columns, done.</p></div>
+
+    <h3>The vehicle list</h3>
+    <p>Filter the floor by status (<span class="opt">All</span> <span class="opt">In stock</span> <span class="opt">Sold</span> <span class="opt">Archived</span>), by photos (<span class="opt">All</span> <span class="opt">Needs shoot</span> <span class="opt">Partial</span> <span class="opt">Web-ready</span>) and by age (<span class="opt">Any</span> <span class="opt">30+</span> <span class="opt">60+</span> <span class="opt">90+</span>). Each row has a <strong>Web</strong> toggle to publish/unpublish, a status badge, and quick actions. The toolbar's <span class="ui">Export stock list CSV</span> downloads <code>TruFlow_Stock_List_{date}.csv</code> — a snapshot of right now, for the bank, an audit or a buyer.</p>
+
+    <h3>Open a car — the vehicle detail</h3>
+    <p>Click any car for its detail, with tabs <span class="opt">specs</span> <span class="opt">recon</span> <span class="opt">publish</span> <span class="opt">docs</span> <span class="opt">extras</span>. Here you'll find:</p>
+    <div class="fields">
+      <div class="f"><div class="k">Readiness badge</div><div class="v">Six or more photos reads <span class="ui">Gallery ready for web</span>; fewer reads <span class="ui">Shoot in TruLens before publishing</span>.</div></div>
+      <div class="f"><div class="k">Replace a bad photo</div><div class="v">Tap a photo, then the trash button — “Remove this image from showroom listing?” It's off the listing at once, no round-trip to TruLens just to drop one frame. Only reshoot in TruLens if you need a replacement.</div></div>
+      <div class="f"><div class="k">Publish toggle</div><div class="v">The footer switch flips between <span class="ui">Live on website</span> and <span class="ui">Not on website</span>.</div></div>
+      <div class="f"><div class="k">Remove from stock</div><div class="v">Retires the unit (with the safeguards below).</div></div>
+    </div>
+
+    <h3>Get a car web-ready</h3>
+    <p><span class="ui">All Vehicles</span> carries the gallery work: photo filter chips — <strong>Needs shoot</strong>, <strong>Partial</strong>, <strong>Web-ready</strong> — and a camera button per row that opens TruLens for that stock number. Complete the guided slots, <span class="ui">Export to DMS</span>, then refresh — the readiness chip turns green. The dashboard's <strong>Web readiness</strong> card keeps the counters. Your public stock feed lives at <code>/api/public/stock?dealer=your-slug</code> — that is exactly what your website receives. <span class="ui">Web Management</span> — reachable from that card's <strong>Manage</strong> button — is the power-user grid: inline-edit every field and flip <strong>Online</strong> per row, changes saving as you go.</p>
+
+    <h3>Sell it, or pull it back</h3>
+    <div class="fields">
+      <div class="f"><div class="k">Mark sold</div><div class="v">On the card or detail. If more than one lead is still open on the car, you're asked which deal actually closed. The car flips to <strong>SOLD</strong>, its deal closes as <strong>Closed Won</strong>, and it's <strong>unpublished from your website automatically</strong> — no calls on a car that's gone.</div></div>
+      <div class="f"><div class="k">Return to stock</div><div class="v">Flips a sold car back to inventory, re-lists it on your website and reopens its deal.</div></div>
+      <div class="f"><div class="k">Archive</div><div class="v">A car with closed deals or signed docs can't be deleted — archive it instead. It leaves the active list but stays in your sold/money figures.</div></div>
+    </div>
+    <div class="note"><span class="lab">Feed your stock anywhere</span><p>The public stock feed is a live API — publish or unpublish a car and it reflects immediately, no export step. Your dealer website already reads it; aggregators or your own tools can call the same URL and get JSON with every published vehicle, photos included.</p></div>
+  </section>
+
+  <!-- ============ 05 LEADS ============ -->
+  <section id="leads">
+    <div class="sec-head">
+      <p class="eyebrow">05 · Journey B begins</p>
+      <h2>Leads &amp; CRM</h2>
+      <p class="sec-intro">Every enquiry, in one pipeline, with the next step never more than a click away. The header tells you where you stand: “{n} overdue · {n} due today · {n} open.”</p>
+    </div>
+
+    <h3>The pipeline</h3>
+    <p>Switch between <span class="ui">Board</span> (kanban) and <span class="ui">List</span>. The stages run:</p>
+    <div class="pillrow">
+      <span class="opt">New</span><span class="opt arw">→</span><span class="opt">Contacted</span><span class="opt arw">→</span><span class="opt">Test Drive Scheduled</span><span class="opt arw">→</span><span class="opt">Negotiating</span><span class="opt arw">→</span><span class="opt good">Closed Won</span><span class="opt bad">Closed Lost</span>
+    </div>
+    <p>Cards show an intent badge — <span class="opt bad">Hot</span> (≥80), <span class="opt">Warm</span> (≥50), <span class="opt">Cold</span> — the linked car, the source, and the next step (with a ● when overdue). <span class="ui">WA</span> opens WhatsApp; <span class="ui">Done</span> marks contacted and sets the next step. <span class="ui">Auto-assign new</span> shares fresh leads out to the team.</p>
+
+    <h3>Work a lead</h3>
+    <ol class="steps">
+      <li><span class="st">Open the Customer File</span><p><span class="ui">Review</span> opens the lead — <strong>“Customer File — {name}”</strong> — with tabs Overview, Digital Journey Tracker, Automated Dispatches, Comms Timeline, Tasks &amp; Follow-up, Deal Sheet, Readiness, and (on desktop) Compliance.</p></li>
+      <li><span class="st">Reply and log the next step</span><p>Use the composer — <span class="ui">Send template</span>, pick how to <span class="ui">Send by</span>, or draft a reply with AI — then <span class="ui">Dispatch Outbound Message</span>. Log a call or WhatsApp with an outcome (<span class="opt">Connected</span> <span class="opt">No Answer</span> <span class="opt">Voicemail</span>) so the timeline stays honest.</p></li>
+      <li><span class="st">Move the stage</span><p>Set the status and <span class="ui">Save Status Changes</span>. Anything past its next-action date shows as due on the dashboard so nothing goes quiet.</p></li>
+    </ol>
+
+    <h3>Add a lead by hand</h3>
+    <p><span class="ui">New lead</span> captures First/Last name, Phone, Email, the vehicle, an <span class="ui">Ad Source</span> (Website Form / Walk-in Showroom / Facebook Lead Gen / AutoTrader) and requirement notes, then <span class="ui">Commit Lead File</span>. There's also a public <strong>“Dealership Enquiry”</strong> form for remote capture.</p>
+
+    <h3>Showroom Diary</h3>
+    <p><span class="ui">Showroom Diary</span> is your bookings calendar — <strong>test drives, viewings and trade-in appraisals</strong>, including bookings that come off your website. Summary tiles show <strong>Today / Upcoming / Completed / No-Shows</strong>. Booking a test drive can push its lead to <em>Test Drive Scheduled</em>; completing one moves it to <em>Negotiating</em> — which is exactly when the deal appears in <a href="#deals">Deal Readiness</a>.</p>
+
+    <div class="tip"><span class="lab">Ask instead of hunting</span><p><span class="ui">Assist</span> (top bar) opens <strong>Dealer Assist</strong>: “<em>Ask me what to chase, what a unit should be priced at, or what's sitting too long.</em>” It can see your stock and leads — try “What's over 60 days?” or “How many new leads this week?”</p></div>
+  </section>
+
+  <!-- ============ 06 DEALS ============ -->
+  <section id="deals">
+    <div class="sec-head">
+      <p class="eyebrow">06 · Journey B · close it &nbsp;<span class="desk">Desktop / tablet</span></p>
+      <h2>Deals &amp; documents</h2>
+      <p class="sec-intro">Once a lead reaches <strong>Negotiating</strong>, the deal shows up here. Two linked screens carry it home: <strong>Deal Readiness</strong> (the checklist) and <strong>Documents / DocHub</strong> (the paperwork). Both are desktop/tablet jobs.</p>
+    </div>
+
+    <h3>Deal Readiness</h3>
+    <p>A deal lands on Deal Readiness the moment its lead hits Negotiating. Work the checklist and watch the progress bar fill:</p>
+    <div class="pillrow"><span class="opt">NATIS</span><span class="opt">Roadworthy</span><span class="opt">Invoiced</span><span class="opt">Deposit</span><span class="opt">Delivered</span></div>
+    <p>Set the <strong>Finance</strong> state alongside it — <span class="opt">N/A</span> <span class="opt">Submitted</span> <span class="opt good">Approved</span> <span class="opt bad">Declined</span>. A thin five-segment strip shows the DocHub stages, with <span class="ui">Open Compliance Hub</span> to jump in. An <strong>amber triangle</strong> next to an item means the checklist and the paperwork disagree — e.g. “<em>Compliance is signed off, but NATIS is un-ticked</em>” — open DocHub to resolve it.</p>
+
+    <h3>Documents — the DocHub</h3>
+    <p>The document pipeline runs five stages, in order:</p>
+    <div class="pillrow"><span class="opt">Proforma</span><span class="opt arw">→</span><span class="opt">Offer to Purchase</span><span class="opt arw">→</span><span class="opt">Compliance</span><span class="opt arw">→</span><span class="opt">Invoice</span><span class="opt arw">→</span><span class="opt">Handover</span></div>
+    <ol class="steps">
+      <li><span class="st">Work each stage</span><p>For each stage, <span class="ui">Generate</span> the document, <span class="ui">Upload</span> a signed copy, <span class="ui">Export CSV</span> (or <span class="ui">Send to accounting</span> if you've connected a package), or <span class="ui">Skip</span> with a reason (logged in the audit trail). The Invoice stage can <span class="ui">Issue via Imagin8</span>. <strong>Compliance</strong> is tick-box only — check <span class="ui">NATIS in hand</span> and <span class="ui">Roadworthy certificate on file</span>, then <span class="ui">Confirm compliance</span>.</p></li>
+      <li><span class="st">Sign &amp; finalise</span><p>Tap <span class="ui">Sign &amp; finalise</span>, then <span class="ui">Type name</span> or <span class="ui">Draw</span> the signature and <span class="ui">Confirm &amp; finalise</span>. If it blocks you, a required field is missing — a proforma needs the VIN and price breakdown, for example — the amber “required” list tells you exactly what to fill.</p></li>
+      <li><span class="st">Finish the deal</span><p>Advance all five stages. When Handover is done the deal reads <strong>Complete — handed over {date}</strong> and drops off the active Documents list.</p></li>
+    </ol>
+    <div class="note"><span class="lab">One action, everything moves</span><p>When the car is finally <span class="ui">Mark sold</span>, its deal closes as <strong>Closed Won</strong> and it comes off the website in the same tap. The paperwork you did here is what makes that clean — and what an audit will want to see.</p></div>
+  </section>
+
+  <!-- ============ 07 FINANCE ============ -->
+  <section id="finance">
+    <div class="sec-head">
+      <p class="eyebrow">07 · Know your money</p>
+      <h2>Finance, recon &amp; stock health</h2>
+      <p class="sec-intro">Three tools tell you where the money is: a live <strong>Repayment calculator</strong> to quote a buyer, <strong>Finance &amp; Recon</strong> for the books, and <strong>Stock health</strong> for the capital tied up on your floor.</p>
+    </div>
+
+    <h3>Repayment calculator</h3>
+    <p>Model a finance deal on the spot — it's seeded with a car's price so you can start fast. Set:</p>
+    <div class="fields">
+      <div class="f"><div class="k">Vehicle Total Price (ZAR)</div><div class="v">The on-the-road price.</div></div>
+      <div class="f"><div class="k">Downpayment / Deposit (ZAR)</div><div class="v">What's going down.</div></div>
+      <div class="f"><div class="k">Interest rate (%)</div><div class="v">The financing rate.</div></div>
+      <div class="f"><div class="k">Term &amp; Balloon</div><div class="v">Drag the <strong>Term</strong> (12–84 months) and <strong>Balloon</strong> (0–40%) sliders to match the deal on the table.</div></div>
+    </div>
+    <p>The <strong>Monthly Installment</strong> updates live, with <span class="opt">Net Principal</span> <span class="opt">Aggregate Interest</span> <span class="opt">Balloon Value</span> <span class="opt">Lifetime Total Cost</span> beside it. Nothing to save — it's a working calculator.</p>
+
+    <h3>Finance &amp; Recon</h3>
+    <p>The ledger, in five tabs: <span class="ui">Profit &amp; Loss</span> (Sales Revenue, Cost of Sales, Gross Profit, Operating Expenses, Net Income — with a <span class="ui">Log Expense</span> form), <span class="ui">Deal Profit</span> (deals closed, 1st and total gross), <span class="ui">Stock Aging</span> (units, avg days, floor value, over-60), <span class="ui">Reconditioning</span> (per-vehicle recon tasks and totals) and <span class="ui">Floor Plan</span> (exposure and interest at your floor-plan rate). If you've connected accounting, reconciled expenses and signed invoices flow to your books.</p>
+
+    <h3>Stock health <span class="desk">Manager / owner</span></h3>
+    <p>The one screen that answers “what is my stock costing me?” Four headline numbers:</p>
+    <div class="pillrow"><span class="opt">Capital in stock</span><span class="opt good">Projected margin</span><span class="opt good">Realised margin</span><span class="opt bad">Tied up over 60 days</span></div>
+    <p><strong>Ageing</strong> bars split your capital across bands (Under 30 / 31–60 / 61–90 / Over 90 days), and the <strong>Oldest stock first</strong> table lists units worst-first — click a row to open the car and act (reprice, push on social, or move it). Aged stock is the cheapest margin you'll ever recover.</p>
+
+    <h3>Commission &amp; accounting</h3>
+    <p>The <strong>Commission estimate</strong> (on the Team screen) projects the sales pool from closed-deal margins under three models — <span class="opt">Flat %</span> <span class="opt">Volume-Based</span> <span class="opt">Margin-Tiered</span>. To keep the books current, <a href="#settings">Settings</a> lets you turn on <strong>Accounting</strong> and connect <span class="opt">Xero</span> <span class="opt">QuickBooks</span> <span class="opt">Zoho Books</span> via a secure popup, so the DocHub Invoice stage pushes straight through instead of exporting a CSV.</p>
+  </section>
+
+  <!-- ============ 08 WEB / SOCIAL ============ -->
+  <section id="web">
+    <div class="sec-head">
+      <p class="eyebrow">08 · Get it seen</p>
+      <h2>Media, web &amp; TruSocial</h2>
+      <p class="sec-intro">Your website reads TruFlow directly, and — with TruSocial switched on — a car can go to your social channels from its own page.</p>
+    </div>
+    <h3>Post a car to social &amp; marketplace</h3>
+    <ol class="steps">
+      <li><span class="st">Open the car's Social &amp; Share tab</span><p>Every vehicle in your stock includes a dedicated <span class="ui">Social &amp; Share</span> command hub. It instantly generates tailored copy and hashtags for 6 major platforms: <span class="opt">Facebook Marketplace</span>, <span class="opt">Facebook Page</span>, <span class="opt">Instagram</span>, <span class="opt">WhatsApp Status</span>, <span class="opt">LinkedIn</span>, and <span class="opt">Google Business Profile</span>.</p></li>
+      <li><span class="st">1-Click Copy &amp; Deep-Link</span><p>Tap <span class="ui">Copy</span> to copy the tailored text with compliant specs and pricing, then tap the platform button to launch straight into that composer. For Facebook Marketplace, tap <span class="ui">Download 8-Photo Pack</span> to get your studio photos instantly ready to drag and drop.</p></li>
+      <li><span class="st">Zero token expiry</span><p>No fragile third-party OAuth connections or expired API keys — you publish with 100% native platform fidelity and zero middleman friction.</p></li>
+    </ol>
+    <p>You can also share straight from your dealer website: open the car and tap <span class="ui">Share</span> for WhatsApp, Facebook, Copy link, or your device's full share sheet. It shares the car's live listing page, so the buyer lands on the real thing.</p>
+  </section>
+
+  <!-- ============ 09 TEAM ============ -->
+  <section id="team">
+    <div class="sec-head">
+      <p class="eyebrow">09 · Your people &nbsp;<span class="desk">Manager / owner</span></p>
+      <h2>Team &amp; Users</h2>
+      <p class="sec-intro">Give each salesperson or manager their own login, scoped to your dealership. The screen shows everyone with access and, per person, a way to reissue or revoke.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Add staff</span><p><span class="ui">Add staff</span> opens the form. Note it adds a <strong>billable seat</strong>.</p></li>
+      <li><span class="st">Enter their details</span><p><span class="ui">Full Name</span>, <span class="ui">E-mail Address</span>, <span class="ui">Account Role</span> (<span class="opt">Salesperson</span> or <span class="opt">Manager</span>) and <span class="ui">Contact Number</span>, then <span class="ui">Add &amp; issue code</span>. They'll only ever see this dealership's stock and leads.</p></li>
+      <li><span class="st">Hand over the code</span><p>Copy the one-time access code and give it to them — it won't be shown again. Tap <span class="ui">Done</span>. Later, <span class="ui">New code</span> rotates it and <span class="ui">Remove access</span> revokes it (<span class="ui">Restore</span> brings them back).</p></li>
+    </ol>
+  </section>
+
+  <!-- ============ 10 SETTINGS ============ -->
+  <section id="settings">
+    <div class="sec-head">
+      <p class="eyebrow">10 · Set it up once &nbsp;<span class="desk">Manager / owner</span></p>
+      <h2>Settings &amp; branding</h2>
+      <p class="sec-intro">What Settings holds is what makes your documents and listings look like <em>you</em>. Fill it once and everything downstream inherits it.</p>
+    </div>
+    <div class="fields">
+      <div class="f"><div class="k">Dealer details</div><div class="v">Registered name, Trading as, Registration &amp; VAT numbers, contact email, website and address — “used on invoices, agreements and your listing.” Plus your Imagin8 / TransUnion API key.</div></div>
+      <div class="f"><div class="k">Document settings</div><div class="v">Your logo, banking details, sale terms, invoice-extra defaults, OTP terms, invoice numbering (prefix + next number, e.g. <code>INV-0001</code>), ownership &amp; warranty clauses and a footer note — the content baked into generated documents.</div></div>
+      <div class="f"><div class="k">Accounting</div><div class="v">Turn it on and connect Xero, QuickBooks or Zoho Books. Turning it off never deletes a connection.</div></div>
+      <div class="f"><div class="k">TruSocial</div><div class="v">Turn it on and connect Facebook, Instagram and Google Business (shown when the TruSocial add-on is enabled for you).</div></div>
+    </div>
+    <div class="note"><span class="lab">Add-ons</span><p>Beyond the core DMS, your dealership can have <strong>TruLens</strong> (capture), <strong>TruInspect</strong> (condition reports), <strong>TruSocial</strong> (social posting), <strong>TruLive</strong> / <strong>TruValue</strong> and the <strong>TruFlow Mobile</strong> companion switched on. Which you have is set for your dealership — features you don't have simply won't show.</p></div>
+  </section>
+
+  <!-- ============ 11 MOBILE ============ -->
+  <section id="mobile">
+    <div class="sec-head">
+      <p class="eyebrow">11 · Off the desk</p>
+      <h2>TruFlow on your phone</h2>
+      <p class="sec-intro">Premium lives on desktop and tablet — but there's a phone app that goes where you go.</p>
+    </div>
+    <p>Open <code>app.tru-saas.com</code> on your phone and sign in with the <strong>same dealer code</strong>. Add it to your home screen (<kbd>Share</kbd> → <span class="ui">Add to Home Screen</span> on iOS, or the install banner on Android) and it runs full-screen like a native app. Leads, stock, walk-in adds and activity all <strong>sync both ways</strong> with your desktop Premium.</p>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">◎</span> On the floor</div><small>For Premium dealers it's the <strong>companion</strong> — capture a walk-in, reply to a lead, check a price without going back to the desk.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◐</span> On its own</div><small>For smaller dealers it also runs <strong>standalone</strong> — the whole show on a phone, no desktop required.</small></div>
+    </div>
+    <div class="tip"><span class="lab">A dedicated mobile guide is coming</span><p>This document covers Premium on desktop/tablet. The phone app has its own walkthrough in progress — ask your TruSaaS contact for the <strong>TruFlow Mobile</strong> guide.</p></div>
+  </section>
+
+  <!-- ============ 12 HELP ============ -->
+  <section id="help">
+    <div class="sec-head">
+      <p class="eyebrow">12 · When you're stuck</p>
+      <h2>Getting help</h2>
+      <p class="sec-intro">Three levels, closest first — none of them leave TruFlow.</p>
+    </div>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">?</span> Guides — “How do I…?”</div><small>The top-bar <span class="ui">Guides</span> button. Job-based walkthroughs tuned to your screen, badged <strong>Start here</strong> for the main journey, each printable to PDF.</small></div>
+      <div class="b"><div class="t"><span class="glyph">✦</span> Dealer Assist</div><small>The <span class="ui">Assist</span> button. Ask it about your own stock, leads and deals in plain language — the Guides panel even hands off to it when a written step isn't enough.</small></div>
+    </div>
+    <p>Beyond those, the sidebar's <span class="ui">Support</span> button opens WhatsApp to a human. And most screens carry a small <span class="desk">Desktop / tablet</span> hint where a job genuinely needs the bigger screen — if a deal or its documents look thin on a small tablet, that's why.</p>
+    <div class="tip"><span class="lab">Rule of thumb</span><p>Work the two journeys and everything else falls into place: <strong>get the car listed</strong> (Stock → TruLens → Web), then <strong>close the deal</strong> (Lead → Negotiating → Deal Readiness → DocHub → Sold). The money screens read themselves once those two are flowing.</p></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <div class="foot-mark"><span class="tru">Tru</span><span class="i">Flow</span> Premium</div>
+    <p>The full dealer management system — stock, leads, deals, documents, finance and web — part of the TruDealer platform (TruFlow · TruLens · TruInspect · TruChat). Live at <a href="https://premium.tru-saas.com">premium.tru-saas.com</a>; the phone companion is at <a href="https://app.tru-saas.com">app.tru-saas.com</a>. One dealer access code across every app.</p>
+    <div class="foot-bottom">TruDealer · Future Automotive · Built in Cape Town</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18395587079');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TruLens Field Guide</title>
+<meta name="description" content="How to install TruLens, sign in, pick your dealership, and take a car from photos to a published listing.">
+<meta name="theme-color" content="#F3F0E7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TruDealer design system — cream ground · teal accent · Fraunces
+   Tokens lifted verbatim from trudealer/tddeploy/index.html
+   ============================================================ */
+:root{
+  --ink:#F3F0E7; --ink-2:#EAE6DA; --card:#FBF9F3; --card-2:#EFEBE0;
+  --white:#14141F; --white-dim:rgba(20,20,31,.78);
+  --muted:rgba(64,78,100,.92); --faint:rgba(64,78,100,.58);
+  --cyan:#0B7C72; --cyan-2:#0D9488; --cyan-hi:#5EEAD4;
+  --cyan-soft:rgba(13,148,136,.18); --cyan-glow:rgba(13,148,136,.2); --cyan-faint:rgba(13,148,136,.06);
+  --amber:#D4942A; --amber-soft:rgba(212,148,42,.2); --amber-glow:rgba(212,148,42,.18); --amber-faint:rgba(212,148,42,.08);
+  --border:rgba(0,0,0,.08); --border-warm:rgba(60,50,30,.1); --glass-line:rgba(0,0,0,.08);
+  --danger:#B0413E; --danger-faint:rgba(176,65,62,.07);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --wrap:820px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:16px;line-height:1.62;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan-2)}
+::selection{background:var(--cyan);color:#fff}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+img{max-width:100%;display:block}
+
+.accent{color:var(--cyan-2);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
+
+/* ---- nav ---- */
+.nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 12px 9px 20px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:99px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:var(--wrap);width:calc(100% - 40px)}
+.nav-brand{font-family:var(--display);font-size:20px;font-weight:500;letter-spacing:-.02em;white-space:nowrap}
+.nav-brand .i{color:var(--cyan)}
+.nav-links{display:flex;gap:22px;font-size:13px;color:var(--white-dim)}
+.nav-links a{color:var(--white-dim);position:relative;padding-bottom:3px;white-space:nowrap}
+.nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{right:0}
+.nav-links a.route{color:var(--cyan);font-weight:600}
+.nav-links a.route::after{right:0;background:var(--cyan-soft)}
+.nav-links a.route:hover::after{background:var(--cyan)}
+.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:8px 15px;border:1px solid var(--cyan);border-radius:100px;color:var(--cyan);white-space:nowrap;transition:all .2s}
+.nav-cta:hover{background:var(--cyan);color:#fff}
+@media(max-width:860px){.nav-links a:not(.route){display:none}}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---- two-routes fork ---- */
+.routes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:40px 0 8px}
+@media(max-width:640px){.routes{grid-template-columns:1fr}}
+.route-card{display:block;position:relative;padding:26px 26px 22px;border-radius:20px;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 14px rgba(60,50,30,.06);overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .3s}
+.route-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.route-card:hover{transform:translateY(-4px);border-color:var(--cyan-soft);box-shadow:0 20px 46px -20px var(--cyan-glow)}
+.route-card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:12px}
+.route-card h3{font-family:var(--display);font-size:26px;font-weight:500;letter-spacing:-.02em;margin:0 0 6px;font-variation-settings:"opsz" 72,"SOFT" 30}
+.route-card .out{font-size:14px;color:var(--white-dim);margin:0 0 16px;line-height:1.5}
+.route-card .chain{list-style:none;display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 18px;padding:0}
+.route-card .chain li{padding:5px 10px;border-radius:100px;border:1px solid var(--border-warm);background:rgba(0,0,0,.02);white-space:nowrap}
+.route-card .chain li.arw{border:none;background:none;padding:5px 0;color:var(--faint)}
+.route-card .go{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:inline-flex;align-items:center;gap:8px}
+.route-card.b2::before{background:var(--amber)}
+.route-card.b2 .tag,.route-card.b2 .go{color:#B07B1E}
+.route-card.b2:hover{border-color:var(--amber-soft);box-shadow:0 20px 46px -20px var(--amber-glow)}
+
+/* ---- layout ---- */
+main{max-width:var(--wrap);margin:0 auto;padding:0 28px 100px}
+section{scroll-margin-top:88px}
+
+/* ---- hero ---- */
+.hero{position:relative;padding:150px 0 52px;border-bottom:1px solid var(--border);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 90% 70% at 20% 0%,#F6F4EE 0%,transparent 60%)}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 11px;border:1px solid var(--cyan-soft);border-radius:100px;background:var(--cyan-faint);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:26px}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(13,148,136,.5);animation:ping 1.9s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(13,148,136,.5)}70%{box-shadow:0 0 0 11px rgba(13,148,136,0)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
+h1{font-family:var(--display);font-size:clamp(38px,6.4vw,64px);line-height:1.02;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30,"WONK" 0;margin-bottom:22px;text-wrap:balance}
+.lede{font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:var(--white-dim);max-width:60ch;text-wrap:pretty}
+.hero-ticker{display:flex;flex-wrap:wrap;gap:7px 20px;margin-top:34px;padding-top:22px;border-top:1px solid var(--glass-line);font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.hero-ticker .d{color:var(--cyan)}
+
+/* ---- contents ---- */
+.toc{margin:36px 0 8px;padding:10px 26px;border:1px solid var(--border-warm);border-radius:18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.06);display:grid;grid-template-columns:repeat(2,1fr);gap:0 32px}
+@media(max-width:560px){.toc{grid-template-columns:1fr}}
+.toc a{display:flex;gap:14px;align-items:baseline;padding:12px 0;color:var(--white-dim);border-bottom:1px solid var(--glass-line)}
+.toc a:hover{color:var(--white)}
+.toc .n{font-family:var(--mono);font-size:12px;color:var(--cyan);width:22px;flex:none}
+
+/* ---- section heads ---- */
+.sec-head{padding:64px 0 6px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+h2{font-family:var(--display);font-size:clamp(28px,4.4vw,44px);line-height:1.06;letter-spacing:-.03em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:14px;text-wrap:balance}
+.sec-intro{font-size:17px;color:var(--white-dim);max-width:64ch;line-height:1.6}
+h3{font-family:var(--display);font-size:23px;font-weight:500;letter-spacing:-.015em;font-variation-settings:"opsz" 72,"SOFT" 30;margin:38px 0 10px}
+p{margin:0 0 16px}
+strong{font-weight:600}
+
+/* ---- numbered steps ---- */
+ol.steps{list-style:none;counter-reset:s;margin:22px 0 8px}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 24px 58px}
+ol.steps>li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:-1px;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft)}
+ol.steps>li::after{content:"";position:absolute;left:17.5px;top:38px;bottom:2px;width:1px;background:linear-gradient(var(--border-warm),transparent)}
+ol.steps>li:last-child::after{display:none}
+ol.steps>li .st{font-family:var(--display);font-weight:500;font-size:19px;letter-spacing:-.01em;color:var(--white);display:block;margin-bottom:4px;font-variation-settings:"opsz" 48,"SOFT" 30}
+ol.steps>li p{margin:0}
+ol.steps>li p+p{margin-top:9px}
+ul.plain{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px}
+ul.plain li{position:relative;padding-left:20px;color:var(--white-dim)}
+ul.plain li::before{content:"→";position:absolute;left:0;color:var(--faint);font-family:var(--mono)}
+
+/* ---- UI-label & key pills ---- */
+.ui{font-weight:600;font-size:.92em;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:7px;padding:1px 8px;white-space:nowrap}
+kbd{font-family:var(--mono);font-size:.82em;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-bottom-width:2px;border-radius:6px;padding:1px 7px}
+code{font-family:var(--mono);font-size:.85em;color:var(--cyan);background:var(--cyan-faint);padding:1px 6px;border-radius:5px}
+
+/* ---- callouts ---- */
+.note,.tip,.warn{border-radius:16px;padding:16px 20px;margin:22px 0;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 12px rgba(60,50,30,.05);font-size:14.5px;color:var(--white-dim)}
+.note{border-left:3px solid var(--cyan)}
+.tip{border-left:3px solid var(--cyan-2)}
+.warn{border-left:3px solid var(--amber);background:var(--amber-faint)}
+.note .lab,.tip .lab,.warn .lab{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:7px}
+.note .lab,.tip .lab{color:var(--cyan)}
+.warn .lab{color:#B07B1E}
+.note p:last-child,.tip p:last-child,.warn p:last-child{margin-bottom:0}
+
+/* ---- legend cards ---- */
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0}
+@media(max-width:560px){.legend{grid-template-columns:1fr}}
+.legend .b{border:1px solid var(--border-warm);border-radius:16px;padding:16px 18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.05);transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .35s}
+.legend .b:hover{transform:translateY(-3px);border-color:var(--cyan-soft);box-shadow:0 14px 34px -16px var(--cyan-glow)}
+.legend .b .t{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:500;font-size:18px;color:var(--white);margin-bottom:6px;font-variation-settings:"opsz" 48}
+.legend .b small{color:var(--muted);font-size:13.5px;line-height:1.5}
+.legend .b.doc .t{color:var(--white-dim)}
+.glyph{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;font-size:14px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);color:var(--cyan)}
+.legend .b.doc .glyph{border-color:var(--border-warm);background:var(--card-2);color:var(--muted)}
+
+/* ---- table ---- */
+.tablewrap{overflow-x:auto;margin:24px 0;border:1px solid var(--border-warm);border-radius:16px;box-shadow:0 2px 12px rgba(60,50,30,.05)}
+table{border-collapse:collapse;width:100%;min-width:540px;font-size:14px;background:var(--card)}
+th,td{text-align:left;padding:14px 18px;border-bottom:1px solid var(--glass-line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:500;background:rgba(13,148,136,.03)}
+tr:last-child td{border-bottom:none}
+td b{color:var(--white);font-weight:600}
+
+/* ---- field list ---- */
+.fields{margin:16px 0;border-top:1px solid var(--glass-line)}
+.fields .f{display:flex;gap:18px;padding:14px 0;border-bottom:1px solid var(--glass-line)}
+.fields .f .k{flex:0 0 34%;min-width:130px;font-family:var(--display);font-weight:500;font-size:16px;color:var(--white);font-variation-settings:"opsz" 36}
+.fields .f .v{color:var(--white-dim);font-size:14.5px}
+@media(max-width:520px){.fields .f{flex-direction:column;gap:4px}.fields .f .k{flex:none}}
+
+.pillrow{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0}
+.opt{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--muted);background:#fff;border:1px solid var(--border-warm);border-radius:100px;padding:4px 11px}
+.opt.good{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint)}
+.opt.bad{color:var(--danger);border-color:rgba(176,65,62,.3);background:var(--danger-faint)}
+.opt.tag{color:var(--faint);background:transparent;border:none;padding-left:2px}
+
+.formula{font-family:var(--mono);font-size:14px;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-radius:14px;padding:16px 18px;margin:14px 0;overflow-x:auto;box-shadow:inset 0 1px 3px rgba(60,50,30,.04)}
+.formula .hl{color:var(--cyan)}
+
+/* ---- footer ---- */
+footer{background:#1A2332;color:#F1F5F9;margin-top:24px}
+.foot-inner{max-width:var(--wrap);margin:0 auto;padding:52px 28px 44px}
+.foot-mark{font-family:var(--display);font-size:30px;letter-spacing:-.02em;margin-bottom:14px}
+.foot-mark .tru{color:#E2E8F0}.foot-mark .i{color:var(--cyan-hi)}
+.foot-inner p{color:rgba(241,245,249,.62);font-size:14px;max-width:60ch}
+.foot-inner a{color:var(--cyan-hi)}
+.foot-inner a:hover{color:#fff}
+.foot-bottom{margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(148,163,184,.7)}
+
+/* ---- print / PDF ---- */
+@page{size:A4;margin:15mm 14mm}
+@media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  html,body{background:#fff !important}
+  body{font-size:11.5px;line-height:1.5}
+  .nav{display:none}
+  .hero{padding:8px 0 28px}
+  .hero::before{display:none}
+  main{padding:0 0 20px}
+  .hero-ticker{display:none}
+  section,.card,.note,.tip,.warn,.legend .b,.tablewrap,ol.steps>li,.fields .f,.route-card{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  .sec-head{padding-top:24px}
+  a{color:var(--cyan)}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand">Tru<span class="i">Lens</span></span>
+  <div class="nav-links">
+    <a href="#install">Install</a>
+    <a href="#signin">Sign in</a>
+    <a class="route" href="#capture">Capture</a>
+    <a class="route" href="#publish">Publish</a>
+    <a href="#assist">Assist</a>
+    <a href="#help">Help</a>
+  </div>
+  <a class="nav-cta" href="https://lens.tru-saas.com">Open app ↗</a>
+</nav>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <span class="badge"><span class="dot"></span>Dealer photo studio · field guide</span>
+    <h1>Shoot a car, prove its condition, <span class="accent">get it live</span>.</h1>
+    <p class="lede">Everything a dealership team needs, in order: get TruLens onto your phone, sign in with your code, then photograph a car through the guided angles, declare its condition, and push it out — to your website, your DMS, and a 3D Orbit spin built from the photos.</p>
+    <div class="hero-ticker">
+      <span><span class="d">◆</span> lens.tru-saas.com</span>
+      <span><span class="d">◆</span> Works offline once installed</span>
+      <span><span class="d">◆</span> One phone · one dealership</span>
+    </div>
+  </section>
+
+  <!-- ============ TWO ROUTES (the two exits) ============ -->
+  <section aria-label="Where a finished car goes">
+    <div class="routes">
+      <a class="route-card" href="#publish">
+        <span class="tag">Exit A · Your website</span>
+        <h3>Publish to <span class="accent">website feed</span></h3>
+        <p class="out">The car goes live on your dealer site — photos, condition report and a 3D Orbit spin.</p>
+        <ul class="chain"><li>Capture</li><li class="arw">→</li><li>Declare</li><li class="arw">→</li><li>Publish</li></ul>
+        <span class="go">How to publish ↓</span>
+      </a>
+      <a class="route-card b2" href="#publish">
+        <span class="tag">Exit B · TruFlow DMS</span>
+        <h3>Send to <span class="accent">DMS</span></h3>
+        <p class="out">Push the photos and vehicle into TruFlow — the TruOrbit spin rides along automatically.</p>
+        <ul class="chain"><li>Capture</li><li class="arw">→</li><li>Publish gate</li><li class="arw">→</li><li>Send to DMS</li></ul>
+        <span class="go">How to export ↓</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CONTENTS ============ -->
+  <nav class="toc" aria-label="Contents">
+    <a href="#need"><span class="n">00</span><span>What you need</span></a>
+    <a href="#install"><span class="n">01</span><span>Install the app (PWA)</span></a>
+    <a href="#signin"><span class="n">02</span><span>Sign in with your code</span></a>
+    <a href="#home"><span class="n">03</span><span>The catalogue (home)</span></a>
+    <a href="#capture"><span class="n">04</span><span>Capture the car</span></a>
+    <a href="#review"><span class="n">05</span><span>Review, tag &amp; price</span></a>
+    <a href="#publish"><span class="n">06</span><span>Report &amp; publish</span></a>
+    <a href="#assist"><span class="n">07</span><span>DealerAssist &amp; Guide</span></a>
+    <a href="#help"><span class="n">08</span><span>Troubleshooting</span></a>
+  </nav>
+
+  <!-- ============ 00 ============ -->
+  <section id="need">
+    <div class="sec-head">
+      <p class="eyebrow">00 · Before you start</p>
+      <h2>What you need</h2>
+      <p class="sec-intro">TruLens is a web app that installs to your phone like a normal app — there is nothing to download from an app store.</p>
+    </div>
+    <div class="fields">
+      <div class="f"><div class="k">A phone with a camera</div><div class="v">Android or iPhone. The guided camera and licence-disc scan need a rear camera and an HTTPS connection.</div></div>
+      <div class="f"><div class="k">The web address</div><div class="v"><code>https://lens.tru-saas.com</code> — open it in your phone's browser. On iPhone this <strong>must be Safari</strong> (see below).</div></div>
+      <div class="f"><div class="k">Your access code</div><div class="v">One code from your dealer principal — the <strong>same code across the TruDealer apps</strong>. There's no self-signup; it unlocks TruLens on this phone.</div></div>
+      <div class="f"><div class="k">Your dealership</div><div class="v">Already set for you — your access code is tied to your dealership in TruFlow before you get the app, so everything you shoot on this phone files to the right dealership automatically.</div></div>
+    </div>
+    <div class="note"><span class="lab">Good to know</span><p>You sign in <strong>once per phone</strong> — the app tells you “Signs in for 30&nbsp;days.” After that you land straight on your catalogue every time, and it keeps working offline once installed.</p></div>
+  </section>
+
+  <!-- ============ 01 INSTALL ============ -->
+  <section id="install">
+    <div class="sec-head">
+      <p class="eyebrow">01 · Get it on your phone</p>
+      <h2>Install the app <span class="accent">(PWA)</span></h2>
+      <p class="sec-intro">Installing puts a TruLens icon on your home screen and runs it full-screen with no browser bar — the way you'll want it on the floor. A prompt appears when the browser offers it; if you miss it, use the steps below.</p>
+    </div>
+
+    <h3>On iPhone or iPad</h3>
+    <p>Safari doesn't offer a one-tap install — in the TruLens banner tap <span class="ui">How to install</span>, then follow the three steps:</p>
+    <ol class="steps">
+      <li><span class="st">Open the site in Safari</span><p>Go to <code>lens.tru-saas.com</code>. Chrome and Edge on iPhone <strong>cannot</strong> install it — it has to be Safari.</p></li>
+      <li><span class="st">Tap Share</span><p>Tap the <kbd>Share</kbd> icon in Safari's toolbar.</p></li>
+      <li><span class="st">Add to Home Screen</span><p>Scroll and tap <span class="ui">Add to Home Screen</span>.</p></li>
+      <li><span class="st">Tap Add</span><p>Confirm with <span class="ui">Add</span>, then open <strong>TruLens</strong> from your home screen. (Tap <span class="ui">Got it</span> to close the tip.)</p></li>
+    </ol>
+
+    <h3>On Android (Chrome / Edge)</h3>
+    <ol class="steps">
+      <li><span class="st">Open the site</span><p>Go to <code>lens.tru-saas.com</code>. The TruLens banner shows an <span class="ui">Install app</span> (or <span class="ui">Install</span>) button — tap it and confirm.</p></li>
+      <li><span class="st">Or use the browser menu</span><p>No banner? Open the browser menu (<kbd>⋮</kbd>) and tap <span class="ui">Install app</span> or <span class="ui">Add to Home screen</span>.</p></li>
+      <li><span class="st">Open from the home screen</span><p>Launch TruLens from its new icon — it opens full-screen and works offline for the app shell.</p></li>
+    </ol>
+
+    <div class="tip"><span class="lab">Why install</span><p>The banner puts it plainly: one-tap access on this phone, and it <strong>works offline</strong> for the app shell. Installing needs an <strong>HTTPS</strong> page, and some browsers only offer the prompt after a couple of visits.</p></div>
+  </section>
+
+  <!-- ============ 02 SIGN IN + DEALERSHIP ============ -->
+  <section id="signin">
+    <div class="sec-head">
+      <p class="eyebrow">02 · Register the phone</p>
+      <h2>Sign in with your code</h2>
+      <p class="sec-intro">One screen the first time — the access code that unlocks the app on this phone. There's no email or password, and no dealership to choose: your code already ties this phone to your dealership.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Open TruLens &amp; enter the code</span><p>The sign-in screen reads <strong>“Sign in this phone”</strong> · “<em>Signs in for 30 days · photo → export → web</em>.” Type your code into the <span class="ui">Dealership access code</span> field. Tap the eye icon to reveal what you typed, and a note warns you if <kbd>Caps Lock</kbd> is on.</p></li>
+      <li><span class="st">Tap “Use this device”</span><p>The button shows <span class="ui">Checking code…</span> while it verifies, then signs this phone in and drops you straight on your catalogue. It stays signed in afterwards.</p></li>
+    </ol>
+    <div class="note"><span class="lab">Your dealership is already set</span><p>It's <strong>one code across all the TruDealer apps</strong>, issued for your dealership in TruFlow before it reaches you — so TruLens knows which dealership this phone belongs to the moment you sign in. Every car you shoot files to the right dealership, with nothing to pick and nothing to get wrong.</p></div>
+    <div class="warn"><span class="lab">If the code is refused</span><p>“<em>That code is not recognised</em>” means the code is wrong or your dealership isn't set up yet — <strong>ask your dealer principal, or contact TruSaaS</strong>. Check <kbd>Caps Lock</kbd> and tap the eye to reveal what you typed.</p></div>
+  </section>
+
+  <!-- ============ 03 CATALOGUE ============ -->
+  <section id="home">
+    <div class="sec-head">
+      <p class="eyebrow">03 · Where everything starts</p>
+      <h2>The catalogue</h2>
+      <p class="sec-intro">You land on your vehicle <strong>Catalogue</strong>. Filter it, add cars, and see at a glance what still needs shooting. The bottom bar switches between <span class="ui">Catalogue</span>, <span class="ui">Dashboard</span> and <span class="ui">Settings</span>.</p>
+    </div>
+
+    <h3>Find &amp; filter</h3>
+    <p>Status tabs run across the top — <span class="ui">All</span>, <span class="ui">In progress</span>, <span class="ui">Ready</span>, <span class="ui">Listed</span> — each with a live count. A readiness filter (<span class="ui">Any readiness</span> / <span class="ui">Needs shots</span> / <span class="ui">Web-ready</span>) and a search box (“Search VIN, stock, make…”) narrow it further.</p>
+
+    <h3>Add a vehicle</h3>
+    <p>Tap <span class="ui">+</span> to open <strong>New vehicle</strong>. The fastest way in is <span class="ui">Scan licence disc</span> — hold the camera over the SA disc and TruLens reads the barcode and pre-fills make, model, colour, VIN and year (“Filled N fields from the disc — check and adjust”). Or enter by hand. <strong>Mileage (km)</strong> is required; add a <strong>Price (R)</strong>, and expand “Colour, VIN, stock&nbsp;# — more details” for the rest. Save with <span class="ui">Add vehicle</span>.</p>
+
+    <h3>Each car's actions</h3>
+    <p>A vehicle card shows a thumbnail with an <strong>N/27</strong> shots badge and a core-photos progress bar, plus:</p>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">◉</span> Take pictures</div><small>Opens the guided camera to shoot (or finish) this car — the start of the studio workflow.</small></div>
+      <div class="b"><div class="t"><span class="glyph">▦</span> Report</div><small>Opens this car's <strong>Vehicle Condition Report</strong>.</small></div>
+      <div class="b doc"><div class="t"><span class="glyph">◫</span> Export</div><small>Pushes the photos and vehicle to TruFlow <strong>DMS</strong>.</small></div>
+      <div class="b doc"><div class="t"><span class="glyph">▲</span> Publish / Unpublish</div><small>Toggles the car on your <strong>website feed</strong> (enabled once it's web-ready).</small></div>
+    </div>
+    <div class="note"><span class="lab">Dashboard &amp; Settings</span><p>The <span class="ui">Dashboard</span> tab shows KPIs (catalogue, ready, pending, capture rate, photos), a readiness chart and a “Do next” card. <span class="ui">Settings</span> holds your dealership profile, the DMS export target, currency, the AI quality threshold and your WhatsApp number.</p></div>
+  </section>
+
+  <!-- ============ 04 CAPTURE ============ -->
+  <section id="capture">
+    <div class="sec-head">
+      <p class="eyebrow">04 · Workflow · step 1</p>
+      <h2>Capture the car</h2>
+      <p class="sec-intro">A guided walk-around of up to <strong>27 angles</strong> in three phases. You don't need all 27 — TruLens marks a car <strong>listing-ready</strong> once the <strong>10 core shots</strong> are in; the rest add trust. Tap <span class="ui">Take pictures</span> on a car to start.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Work the shot list</span><p>The header tracks progress — “<em>Core X/10 · N/27 shots</em>” and, once you're there, “<em>Listing-ready · N/27</em>.” The three phases are <strong>Front &amp; Engine</strong>, <strong>Clockwise Exterior Walk-Around</strong>, and <strong>Interior, History &amp; Verification</strong>. The chip strip lists the core shots; <span class="ui">Add more shots (optional)</span> reveals the extras.</p></li>
+      <li><span class="st">Shoot each angle</span><p>The viewfinder names the slot and shows “<em>Shot N / 27</em>.” Use the big <span class="ui">Shoot</span> button, or <span class="ui">Import</span> to add one from the gallery, or <span class="ui">Skip</span> to move on. In a hurry? <span class="ui">Upload photos (bulk)</span> lets you pick many at once and auto-assigns each to the next empty slot, core-first.</p></li>
+      <li><span class="st">Keep or redo</span><p>After a shot TruLens scores it for lighting and angle and shows <span class="ui">Redo</span> or <span class="ui">Keep &amp; next</span>. There's also a <span class="ui">Tag damage</span> shortcut if you spotted something. On the service-book slot, <span class="ui">No booklet with vehicle? Mark “None” (Exempt)</span> keeps you moving.</p></li>
+      <li><span class="st">Finish to the review</span><p>Once the core shots are done the CTA turns into <span class="ui">Core shots done — review &amp; publish</span> (or <span class="ui">All shots captured — review &amp; publish</span>) — tap it to head to the publish gate.</p></li>
+    </ol>
+    <div class="tip"><span class="lab">Aim for core first</span><p>The 10 core shots are the honest minimum for a listing — front bumper, the four corners, rear bumper, cabin and odometer among them. Get those in and the car can go live; the recommended and extra angles just make the listing stronger.</p></div>
+  </section>
+
+  <!-- ============ 05 REVIEW ============ -->
+  <section id="review">
+    <div class="sec-head">
+      <p class="eyebrow">05 · Workflow · step 2</p>
+      <h2>Review, tag &amp; price</h2>
+      <p class="sec-intro">As you keep shots you rate condition; anything marked damage gets tagged on the real photo; and the price comes from the live market.</p>
+    </div>
+
+    <h3>Rate each shot</h3>
+    <p>Keeping a shot opens <strong>“Assess condition &amp; keep”</strong> with the photo's quality score out of 100. Rate <strong>Condition of this part</strong>:</p>
+    <div class="pillrow"><span class="opt good">OK</span><span class="opt">Note</span><span class="opt bad">Damage</span></div>
+    <p>Add a <span class="ui">Note</span> if useful (“<em>15cm scratch, lower door</em>”), <span class="ui">Rotate</span> if the shot's sideways, then <span class="ui">Keep &amp; next</span>. Rating <strong>Damage</strong> opens the tagger after you save.</p>
+
+    <h3>Tag damage on the photo</h3>
+    <p>On the <strong>“Tag damage”</strong> screen, tap the photo where the damage is to drop a pin. For each mark set a <strong>Type</strong> and <strong>Severity</strong>, and add a note:</p>
+    <div class="pillrow"><span class="opt">scratch</span><span class="opt">dent</span><span class="opt">chip</span><span class="opt">rust</span><span class="opt">crack</span><span class="opt">paint</span><span class="opt">wear</span><span class="opt">missing</span></div>
+    <div class="pillrow"><span class="opt good">1 Cosmetic</span><span class="opt good">2 Minor</span><span class="opt">3 Moderate</span><span class="opt bad">4 Major</span><span class="opt bad">5 Structural</span></div>
+    <p>Optionally <span class="ui">Scan this photo with AI</span> to get suggested pins — each must be accepted with <span class="ui">Confirm — this damage is real</span> or it's dropped. Finish with <span class="ui">Save damage tags</span>.</p>
+
+    <h3>Price it</h3>
+    <p>On the vehicle form, tap <span class="ui">Get market value</span> (it shows <span class="ui">Checking the market…</span>). TruLens scans dealer stock and SA classifieds, mileage-adjusted, and returns a <strong>Market average</strong> with the number of listings found. Tap <span class="ui">Use as price</span> to drop it into the car's price.</p>
+    <div class="note"><span class="lab">Tagging is yours, not a machine's</span><p>The condition on the report is <strong>dealer-declared</strong> — built from the ratings and tags you enter. The AI scan only ever suggests; nothing counts until you confirm it.</p></div>
+  </section>
+
+  <!-- ============ 06 REPORT & PUBLISH ============ -->
+  <section id="publish">
+    <div class="sec-head">
+      <p class="eyebrow">06 · Workflow · step 3</p>
+      <h2>Report, then <span class="accent">publish</span></h2>
+      <p class="sec-intro">Declare the car's condition, then send it out the two exits — your website and your DMS — with a 3D Orbit spin along for the ride.</p>
+    </div>
+
+    <h3>The Vehicle Condition Report</h3>
+    <p>The report opens as a printable <strong>Vehicle Condition Report</strong> — vehicle info, photo grid, panel grades (Good&nbsp;/&nbsp;Fair&nbsp;/&nbsp;Poor from your OK&nbsp;/&nbsp;Note&nbsp;/&nbsp;Damage), damage findings with pin locations, a core-photos checklist, and dealer branding. First, <strong>declare condition</strong> with <span class="ui">No visible damage</span> or <span class="ui">Damage tagged below</span> — a listing isn't ready until this is stated. From the action bar you can also copy a <span class="ui">WhatsApp</span> sales blurb, and export the report as <span class="ui">HTML</span>, <span class="ui">Print</span> or <span class="ui">PDF</span>.</p>
+
+    <h3>The publish gate</h3>
+    <p>The <strong>“Publish gate”</strong> lists exactly what's ready — “<em>X of Y core shots captured</em>,” “<em>Condition declared</em>,” “<em>X of 8 exterior panels present</em>,” “<em>N optional shots skipped — listing still publishes</em>” — over a grid of all shots. Then choose an exit (you can do both):</p>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">▲</span> Publish to website feed</div><small>Puts the car live on your dealer website with its photos, condition report and 3D Orbit. Enabled once it's web-ready; toggle it back off any time with <strong>Unpublish</strong>.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◫</span> Send to DMS</div><small>Pushes photos and vehicle into TruFlow. The button reads <strong>Sending to DMS…</strong> while it runs and <strong>Re-Export to DMS</strong> once done.</small></div>
+    </div>
+
+    <h3>3D Orbit spin</h3>
+    <p>From the report, <span class="ui">3D</span> builds a <strong>TruOrbit</strong> spin from the eight exterior-lap panel photos (no video needed) and <span class="ui">Open 3D</span> previews it. It also rides along automatically with every DMS export — the catalogue toast reads <span class="ui">TruOrbit ✓</span> when a spin went with it.</p>
+    <div class="warn"><span class="lab">14-day retention</span><p>Once a car has its <strong>first successful DMS export</strong>, TruLens keeps it for <strong>14 days</strong> and then lets it go — TruFlow becomes the source of truth. Export before you rely on it being here.</p></div>
+  </section>
+
+  <!-- ============ 07 ASSIST ============ -->
+  <section id="assist">
+    <div class="sec-head">
+      <p class="eyebrow">07 · Help that travels with you</p>
+      <h2>Dealer Assist <span class="accent">&amp; Guide</span></h2>
+      <p class="sec-intro">Two kinds of help sit in the catalogue header — reach for them before you get stuck, without leaving the job.</p>
+    </div>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">✦</span> Dealer Assist</div><small>A floating AI chat (the message icon). “<em>Ask me anything about shooting tips, quality scores, damage reports, DMS export, or the platform.</em>” Tap a suggestion or type into “Ask anything…”.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◈</span> Guide panel</div><small>A “How do I…?” drawer (the help icon). Shows steps <strong>for this screen</strong> plus everything else, each printable, with a WhatsApp “still stuck? contact support” link.</small></div>
+    </div>
+  </section>
+
+  <!-- ============ 08 TROUBLESHOOTING ============ -->
+  <section id="help">
+    <div class="sec-head">
+      <p class="eyebrow">08 · When something's off</p>
+      <h2>Troubleshooting</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Situation</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr><td><b>iPhone won't offer install</b></td><td>You must use <strong>Safari</strong>. In the banner tap <span class="ui">How to install</span>, then <kbd>Share</kbd> → <span class="ui">Add to Home Screen</span> → <span class="ui">Add</span>.</td></tr>
+          <tr><td><b>Code isn't accepted</b></td><td>Check <kbd>Caps Lock</kbd> and tap the eye to reveal it. If it still fails, the code is wrong or your dealership isn't set up — ask your dealer principal or TruSaaS.</td></tr>
+          <tr><td><b>Can't publish to the website</b></td><td>The publish gate lists what's missing — usually a few core shots or an undeclared condition. Capture the core shots and declare condition on the report, then <span class="ui">Publish</span> enables.</td></tr>
+          <tr><td><b>No 3D Orbit on the car</b></td><td>The spin needs the exterior-lap panel photos (at least six frames). Shoot the full clockwise exterior and it builds automatically on export.</td></tr>
+          <tr><td><b>Camera won't open</b></td><td>Close any other app using the camera. If it still won't, use <span class="ui">Import</span> or <span class="ui">Upload photos (bulk)</span> to add shots from the gallery.</td></tr>
+          <tr><td><b>A car vanished</b></td><td>Cars are kept <strong>14 days after the first DMS export</strong>, then removed — TruFlow holds it after that. Nothing was lost; it moved to the DMS.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip"><span class="lab">Rule of thumb</span><p>Get the <strong>core shots</strong> in and <strong>declare condition</strong> — that's all a car needs to go live. Everything else (extra angles, the 3D spin, the DMS push) builds on those two.</p></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <div class="foot-mark"><span class="tru">Tru</span><span class="i">Lens</span></div>
+    <p>Dealer photo studio — guided capture, condition reports, website &amp; DMS publishing with 3D Orbit, part of the TruDealer platform (TruLens · TruInspect · TruFlow · TruChat). Live at <a href="https://lens.tru-saas.com">lens.tru-saas.com</a>. Access is issued per dealership; there is no self-signup.</p>
+    <div class="foot-bottom">TruDealer · Future Automotive · Built in Cape Town</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1104,6 +1104,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
       '<div class="vhead"><div class="vt">'+esc(name||"Vehicle")+(v.trim?'<div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:5px;font-weight:400">'+esc(v.trim)+'</div>':'')+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+
       '<div class="meta">'+meta.join("")+'</div>'+
       '<button type="button" class="share-row" id="shareBtn">'+SVG_SHARE+'Share this car<span class="sr-hint">WhatsApp · link</span></button>'+
+      '<button type="button" class="share-row" id="socialBtn" style="margin-top:8px;">'+SVG_SHARE+'TruSocial 1-Click Pack<span class="sr-hint">Marketplace · IG</span></button>'+
       '<div class="lbl">Listing</div>'+
       '<div class="listing">'+
         '<div class="lrow"><div class="a">Live on website</div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch" tabindex="0" aria-checked="'+(pub?"true":"false")+'" aria-label="Live on website"></div></div>'+
@@ -1282,6 +1283,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       });
     });
     $("#shareBtn").addEventListener("click",function(){var cv=curVeh()||v;if(cv)shareVehicle(cv);});
+    $("#socialBtn").addEventListener("click",function(){var cv=curVeh()||v;if(cv)openSocialSheet(cv);});
     $("#vMvBtn").addEventListener("click",function(){
       var cv=curVeh();if(!cv)return;
       var km=parseInt(($("#fKm").value||""),10)||cv.mileage||0;
@@ -1672,6 +1674,65 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       } else {
         window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank","noopener");
       }
+    });
+  }
+
+  function copyText(text, msg){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){toast(msg||"Copied!");},function(){legacy();});
+    } else { legacy(); }
+    function legacy(){
+      try{
+        var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+        document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+        toast(msg||"Copied!");
+      }catch(e){toast("Copy failed",true);}
+    }
+  }
+
+  function openSocialSheet(v){
+    ensureDealerProfile(function(){
+      var isMoto=VERTICAL==="moto"||v.vertical==="moto";
+      var name=[v.year,v.make,v.model,v.trim].filter(Boolean).join(" ").trim()||"Vehicle";
+      var priceStr=vPrice(v)?money(vPrice(v)):"Contact for price";
+      
+      var mpText="VEHICLE DETAILS:\n" +
+        "• Vehicle: "+name+"\n" +
+        "• Price: "+priceStr+"\n" +
+        "• Mileage: "+odo(v.mileage)+"\n" +
+        "• Transmission: "+(v.transmission||"N/A")+"\n" +
+        "• Fuel Type: "+(v.fuelType||"N/A")+"\n\n" +
+        "Clean condition, fully verified, roadworthy certified.\n" +
+        "Trade-ins welcome. Finance available.\n" +
+        "Viewing & test drives available daily.";
+      
+      var igText="🔥 NEW ARRIVAL: "+name+"\n\n" +
+        "💰 "+priceStr+"\n" +
+        "📍 "+odo(v.mileage)+" · "+(v.transmission||"")+" · "+(v.fuelType||"")+"\n\n" +
+        "✨ Fully inspected & certified.\n" +
+        "📲 DM us or tap link in bio for instant finance application.\n\n" +
+        "#usedcars #cardealership #carsforsale #dealership #autosales";
+
+      var body = '<div style="padding:16px 20px;">' +
+        '<div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px;">TruSocial 1-Click Pack</div>' +
+        '<div style="font-size:12px;color:var(--faint);margin-bottom:18px;">'+esc(name)+'</div>' +
+        '<div style="display:flex;flex-direction:column;gap:10px;">' +
+          '<button type="button" class="share-row" id="tsCopyMp">🛒 Copy Facebook Marketplace Pack<span class="sr-hint">Specs</span></button>' +
+          '<button type="button" class="share-row" id="tsCopyIg">📷 Copy Instagram Caption<span class="sr-hint">Bio</span></button>' +
+          '<button type="button" class="share-row" id="tsOpenMp">↗ Open FB Marketplace Composer<span class="sr-hint">Create</span></button>' +
+        '</div>' +
+      '</div>';
+
+      $("#sheetBody").innerHTML = body;
+      $("#sheetFoot").innerHTML = '<button type="button" class="btn" id="tsClose">Back to vehicle</button>';
+      $("#tsClose").addEventListener("click", function(){ openVehicle(v.id); });
+      $("#tsCopyMp").addEventListener("click", function(){ copyText(mpText, "Marketplace specs copied!"); });
+      $("#tsCopyIg").addEventListener("click", function(){ copyText(igText, "Instagram caption copied!"); });
+      $("#tsOpenMp").addEventListener("click", function(){
+        copyText(mpText, "Specs copied — opening Marketplace");
+        setTimeout(function(){ window.open("https://www.facebook.com/marketplace/create/vehicle","_blank","noopener"); }, 300);
+      });
+      openSheet();
     });
   }
 

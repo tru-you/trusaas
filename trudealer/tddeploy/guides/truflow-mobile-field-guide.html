@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18395587079');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TruFlow Mobile Guide</title>
+<meta name="description" content="How to install TruFlow Mobile, sign in, and run leads, stock and deals from the showroom floor — companion to Premium, or standalone.">
+<meta name="theme-color" content="#F3F0E7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ======= TruDealer design system — cream · teal · Fraunces ======= */
+:root{
+  --ink:#F3F0E7; --ink-2:#EAE6DA; --card:#FBF9F3; --card-2:#EFEBE0;
+  --white:#14141F; --white-dim:rgba(20,20,31,.78);
+  --muted:rgba(64,78,100,.92); --faint:rgba(64,78,100,.58);
+  --cyan:#0B7C72; --cyan-2:#0D9488; --cyan-hi:#5EEAD4;
+  --cyan-soft:rgba(13,148,136,.18); --cyan-glow:rgba(13,148,136,.2); --cyan-faint:rgba(13,148,136,.06);
+  --amber:#D4942A; --amber-soft:rgba(212,148,42,.2); --amber-glow:rgba(212,148,42,.18); --amber-faint:rgba(212,148,42,.08);
+  --border:rgba(0,0,0,.08); --border-warm:rgba(60,50,30,.1); --glass-line:rgba(0,0,0,.08);
+  --danger:#B0413E; --danger-faint:rgba(176,65,62,.07);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --wrap:820px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:16px;line-height:1.62;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan-2)}
+::selection{background:var(--cyan);color:#fff}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+img{max-width:100%;display:block}
+.accent{color:var(--cyan-2);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
+
+.nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 12px 9px 20px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:99px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:var(--wrap);width:calc(100% - 40px)}
+.nav-brand{font-family:var(--display);font-size:20px;font-weight:500;letter-spacing:-.02em;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.nav-brand .i{color:var(--cyan)}
+.nav-brand .tier{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);border:1px solid var(--cyan-soft);background:var(--cyan-faint);border-radius:100px;padding:2px 7px}
+.nav-links{display:flex;gap:20px;font-size:13px;color:var(--white-dim)}
+.nav-links a{color:var(--white-dim);position:relative;padding-bottom:3px;white-space:nowrap}
+.nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{right:0}
+.nav-links a.route{color:var(--cyan);font-weight:600}
+.nav-links a.route::after{right:0;background:var(--cyan-soft)}
+.nav-links a.route:hover::after{background:var(--cyan)}
+.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:8px 15px;border:1px solid var(--cyan);border-radius:100px;color:var(--cyan);white-space:nowrap;transition:all .2s}
+.nav-cta:hover{background:var(--cyan);color:#fff}
+@media(max-width:820px){.nav-links a:not(.route){display:none}}
+@media(max-width:720px){.nav-links{display:none}}
+
+.routes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:40px 0 8px}
+@media(max-width:640px){.routes{grid-template-columns:1fr}}
+.route-card{display:block;position:relative;padding:26px 26px 22px;border-radius:20px;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 14px rgba(60,50,30,.06);overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .3s}
+.route-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.route-card:hover{transform:translateY(-4px);border-color:var(--cyan-soft);box-shadow:0 20px 46px -20px var(--cyan-glow)}
+.route-card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:12px}
+.route-card h3{font-family:var(--display);font-size:25px;font-weight:500;letter-spacing:-.02em;margin:0 0 6px;font-variation-settings:"opsz" 72,"SOFT" 30}
+.route-card .out{font-size:14px;color:var(--white-dim);margin:0 0 16px;line-height:1.5}
+.route-card .chain{list-style:none;display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 18px;padding:0}
+.route-card .chain li{padding:5px 9px;border-radius:100px;border:1px solid var(--border-warm);background:rgba(0,0,0,.02);white-space:nowrap}
+.route-card .chain li.arw{border:none;background:none;padding:5px 0;color:var(--faint)}
+.route-card .go{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:inline-flex;align-items:center;gap:8px}
+.route-card.b2::before{background:var(--amber)}
+.route-card.b2 .tag,.route-card.b2 .go{color:#B07B1E}
+.route-card.b2:hover{border-color:var(--amber-soft);box-shadow:0 20px 46px -20px var(--amber-glow)}
+
+main{max-width:var(--wrap);margin:0 auto;padding:0 28px 100px}
+section{scroll-margin-top:88px}
+
+.hero{position:relative;padding:150px 0 52px;border-bottom:1px solid var(--border);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 90% 70% at 20% 0%,#F6F4EE 0%,transparent 60%)}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 11px;border:1px solid var(--cyan-soft);border-radius:100px;background:var(--cyan-faint);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:26px}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(13,148,136,.5);animation:ping 1.9s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(13,148,136,.5)}70%{box-shadow:0 0 0 11px rgba(13,148,136,0)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
+h1{font-family:var(--display);font-size:clamp(38px,6.4vw,62px);line-height:1.02;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30,"WONK" 0;margin-bottom:22px;text-wrap:balance}
+.lede{font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:var(--white-dim);max-width:62ch;text-wrap:pretty}
+.hero-ticker{display:flex;flex-wrap:wrap;gap:7px 20px;margin-top:34px;padding-top:22px;border-top:1px solid var(--glass-line);font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.hero-ticker .d{color:var(--cyan)}
+
+.toc{margin:36px 0 8px;padding:10px 26px;border:1px solid var(--border-warm);border-radius:18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.06);display:grid;grid-template-columns:repeat(2,1fr);gap:0 32px}
+@media(max-width:560px){.toc{grid-template-columns:1fr}}
+.toc a{display:flex;gap:14px;align-items:baseline;padding:11px 0;color:var(--white-dim);border-bottom:1px solid var(--glass-line)}
+.toc a:hover{color:var(--white)}
+.toc .n{font-family:var(--mono);font-size:12px;color:var(--cyan);width:22px;flex:none}
+
+.sec-head{padding:64px 0 6px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+h2{font-family:var(--display);font-size:clamp(27px,4.2vw,42px);line-height:1.07;letter-spacing:-.03em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:14px;text-wrap:balance}
+.sec-intro{font-size:17px;color:var(--white-dim);max-width:66ch;line-height:1.6}
+h3{font-family:var(--display);font-size:22px;font-weight:500;letter-spacing:-.015em;font-variation-settings:"opsz" 72,"SOFT" 30;margin:36px 0 10px}
+p{margin:0 0 16px}
+strong{font-weight:600}
+
+ol.steps{list-style:none;counter-reset:s;margin:22px 0 8px}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 24px 58px}
+ol.steps>li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:-1px;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft)}
+ol.steps>li::after{content:"";position:absolute;left:17.5px;top:38px;bottom:2px;width:1px;background:linear-gradient(var(--border-warm),transparent)}
+ol.steps>li:last-child::after{display:none}
+ol.steps>li .st{font-family:var(--display);font-weight:500;font-size:18px;letter-spacing:-.01em;color:var(--white);display:block;margin-bottom:4px;font-variation-settings:"opsz" 48,"SOFT" 30}
+ol.steps>li p{margin:0}
+ol.steps>li p+p{margin-top:9px}
+ul.plain{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px}
+ul.plain li{position:relative;padding-left:20px;color:var(--white-dim)}
+ul.plain li::before{content:"→";position:absolute;left:0;color:var(--faint);font-family:var(--mono)}
+
+.ui{font-weight:600;font-size:.92em;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:7px;padding:1px 8px;white-space:nowrap}
+kbd{font-family:var(--mono);font-size:.82em;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-bottom-width:2px;border-radius:6px;padding:1px 7px}
+code{font-family:var(--mono);font-size:.85em;color:var(--cyan);background:var(--cyan-faint);padding:1px 6px;border-radius:5px}
+
+.note,.tip,.warn{border-radius:16px;padding:16px 20px;margin:22px 0;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 12px rgba(60,50,30,.05);font-size:14.5px;color:var(--white-dim)}
+.note{border-left:3px solid var(--cyan)}
+.tip{border-left:3px solid var(--cyan-2)}
+.warn{border-left:3px solid var(--amber);background:var(--amber-faint)}
+.note .lab,.tip .lab,.warn .lab{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:7px}
+.note .lab,.tip .lab{color:var(--cyan)}
+.warn .lab{color:#B07B1E}
+.note p:last-child,.tip p:last-child,.warn p:last-child{margin-bottom:0}
+
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0}
+@media(max-width:560px){.legend{grid-template-columns:1fr}}
+.legend .b{border:1px solid var(--border-warm);border-radius:16px;padding:16px 18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.05)}
+.legend .b .t{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:500;font-size:18px;color:var(--white);margin-bottom:6px;font-variation-settings:"opsz" 48}
+.legend .b small{color:var(--muted);font-size:13.5px;line-height:1.5;display:block}
+.glyph{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;font-size:14px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);color:var(--cyan);font-family:var(--mono)}
+
+.fields{margin:16px 0;border-top:1px solid var(--glass-line)}
+.fields .f{display:flex;gap:18px;padding:13px 0;border-bottom:1px solid var(--glass-line)}
+.fields .f .k{flex:0 0 32%;min-width:140px;font-family:var(--display);font-weight:500;font-size:16px;color:var(--white);font-variation-settings:"opsz" 36}
+.fields .f .v{color:var(--white-dim);font-size:14.5px}
+@media(max-width:520px){.fields .f{flex-direction:column;gap:4px}.fields .f .k{flex:none}}
+
+.pillrow{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 14px;align-items:center}
+.opt{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--muted);background:#fff;border:1px solid var(--border-warm);border-radius:100px;padding:4px 11px}
+.opt.good{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint)}
+.opt.bad{color:var(--danger);border-color:rgba(176,65,62,.3);background:var(--danger-faint)}
+.opt.arw{border:none;background:none;color:var(--faint);padding:4px 2px}
+
+footer{background:#1A2332;color:#F1F5F9;margin-top:24px}
+.foot-inner{max-width:var(--wrap);margin:0 auto;padding:52px 28px 44px}
+.foot-mark{font-family:var(--display);font-size:30px;letter-spacing:-.02em;margin-bottom:14px}
+.foot-mark .tru{color:#E2E8F0}.foot-mark .i{color:var(--cyan-hi)}
+.foot-inner p{color:rgba(241,245,249,.62);font-size:14px;max-width:64ch}
+.foot-inner a{color:var(--cyan-hi)}
+.foot-inner a:hover{color:#fff}
+.foot-bottom{margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(148,163,184,.7)}
+
+@page{size:A4;margin:15mm 14mm}
+@media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  html,body{background:#fff !important}
+  body{font-size:11.5px;line-height:1.5}
+  .nav{display:none}
+  .hero{padding:8px 0 24px}.hero::before{display:none}.hero-ticker{display:none}
+  main{padding:0 0 20px}
+  section,.card,.note,.tip,.warn,.legend .b,.fields .f,ol.steps>li,.route-card{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  .sec-head{padding-top:24px}
+  a{color:var(--cyan)}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand">Tru<span class="i">Flow</span><span class="tier">Mobile</span></span>
+  <div class="nav-links">
+    <a href="#install">Install</a>
+    <a href="#signin">Sign in</a>
+    <a class="route" href="#leads">Leads</a>
+    <a class="route" href="#stock">Stock</a>
+    <a href="#help">Help</a>
+  </div>
+  <a class="nav-cta" href="https://app.tru-saas.com">Open app ↗</a>
+</nav>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <span class="badge"><span class="dot"></span>TruFlow Mobile · field guide</span>
+    <h1>Run the floor <span class="accent">from your pocket</span>.</h1>
+    <p class="lede">TruFlow Mobile puts your leads, stock and deals on your phone — chase an enquiry, add a walk-in, check a price without walking back to the desk. It's the companion to TruFlow Premium on the desktop, and for smaller dealers it's the whole show on its own.</p>
+    <div class="hero-ticker">
+      <span><span class="d">◆</span> app.tru-saas.com</span>
+      <span><span class="d">◆</span> Phone-first · installs to home screen</span>
+      <span><span class="d">◆</span> Syncs with Premium</span>
+    </div>
+  </section>
+
+  <!-- ============ TWO JOBS ============ -->
+  <section aria-label="The two everyday jobs">
+    <div class="routes">
+      <a class="route-card" href="#leads">
+        <span class="tag">Job A · On the floor</span>
+        <h3>Work your <span class="accent">leads</span></h3>
+        <p class="out">Catch an enquiry, log a walk-in, and move it down the pipeline — call and WhatsApp in a tap.</p>
+        <ul class="chain"><li>New</li><li class="arw">→</li><li>Contacted</li><li class="arw">→</li><li>Negotiating</li><li class="arw">→</li><li>Won</li></ul>
+        <span class="go">Work a lead ↓</span>
+      </a>
+      <a class="route-card b2" href="#stock">
+        <span class="tag">Job B · The cars</span>
+        <h3>Manage your <span class="accent">stock</span></h3>
+        <p class="out">Add an arrival, set its price, and publish it to your website — photos come from TruLens.</p>
+        <ul class="chain"><li>Add</li><li class="arw">→</li><li>Shoot in TruLens</li><li class="arw">→</li><li>Publish</li></ul>
+        <span class="go">Manage stock ↓</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CONTENTS ============ -->
+  <nav class="toc" aria-label="Contents">
+    <a href="#need"><span class="n">00</span><span>What it is &amp; who it's for</span></a>
+    <a href="#install"><span class="n">01</span><span>Install it on your phone</span></a>
+    <a href="#signin"><span class="n">02</span><span>Sign in</span></a>
+    <a href="#around"><span class="n">03</span><span>Around the app</span></a>
+    <a href="#home"><span class="n">04</span><span>Home — your floor at a glance</span></a>
+    <a href="#leads"><span class="n">05</span><span>Leads</span></a>
+    <a href="#stock"><span class="n">06</span><span>Stock</span></a>
+    <a href="#add"><span class="n">07</span><span>Add a vehicle</span></a>
+    <a href="#activity"><span class="n">08</span><span>Activity &amp; Account</span></a>
+    <a href="#help"><span class="n">09</span><span>Getting help</span></a>
+  </nav>
+
+  <!-- ============ 00 ============ -->
+  <section id="need">
+    <div class="sec-head">
+      <p class="eyebrow">00 · Before you start</p>
+      <h2>What it is &amp; who it's for</h2>
+      <p class="sec-intro">TruFlow Mobile is a phone app — it installs to your home screen and runs full-screen. Which role it plays depends on your dealership.</p>
+    </div>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">◎</span> Companion</div><small>If your dealership runs <strong>TruFlow Premium</strong> on the desktop, this is your floor companion — everything you do here syncs both ways with Premium.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◐</span> Standalone</div><small>For a smaller dealer it's the <strong>whole system</strong> on a phone — leads, stock and deals, no desktop required.</small></div>
+    </div>
+    <div class="fields">
+      <div class="f"><div class="k">Your phone</div><div class="v">Any modern phone browser. Open <code>app.tru-saas.com</code> — on a laptop it shows a QR code to open it on your phone instead (or a link to <a href="https://premium.tru-saas.com">TruFlow Premium</a> for the full desktop DMS).</div></div>
+      <div class="f"><div class="k">Your dealer code</div><div class="v">One code — the <strong>same one you use on desktop</strong> and across the TruDealer apps. Your dealer principal issues it; there's no self-signup.</div></div>
+      <div class="f"><div class="k">TruLens for photos</div><div class="v">You add a car's details here, but its photos are shot in <strong>TruLens</strong> — a car saves unpublished until it has a gallery.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ 01 INSTALL ============ -->
+  <section id="install">
+    <div class="sec-head">
+      <p class="eyebrow">01 · Get it on your phone</p>
+      <h2>Install it on your phone</h2>
+      <p class="sec-intro">Add it to your home screen once and it opens full-screen like any app, ready on the floor.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Open the app</span><p>In your phone browser, go to <code>app.tru-saas.com</code>.</p></li>
+      <li><span class="st">Add to home screen</span><p><strong>iPhone (Safari):</strong> tap <kbd>Share</kbd> → <span class="ui">Add to Home Screen</span> → <span class="ui">Add</span>. <strong>Android (Chrome):</strong> tap the install banner, or the menu (<kbd>⋮</kbd>) → <span class="ui">Install app</span>.</p></li>
+      <li><span class="st">Open it from the icon</span><p>Launch TruFlow from its new home-screen icon — full-screen, no browser bar, and it works offline for the app shell.</p></li>
+    </ol>
+    <div class="tip"><span class="lab">On a laptop?</span><p>Above a certain width the app shows a hand-off screen instead — “<em>Your TruFlow Mobile companion — manage leads, stock and deals from the showroom floor</em>” — with the <span class="ui">app.tru-saas.com</span> link, <span class="ui">Copy link</span>, <span class="ui">Email the link to yourself</span> and a QR code to scan. For the full desktop DMS, open <strong>TruFlow Premium</strong> instead.</p></div>
+  </section>
+
+  <!-- ============ 02 SIGN IN ============ -->
+  <section id="signin">
+    <div class="sec-head">
+      <p class="eyebrow">02 · Get in</p>
+      <h2>Sign in</h2>
+      <p class="sec-intro">The opening screen is the <strong>TruFlow · Mobile</strong> wordmark and one field.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Enter your dealer code</span><p>Type it into <span class="ui">Dealer code</span>.</p></li>
+      <li><span class="st">Tap “Sign in”</span><p>It shows <span class="ui">Signing in…</span>, then drops you on Home. If it says “<em>That code isn't recognised</em>,” check the code with your dealer principal; “<em>Can't reach the server</em>” just means try again with signal.</p></li>
+    </ol>
+    <div class="note"><span class="lab">Shared handset?</span><p>Signing out clears everything cached on the device — leads and stock included — so the next person to sign in never sees another dealer's customers.</p></div>
+  </section>
+
+  <!-- ============ 03 AROUND ============ -->
+  <section id="around">
+    <div class="sec-head">
+      <p class="eyebrow">03 · The lay of the land</p>
+      <h2>Around the app</h2>
+      <p class="sec-intro">A slim top bar, and a bottom nav that's always in reach with your thumb.</p>
+    </div>
+    <h3>The top bar</h3>
+    <p>Three controls sit up top: the <span class="ui">How do I…?</span> guide (question-mark), <span class="ui">Dealer Assist</span> (the chat bubble), and your <strong>Account</strong> avatar.</p>
+    <h3>The bottom nav</h3>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">⌂</span> Home</div><small>Your pulse — the floor at a glance.</small></div>
+      <div class="b"><div class="t"><span class="glyph">☰</span> Leads</div><small>The pipeline, search and walk-in capture.</small></div>
+      <div class="b"><div class="t"><span class="glyph">▦</span> Stock</div><small>Your inventory and each car's detail.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◇</span> Activity</div><small>What's happening across the dealership.</small></div>
+      <div class="b"><div class="t"><span class="glyph">+</span> Add</div><small>Add a vehicle to inventory.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◉</span> Account</div><small>Your profile, code and sign-out.</small></div>
+    </div>
+  </section>
+
+  <!-- ============ 04 HOME ============ -->
+  <section id="home">
+    <div class="sec-head">
+      <p class="eyebrow">04 · Your morning read</p>
+      <h2>Home — your floor at a glance</h2>
+      <p class="sec-intro">Home greets you by dealership — “<em>Your floor at a glance</em>” — then lays out your day.</p>
+    </div>
+    <ul class="plain">
+      <li><strong>Your numbers</strong> — a grid of the KPIs that matter today.</li>
+      <li><strong>Follow up</strong> — the leads that need you, with <span class="ui">All leads →</span> into the full pipeline.</li>
+      <li><strong>Recent stock</strong> — your latest units, with <span class="ui">Manage →</span> into Stock.</li>
+    </ul>
+    <p>Pull down to refresh at any time.</p>
+  </section>
+
+  <!-- ============ 05 LEADS ============ -->
+  <section id="leads">
+    <div class="sec-head">
+      <p class="eyebrow">05 · Job A</p>
+      <h2>Leads</h2>
+      <p class="sec-intro">Every enquiry in one list, with the fastest possible path to a reply.</p>
+    </div>
+    <h3>Find &amp; filter</h3>
+    <p>Search with <span class="ui">Search leads</span>, filter by stage, and sort (Newest / Oldest / Name). The stages are:</p>
+    <div class="pillrow"><span class="opt">All</span><span class="opt good">New</span><span class="opt">Contacted</span><span class="opt">Negotiating</span><span class="opt good">Won</span></div>
+    <p>Tap <span class="ui">Walk-in</span> to capture someone who's just walked onto the floor — a new lead in seconds.</p>
+
+    <h3>Work a lead</h3>
+    <ol class="steps">
+      <li><span class="st">Open the lead sheet</span><p>Tap a lead and its detail slides up. Up top: <span class="ui">Call</span> and <span class="ui">WhatsApp</span> (one tap each), the enquiry message, and the car they're interested in.</p></li>
+      <li><span class="st">Move it along</span><p>Use the status stepper — <span class="opt">New</span> <span class="opt arw">→</span> <span class="opt">Contacted</span> <span class="opt arw">→</span> <span class="opt">Negotiating</span> <span class="opt arw">→</span> <span class="opt good">Won</span> — tapping the stage the lead has reached.</p></li>
+      <li><span class="st">Log what happened</span><p>Drop a note (“<em>What happened? e.g. Left a voicemail, will try Friday</em>”) so the timeline stays honest, then <span class="ui">Save</span>. It syncs straight to Premium.</p></li>
+    </ol>
+    <div class="tip"><span class="lab">Reaching Negotiating matters</span><p>When a lead hits <strong>Negotiating</strong>, its deal opens back in TruFlow Premium's <strong>Deal Readiness</strong> — so the desk can start the paperwork while you keep working the floor.</p></div>
+  </section>
+
+  <!-- ============ 06 STOCK ============ -->
+  <section id="stock">
+    <div class="sec-head">
+      <p class="eyebrow">06 · Job B</p>
+      <h2>Stock</h2>
+      <p class="sec-intro">Your inventory in your hand — search it, check a price, publish or pull a car.</p>
+    </div>
+    <h3>Find a car</h3>
+    <p>Search with <span class="ui">Search make, model, stock #</span>, filter (<span class="opt">All</span> <span class="opt">In stock</span> <span class="opt good">Live</span> <span class="opt">Sold</span>), and sort by newest, price or mileage. Each card shows a <span class="opt good">Live</span> or <span class="opt">Unpublished</span> pill, the price and quick spec chips.</p>
+
+    <h3>Open a car</h3>
+    <p>Tap a car for its detail sheet:</p>
+    <div class="fields">
+      <div class="f"><div class="k">Website toggle</div><div class="v">Flip it <strong>on</strong> to publish the car to your website, <strong>off</strong> to pull it.</div></div>
+      <div class="f"><div class="k">Status</div><div class="v">Segmented control: <span class="opt">In stock</span> / <span class="opt">Sold</span>.</div></div>
+      <div class="f"><div class="k">Pricing</div><div class="v">The asking price alongside <strong>TruPrice</strong>, so you can see where it sits.</div></div>
+      <div class="f"><div class="k">Save / delete</div><div class="v"><span class="ui">Save</span> commits changes; the delete button retires the unit.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ 07 ADD ============ -->
+  <section id="add">
+    <div class="sec-head">
+      <p class="eyebrow">07 · A new arrival</p>
+      <h2>Add a vehicle</h2>
+      <p class="sec-intro">The <span class="ui">Add</span> tab is a short two-part form — the car, then the money.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">The car</span><p>Year, Make, Model, Variant / trim, Body, Fuel, Transmission and Mileage (km).</p></li>
+      <li><span class="st">The money</span><p>Asking price (R) and TruPrice (R).</p></li>
+      <li><span class="st">Add to inventory</span><p>Tap <span class="ui">Add to inventory</span>. The car saves <strong>unpublished</strong> — “<em>shoot in TruLens to go live</em>.” Open TruLens, shoot that stock number's guided slots and export; the gallery flows back and you can publish it.</p></li>
+    </ol>
+  </section>
+
+  <!-- ============ 08 ACTIVITY / ACCOUNT ============ -->
+  <section id="activity">
+    <div class="sec-head">
+      <p class="eyebrow">08 · The rest</p>
+      <h2>Activity &amp; Account</h2>
+    </div>
+    <h3>Activity</h3>
+    <p>A running timeline — “<em>What's happening across your dealership</em>” — grouped by Today / Yesterday: new leads, vehicles published, photos uploaded, deals closed, price changes. It's the shared heartbeat of the floor.</p>
+    <h3>Account</h3>
+    <p>Your profile with your <strong>dealer code</strong> shown back (the one string you read out to support), a <span class="ui">Support</span> row that opens WhatsApp, and <span class="ui">Sign out</span>. Signing out clears the device's cached data.</p>
+  </section>
+
+  <!-- ============ 09 HELP ============ -->
+  <section id="help">
+    <div class="sec-head">
+      <p class="eyebrow">09 · When you're stuck</p>
+      <h2>Getting help</h2>
+      <p class="sec-intro">Two helpers live in the top bar, and neither leaves the app.</p>
+    </div>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">?</span> How do I…?</div><small>Short job walkthroughs tuned to your screen (the main one badged <strong>Start here</strong>), each a few numbered steps — with a WhatsApp “<strong>Still stuck? Contact support</strong>” at the bottom.</small></div>
+      <div class="b"><div class="t"><span class="glyph">✦</span> Dealer Assist</div><small>“<em>Ask me about stock, leads, pricing — whatever you need on the floor.</em>” Tap a suggestion (best seller, leads this week, stock over 60 days) or type your own.</small></div>
+    </div>
+    <div class="tip"><span class="lab">Rule of thumb</span><p>The two tabs you'll live in are <strong>Leads</strong> and <strong>Stock</strong>. Chase the enquiry, keep the car's record straight — everything else on the phone supports those two, and it all shows up on the desktop the moment you save.</p></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <div class="foot-mark"><span class="tru">Tru</span><span class="i">Flow</span> Mobile</div>
+    <p>The TruFlow Premium mobile companion — and a standalone system for smaller dealers: leads, stock and deals from the showroom floor. Live at <a href="https://app.tru-saas.com">app.tru-saas.com</a>; the full desktop DMS is <a href="https://premium.tru-saas.com">TruFlow Premium</a>. One dealer code across every TruDealer app.</p>
+    <div class="foot-bottom">TruDealer · Future Automotive · Built in Cape Town</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -319,5 +319,19 @@
     bg.classList.add("open");
   }
 
+  // Auto-bind click triggers across the host document
+  if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener("click", function (e) {
+        var trigger = e.target.closest(".js-book-demo, [data-book-demo], a[href='#book'], button[href='#book']");
+        if (trigger) {
+          e.preventDefault();
+          var mode = trigger.getAttribute("data-book-demo") || "walkthrough";
+          open({ mode: mode });
+        }
+      });
+    });
+  }
+
   root.TruBook = { open: open, close: close };
 })(window);

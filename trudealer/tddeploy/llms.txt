@@ -1,0 +1,66 @@
+# TruDealer (TruSaaS)
+
+> The modern Operating System for independent dealerships — Cars, Motorcycles, and expanding into Marine, Commercial Trucks, and Caravans. Operating in South Africa and the United Kingdom.
+
+## Overview
+TruDealer (developed by TruSaaS) is an all-in-one vertical SaaS platform that replaces fragmented legacy dealership software (CDK, Pinewood, VMG Software, AutoXloo, disparate WhatsApp tools). It unifies vehicle inventory, PWA mobile photo studio (TruLens), digital condition reports with inspector e-signatures (TruInspect), full DMS deal jacket & accounting (TruFlow), floor staff mobile companion (TruFlow Mobile), 24/7 AI sales agents (TruChat), and high-converting drop-in website widgets.
+
+## Bi-Directional Synchronization ("Bi-Directional Talk")
+TruDealer features true bi-directional data flow across the entire dealership:
+- **Core DMS ↔ Field Apps**: Inventory captured on TruLens or appraised on TruInspect immediately updates TruFlow DMS in real-time. Changes in TruFlow instantly reflect on mobile devices without manual sync.
+- **Bi-Directional Cloud Accounting (Codat)**: Invoices created in TruFlow sync bi-directionally with Xero, QuickBooks, and Sage. Reconciliation and payment statuses flow back into TruFlow.
+- **Lead Flow to Sales Staff**: Inquiries from website widgets and 24/7 WhatsApp conversations (TruChat) land immediately in TruFlow CRM and trigger real-time notifications on sales reps' mobile companion app (TruFlow Mobile).
+- **TransUnion eValue8 Integration**: Live M&M catalogue queries, vehicle specs, and bundle-gated valuations with centralized ledger tracking.
+
+## Markets & Regions
+
+1. **South Africa (ZAR)**:
+   - Primary market. Full TransUnion eValue8 integration (M&M code lookups, Natis reg checks, insurance accident claims reports).
+   - Live scraper comps for Cars.co.za and AutoTrader.
+   - CPA (Consumer Protection Act) and POPIA compliant.
+   - Pricing: TruStart R1,599/month | TruPro R3,599/month.
+   - WhatsApp Support: +27 62 050 2091.
+
+2. **United Kingdom (GBP)**:
+   - Fully operational in the UK. Low-latency Frankfurt cloud hosting, British Pound (£ GBP) billing, imperial distance metrics (Miles).
+   - Live UK Market Valuation Engine powered by cinch.co.uk real-time comps.
+   - UK GDPR aligned.
+   - Pricing: TruStart £109/month | TruPro £239/month.
+   - UK WhatsApp / Phone: +44 7476 995694.
+
+## Supported Verticals
+
+- **Cars & Light Commercials (`cars`) — [LIVE]**: 28 guided studio angles, 6-phase auto inspection, 4-tyre tread depth grading, full deal jackets.
+- **TruDealer Moto (`moto`) — [LIVE]**: 14 motorcycle photo angles (cockpit, fuel tank, chain/sprocket, exhaust, engine casing), 6-phase motorcycle VIR (frame integrity, fork seals, chain wear, 2-tyre grading), TransUnion superbike catalogue, and "Book a Demo Ride" widget mode.
+- **TruDealer Marine (`marine`) — [COMING SOON]**: Watercraft, boats, and jetskis. In development for marine dealers. Early access open.
+- **TruDealer Commercial (`commercial`) — [COMING SOON]**: Heavy transport, trucks, and yellow metal equipment. In development. Early access open.
+- **TruDealer Caravans (`caravans`) — [COMING SOON]**: Caravans, motorhomes, and camping trailers. In development. Early access open.
+
+## Standalone Website Widgets (`packages/standalone/`)
+8 lightweight, zero-dependency CDN widgets embeddable on WordPress, Webflow, or custom sites:
+- `tru-value`: Instant trade-in market estimate against live comps (car & bike modes).
+- `tru-book`: Test drive & demo ride booking modal.
+- `tru-afford`: Soft buyer affordability & pre-qualification calculator.
+- `tru-repay`: Monthly vehicle instalment calculator with balloon/deposit options.
+- `tru-form`: Structured contact, trade-in, and finance enquiry form.
+- `tru-share`: Dynamic OpenGraph social share generator with currency & odometer tags.
+- `tru-loader`: Centralized script launcher and styling controller.
+
+## Pricing (Month-to-Month, Zero Lock-In)
+- **TruStart**: R1,599/mo (ZA) / £109/mo (UK). Zero setup fee, unlimited stock, inspections, photo studio, website integration.
+- **TruPro**: R3,599/mo (ZA) / £239/mo (UK). Full DMS, OTP deal jackets, live valuation scraper, all 8 widgets, Codat accounting.
+- **TruEnterprise**: R3,599/rooftop/mo (ZA) / £239/rooftop/mo (UK). Multi-branch groups, custom API, dedicated SLA.
+
+## Key Comparison Pages
+- TruDealer vs VMG Software: https://trudealer.tru-saas.com/trudealer-vs-vmg.html
+- TruDealer vs AutoXloo: https://trudealer.tru-saas.com/trudealer-vs-autoxloo.html
+- TruDealer vs Traditional DMS: https://trudealer.tru-saas.com/trudealer-vs-dms.html
+
+## Official Links
+- Website: https://trudealer.tru-saas.com/
+- UK Landing Page: https://trudealer.tru-saas.com/uk.html
+- TruDealer Moto: https://trudealer.tru-saas.com/moto.html
+- Master FAQ: https://trudealer.tru-saas.com/faq.html
+- Pricing: https://trudealer.tru-saas.com/packages.html
+- Field Guides: https://trudealer.tru-saas.com/guides/
+- Contact: sales@tru-saas.com | ZA: +27 62 050 2091 | UK: +44 7476 995694

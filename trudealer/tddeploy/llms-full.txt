@@ -1,0 +1,85 @@
+# TruDealer — Full Technical & Operational Specification (TruSaaS)
+
+> Authoritative reference for AI models, automated crawlers, and system integrators.
+> Canonical URL: https://trudealer.tru-saas.com/llms-full.txt
+> Last updated: 2026-09-03
+
+---
+
+## 1. Platform Architecture & Multi-Region Deployment
+
+TruDealer is structured as a high-performance, single-codebase vertical SaaS platform running on low-latency Render starter tiers in Frankfurt (EU-West) and South Africa regions.
+
+### Active Services:
+- `trusaas-lens` (`lens.tru-saas.com`): TruLens PWA mobile studio.
+- `trusaas-inspect` (`inspect.tru-saas.com`): TruInspect condition reports & desktop manager.
+- `trusaas-premium` (`premium.tru-saas.com`): TruFlow central DMS, accounting hub, and TransUnion ledger.
+- `trusaas-mobile` (`app.tru-saas.com`): TruFlow Mobile companion app.
+- `trusaas-live` (`live.tru-saas.com`): WebRTC live video walkarounds.
+- `trusaas-trade` (`trade.tru-saas.com`): Remote trade-in valuation portal.
+- `trusaas-chat` (`chat.tru-saas.com`): TruChat conversational AI service.
+
+### Multi-Region Markets:
+- **South Africa (`MARKET=za`)**: Currency ZAR (R), distance in kilometres, native TransUnion eValue8 integration, POPIA compliant.
+- **United Kingdom (`MARKET=uk`)**: Currency GBP (£), distance in miles, live UK valuation engine on cinch.co.uk comparables, UK GDPR compliant, UK WhatsApp support (+44 7476 995694).
+
+---
+
+## 2. Bi-Directional Synchronization ("Bi-Directional Talk")
+
+TruDealer eliminates double-data entry through active bi-directional communication:
+1. **Core DMS ↔ Field PWAs**:
+   - Stock created or updated in TruFlow Premium pushes instantly to TruLens and TruInspect.
+   - Field photos, damage tags, and inspection reports captured in TruLens or TruInspect update TruFlow DMS deal jackets immediately without manual sync.
+2. **Bi-Directional Accounting (Codat Integration)**:
+   - Finalized invoices, OTP consideration worksheets, and credit notes in TruFlow push directly to cloud accounting software (Xero, QuickBooks, Sage).
+   - Payment status, invoice settlement, and bank recon flow bi-directionally back into the TruFlow DMS ledger.
+3. **Inbound Lead Flow to Mobile Staff**:
+   - Leads submitted through website widgets (`tru-value`, `tru-form`, `tru-book`, `tru-afford`) and 24/7 AI WhatsApp chats (`TruChat`) are bi-directionally filed into TruFlow CRM and trigger immediate push notifications to floor staff on TruFlow Mobile.
+4. **TransUnion Gated Ledger**:
+   - Shared ledger in TruFlow central tracks dealer check balances keyed by canonical dealer slug, allowing sibling apps (TruLens, TruInspect) to authenticate and consume bundles via proxy with zero local ledger drift.
+
+---
+
+## 3. Inventory Verticals
+
+TruDealer dynamically adapts to 5 inventory verticals:
+- **Cars & Auto (`cars`) — [LIVE]**: 28 guided studio angles, 6-phase auto inspection, 4-tyre tread depth grading, standard TransUnion M&M car book.
+- **TruDealer Moto (`moto`) — [LIVE]**: 14 motorcycle photo angles (cockpit, fuel tank, chain/sprocket, exhaust, engine casing), 6-phase motorcycle VIR (frame integrity, fork seals, chain wear, 2-tyre grading), TransUnion superbike catalogue, and "Book a Demo Ride" widget mode.
+- **TruDealer Marine (`marine`) — [IN DEVELOPMENT · COMING SOON]**: Dedicated boat & jetski DMS. 16 vessel slots, hull & outboard condition grading, marine trade-in valuations. Early access open.
+- **TruDealer Commercial (`commercial`) — [IN DEVELOPMENT · COMING SOON]**: Heavy transport, trucks, and yellow metal. Multi-axle tyre grids, air brake checks, commercial VAT tax invoicing. Early access open.
+- **TruDealer Caravans (`caravans`) — [IN DEVELOPMENT · COMING SOON]**: Caravans, motorhomes, and camper trailers. Habitation checks, damp ingress logs, gas compliance. Early access open.
+
+---
+
+## 4. Standalone CDN Website Widgets
+
+All widgets in `packages/standalone/` are vanilla JavaScript, shadow-DOM encapsulated, responsive, zero-dependency components hosted on `cdn.tru-saas.com`.
+
+### Quick Embed Example:
+```html
+<script src="https://cdn.tru-saas.com/tru-loader.js"
+        data-dealer="Caledon Motors"
+        data-slug="caledon-motors"
+        data-accent="#0B7C72"
+        data-wa="27620502091"></script>
+```
+
+### Supported Widget Types:
+1. `tru-value`: Trade-in valuation widget against live market comps (adapts to `data-vertical="moto"` for bike trade-ins).
+2. `tru-book`: Test drive / demo ride booking modal with date & time slot selection.
+3. `tru-afford`: Soft buyer pre-qualification calculator factoring in income, expenses, and loan terms.
+4. `tru-repay`: Vehicle repayment calculator with interest rate, deposit slider, balloon percentage, and NCA-compliant disclaimers.
+5. `tru-form`: Multi-section lead capture form dispatching directly to TruFlow CRM webhooks and WhatsApp.
+6. `tru-share`: Dynamic OpenGraph social share generator with currency & odometer tags.
+
+---
+
+## 5. Pricing & Terms
+
+- **TruStart**: R1,599/month (ZA) or £109/month (UK). Unlimited stock units, PWA photo studio, digital condition reports, AI chat, website integration. Zero setup fee.
+- **TruPro**: R3,599/month (ZA) or £239/month (UK). Full DMS, OTP deal jackets, live valuation scraper, all 8 standalone widgets, Codat accounting. Setup: R4,500 / £360 (discounted 50% to R2,250 / £180 if signed within 48h of demo).
+- **TruEnterprise**: R3,599/rooftop/month (ZA) or £239/rooftop/month (UK). Multi-branch management, custom white-label, dedicated API endpoints, SLA guarantee.
+- **Terms**: Month-to-month license, cancel anytime, zero per-seat fees on photo capture.
+
+For developer inquiries or API keys, contact integration@tru-saas.com.

@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18395587079');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TruInspect Field Guide</title>
+<meta name="description" content="How to install TruInspect, sign in, and run the Inspect and Trade-in flows on your phone.">
+<meta name="theme-color" content="#F3F0E7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TruDealer design system — cream ground · teal accent · Fraunces
+   Tokens lifted verbatim from trudealer/tddeploy/index.html
+   ============================================================ */
+:root{
+  --ink:#F3F0E7; --ink-2:#EAE6DA; --card:#FBF9F3; --card-2:#EFEBE0;
+  --white:#14141F; --white-dim:rgba(20,20,31,.78);
+  --muted:rgba(64,78,100,.92); --faint:rgba(64,78,100,.58);
+  --cyan:#0B7C72; --cyan-2:#0D9488; --cyan-hi:#5EEAD4;
+  --cyan-soft:rgba(13,148,136,.18); --cyan-glow:rgba(13,148,136,.2); --cyan-faint:rgba(13,148,136,.06);
+  --amber:#D4942A; --amber-soft:rgba(212,148,42,.2); --amber-faint:rgba(212,148,42,.08);
+  --border:rgba(0,0,0,.08); --border-warm:rgba(60,50,30,.1); --glass-line:rgba(0,0,0,.08);
+  --danger:#B0413E; --danger-faint:rgba(176,65,62,.07);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --wrap:820px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:16px;line-height:1.62;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan-2)}
+::selection{background:var(--cyan);color:#fff}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+img{max-width:100%;display:block}
+
+/* ---- accent italic (Fraunces WONK) ---- */
+.accent{color:var(--cyan-2);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
+
+/* ---- nav ---- */
+.nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 12px 9px 20px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:99px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:var(--wrap);width:calc(100% - 40px)}
+.nav-brand{font-family:var(--display);font-size:20px;font-weight:500;letter-spacing:-.02em;white-space:nowrap}
+.nav-brand .i{color:var(--cyan)}
+.nav-links{display:flex;gap:22px;font-size:13px;color:var(--white-dim)}
+.nav-links a{color:var(--white-dim);position:relative;padding-bottom:3px;white-space:nowrap}
+.nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{right:0}
+.nav-links a.route{color:var(--cyan);font-weight:600}
+.nav-links a.route::after{right:0;background:var(--cyan-soft)}
+.nav-links a.route:hover::after{background:var(--cyan)}
+.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:8px 15px;border:1px solid var(--cyan);border-radius:100px;color:var(--cyan);white-space:nowrap;transition:all .2s}
+.nav-cta:hover{background:var(--cyan);color:#fff}
+@media(max-width:860px){.nav-links a:not(.route){display:none}}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---- two-routes fork ---- */
+.routes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:40px 0 8px}
+@media(max-width:640px){.routes{grid-template-columns:1fr}}
+.route-card{display:block;position:relative;padding:26px 26px 22px;border-radius:20px;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 14px rgba(60,50,30,.06);overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .3s}
+.route-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.route-card:hover{transform:translateY(-4px);border-color:var(--cyan-soft);box-shadow:0 20px 46px -20px var(--cyan-glow)}
+.route-card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:12px}
+.route-card h3{font-family:var(--display);font-size:26px;font-weight:500;letter-spacing:-.02em;margin:0 0 6px;font-variation-settings:"opsz" 72,"SOFT" 30}
+.route-card .out{font-size:14px;color:var(--white-dim);margin:0 0 16px;line-height:1.5}
+.route-card .chain{list-style:none;display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 18px;padding:0}
+.route-card .chain li{padding:5px 10px;border-radius:100px;border:1px solid var(--border-warm);background:rgba(0,0,0,.02);white-space:nowrap}
+.route-card .chain li.arw{border:none;background:none;padding:5px 0;color:var(--faint)}
+.route-card .go{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:inline-flex;align-items:center;gap:8px}
+.route-card.b2::before{background:var(--amber)}
+.route-card.b2 .tag,.route-card.b2 .go{color:#B07B1E}
+.route-card.b2:hover{border-color:var(--amber-soft);box-shadow:0 20px 46px -20px var(--amber-glow)}
+
+/* ---- layout ---- */
+main{max-width:var(--wrap);margin:0 auto;padding:0 28px 100px}
+section{scroll-margin-top:88px}
+
+/* ---- hero ---- */
+.hero{position:relative;padding:150px 0 52px;border-bottom:1px solid var(--border);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 90% 70% at 20% 0%,#F6F4EE 0%,transparent 60%)}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 11px;border:1px solid var(--cyan-soft);border-radius:100px;background:var(--cyan-faint);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:26px}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(13,148,136,.5);animation:ping 1.9s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(13,148,136,.5)}70%{box-shadow:0 0 0 11px rgba(13,148,136,0)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
+h1{font-family:var(--display);font-size:clamp(38px,6.4vw,64px);line-height:1.02;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30,"WONK" 0;margin-bottom:22px;text-wrap:balance}
+.lede{font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:var(--white-dim);max-width:60ch;text-wrap:pretty}
+.hero-ticker{display:flex;flex-wrap:wrap;gap:7px 20px;margin-top:34px;padding-top:22px;border-top:1px solid var(--glass-line);font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.hero-ticker .d{color:var(--cyan)}
+
+/* ---- contents ---- */
+.toc{margin:36px 0 8px;padding:10px 26px;border:1px solid var(--border-warm);border-radius:18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.06);display:grid;grid-template-columns:repeat(2,1fr);gap:0 32px}
+@media(max-width:560px){.toc{grid-template-columns:1fr}}
+.toc a{display:flex;gap:14px;align-items:baseline;padding:12px 0;color:var(--white-dim);border-bottom:1px solid var(--glass-line)}
+.toc a:hover{color:var(--white)}
+.toc a:nth-last-child(-n+1),.toc a:nth-last-child(2):nth-child(odd){border-bottom:none}
+@media(max-width:560px){.toc a:last-child{border-bottom:none}}
+.toc .n{font-family:var(--mono);font-size:12px;color:var(--cyan);width:22px;flex:none}
+
+/* ---- section heads ---- */
+.sec-head{padding:64px 0 6px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+h2{font-family:var(--display);font-size:clamp(28px,4.4vw,44px);line-height:1.06;letter-spacing:-.03em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:14px;text-wrap:balance}
+.sec-intro{font-size:17px;color:var(--white-dim);max-width:64ch;line-height:1.6}
+h3{font-family:var(--display);font-size:23px;font-weight:500;letter-spacing:-.015em;font-variation-settings:"opsz" 72,"SOFT" 30;margin:38px 0 10px}
+p{margin:0 0 16px}
+strong{font-weight:600}
+
+/* ---- numbered steps ---- */
+ol.steps{list-style:none;counter-reset:s;margin:22px 0 8px}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 24px 58px}
+ol.steps>li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:-1px;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft)}
+ol.steps>li::after{content:"";position:absolute;left:17.5px;top:38px;bottom:2px;width:1px;background:linear-gradient(var(--border-warm),transparent)}
+ol.steps>li:last-child::after{display:none}
+ol.steps>li .st{font-family:var(--display);font-weight:500;font-size:19px;letter-spacing:-.01em;color:var(--white);display:block;margin-bottom:4px;font-variation-settings:"opsz" 48,"SOFT" 30}
+ol.steps>li p{margin:0}
+ol.steps>li p+p{margin-top:9px}
+ul.plain{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px}
+ul.plain li{position:relative;padding-left:20px;color:var(--white-dim)}
+ul.plain li::before{content:"→";position:absolute;left:0;color:var(--faint);font-family:var(--mono)}
+
+/* ---- UI-label & key pills ---- */
+.ui{font-weight:600;font-size:.92em;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:7px;padding:1px 8px;white-space:nowrap}
+kbd{font-family:var(--mono);font-size:.82em;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-bottom-width:2px;border-radius:6px;padding:1px 7px}
+code{font-family:var(--mono);font-size:.85em;color:var(--cyan);background:var(--cyan-faint);padding:1px 6px;border-radius:5px}
+
+/* ---- callouts ---- */
+.note,.tip,.warn{border-radius:16px;padding:16px 20px;margin:22px 0;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 12px rgba(60,50,30,.05);font-size:14.5px;color:var(--white-dim)}
+.note{border-left:3px solid var(--cyan)}
+.tip{border-left:3px solid var(--cyan-2)}
+.warn{border-left:3px solid var(--amber);background:var(--amber-faint)}
+.note .lab,.tip .lab,.warn .lab{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:7px}
+.note .lab,.tip .lab{color:var(--cyan)}
+.warn .lab{color:#B07B1E}
+.note p:last-child,.tip p:last-child,.warn p:last-child{margin-bottom:0}
+
+/* ---- four home buttons ---- */
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0}
+@media(max-width:560px){.legend{grid-template-columns:1fr}}
+.legend .b{border:1px solid var(--border-warm);border-radius:16px;padding:16px 18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.05);transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .35s}
+.legend .b:hover{transform:translateY(-3px);border-color:var(--cyan-soft);box-shadow:0 14px 34px -16px var(--cyan-glow)}
+.legend .b .t{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:500;font-size:18px;color:var(--white);margin-bottom:6px;font-variation-settings:"opsz" 48}
+.legend .b small{color:var(--muted);font-size:13.5px;line-height:1.5}
+.legend .b.doc .t{color:var(--white-dim)}
+.glyph{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;font-size:14px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);color:var(--cyan)}
+.legend .b.doc .glyph{border-color:var(--border-warm);background:var(--card-2);color:var(--muted)}
+
+/* ---- table ---- */
+.tablewrap{overflow-x:auto;margin:24px 0;border:1px solid var(--border-warm);border-radius:16px;box-shadow:0 2px 12px rgba(60,50,30,.05)}
+table{border-collapse:collapse;width:100%;min-width:540px;font-size:14px;background:var(--card)}
+th,td{text-align:left;padding:14px 18px;border-bottom:1px solid var(--glass-line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:500;background:rgba(13,148,136,.03)}
+tr:last-child td{border-bottom:none}
+td b{color:var(--white);font-weight:600}
+
+/* ---- field list ---- */
+.fields{margin:16px 0;border-top:1px solid var(--glass-line)}
+.fields .f{display:flex;gap:18px;padding:14px 0;border-bottom:1px solid var(--glass-line)}
+.fields .f .k{flex:0 0 34%;min-width:130px;font-family:var(--display);font-weight:500;font-size:16px;color:var(--white);font-variation-settings:"opsz" 36}
+.fields .f .v{color:var(--white-dim);font-size:14.5px}
+@media(max-width:520px){.fields .f{flex-direction:column;gap:4px}.fields .f .k{flex:none}}
+
+.pillrow{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0}
+.opt{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--muted);background:#fff;border:1px solid var(--border-warm);border-radius:100px;padding:4px 11px}
+.opt.good{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint)}
+.opt.bad{color:var(--danger);border-color:rgba(176,65,62,.3);background:var(--danger-faint)}
+.opt.tag{color:var(--faint);background:transparent;border:none;padding-left:2px}
+
+.formula{font-family:var(--mono);font-size:14px;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-radius:14px;padding:16px 18px;margin:14px 0;overflow-x:auto;box-shadow:inset 0 1px 3px rgba(60,50,30,.04)}
+.formula .hl{color:var(--cyan)}
+
+/* ---- footer ---- */
+footer{background:#1A2332;color:#F1F5F9;margin-top:24px}
+.foot-inner{max-width:var(--wrap);margin:0 auto;padding:52px 28px 44px}
+.foot-mark{font-family:var(--display);font-size:30px;letter-spacing:-.02em;margin-bottom:14px}
+.foot-mark .tru{color:#E2E8F0}.foot-mark .i{color:var(--cyan-hi)}
+.foot-inner p{color:rgba(241,245,249,.62);font-size:14px;max-width:60ch}
+.foot-inner a{color:var(--cyan-hi)}
+.foot-inner a:hover{color:#fff}
+.foot-bottom{margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(148,163,184,.7)}
+
+/* ---- print / PDF ---- */
+@page{size:A4;margin:15mm 14mm}
+@media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  html,body{background:#fff !important}
+  body{font-size:11.5px;line-height:1.5}
+  .nav{display:none}
+  .hero{padding:8px 0 28px}
+  .hero::before{display:none}
+  main{padding:0 0 20px}
+  .hero-ticker{display:none}
+  section,.card,.note,.tip,.warn,.legend .b,.tablewrap,ol.steps>li,.fields .f{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  .sec-head{padding-top:24px}
+  a{color:var(--cyan)}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand">Tru<span class="i">Inspect</span></span>
+  <div class="nav-links">
+    <a href="#install">Install</a>
+    <a href="#signin">Sign in</a>
+    <a class="route" href="#inspect">Inspect</a>
+    <a class="route" href="#tradein">Trade-in</a>
+    <a href="#assist">Assist</a>
+    <a href="#help">Help</a>
+  </div>
+  <a class="nav-cta" href="https://inspect.tru-saas.com">Open app ↗</a>
+</nav>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <span class="badge"><span class="dot"></span>Inspector field guide</span>
+    <h1>Photograph, inspect and appraise a car <span class="accent">from your phone</span>.</h1>
+    <p class="lede">Everything an inspector needs, in order: get TruInspect onto your phone, sign in with your dealership code, then run a full <strong>inspection&nbsp;(VIR)</strong> or a <strong>trade-in appraisal</strong> — camera to signed report, on the forecourt.</p>
+    <div class="hero-ticker">
+      <span><span class="d">◆</span> inspect.tru-saas.com</span>
+      <span><span class="d">◆</span> Works offline once installed</span>
+      <span><span class="d">◆</span> One device · one dealership</span>
+    </div>
+  </section>
+
+  <!-- ============ TWO ROUTES ============ -->
+  <section aria-label="The two workflows">
+    <div class="routes">
+      <a class="route-card" href="#inspect">
+        <span class="tag">Route A · Workflow</span>
+        <h3>Inspection <span class="accent">(VIR)</span></h3>
+        <p class="out">Prove a car's condition — a graded, printable Vehicle Inspection Report.</p>
+        <ul class="chain">
+          <li>Capture</li><li class="arw">→</li><li>Rate</li><li class="arw">→</li><li>Tag damage</li><li class="arw">→</li><li>Checklist</li><li class="arw">→</li><li>Submit</li><li class="arw">→</li><li>VIR</li>
+        </ul>
+        <span class="go">Open route A ↓</span>
+      </a>
+      <a class="route-card b2" href="#tradein">
+        <span class="tag">Route B · Workflow</span>
+        <h3>Trade-in <span class="accent">appraisal</span></h3>
+        <p class="out">Value a car and hand over a signed offer — walk-around to Trade-In Report.</p>
+        <ul class="chain">
+          <li>Walk-around</li><li class="arw">→</li><li>Valuation</li><li class="arw">→</li><li>Summary</li><li class="arw">→</li><li>Signed offer</li>
+        </ul>
+        <span class="go">Open route B ↓</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CONTENTS ============ -->
+  <nav class="toc" aria-label="Contents">
+    <a href="#need"><span class="n">00</span><span>What you need</span></a>
+    <a href="#install"><span class="n">01</span><span>Install the app (PWA)</span></a>
+    <a href="#signin"><span class="n">02</span><span>Sign in with your code</span></a>
+    <a href="#home"><span class="n">03</span><span>The home screen</span></a>
+    <a href="#inspect"><span class="n">04</span><span>Run an inspection (VIR)</span></a>
+    <a href="#tradein"><span class="n">05</span><span>Run a trade-in appraisal</span></a>
+    <a href="#help"><span class="n">06</span><span>Tips &amp; troubleshooting</span></a>
+  </nav>
+
+  <!-- ============ 00 ============ -->
+  <section id="need">
+    <div class="sec-head">
+      <p class="eyebrow">00 · Before you start</p>
+      <h2>What you need</h2>
+      <p class="sec-intro">TruInspect is a web app that installs to your phone like a normal app — there is nothing to download from an app store.</p>
+    </div>
+    <div class="fields">
+      <div class="f"><div class="k">A phone with a camera</div><div class="v">Android or iPhone. The guided camera and licence-disc scan need a rear camera and an HTTPS connection.</div></div>
+      <div class="f"><div class="k">The web address</div><div class="v"><code>https://inspect.tru-saas.com</code> — open it in your phone's browser. On iPhone this <strong>must be Safari</strong> (see below).</div></div>
+      <div class="f"><div class="k">Your access code</div><div class="v">A per-dealership code from your manager — the <strong>same code across the TruDealer apps</strong>, set for your dealership in TruFlow. It links this device to your dealership; inspectors cannot self-register.</div></div>
+      <div class="f"><div class="k">Signal to start</div><div class="v">You need a connection the first time to install and sign in. After that the app runs offline — photos are kept on the phone and upload when you're back online.</div></div>
+    </div>
+    <div class="note"><span class="lab">Good to know</span><p>You sign in <strong>once per device</strong>. The code is stored as a signed device token for ~30 days, so you land straight on your vehicle list every time you open the app.</p></div>
+  </section>
+
+  <!-- ============ 01 ============ -->
+  <section id="install">
+    <div class="sec-head">
+      <p class="eyebrow">01 · Get it on your phone</p>
+      <h2>Install the app <span class="accent">(PWA)</span></h2>
+      <p class="sec-intro">Installing puts a TruInspect icon on your home screen and runs it full-screen with no browser bar — the way you'll want it next to a car. The install control also lives permanently inside the app under the <span class="ui">App</span> panel, so you're never locked out if you dismiss a prompt.</p>
+    </div>
+
+    <h3>On iPhone or iPad</h3>
+    <ol class="steps">
+      <li><span class="st">Open the site in Safari</span><p>Go to <code>inspect.tru-saas.com</code>. Chrome and Edge on iPhone <strong>cannot</strong> install it — it has to be Safari.</p></li>
+      <li><span class="st">Tap Share</span><p>Tap the <kbd>Share</kbd> icon (the square with an up-arrow) in Safari's toolbar.</p></li>
+      <li><span class="st">Add to Home Screen</span><p>Scroll down the share sheet and tap <span class="ui">Add to Home Screen</span>.</p></li>
+      <li><span class="st">Tap Add</span><p>Confirm with <span class="ui">Add</span>, then open <strong>TruInspect</strong> from your home screen icon.</p></li>
+    </ol>
+
+    <h3>On Android (Chrome / Edge)</h3>
+    <ol class="steps">
+      <li><span class="st">Open the site</span><p>Go to <code>inspect.tru-saas.com</code>. You may see a one-tap <span class="ui">Install TruInspect</span> banner — if so, tap it and you're done.</p></li>
+      <li><span class="st">Or use the browser menu</span><p>Open the browser menu (<kbd>⋮</kbd>) and tap <span class="ui">Install app</span> or <span class="ui">Add to Home screen</span>.</p></li>
+      <li><span class="st">Open from the home screen</span><p>Launch TruInspect from its new icon — it opens full-screen.</p></li>
+    </ol>
+
+    <div class="tip"><span class="lab">If you don't see an install option</span><p>Installing needs an <strong>HTTPS</strong> page, and some browsers only offer the one-tap prompt after a couple of visits. The prompt also appears only once per visit — reload the page to get it back, or use the browser menu. Inside the app, the <span class="ui">App</span> panel always shows either <span class="ui">Install TruInspect</span> or <span class="ui">How to install</span> with these same steps.</p></div>
+    <div class="note"><span class="lab">How you know it worked</span><p>Once installed, the app's <span class="ui">App</span> panel reads “<strong>TruInspect is installed on this device.</strong>” and the app opens without a browser address bar.</p></div>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section id="signin">
+    <div class="sec-head">
+      <p class="eyebrow">02 · Register the device</p>
+      <h2>Sign in with your code</h2>
+      <p class="sec-intro">The first screen is <strong>Inspector sign-in</strong>. It has one field — the access code for your dealership. There is no email or password.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Open TruInspect</span><p>You'll see the <strong>TruInspect</strong> wordmark, then “Inspector sign-in — This device is registered to one dealership.”</p></li>
+      <li><span class="st">Type your access code</span><p>Enter it in the <span class="ui">Inspector access code</span> field. Tap the eye icon to reveal what you typed — handy outdoors on a phone. A note warns you if <kbd>Caps Lock</kbd> is on.</p></li>
+      <li><span class="st">Tap “Use this device”</span><p>The button shows <span class="ui">Checking code…</span> while it verifies. On success you go straight to your vehicle list. The device stays signed in.</p></li>
+    </ol>
+    <div class="warn"><span class="lab">If the code is refused</span><p>“<em>That code is not recognised</em>” means the code is wrong or your dealership isn't set up for TruInspect yet. Access is issued per dealership — <strong>ask your manager for the code, or contact TruSaaS</strong> to set your team up. If the screen instead says “<em>No access code is set on this server</em>,” that's a setup step on the TruSaaS side, not something you can fix from the phone.</p></div>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section id="home">
+    <div class="sec-head">
+      <p class="eyebrow">03 · Where everything starts</p>
+      <h2>The home screen</h2>
+      <p class="sec-intro">You land on your <strong>vehicle list</strong> — “Photography, inspections &amp; trade-in appraisals.” Search and filter by status, see readiness badges and fleet stats, and add cars. Each vehicle card carries the same four buttons.</p>
+    </div>
+
+    <h3>Add a vehicle</h3>
+    <p>Tap <span class="ui">Add vehicle</span> and fill in the details, or tap the licence-disc scanner and hold the camera over the disc — TruInspect reads the barcode and pre-fills <strong>make, model, colour, VIN and year</strong> for you.</p>
+
+    <h3>The four buttons on every card</h3>
+    <p>Two are <strong>workflows</strong> (the work you do), two are <strong>documents</strong> (what comes out). Photo capture is the first step <em>inside</em> each workflow, not a separate button.</p>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">▤</span> Inspect</div><small>Start a full inspection: capture the shot list, rate condition, check function. → produces the VIR.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◫</span> Trade-In</div><small>Start a trade-in appraisal: walk-around, live valuation, signed offer. A teal tick appears once appraised.</small></div>
+      <div class="b doc"><div class="t"><span class="glyph">▦</span> VIR</div><small>Open the <strong>Vehicle Inspection Report</strong> for this car (even before it's finished).</small></div>
+      <div class="b doc"><div class="t"><span class="glyph">▧</span> TIR</div><small>Open the <strong>Trade-In Appraisal Report</strong> for this car.</small></div>
+    </div>
+    <div class="note"><span class="lab">One photo, both flows</span><p>Inspect and Trade-in share the same set of vehicle angles. A shot you take in one flow shows up in the other automatically — you never re-shoot the same angle twice for the same car.</p></div>
+    <div class="tip"><span class="lab">Need a hand mid-job</span><p>The floating <strong>DealerAssist</strong> chat and the in-context <strong>Guide</strong> panel are available on every screen if you get stuck.</p></div>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section id="inspect">
+    <div class="sec-head">
+      <p class="eyebrow">04 · Workflow A</p>
+      <h2>Run an <span class="accent">inspection</span> (VIR)</h2>
+      <p class="sec-intro">A guided <strong>27-slot</strong> photo walk-around in three phases, then condition &amp; function ratings, damage tags, a review, and a printable Vehicle Inspection Report. Tap <span class="ui">Inspect</span> on the vehicle card to begin.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="st">Capture the shot list</span>
+        <p>The camera opens on the guided walk-around. Work through the three phases in order:</p>
+        <p><strong>Phase 1 — Front &amp; Engine</strong> · bonnet, engine bay, front bumper &amp; grille, front windscreen, licence disc.</p>
+        <p><strong>Phase 2 — Clockwise Exterior Walk-Around</strong> · around the car from the front-right, through every wheel, door, quarter and fender, boot/tailgate and rear bumper, back to the roof.</p>
+        <p><strong>Phase 3 — Interior, History &amp; Verification</strong> · steering &amp; controls, cabin, service book, odometer, spare keys.</p>
+        <p>Each slot shows a coaching line telling you where to stand. Use <span class="ui">Shoot</span> for the live camera or <span class="ui">Import</span> to add a photo from the gallery; keep a shot or retake it. <strong>23 of the 27 are required</strong>; optional items (spare wheel, jack, roof/sunroof, spare keys) show <span class="ui">Not present — skip this item</span>.</p></li>
+      <li><span class="st">Rate each shot as you go</span><p>After a capture you can record the panel's condition and add a note or close-up right there, so grading happens at the car, not from memory.</p></li>
+      <li><span class="st">Tag any damage</span><p>Open <span class="ui">Tag damage</span> and tap the spot on the real photo. Set the panel, damage type and <strong>severity 1–5</strong>, and add close-ups. Tagging is fully manual — the report grade is built only from what you record, never a black-box guess.</p></li>
+      <li><span class="st">Work the inspection checklist</span>
+        <p>Open the <span class="ui">Checklist</span> (screen title “Inspection”). Points are grouped into <strong>Exterior · Glass &amp; lights · Wheels &amp; tyres · Interior · Engine &amp; underbody · Identity &amp; documents</strong>. Each point uses the buttons that fit it:</p>
+        <div class="pillrow"><span class="opt good">OK</span><span class="opt">Note</span><span class="opt bad">Damage</span><span class="opt tag">·</span><span class="opt">Present / Not Present</span><span class="opt">FSH / Partial / None</span><span class="opt">Works / Faulty / N/A</span></div>
+        <p>Use <span class="ui">All OK</span> to pass everything still unanswered in one tap, then override the exceptions. The header tracks “done” and how many items are flagged “to disclose.” Tap <span class="ui">Save</span> as you go.</p></li>
+      <li><span class="st">Review &amp; submit</span><p>The “Review &amp; submit” screen shows “<em>N of 27 shots</em>,” a tick per phase when it's complete, and a 6-across grid of every shot (tap one to retake). It flags any missing required shots and any damage. When all required shots are in, tap <span class="ui">Submit inspection</span>.</p></li>
+      <li><span class="st">Produce the VIR</span><p>The <strong>Vehicle Inspection Report</strong> opens with an overall condition band on a <strong>1.0–5.0</strong> scale (5.0–4.5 Excellent / retail-ready, down to 2.4–1.0 Poor), panel grades, the damage list and your dealership branding. Add the inspector and customer details, then <span class="ui">Print</span> or tap <span class="ui">PDF</span> to download. Reports are numbered like <code>VIR-2026-00847</code>. Reopen it any time from the card's <span class="ui">VIR</span> button.</p></li>
+    </ol>
+    <div class="note"><span class="lab">The condition score is honest</span><p>The 1.0–5.0 band is computed only from real inspector inputs — the panels you graded and the damage you tagged. No photo is “scored” by a machine.</p></div>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section id="tradein">
+    <div class="sec-head">
+      <p class="eyebrow">05 · Workflow B</p>
+      <h2>Run a <span class="accent">trade-in</span> appraisal</h2>
+      <p class="sec-intro">A step-by-step walk-around that captures condition and reconditioning cost at every stop, then values the car against the live market and prints a signed offer. Tap <span class="ui">Trade-In</span> on the vehicle card to begin — the screen is titled “Trade-in appraisal.”</p>
+    </div>
+
+    <h3>Step 1 · The walk-around</h3>
+    <p>You move through the car one stop at a time — <strong>27 stops</strong> across <strong>Front &amp; Engine</strong>, <strong>Clockwise Exterior</strong>, and <strong>Interior, History &amp; Verification</strong>. The header keeps a running <span class="ui">R … recon</span> total and a progress bar; the dots at the bottom jump you to any stop. At each stop (titled “Step N: …”) you set:</p>
+    <div class="fields">
+      <div class="f"><div class="k">Photo</div><div class="v">Optional for most stops (“Photo optional — tap to add”). It becomes <strong>required</strong> — shown with a red border — whenever you enter a repair cost, and always for the <strong>odometer</strong>. Use <span class="ui">Retake</span> to redo it.</div></div>
+      <div class="f"><div class="k">Status</div><div class="v">The toggle fits the item:
+        <div class="pillrow"><span class="opt good">OK</span><span class="opt bad">Damaged</span></div>
+        <div class="pillrow"><span class="opt good">Valid</span><span class="opt">Expired</span><span class="opt bad">Missing</span><span class="opt tag">licence disc</span></div>
+        <div class="pillrow"><span class="opt good">FSH</span><span class="opt">Partial</span><span class="opt bad">No Book</span><span class="opt tag">service book</span></div>
+        <div class="pillrow"><span class="opt good">Present</span><span class="opt bad">Not Present</span><span class="opt tag">spare wheel, jack, keys</span></div>
+      </div></div>
+      <div class="f"><div class="k">Condition</div><div class="v"><div class="pillrow"><span class="opt good">Good</span><span class="opt good">Fair</span><span class="opt bad">Poor</span><span class="opt bad">Needs Recon</span></div></div></div>
+      <div class="f"><div class="k">Repair / replacement cost (R)</div><div class="v">The estimated recon spend for that item. Marking a stop <strong>Damaged</strong> (or its equivalent) turns the cost field red and asks for a photo. Everything you enter rolls into the header's recon total.</div></div>
+    </div>
+    <p>Good items left on their defaults are marked complete automatically, so you can move quickly and only stop for what needs attention. Use <span class="ui">Prev</span> / <span class="ui">Next</span>, and on the last stop tap <span class="ui">Continue to Valuation</span>.</p>
+
+    <h3>Step 2 · Market valuation</h3>
+    <p>The “Market Valuation” screen assesses the live market for you — “<em>Assessing live market…</em>” — scanning dealer stock and SA classifieds for your exact year/make/model. You can also:</p>
+    <ul class="plain">
+      <li>Open <strong>AutoTrader</strong> or <strong>Cars.co.za</strong> directly to check listings by hand.</li>
+      <li>Pull a <strong>TU Valuation</strong> (TransUnion trade/retail/new prices) and run a <strong>Reg Check</strong> for stolen / outstanding-finance flags.</li>
+    </ul>
+    <p>Set the <span class="ui">Average market retail price (R)</span>, confirm the read-only <span class="ui">Total recon costs</span>, and set your <span class="ui">Dealer margin</span> % (this is hidden from anything the customer sees). The offer is calculated live:</p>
+    <div class="formula">Final trade-in offer  =  ( <span class="hl">retail</span> − <span class="hl">recon</span> )  ×  ( 100 − <span class="hl">margin</span> ) %</div>
+    <p>A price-history trend appears if you've valued this car before. When a price is set, tap <span class="ui">Continue to Summary</span>.</p>
+
+    <h3>Step 3 · Summary &amp; signed offer</h3>
+    <p>The “Trade-in summary” shows the market average against your offer, the condition summary and the <span class="ui">Valuation build-up</span> (every adjustment, including the margin &amp; reconditioning line). The offer is stamped <strong>valid 7 days from inspection</strong>. Add the inspector's name and phone, then capture sign-off in the <strong>Dealer Sign-Off</strong> panel — the customer signs on the <strong>Digital signature</strong> canvas right on the phone (<span class="ui">Clear</span> to redo).</p>
+    <p>Export with <span class="ui">HTML</span>, <span class="ui">Print</span> or <span class="ui">PDF</span>, and finish with <span class="ui">Save Trade-In Appraisal</span>. The saved report (numbered like <code>TIV-2026-00847</code>) reopens any time from the card's <span class="ui">TIR</span> button, and the card shows a teal tick.</p>
+    <div class="note"><span class="lab">Margin stays private</span><p>The dealer margin drives the offer but never appears on the customer-facing export — the customer sees the market average, the recon deductions and the final offer, not your margin %.</p></div>
+  </section>
+
+  <!-- ============ 06 ASSIST ============ -->
+  <section id="assist">
+    <div class="sec-head">
+      <p class="eyebrow">06 · Help that travels with you</p>
+      <h2>DealerAssist <span class="accent">&amp; Guide</span></h2>
+      <p class="sec-intro">Two kinds of help ride along on every screen — reach for them before you get stuck, without leaving the job.</p>
+    </div>
+    <div class="legend">
+      <div class="b"><div class="t"><span class="glyph">✦</span> DealerAssist</div><small>A floating AI chat, open on any screen from the assistant button. Ask it how a step works, what a status means, or how the offer is calculated — it answers in plain language, in place.</small></div>
+      <div class="b"><div class="t"><span class="glyph">◈</span> Guide panel</div><small>In-context help that changes with the screen you're on. Open it during capture, the checklist or the valuation for a quick reminder of what that screen expects.</small></div>
+    </div>
+  </section>
+
+  <!-- ============ 07 TROUBLESHOOTING ============ -->
+  <section id="help">
+    <div class="sec-head">
+      <p class="eyebrow">07 · When something's off</p>
+      <h2>Troubleshooting</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Situation</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr><td><b>The camera won't open</b></td><td>Another app may be using it — close that app and tap <span class="ui">Retry live camera</span>. If your browser can't open the camera at all, use <span class="ui">Import</span> to add photos from the gallery instead.</td></tr>
+          <tr><td><b>iPhone won't offer install</b></td><td>You must use <strong>Safari</strong>, not Chrome/Edge. Then <kbd>Share</kbd> → <span class="ui">Add to Home Screen</span> → <span class="ui">Add</span>.</td></tr>
+          <tr><td><b>The install prompt vanished</b></td><td>Browsers show it once per visit. Reload the page, or use the <span class="ui">App</span> panel inside TruInspect, which always has the steps.</td></tr>
+          <tr><td><b>You're out of signal</b></td><td>Keep working. Photos are saved on the phone and upload automatically once you're back online. The report just needs the shots — it grades offline.</td></tr>
+          <tr><td><b>Code isn't accepted</b></td><td>Check <kbd>Caps Lock</kbd> and tap the eye to reveal it. If it still fails, the code is wrong or your dealership isn't enrolled — ask your manager or TruSaaS.</td></tr>
+          <tr><td><b>Wrong car details</b></td><td>Re-scan the licence disc, or edit make / model / colour / VIN / year by hand on the vehicle.</td></tr>
+          <tr><td><b>Report looks empty</b></td><td>Open it from <span class="ui">VIR</span> / <span class="ui">TIR</span> even mid-job — it opens to its not-started state and fills in as you capture and rate.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip"><span class="lab">Rule of thumb</span><p>Get the <strong>required shots</strong> and honest <strong>condition</strong> in first — everything downstream (the VIR grade, the trade-in offer, the signed reports) is built from those. You can always reopen a car and add detail later.</p></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <div class="foot-mark"><span class="tru">Tru</span><span class="i">Inspect</span></div>
+    <p>Vehicle inspection reports &amp; trade-in appraisals — part of the TruDealer platform (TruLens · TruInspect · TruFlow · TruChat). Live at <a href="https://inspect.tru-saas.com">inspect.tru-saas.com</a>. Access is issued per dealership; inspectors cannot self-register.</p>
+    <div class="foot-bottom">TruDealer · Future Automotive · Built in Cape Town</div>
+  </div>
+</footer>
+
+</body>
+</html>

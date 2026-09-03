@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18395587079');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TruChat AI Demo — 24/7 AI Sales Agent for Car Dealers</title>
+<link rel="canonical" href="https://trudealer.tru-saas.com/chat-demo.html"/>
+<meta property="og:title" content="TruChat AI Demo — 24/7 AI Sales Agent for Car Dealers"/>
+<meta property="og:description" content="Try TruChat, the 24/7 AI sales agent for car dealers. Answers stock questions, runs finance estimates, books test drives, qualifies leads on WhatsApp/web/voice."/>
+<meta property="og:url" content="https://trudealer.tru-saas.com/chat-demo.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="https://trudealer.tru-saas.com/trudealer-og.jpg"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="TruChat AI Demo — 24/7 AI Sales Agent for Car Dealers"/>
+<meta name="twitter:description" content="Try TruChat, the 24/7 AI sales agent for car dealers."/>
+<meta name="twitter:image" content="https://trudealer.tru-saas.com/trudealer-og.jpg"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "TruChat AI",
+  "description": "24/7 AI sales agent for car dealers. Answers stock questions, runs finance estimates, books test drives, qualifies leads on WhatsApp/web/voice, hands hot prospects to your team.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Cloud",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "ZAR", "availability": "https://schema.org/InStock", "description": "Included in TruStart and all higher tiers." },
+  "featureList": ["WhatsApp chatbot", "Web chat widget", "Voice agent (TruVoice)", "Stock-aware answers", "Finance calculator", "Test drive booking", "Lead qualification", "CRM handoff"],
+  "isPartOf": { "@type": "SoftwareApplication", "name": "TruDealer" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://trudealer.tru-saas.com/" },
+    { "@type": "ListItem", "position": 2, "name": "TruChat AI Demo", "item": "https://trudealer.tru-saas.com/chat-demo.html" }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+:root{
+  --ink:#030508;--ink-2:#0A0F1A;--white:#F1F5F9;--white-dim:rgba(241,245,249,.72);
+  --muted:rgba(148,163,184,.85);--faint:rgba(100,116,139,.55);
+  --cyan:#00F2FE;--cyan-soft:rgba(79,227,220,.35);--cyan-glow:rgba(0,242,254,.3);
+  --border:rgba(255,255,255,.08);--glass:rgba(10,15,26,.65);--glass-line:rgba(255,255,255,.08);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  --tc-spring:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;}
+::selection{background:var(--cyan);color:var(--ink);}
+
+#bg3d{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45;}
+
+.demo-header{position:relative;z-index:10;width:100%;max-width:1100px;margin:0 auto;padding:24px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.demo-logo{display:flex;align-items:center;gap:14px;}
+.demo-logo svg{width:42px;height:42px;flex:none;}
+.demo-logo .word{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.demo-logo .word .t{background:linear-gradient(180deg,#FFFFFF,#94A3B8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.demo-logo .word .d{background:linear-gradient(180deg,#E0F2FE,#00F2FE,#0369A1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.demo-tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);border:1px solid var(--cyan-soft);padding:6px 14px;border-radius:100px;background:rgba(79,227,220,.06);}
+.demo-back{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;transition:color .2s;}
+.demo-back:hover{color:var(--white);}
+.demo-back svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;}
+
+.demo-hero{position:relative;z-index:10;max-width:760px;margin:0 auto;padding:20px 20px 40px;text-align:center;}
+.demo-hero h1{font-size:clamp(28px,4.5vw,44px);font-weight:700;line-height:1.1;letter-spacing:-.02em;margin-bottom:14px;}
+.demo-hero h1 .cyan{color:var(--cyan);}
+.demo-hero p{font-size:15px;color:var(--white-dim);line-height:1.6;max-width:580px;margin:0 auto 28px;}
+.demo-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:32px;}
+.pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--white-dim);border:1px solid var(--glass-line);padding:7px 14px;border-radius:100px;background:var(--glass);backdrop-filter:blur(12px);transition:all .2s;cursor:pointer;}
+.pill:hover{border-color:var(--cyan-soft);color:var(--cyan);background:rgba(79,227,220,.08);}
+
+.prompts{position:relative;z-index:10;max-width:960px;margin:0 auto;padding:0 20px 40px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+.prompt-btn{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--white-dim);background:var(--glass);border:1px solid var(--glass-line);padding:10px 18px;border-radius:100px;cursor:pointer;transition:all .25s var(--tc-spring);backdrop-filter:blur(12px);}
+.prompt-btn:hover{border-color:var(--cyan-soft);color:var(--cyan);background:rgba(79,227,220,.08);transform:translateY(-2px);}
+
+.tc-wrap{position:fixed;bottom:24px;right:24px;z-index:100;font-family:var(--sans);}
+@media(max-width:600px){.tc-wrap{bottom:16px;right:16px;}}
+
+.tc-launch{display:flex;align-items:center;gap:12px;padding:10px 22px 10px 10px;background:linear-gradient(135deg,#0B0F17,#06080D);border:1px solid rgba(79,227,220,.4);border-radius:100px;color:var(--white);font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 12px 32px -8px rgba(79,227,220,.35),inset 0 1px 0 rgba(255,255,255,.06);transition:all .3s;animation:tcGlow 3s infinite alternate;}
+.tc-launch:hover{transform:translateY(-2px);border-color:rgba(79,227,220,.8);}
+.tc-launch .ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(79,227,220,.12);border:1px solid rgba(79,227,220,.45);flex:none;}
+.tc-launch .ic svg{width:20px;height:20px;}
+@keyframes tcGlow{0%{box-shadow:0 12px 32px -8px rgba(79,227,220,.30);}100%{box-shadow:0 12px 40px -6px rgba(79,227,220,.55),0 0 0 8px rgba(79,227,220,.10);}}
+
+.tc-panel{display:none;flex-direction:column;width:min(440px,calc(100vw - 32px));height:min(680px,calc(100vh - 48px));background:rgba(11,15,23,.95);backdrop-filter:blur(24px) saturate(1.4);border:1px solid var(--glass-line);border-radius:20px;overflow:hidden;box-shadow:0 40px 100px -20px rgba(0,0,0,.8),0 0 40px -12px rgba(79,227,220,.25),inset 0 1px 0 rgba(255,255,255,.06);}
+.tc-wrap.open .tc-launch{display:none;}
+.tc-wrap.open .tc-panel{display:flex;animation:tcIn .4s var(--tc-spring);}
+@keyframes tcIn{from{opacity:0;transform:translateY(20px) scale(.96);}}
+@media(max-width:600px){.tc-panel{position:fixed;top:8px;bottom:8px;left:8px;right:8px;width:auto;height:auto;border-radius:16px;}}
+
+.tc-head{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--glass-line);background:linear-gradient(135deg,rgba(79,227,220,.10),transparent);position:relative;}
+.tc-head .avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(79,227,220,.12);border:1px solid rgba(79,227,220,.4);flex:none;}
+.tc-head .avatar svg{width:22px;height:22px;}
+.tc-head .info{flex:1;min-width:0;}
+.tc-head .info b{display:block;font-size:14px;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc-head .info span{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--cyan);text-transform:uppercase;display:flex;align-items:center;gap:5px;margin-top:2px;}
+.tc-head .info span::before{content:'';width:5px;height:5px;background:var(--cyan);border-radius:50%;box-shadow:0 0 8px var(--cyan);animation:livePing 1.8s ease-out infinite;}
+.tc-head .x{width:30px;height:30px;border-radius:8px;background:rgba(232,234,230,.06);color:var(--white);font-size:18px;display:grid;place-items:center;cursor:pointer;transition:background .2s;border:none;}
+.tc-head .x:hover{background:rgba(232,234,230,.14);}
+
+.tc-tabs{display:flex;border-bottom:1px solid var(--glass-line);background:rgba(3,5,8,.5);}
+.tc-tab{flex:1;padding:12px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;border:none;background:none;position:relative;}
+.tc-tab:hover{color:var(--white-dim);}
+.tc-tab.active{color:var(--cyan);}
+.tc-tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--cyan);border-radius:2px;box-shadow:0 0 8px var(--cyan);}
+
+.tc-body{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
+.tc-body::-webkit-scrollbar{width:5px;}
+.tc-body::-webkit-scrollbar-thumb{background:var(--glass-line);border-radius:3px;}
+
+.msg{max-width:88%;padding:11px 15px;border-radius:14px;font-size:13.5px;line-height:1.55;animation:msgIn .35s var(--tc-spring);word-break:break-word;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.97);}}
+.msg.bot{align-self:flex-start;background:rgba(79,227,220,.08);border:1px solid rgba(79,227,220,.18);border-bottom-left-radius:4px;color:var(--white);}
+.msg.user{align-self:flex-end;background:var(--white);color:var(--ink);border-bottom-right-radius:4px;font-weight:600;}
+.msg b{color:var(--cyan);font-weight:700;}
+.msg em{font-style:italic;color:var(--white-dim);}
+
+.typing{align-self:flex-start;display:flex;align-items:center;gap:4px;padding:14px 16px;background:rgba(79,227,220,.06);border:1px solid rgba(79,227,220,.15);border-radius:14px;border-bottom-left-radius:4px;}
+.typing span{width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:typingPulse 1.2s ease-in-out infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes typingPulse{0%,60%,100%{opacity:.3;transform:scale(.8);}30%{opacity:1;transform:scale(1.2);box-shadow:0 0 8px var(--cyan);}}
+
+.vcard{display:grid;gap:10px;margin-top:6px;}
+.vcard-item{background:rgba(232,234,230,.04);border:1px solid var(--glass-line);border-radius:12px;padding:14px;transition:all .2s;}
+.vcard-item:hover{border-color:var(--cyan-soft);background:rgba(79,227,220,.06);}
+.vcard-item .vhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.vcard-item .vtitle{font-size:14px;font-weight:700;color:var(--white);}
+.vcard-item .vbadge{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:100px;background:rgba(79,227,220,.14);color:var(--cyan);}
+.vcard-item .vmeta{display:flex;gap:12px;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;}
+.vcard-item .vprice{font-size:18px;font-weight:700;color:var(--cyan);}
+.vcard-item .vprice .cur{font-size:12px;color:var(--white-dim);margin-right:2px;}
+.vcard-item .vcta{margin-top:10px;display:flex;gap:8px;}
+.vcard-item .vcta button{flex:1;padding:8px 0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:none;}
+.vcard-item .vcta .btn-primary{background:var(--cyan);color:var(--ink);}
+.vcard-item .vcta .btn-primary:hover{background:var(--white);}
+.vcard-item .vcta .btn-ghost{background:transparent;border:1px solid var(--glass-line);color:var(--white-dim);}
+.vcard-item .vcta .btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+
+.fcard{background:rgba(79,227,220,.06);border:1px solid rgba(79,227,220,.18);border-radius:12px;padding:14px;margin-top:6px;}
+.fcard .frow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--glass-line);font-size:13px;}
+.fcard .frow:last-child{border-bottom:none;}
+.fcard .frow .flabel{color:var(--muted);font-size:12px;}
+.fcard .frow .fval{color:var(--white);font-weight:600;font-family:var(--mono);}
+.fcard .frow .fval.highlight{color:var(--cyan);font-size:16px;font-weight:700;}
+
+.sugs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.sugs button{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--white-dim);background:rgba(232,234,230,.04);border:1px solid var(--glass-line);border-radius:100px;padding:6px 12px;cursor:pointer;transition:all .2s;}
+.sugs button:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(79,227,220,.08);}
+
+.tc-foot{padding:12px 16px 16px;display:flex;gap:8px;border-top:1px solid var(--glass-line);background:rgba(3,5,8,.5);}
+.tc-foot input{flex:1;padding:11px 16px;border-radius:100px;background:rgba(232,234,230,.05);border:1px solid var(--glass-line);color:var(--white);font-family:var(--sans);font-size:13px;outline:none;transition:border-color .2s;}
+.tc-foot input:focus{border-color:var(--cyan);}
+.tc-foot input::placeholder{color:var(--faint);}
+.tc-foot button{padding:11px 18px;border-radius:100px;background:var(--cyan);color:var(--ink);font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;border:none;}
+.tc-foot button:hover{background:var(--white);transform:translateY(-1px);}
+
+.tc-proactive{position:absolute;bottom:calc(100% + 14px);right:0;white-space:nowrap;padding:10px 16px;border-radius:14px;background:var(--glass);border:1px solid var(--cyan-soft);backdrop-filter:blur(12px);font-size:13px;color:var(--white);box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:all .4s var(--tc-spring);}
+.tc-proactive.visible{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;cursor:pointer;}
+.tc-proactive::after{content:'';position:absolute;bottom:-6px;right:24px;width:10px;height:10px;background:var(--glass);border-right:1px solid var(--cyan-soft);border-bottom:1px solid var(--cyan-soft);transform:rotate(45deg);}
+.tc-proactive .dismiss{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:var(--ink);border:1px solid var(--glass-line);display:grid;place-items:center;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;}
+.tc-proactive .dismiss:hover{color:var(--white);border-color:var(--cyan);}
+
+.tc-sound{position:absolute;top:14px;right:50px;width:30px;height:30px;border-radius:8px;background:rgba(232,234,230,.06);border:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:all .2s;}
+.tc-sound:hover{color:var(--white);background:rgba(232,234,230,.12);}
+.tc-sound svg{width:16px;height:16px;}
+
+.dev-panel{position:relative;z-index:10;max-width:900px;margin:0 auto 60px;padding:0 20px;}
+.dev-toggle{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:100px;background:var(--glass);border:1px solid var(--glass-line);color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin:0 auto;width:fit-content;}
+.dev-toggle:hover{color:var(--cyan);border-color:var(--cyan-soft);}
+.dev-toggle svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;transition:transform .3s;}
+.dev-toggle.open svg{transform:rotate(180deg);}
+.dev-grid{display:none;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:20px;padding:24px;border-radius:16px;background:var(--glass);border:1px solid var(--glass-line);backdrop-filter:blur(20px);}
+.dev-grid.open{display:grid;animation:devIn .35s var(--tc-spring);}
+@keyframes devIn{from{opacity:0;transform:translateY(-10px);}}
+.dev-grid .field{display:flex;flex-direction:column;gap:6px;}
+.dev-grid label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.dev-grid input,.dev-grid select{background:rgba(3,5,8,.6);border:1px solid var(--glass-line);color:var(--white);padding:10px 14px;border-radius:10px;font-size:13px;outline:none;transition:all .2s;}
+.dev-grid input:focus,.dev-grid select:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,242,254,.15);}
+.dev-grid input[type="password"]{font-family:var(--mono);}
+.dev-colors{display:flex;gap:8px;margin-top:4px;}
+.dev-colors .dot{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.2);cursor:pointer;transition:all .2s;}
+.dev-colors .dot:hover{transform:scale(1.2);box-shadow:0 0 10px currentColor;border-color:#fff;}
+.dev-colors .dot.c1{background:#00f2fe;}.dev-colors .dot.c2{background:#e30613;}.dev-colors .dot.c3{background:#f59e0b;}.dev-colors .dot.c4{background:#10b981;}.dev-colors .dot.c5{background:#8b5cf6;}
+
+.demo-footer{position:relative;z-index:10;text-align:center;padding:40px 20px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.demo-footer a{color:var(--cyan);text-decoration:none;}
+.demo-footer a:hover{text-decoration:underline;}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
+  .msg{animation:none;opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+
+<div id="bg3d"></div>
+
+<header class="demo-header">
+  <div class="demo-logo">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="30%" stop-color="#CBD5E1"/><stop offset="65%" stop-color="#64748B"/><stop offset="100%" stop-color="#1E293B"/></linearGradient><linearGradient id="lg2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E0F2FE"/><stop offset="35%" stop-color="#38BDF8"/><stop offset="70%" stop-color="#00F2FE"/><stop offset="100%" stop-color="#0369A1"/></linearGradient><filter id="gl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs><circle cx="100" cy="100" r="82" fill="none" stroke="url(#lg2)" stroke-width="4" filter="url(#gl)" opacity=".6"/><circle cx="100" cy="100" r="82" fill="none" stroke="url(#lg2)" stroke-width="2" opacity=".9"/><path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#lg1)" stroke="#1E293B" stroke-width="1"/><path d="M100 35 L145 60 L125 72 L100 58 Z" fill="#FFFFFF" opacity=".7"/><path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#lg2)" filter="url(#gl)" opacity=".95"/><path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#lg2)"/><line x1="100" y1="35" x2="100" y2="160" stroke="#E0F2FE" stroke-width="2.5" opacity=".8"/></svg>
+    <div class="word"><span class="t">Tru</span><span class="d">Chat</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span class="demo-tag">Live AI Demo</span>
+    <a href="index.html" class="demo-back"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to True-Cars</a>
+  </div>
+</header>
+
+<section class="demo-hero">
+  <h1>Your 24/7 <span class="cyan">AI Sales Agent</span></h1>
+  <p>TruChat qualifies leads while you sleep — answers stock questions, runs finance estimates, books test drives, and hands hot prospects to your team with full context. Try it below.</p>
+  <div class="demo-pills">
+    <span class="pill">⚡ Instant replies</span>
+    <span class="pill">📱 WhatsApp handoff</span>
+    <span class="pill">🚗 Live stock aware</span>
+    <span class="pill">💳 Finance calculator</span>
+  </div>
+</section>
+
+<div class="prompts">
+  <button class="prompt-btn" onclick="tcSendPrompt('Show me Ford Ranger stock')">🚘 Ranger stock</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('I want to sell my trade-in')">🔄 Trade-in value</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('How does vehicle finance work?')">💳 Finance help</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('Book a test drive for Saturday 10am')">📅 Book test drive</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('What are your showroom hours?')">📍 Hours & location</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('Calculate finance on R450,000 with R50,000 deposit')">🧮 Finance calc</button>
+</div>
+
+<div class="dev-panel">
+  <button class="dev-toggle" id="devToggle" onclick="toggleDev()">
+    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    Developer config
+  </button>
+  <div class="dev-grid" id="devGrid">
+    <div class="field">
+      <label>Dealership Name</label>
+      <input type="text" id="cfgName" value="True-Cars" onchange="updateConfig()">
+    </div>
+    <div class="field">
+      <label>AI Assistant Name</label>
+      <input type="text" id="cfgAssistant" value="Ray" onchange="updateConfig()">
+    </div>
+    <div class="field">
+      <label>WhatsApp Number</label>
+      <input type="text" id="cfgWA" value="27821234567" onchange="updateConfig()">
+    </div>
+    <div class="field">
+      <label>Accent Colour</label>
+      <div class="dev-colors">
+        <div class="dot c1" onclick="setPalette('#00f2fe','#0284c7')" title="True-Cars Cyan"></div>
+        <div class="dot c2" onclick="setPalette('#e30613','#9b0410')" title="Sport Red"></div>
+        <div class="dot c3" onclick="setPalette('#f59e0b','#b45309')" title="Executive Gold"></div>
+        <div class="dot c4" onclick="setPalette('#10b981','#047857')" title="Eco Emerald"></div>
+        <div class="dot c5" onclick="setPalette('#8b5cf6','#6d28d9')" title="Ultra Violet"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tc-wrap" id="tcWrap">
+  <div class="tc-proactive" id="tcProactive" onclick="tcOpen();this.classList.remove('visible');">
+    <div class="dismiss" onclick="event.stopPropagation();this.parentElement.classList.remove('visible');">×</div>
+    Need help with stock or finance?
+  </div>
+
+  <button class="tc-launch" id="tcLaunch" onclick="tcOpen()">
+    <span class="ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00F2FE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </span>
+    <span>Ask TruChat</span>
+  </button>
+
+  <div class="tc-panel" id="tcPanel">
+    <div class="tc-head">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#00F2FE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      </div>
+      <div class="info">
+        <b id="tcHeadName">Ray · True-Cars</b>
+        <span>Online · 24/7</span>
+      </div>
+      <button class="tc-sound" id="tcSound" onclick="toggleSound()" title="Toggle sound">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      </button>
+      <button class="x" onclick="tcClose()">×</button>
+    </div>
+
+    <div class="tc-tabs">
+      <button class="tc-tab active" data-tab="ai" onclick="switchTab('ai')">🤖 AI Assistant</button>
+      <button class="tc-tab" data-tab="human" onclick="switchTab('human')">💬 Sales Desk</button>
+    </div>
+
+    <div class="tc-body" id="tcBody"></div>
+
+    <div class="tc-foot">
+      <input type="text" id="tcInput" placeholder="Ask about stock, finance, trade-in..." autocomplete="off">
+      <button onclick="tcSend()">Send</button>
+    </div>
+  </div>
+</div>
+
+<footer class="demo-footer">
+  <p>© 2026 TruChat — a <a href="index.html">True-Cars.co.za</a> product · Built in Cape Town</p>
+</footer>
+
+<script>
+const CFG = {
+  dealerName: "True-Cars",
+  assistantName: "Ray",
+  salesWhatsApp: "27821234567",
+  brandPrimary: "#00f2fe",
+  brandPrimaryDark: "#0284c7",
+  address: "15 Victory Way, Simonstown, 7441, Cape Town",
+  hoursText: "Mon–Fri: 08:00 – 17:30\nSaturday: 08:30 – 14:00\nSunday: Closed",
+  greetingAI: "Welcome to **{dealer}**! I'm **{assistant}**, your AI showroom guide. Looking for pre-owned stock, trade-in valuations, or finance help?",
+  greetingHuman: "Howzit! You're connected to the **{dealer} Sales Desk**. How can our team help you today?",
+  suggestionsAI: ["Browse stock", "Trade-in valuation", "Showroom hours", "Finance help"],
+  suggestionsHuman: ["Call me back", "Book test drive", "Finance pre-approval", "WhatsApp me"],
+
+  catalog: [
+    { id:"TC001", brand:"FORD", model:"Ranger 2.0 SiT XLT D/C", year:2022, price:489900, km:"42 000 km", fuel:"Diesel", trans:"Automatic", badge:"Hot Deal" },
+    { id:"TC002", brand:"TOYOTA", model:"Hilux 2.8 GD-6 Legend RS", year:2021, price:549900, km:"51 000 km", fuel:"Diesel", trans:"Automatic", badge:"Low KM" },
+    { id:"TC003", brand:"VOLKSWAGEN", model:"Polo 1.0 TSI Life", year:2023, price:299900, km:"18 000 km", fuel:"Petrol", trans:"Manual", badge:"Popular" },
+    { id:"TC004", brand:"AUDI", model:"A3 Sportback 35 TFSI", year:2022, price:449900, km:"28 000 km", fuel:"Petrol", trans:"Automatic", badge:"Mint" },
+    { id:"TC005", brand:"BMW", model:"320i M Sport", year:2021, price:529900, km:"35 000 km", fuel:"Petrol", trans:"Automatic", badge:"Executive" },
+    { id:"TC006", brand:"MERCEDES-BENZ", model:"C200 AMG Line", year:2022, price:589900, km:"22 000 km", fuel:"Petrol", trans:"Automatic", badge:"Just In" },
+    { id:"TC007", brand:"ISUZU", model:"D-Max 3.0 TD LS D/C", year:2020, price:379900, km:"68 000 km", fuel:"Diesel", trans:"Automatic", badge:"Workhorse" },
+    { id:"TC008", brand:"HYUNDAI", model:"Tucson 2.0 Executive", year:2023, price:419900, km:"15 000 km", fuel:"Petrol", trans:"Automatic", badge:"Near New" },
+    { id:"TC009", brand:"SUZUKI", model:"Swift 1.2 GL", year:2022, price:189900, km:"32 000 km", fuel:"Petrol", trans:"Manual", badge:"Budget Friendly" },
+    { id:"TC010", brand:"NISSAN", model:"Navara 2.5 dCi LE D/C", year:2021, price:429900, km:"55 000 km", fuel:"Diesel", trans:"Automatic", badge:"4x4 Ready" }
+  ],
+
+  finance: { interestRate: 11.5, maxTermMonths: 72, minDepositPct: 0, maxDepositPct: 100, defaultBalloonPct: 0 },
+
+  depreciation: {
+    "FORD": 0.14, "TOYOTA": 0.12, "VOLKSWAGEN": 0.13, "AUDI": 0.15,
+    "BMW": 0.16, "MERCEDES-BENZ": 0.15, "ISUZU": 0.13, "HYUNDAI": 0.14,
+    "SUZUKI": 0.11, "NISSAN": 0.14, "DEFAULT": 0.14
+  },
+
+  synonyms: {
+    "bakkie": ["ranger","hilux","navara","d-max","double cab","single cab","pickup","pick-up"],
+    "suv": ["tucson","fortuner","everest","q5","x3","gle"],
+    "hatchback": ["polo","swift","a3","i20","corolla"],
+    "sedan": ["320i","c200","corolla","jetta"],
+    "diesel": ["gd-6","dci","td","si-t"],
+    "petrol": ["tsi","tfsi","mpfi"],
+    "automatic": ["auto","dct","cvt"],
+    "manual": ["stick","5-speed","6-speed"],
+    "cheap": ["budget","affordable","under","cheap","entry","starter"],
+    "expensive": ["luxury","premium","executive","high-end","top"]
+  }
+};
+
+let soundOn = false;
+let currentTab = 'ai';
+let session = { name: "Prospect", phone: "", vehicleInterest: null, qualified: false, lastTopic: null, financeContext: null, tradeinContext: null };
+let chatHistory = { ai:[], human:[] };
+
+(function(){
+  const container = document.getElementById('bg3d');
+  if(typeof THREE === 'undefined') return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(renderer.domElement);
+
+  const grid = new THREE.GridHelper(60, 40, 0x00f2fe, 0x1e293b);
+  grid.position.y = -3.5;
+  scene.add(grid);
+
+  const count = 300;
+  const pos = new Float32Array(count * 3);
+  for(let i=0;i<count*3;i++) pos[i] = (Math.random()-.5)*50;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ size:.14, color:0x00f2fe, transparent:true, opacity:.7 });
+  const pts = new THREE.Points(geo, mat);
+  scene.add(pts);
+
+  camera.position.set(0, 2, 8);
+  let mx=0, my=0;
+  window.addEventListener('mousemove', e=>{
+    mx = (e.clientX/window.innerWidth-.5)*.4;
+    my = (e.clientY/window.innerHeight-.5)*.4;
+  }, {passive:true});
+
+  const clock = new THREE.Clock();
+  (function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    pts.rotation.y = t*.04;
+    camera.position.x += (mx*3 - camera.position.x)*.05;
+    camera.position.y += (-my*3 + 2 - camera.position.y)*.05;
+    camera.lookAt(0,0,0);
+    renderer.render(scene, camera);
+  })();
+
+  window.addEventListener('resize', ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+function normalizeText(text){ return String(text || "").toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim(); }
+function containsAny(text, keywords){ const n = normalizeText(text); return keywords.some(k => n.includes(normalizeText(k))); }
+
+function matchIntent(text){
+  const n = normalizeText(text);
+  if(containsAny(text, ["stock","cars","browse","ranger","hilux","polo","audi","bmw","mercedes","isuzu","hyundai","suzuki","nissan","navara","d-max","tucson","swift","a3","320i","c200","bakkie","suv","hatchback","sedan","diesel","petrol","automatic","manual"])) return "stock";
+  if(containsAny(text, ["finance","repayment","monthly","deposit","balloon","interest","calculate","afford","budget","installment","emi","prime","rate","r ","rand"])) return "finance";
+  if(containsAny(text, ["trade-in","trade in","sell","valuation","value my car","what is my car worth","part exchange","px","swap"])) return "tradein";
+  if(containsAny(text, ["test drive","book","schedule","appointment","saturday","sunday","come see","visit","drive"])) return "testdrive";
+  if(containsAny(text, ["hours","location","address","open","where","find you","directions","map","simonstown","cape town"])) return "hours";
+  if(containsAny(text, ["warranty","service plan","maintenance","roadworthy","inspection","check","history"])) return "services";
+  if(containsAny(text, ["human","person","call","phone","speak","salesman","manager","whatsapp","contact"])) return "human";
+  if(containsAny(text, ["hello","hi ","hey ","howzit","good morning","good afternoon","good evening","yo ","sup "])) return "greeting";
+  if(containsAny(text, ["bye","goodbye","thanks","thank you","cheers","laters"])) return "goodbye";
+  return "general";
+}
+
+function filterStock(query){
+  const n = normalizeText(query);
+  let results = CFG.catalog.filter(v => {
+    const vehicleText = normalizeText(v.brand + " " + v.model + " " + v.year + " " + v.fuel + " " + v.trans + " " + v.badge);
+    return vehicleText.includes(n);
+  });
+  if(results.length === 0){
+    for(const [key, syns] of Object.entries(CFG.synonyms)){
+      if(syns.some(s => n.includes(s)) || n.includes(key)){
+        const matchTerms = [key, ...syns];
+        results = CFG.catalog.filter(v => {
+          const vt = normalizeText(v.brand + " " + v.model + " " + v.fuel + " " + v.trans);
+          return matchTerms.some(t => vt.includes(t));
+        });
+        if(results.length) break;
+      }
+    }
+  }
+  const priceMatch = query.match(/(?:under|below|less than|cheaper than|around|about|up to)[\s]*R?\s*([\d\s,]+)/i);
+  if(priceMatch && results.length){
+    const maxPrice = parseInt(priceMatch[1].replace(/[^\d]/g,''));
+    results = results.filter(v => v.price <= maxPrice);
+  }
+  if(containsAny(query, ["cheap","budget","affordable","under 300","under 400","entry"])) results = results.filter(v => v.price <= 350000);
+  if(containsAny(query, ["luxury","premium","expensive","high-end"])) results = results.filter(v => v.price >= 450000);
+  return results.length ? results : CFG.catalog.slice(0, 4);
+}
+
+function parseFinanceInput(text){
+  const n = text.toLowerCase();
+  let price = null, deposit = null, balloon = 0, term = 60;
+  const priceMatches = text.match(/R?\s*([\d\s,.]+)/g);
+  if(priceMatches){
+    const nums = priceMatches.map(m => parseInt(m.replace(/[^\d]/g,''))).filter(x => x > 1000);
+    if(nums.length >= 1) price = nums[0];
+    if(nums.length >= 2) deposit = nums[1];
+  }
+  const termMatch = text.match(/(\d+)[\s]*(?:month|months|mo|y|years?)/i);
+  if(termMatch){ let t = parseInt(termMatch[1]); if(text.toLowerCase().includes('year')) t *= 12; term = Math.min(Math.max(t, 12), 72); }
+  const balloonMatch = text.match(/(\d+)[\s]*%?[\s]*(?:balloon|residual)/i);
+  if(balloonMatch) balloon = parseInt(balloonMatch[1]);
+  if(n.includes('no deposit') || n.includes('zero deposit')) deposit = 0;
+  return { price, deposit, balloon, term };
+}
+
+function calculateRepayment(price, deposit, balloonPct, termMonths, annualRate){
+  const principal = price - (deposit || 0);
+  const balloon = principal * (balloonPct / 100);
+  const financed = principal - balloon;
+  const monthlyRate = (annualRate / 100) / 12;
+  if(monthlyRate === 0) return { monthly: financed / termMonths, totalInterest: 0, totalCost: price };
+  const monthly = financed * (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) / (Math.pow(1 + monthlyRate, termMonths) - 1);
+  const totalPaid = (monthly * termMonths) + balloon + (deposit || 0);
+  const totalInterest = totalPaid - price;
+  return { monthly: Math.round(monthly), totalInterest: Math.round(totalInterest), totalCost: Math.round(totalPaid), balloon: Math.round(balloon), principal: Math.round(financed) };
+}
+
+function buildFinanceReply(text){
+  const parsed = parseFinanceInput(text);
+  let vehicle = null;
+  const stockResults = filterStock(text);
+  if(stockResults.length === 1){ vehicle = stockResults[0]; parsed.price = vehicle.price; }
+  else if(stockResults.length > 1 && !parsed.price){ parsed.price = stockResults[0].price; vehicle = stockResults[0]; }
+  if(!parsed.price){
+    session.lastTopic = "finance";
+    return { text: "I can run a finance estimate right now. Our panel works with all major SA banks — rates from **Prime + 2%** (currently around **11.5%**).\n\nWhat vehicle price are you looking at, and do you have a deposit in mind?", suggestions:["R 300k budget","R 450k budget","R 600k budget","No deposit"] };
+  }
+  if(parsed.deposit === null) parsed.deposit = Math.round(parsed.price * 0.10);
+  const calc = calculateRepayment(parsed.price, parsed.deposit, parsed.balloon, parsed.term, CFG.finance.interestRate);
+  let msg = "";
+  if(vehicle) msg = `Finance estimate for the **${vehicle.year} ${vehicle.brand} ${vehicle.model}** at **R ${vehicle.price.toLocaleString()}**:`;
+  else msg = `Finance estimate at **R ${parsed.price.toLocaleString()}**:`;
+  msg += `\n\n**Deposit:** R ${parsed.deposit.toLocaleString()}\n**Financed:** R ${calc.principal.toLocaleString()}\n**Term:** ${parsed.term} months\n**Rate:** ${CFG.finance.interestRate}%\n**Balloon:** ${parsed.balloon > 0 ? 'R ' + calc.balloon.toLocaleString() : 'None'}`;
+  const fcard = { type: "finance", rows: [
+    { label: "Vehicle Price", value: "R " + parsed.price.toLocaleString() },
+    { label: "Deposit", value: "R " + parsed.deposit.toLocaleString() },
+    { label: "Term", value: parsed.term + " months" },
+    { label: "Interest Rate", value: CFG.finance.interestRate + "%" },
+    { label: "Balloon / Residual", value: parsed.balloon > 0 ? "R " + calc.balloon.toLocaleString() : "None" },
+    { label: "Monthly Repayment", value: "R " + calc.monthly.toLocaleString(), highlight: true },
+    { label: "Total Interest", value: "R " + calc.totalInterest.toLocaleString() }
+  ]};
+  session.financeContext = parsed;
+  session.lastTopic = "finance";
+  return { text: msg, financeCard: fcard, suggestions: ["Lower deposit?","Shorter term?","Add balloon?","Book test drive"] };
+}
+
+function parseTradeInInput(text){
+  let year = null, make = null, model = null, mileage = null;
+  const yearMatch = text.match(/\b(19\d{2}|20\d{2})\b/);
+  if(yearMatch) year = parseInt(yearMatch[1]);
+  const kmMatch = text.match(/([\d\s,.]+)[\s]*(?:km|kilometers|k|miles)/i);
+  if(kmMatch) mileage = parseInt(kmMatch[1].replace(/[^\d]/g,''));
+  const brands = ["ford","toyota","volkswagen","vw","audi","bmw","mercedes","isuzu","hyundai","suzuki","nissan","honda","kia","mazda","jeep","land rover","volvo","porsche"];
+  for(const b of brands){
+    const regex = new RegExp(`\\b${b}\\b`, 'i');
+    if(regex.test(text)){ make = b.toUpperCase(); if(make === "VW") make = "VOLKSWAGEN"; break; }
+  }
+  if(make){
+    const makeIdx = normalizeText(text).indexOf(make.toLowerCase());
+    if(makeIdx >= 0){ const after = normalizeText(text).slice(makeIdx + make.length).trim().split(/\s+/)[0]; if(after && after.length > 1 && !after.match(/^\d{4}$/)) model = after.charAt(0).toUpperCase() + after.slice(1); }
+  }
+  return { year, make, model, mileage };
+}
+
+function estimateTradeIn(year, make, mileage){
+  const currentYear = 2026;
+  const age = currentYear - (year || currentYear);
+  const depRate = CFG.depreciation[make] || CFG.depreciation["DEFAULT"];
+  const newPrice = 350000;
+  let value = newPrice * Math.pow(1 - depRate, age);
+  const expectedKm = age * 15000;
+  const actualKm = mileage || expectedKm;
+  const kmDiff = actualKm - expectedKm;
+  if(kmDiff > 0) value -= kmDiff * 1.5;
+  else value += Math.abs(kmDiff) * 0.8;
+  return Math.max(Math.round(value), 25000);
+}
+
+function buildTradeInReply(text){
+  const parsed = parseTradeInInput(text);
+  if(parsed.year && parsed.make){
+    const estimate = estimateTradeIn(parsed.year, parsed.make, parsed.mileage);
+    session.tradeinContext = parsed;
+    session.lastTopic = "tradein";
+    let msg = `Based on our market data, your **${parsed.year} ${parsed.make}${parsed.model ? ' ' + parsed.model : ''}** could be worth around:`;
+    if(parsed.mileage) msg += `\n\n**Estimated Trade-In Value: R ${estimate.toLocaleString()}**`;
+    else msg += `\n\n**Estimated Trade-In Value: R ${estimate.toLocaleString()}** (based on average mileage)`;
+    msg += `\n\nThis is a ballpark figure — we'd need to inspect the vehicle in person at our **Simonstown** showroom for a firm offer. Bring it in anytime during our hours and we'll sort you out.`;
+    return { text: msg, suggestions: ["Book inspection","Browse stock","Finance help"] };
+  }
+  session.lastTopic = "tradein";
+  return { text: "We offer daily trade-in evaluations! 🚗 To give you a rough estimate, I need a few details:\n\n1. **Year** (e.g. 2020)\n2. **Make & Model** (e.g. Toyota Hilux)\n3. **Mileage** (e.g. 55 000 km)\n\nJust reply with those and I'll crunch the numbers.", suggestions: ["2021 Ford Ranger 45k km","2019 VW Polo 30k km","Browse stock"] };
+}
+
+function getRandomResponse(type){
+  const responses = {
+    greeting: ["Howzit! Welcome to True-Cars. What can I help you find today?","Hey there! Ray here from True-Cars. Looking for a new ride or just browsing?","Good day! Ready to find your next car? I'm here to help with stock, finance, or trade-ins."],
+    goodbye: ["Cheers! Hit me up anytime if you need anything else. 🚗","All good! Feel free to pop back whenever you're ready. Safe travels!","Thanks for chatting! Our WhatsApp line is always open if you think of anything later."],
+    fallback: ["I can pull live stock, run finance numbers, book test drives, or value your trade-in. What are you after?","Not sure I caught that — want me to show you what's on the floor, or run some finance numbers?","I'm built for car sales! Try asking about stock, finance, trade-ins, or booking a test drive."]
+  };
+  const arr = responses[type] || responses.fallback;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+async function processMessage(text, tab){
+  const raw = String(text || "").trim();
+  const lower = raw.toLowerCase();
+  const intent = matchIntent(raw);
+
+  const phoneMatch = raw.match(/(?:\+27|0|27)[\s-]?[6789][\d][\s-]?[\d]{3}[\s-]?[\d]{4}/);
+  if(phoneMatch){
+    session.phone = phoneMatch[0].replace(/[^\d]/g,'');
+    session.qualified = true;
+    return { text: `Perfect! I've logged your number **${session.phone}**. Our team will follow up on WhatsApp shortly. In the meantime, anything else I can help with?`, suggestions: ["Browse stock","Finance help","Book test drive"] };
+  }
+
+  const nameMatch = raw.match(/(?:my name is|i am|i'm|call me)[\s]+([a-zA-Z]{2,20})/i);
+  if(nameMatch){
+    session.name = nameMatch[1];
+    return { text: `Nice to meet you, **${session.name}**! What can I help you with today?`, suggestions: ["Browse stock","Finance help","Trade-in valuation"] };
+  }
+
+  switch(intent){
+    case "greeting": return { text: getRandomResponse("greeting"), suggestions: CFG.suggestionsAI };
+    case "goodbye": return { text: getRandomResponse("goodbye"), suggestions: [] };
+    case "stock":{
+      const results = filterStock(raw);
+      session.vehicleInterest = results[0] || null;
+      session.lastTopic = "stock";
+      let msg = results.length > 1 ? `Here are ${results.length} units currently available on our showroom floor:` : `Here's what we have matching your search:`;
+      if(results.length === CFG.catalog.length) msg = "Here are some highlights from our current stock:";
+      return { text: msg, vehicles: results.slice(0, 4), suggestions: ["Finance help","Trade-in valuation","Show me cheaper options","Show me luxury"] };
+    }
+    case "finance": return buildFinanceReply(raw);
+    case "tradein": return buildTradeInReply(raw);
+    case "testdrive":{
+      session.lastTopic = "testdrive";
+      let msg = `I'd be happy to book a test drive for you at **${CFG.dealerName}**.`;
+      if(session.vehicleInterest) msg += ` I see you're interested in the **${session.vehicleInterest.year} ${session.vehicleInterest.brand} ${session.vehicleInterest.model}** — great choice!`;
+      msg += `\n\nWhat day and time works best? We operate **${CFG.hoursText.replace(/\n/g,', ')}**.`;
+      return { text: msg, suggestions: ["Saturday 10am","Saturday 2pm","Monday 9am","Browse stock"] };
+    }
+    case "hours":{
+      session.lastTopic = "hours";
+      return { text: `**${CFG.dealerName}**\n📍 ${CFG.address}\n🕐 ${CFG.hoursText}\n\nWe're just off the main road in Simonstown — plenty of parking out front.`, suggestions: ["Browse stock","Book test drive","Get directions"] };
+    }
+    case "services":{
+      session.lastTopic = "services";
+      return { text: `Every vehicle at **${CFG.dealerName}** comes with:\n\n✅ **Multi-point inspection** before sale\n✅ **Roadworthy certificate** included\n✅ **Service history** verification\n✅ Optional **extended warranty** plans\n✅ **Trade-in assistance** on your current vehicle\n\nWe don't sell cars we wouldn't drive ourselves.`, suggestions: ["Browse stock","Book test drive","Finance help"] };
+    }
+    case "human":{
+      if(tab === 'human') return { text: "Message received — I've flagged this for the sales team. They'll pick it up during business hours. For anything urgent, hit the WhatsApp button or give us a call.", suggestions: ["Browse stock","Finance help"] };
+      return { text: "No problem — I'll connect you to our sales desk. Switch to the **Sales Desk** tab above and someone from the team will assist you directly.", suggestions: ["Switch to Sales Desk","Browse stock","WhatsApp us"] };
+    }
+    default:{
+      if(session.lastTopic === "finance" && session.financeContext){
+        if(containsAny(raw, ["lower","less","reduce","drop"]) && containsAny(raw, ["deposit"])){ session.financeContext.deposit = Math.max(0, Math.round(session.financeContext.deposit * 0.5)); return buildFinanceReply(`R ${session.financeContext.price} with R ${session.financeContext.deposit} deposit ${session.financeContext.term} months`); }
+        if(containsAny(raw, ["shorter","less","fewer"]) && containsAny(raw, ["term","month"])){ session.financeContext.term = Math.max(12, session.financeContext.term - 12); return buildFinanceReply(`R ${session.financeContext.price} with R ${session.financeContext.deposit} deposit ${session.financeContext.term} months`); }
+        if(containsAny(raw, ["balloon","residual"])){ session.financeContext.balloon = 30; return buildFinanceReply(`R ${session.financeContext.price} with R ${session.financeContext.deposit} deposit ${session.financeContext.term} months 30% balloon`); }
+      }
+      if(session.lastTopic === "tradein" && session.tradeinContext){
+        const update = parseTradeInInput(raw);
+        if(update.year && !session.tradeinContext.year) session.tradeinContext.year = update.year;
+        if(update.make && !session.tradeinContext.make) session.tradeinContext.make = update.make;
+        if(update.mileage && !session.tradeinContext.mileage) session.tradeinContext.mileage = update.mileage;
+        if(update.model && !session.tradeinContext.model) session.tradeinContext.model = update.model;
+        if(session.tradeinContext.year && session.tradeinContext.make) return buildTradeInReply(`${session.tradeinContext.year} ${session.tradeinContext.make} ${session.tradeinContext.model || ''} ${session.tradeinContext.mileage || ''} km`);
+      }
+      if(tab === 'human') return { text: "Message received — I've flagged this for the sales team. They'll pick it up during business hours.", suggestions: ["Browse stock","Finance help"] };
+      return { text: getRandomResponse("fallback"), suggestions: CFG.suggestionsAI };
+    }
+  }
+}
+
+function formatGreeting(type){
+  const tmpl = type==='human' ? CFG.greetingHuman : CFG.greetingAI;
+  return tmpl.replace(/{dealer}/g, CFG.dealerName).replace(/{assistant}/g, CFG.assistantName);
+}
+
+function saveHistory(){ try{ sessionStorage.setItem('truchat-history', JSON.stringify(chatHistory)); }catch(e){} }
+function loadHistory(){ try{ const raw = sessionStorage.getItem('truchat-history'); if(raw) chatHistory = JSON.parse(raw); }catch(e){} }
+
+function renderMessage(msg, type, animate=true){
+  const body = document.getElementById('tcBody');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (type==='user' ? 'user' : 'bot');
+  if(!animate) div.style.animation = 'none';
+
+  if(type==='bot' && msg.vehicles){
+    let html = (msg.text ? msg.text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') : '');
+    html += '<div class="vcard">';
+    msg.vehicles.forEach(v=>{
+      html += `<div class="vcard-item">
+        <div class="vhead"><span class="vtitle">${v.year} ${v.brand} ${v.model}</span><span class="vbadge">${v.badge}</span></div>
+        <div class="vmeta"><span>${v.km}</span><span>${v.fuel}</span><span>${v.trans}</span></div>
+        <div class="vprice"><span class="cur">R</span>${v.price.toLocaleString()}</div>
+        <div class="vcta">
+          <button class="btn-primary" onclick="tcSendPrompt('Book test drive for the ${v.brand} ${v.model}')">Book test drive</button>
+          <button class="btn-ghost" onclick="tcSendPrompt('Finance on the ${v.brand} ${v.model}')">Finance</button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+    if(msg.suggestions && msg.suggestions.length) html += '<div class="sugs">' + msg.suggestions.map(s=>`<button onclick="tcSendPrompt('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('') + '</div>';
+    div.innerHTML = html;
+  } else if(type==='bot' && msg.financeCard){
+    let html = (msg.text ? msg.text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') : '');
+    html += '<div class="fcard">';
+    msg.financeCard.rows.forEach(r=>{ html += `<div class="frow"><span class="flabel">${r.label}</span><span class="fval ${r.highlight ? 'highlight' : ''}">${r.value}</span></div>`; });
+    html += '</div>';
+    if(msg.suggestions && msg.suggestions.length) html += '<div class="sugs">' + msg.suggestions.map(s=>`<button onclick="tcSendPrompt('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('') + '</div>';
+    div.innerHTML = html;
+  } else if(type==='bot'){
+    div.innerHTML = msg.text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+    if(msg.suggestions && msg.suggestions.length){
+      const sugs = document.createElement('div');
+      sugs.className = 'sugs';
+      sugs.innerHTML = msg.suggestions.map(s=>`<button onclick="tcSendPrompt('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');
+      div.appendChild(sugs);
+    }
+  } else {
+    div.textContent = msg.text;
+  }
+
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  if(soundOn && type==='bot') playPing();
+}
+
+function showTyping(){
+  const body = document.getElementById('tcBody');
+  const t = document.createElement('div');
+  t.className = 'typing';
+  t.id = 'typingIndicator';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  body.appendChild(t);
+  body.scrollTop = body.scrollHeight;
+  return t;
+}
+function hideTyping(){
+  const t = document.getElementById('typingIndicator');
+  if(t) t.remove();
+}
+
+function playPing(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .15);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + .15);
+  }catch(e){}
+}
+
+function tcSendPrompt(text){
+  tcOpen();
+  setTimeout(()=>{ document.getElementById('tcInput').value = text; tcSend(); }, 250);
+}
+
+async function tcSend(){
+  const input = document.getElementById('tcInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  chatHistory[currentTab].push({type:'user', text});
+  renderMessage({text}, 'user');
+  saveHistory();
+
+  const typing = showTyping();
+  const delay = 400 + Math.random() * 600 + (text.length > 30 ? 400 : 0);
+  await new Promise(r => setTimeout(r, delay));
+
+  const reply = await processMessage(text, currentTab);
+  hideTyping();
+  chatHistory[currentTab].push({type:'bot', ...reply});
+  renderMessage(reply, 'bot');
+  saveHistory();
+}
+
+function tcOpen(){
+  document.getElementById('tcWrap').classList.add('open');
+  document.getElementById('tcProactive').classList.remove('visible');
+  renderTab(currentTab);
+  setTimeout(()=>document.getElementById('tcInput').focus(), 300);
+}
+function tcClose(){ document.getElementById('tcWrap').classList.remove('open'); }
+
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tc-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  renderTab(tab);
+}
+
+function renderTab(tab){
+  const body = document.getElementById('tcBody');
+  body.innerHTML = '';
+  const history = chatHistory[tab];
+  if(!history.length){
+    const greeting = formatGreeting(tab);
+    const suggestions = tab==='human' ? CFG.suggestionsHuman : CFG.suggestionsAI;
+    renderMessage({text: greeting, suggestions}, 'bot', false);
+  } else {
+    history.forEach((msg)=>{ renderMessage(msg, msg.type, false); });
+  }
+  body.scrollTop = body.scrollHeight;
+}
+
+function toggleSound(){
+  soundOn = !soundOn;
+  const btn = document.getElementById('tcSound');
+  btn.innerHTML = soundOn
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+  btn.style.color = soundOn ? 'var(--cyan)' : '';
+}
+
+function toggleDev(){
+  const btn = document.getElementById('devToggle');
+  const grid = document.getElementById('devGrid');
+  const open = grid.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+
+function updateConfig(){
+  CFG.dealerName = document.getElementById('cfgName').value || "True-Cars";
+  CFG.assistantName = document.getElementById('cfgAssistant').value || "Ray";
+  CFG.salesWhatsApp = document.getElementById('cfgWA').value || "27821234567";
+  document.getElementById('tcHeadName').textContent = CFG.assistantName + " · " + CFG.dealerName;
+}
+
+function setPalette(primary, dark){
+  CFG.brandPrimary = primary;
+  CFG.brandPrimaryDark = dark;
+  document.documentElement.style.setProperty('--cyan', primary);
+  document.documentElement.style.setProperty('--cyan-soft', primary + '59');
+  document.documentElement.style.setProperty('--cyan-glow', primary + '4D');
+}
+
+(function init(){
+  loadHistory();
+  document.getElementById('tcInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tcSend(); });
+  setTimeout(()=>{
+    const wrap = document.getElementById('tcWrap');
+    if(!wrap.classList.contains('open')) document.getElementById('tcProactive').classList.add('visible');
+  }, 12000);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') tcClose(); });
+})();
+</script>
+
+</body>
+</html>

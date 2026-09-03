@@ -38,10 +38,24 @@ import {
   History,
   TrendingUp,
   Radio,
+  ShoppingBag,
+  Copy,
+  ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import { authFetch } from "../lib/session";
 import { VEHICLE_EXTRAS } from "../lib/vehicleExtras";
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from "./imagin8-gating";
+import { SocialShareModal } from "./SocialShareModal";
+import {
+  buildFacebookPagePost,
+  buildFacebookMarketplacePack,
+  buildInstagramPost,
+  buildWhatsAppStatusPost,
+  buildLinkedInPost,
+  buildGoogleBusinessPost,
+  buildVehicleShareUrl,
+} from "../lib/socialGenerators";
 
 function numberToWords(n: number): string {
   if (n === 0) return "Zero";
@@ -123,6 +137,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [showOutrightOtp, setShowOutrightOtp] = useState(false);
+  const [showSocialModal, setShowSocialModal] = useState(false);
 
   // Social publish states
   const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
@@ -644,16 +659,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               >
                 <Layers size={11} /> Extras
               </button>
-              {truSocialEnabled && (
-                <button
-                  onClick={() => setActiveTab("publish")}
-                  className={`px-3 py-2 flex items-center justify-center gap-1 border-b-2 -mb-px whitespace-nowrap transition-colors cursor-pointer ${
-                    activeTab === "publish" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
-                  }`}
-                >
-                  <Share2 size={11} /> Publish
-                </button>
-              )}
+              <button
+                onClick={() => setActiveTab("publish")}
+                className={`px-3 py-2 flex items-center justify-center gap-1 border-b-2 -mb-px whitespace-nowrap transition-colors cursor-pointer ${
+                  activeTab === "publish" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
+                }`}
+              >
+                <Share2 size={11} /> Social &amp; Share
+              </button>
             </div>
 
             {/* TAB 1: FULL VEHICLE OVERVIEW */}
@@ -1557,220 +1570,232 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </div>
             )}
 
-            {/* TAB 5: TRUSOCIAL PUBLISH — OAuth-connected channels only. */}
-            {activeTab === "publish" && truSocialEnabled && (() => {
-              const ALL_PLATFORMS = [
-                { id: "facebook",         label: "Facebook",        icon: <Facebook size={14} />,       color: "#1877F2" },
-                { id: "instagram",        label: "Instagram",       icon: <Instagram size={14} />,      color: "#E4405F" },
-                { id: "google-business",  label: "Google Business", icon: <Globe size={14} />,          color: "#4285F4" },
-                { id: "linkedin",         label: "LinkedIn",        icon: <Linkedin size={14} />,       color: "#0A66C2" },
-                { id: "whatsapp",         label: "WhatsApp",        icon: <MessageCircle size={14} />,  color: "#4FE3DC" },
-              ];
-
-              // Load accounts on first render of this tab
-              if (!socialLoading && socialAccounts.length === 0 && dealershipId) {
-                loadSocialAccounts();
-              }
-              if (!socialCaption) setSocialCaption(buildDefaultCaption());
-
-              const connectedMap = new Map(socialAccounts.map((a) => [a.platform, a]));
-
-              const togglePlatform = (platformId: string) => {
-                if (platformId === "whatsapp") {
-                  // WhatsApp is a toggle for the direct-share selection
-                  setSelectedAccounts((prev) => {
-                    const next = new Set(prev);
-                    next.has("whatsapp") ? next.delete("whatsapp") : next.add("whatsapp");
-                    return next;
-                  });
-                  return;
-                }
-                const acc = connectedMap.get(platformId);
-                if (!acc) return; // not connected — click does nothing
-                setSelectedAccounts((prev) => {
-                  const next = new Set(prev);
-                  next.has(acc.accountId) ? next.delete(acc.accountId) : next.add(acc.accountId);
-                  return next;
-                });
+            {/* TAB 5: TRUSOCIAL COMMAND HUB — Facebook, Marketplace, Instagram, WhatsApp, LinkedIn, GBP */}
+            {activeTab === "publish" && (() => {
+              const dealerInput = {
+                name: dealership?.name || "Our Dealership",
+                tradingAs: dealership?.tradingAs,
+                location: dealership?.location,
+                address: dealership?.address,
+                whatsapp: "",
+                websiteUrl: dealership?.websiteUrl,
+                slug: dealership?.slug,
               };
-
-              const zernioSelected = Array.from(selectedAccounts).filter((id) => id !== "whatsapp");
-              const whatsappSelected = selectedAccounts.has("whatsapp");
-
-              const handlePublishAll = async () => {
-                setSocialPublishing(true);
-                setSocialResult(null);
-                const results: string[] = [];
-
-                // Publish to Zernio channels
-                if (zernioSelected.length && dealershipId) {
-                  try {
-                    const res = await authFetch("/api/social/publish", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        dealershipId,
-                        vehicleId: vehicle.id,
-                        caption: socialCaption,
-                        accountIds: zernioSelected,
-                      }),
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || "Publish failed");
-                    results.push(data.platforms?.join(", ") || "social channels");
-                  } catch (err: any) {
-                    setSocialResult({ ok: false, message: err?.message || "Publish failed" });
-                    setSocialPublishing(false);
-                    return;
-                  }
-                }
-
-                // WhatsApp direct share
-                if (whatsappSelected) {
-                  handleWhatsAppShare();
-                  results.push("WhatsApp");
-                }
-
-                if (results.length) {
-                  setSocialResult({ ok: true, message: `Published to ${results.join(", ")}` });
-                }
-                setSelectedAccounts(new Set());
-                setSocialPublishing(false);
-              };
+              const shareUrl = buildVehicleShareUrl(vehicle as any, dealerInput);
+              const fbPageText = buildFacebookPagePost(vehicle as any, dealerInput, market);
+              const mpPack = buildFacebookMarketplacePack(vehicle as any, dealerInput, market);
+              const igData = buildInstagramPost(vehicle as any, dealerInput, market);
+              const waText = buildWhatsAppStatusPost(vehicle as any, dealerInput, market);
+              const liText = buildLinkedInPost(vehicle as any, dealerInput, market);
+              const gbpData = buildGoogleBusinessPost(vehicle as any, dealerInput, market);
 
               return (
-              <div className="space-y-4 animate-in fade-in duration-200">
-                {/* Caption */}
-                <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Share2 size={14} className="text-[color:var(--cyan)]" />
-                    <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Social post</h4>
-                  </div>
-                  <textarea
-                    value={socialCaption}
-                    onChange={(e) => setSocialCaption(e.target.value)}
-                    placeholder="Write your social caption..."
-                    rows={4}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.85)] placeholder:text-[rgba(232,234,230,0.35)] outline-none resize-none leading-relaxed focus:border-[color:var(--cyan-soft)] transition-colors"
-                  />
-                  <div className="flex gap-2">
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  {/* Hero launch card */}
+                  <div className="bg-gradient-to-r from-[color:var(--cyan-soft)]/30 via-blue-500/10 to-purple-500/10 border border-[color:var(--cyan-soft)] rounded-xl p-3.5 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[13px] font-bold text-white">TruSocial Command Hub</span>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 uppercase">1-Click Ready</span>
+                      </div>
+                      <p className="text-[11.5px] text-[rgba(232,234,230,0.7)]">
+                        Launch multi-channel distribution across Facebook, Marketplace, Instagram, WhatsApp, LinkedIn &amp; GBP.
+                      </p>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setSocialCaption(buildDefaultCaption())}
-                      className="tru-btn-secondary inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] cursor-pointer"
+                      onClick={() => setShowSocialModal(true)}
+                      className="px-3 py-1.5 bg-[color:var(--cyan)] hover:bg-opacity-90 text-white font-semibold text-[11.5px] rounded-lg flex items-center gap-1.5 shadow-md cursor-pointer shrink-0 transition-all"
                     >
-                      <RefreshCw size={14} />Reset
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(socialCaption || buildDefaultCaption());
-                        setSocialResult({ ok: true, message: "Caption copied" });
-                      }}
-                      className="tru-btn-secondary inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] cursor-pointer"
-                    >
-                      <FileText size={14} />Copy
+                      <Sparkles size={13} /> Full Hub
                     </button>
                   </div>
-                </div>
 
-                {/* All platform channels */}
-                <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                  <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Choose where to post</h4>
-
-                  {socialLoading ? (
-                    <div className="flex items-center gap-2 py-3 text-[13px] text-[rgba(232,234,230,0.55)]">
-                      <Loader2 size={13} className="animate-spin" /> Loading channels...
+                  {/* 1-Click Channel Cards */}
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {/* FB Marketplace */}
+                    <div className="bg-black/30 border border-white/5 rounded-xl p-3 flex flex-col gap-2 hover:border-blue-500/30 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ShoppingBag size={14} className="text-[#0084FF]" />
+                          <span className="text-[12px] font-semibold text-white">FB Marketplace</span>
+                        </div>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-400">High Volume</span>
+                      </div>
+                      <p className="text-[11px] text-[rgba(232,234,230,0.6)] line-clamp-1 font-mono">
+                        {mpPack.suggestedTitle}
+                      </p>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(mpPack.bodyDescription);
+                            setSocialResult({ ok: true, message: "Marketplace description copied!" });
+                          }}
+                          className="flex-1 py-1 bg-white/10 hover:bg-white/15 text-[11px] font-medium rounded-lg text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Copy size={11} /> Copy Description
+                        </button>
+                        <a
+                          href="https://www.facebook.com/marketplace/create/vehicle"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[11px] rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                          title="Open Marketplace"
+                        >
+                          <span>Open</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      {ALL_PLATFORMS.map((plat) => {
-                        const isWhatsApp = plat.id === "whatsapp";
-                        const connected = isWhatsApp || connectedMap.has(plat.id);
-                        const acc = connectedMap.get(plat.id);
-                        const isSelected = isWhatsApp
-                          ? selectedAccounts.has("whatsapp")
-                          : acc ? selectedAccounts.has(acc.accountId) : false;
 
-                        return (
-                          <button
-                            key={plat.id}
-                            type="button"
-                            onClick={() => togglePlatform(plat.id)}
-                            disabled={!connected}
-                            className={
-                              "flex items-center gap-3 rounded-lg border p-3 transition-all text-left " +
-                              (isSelected
-                                ? "border-[color:var(--cyan-soft)] bg-[color:var(--cyan-faint)] cursor-pointer"
-                                : connected
-                                  ? "border-white/5 bg-black/20 hover:border-white/15 cursor-pointer"
-                                  : "border-white/5 bg-black/10 opacity-50 cursor-default")
-                            }
-                          >
-                            <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                              style={{ background: plat.color + "20", color: plat.color }}
-                            >
-                              {plat.icon}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-[13px] font-semibold text-[color:var(--white)]">{plat.label}</div>
-                              <div className="text-[13px] text-[rgba(232,234,230,0.55)] truncate">
-                                {isWhatsApp
-                                  ? "Opens WhatsApp with caption"
-                                  : connected
-                                    ? `@${acc?.username || "connected"}`
-                                    : "Contact support to connect"}
-                              </div>
-                            </div>
-                            <div className={
-                              "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors " +
-                              (isSelected
-                                ? "border-[color:var(--cyan)] bg-[color:var(--cyan)]"
-                                : connected
-                                  ? "border-white/20"
-                                  : "border-white/10")
-                            }>
-                              {isSelected && <Check size={12} className="text-[color:var(--ink)]" />}
-                            </div>
-                          </button>
-                        );
-                      })}
+                    {/* WhatsApp Status & Broadcast */}
+                    <div className="bg-black/30 border border-white/5 rounded-xl p-3 flex flex-col gap-2 hover:border-emerald-500/30 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <MessageCircle size={14} className="text-[#25D366]" />
+                          <span className="text-[12px] font-semibold text-white">WhatsApp Story &amp; Broadcast</span>
+                        </div>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400">Instant</span>
+                      </div>
+                      <p className="text-[11px] text-[rgba(232,234,230,0.6)] line-clamp-1">
+                        Bold specs, cash price, estimated monthly instalment &amp; 360 link.
+                      </p>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(waText);
+                            setSocialResult({ ok: true, message: "WhatsApp text copied!" });
+                          }}
+                          className="flex-1 py-1 bg-white/10 hover:bg-white/15 text-[11px] font-medium rounded-lg text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Copy size={11} /> Copy Text
+                        </button>
+                        <a
+                          href={`https://wa.me/?text=${encodeURIComponent(waText)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-[11px] rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                          title="Send to WhatsApp"
+                        >
+                          <span>Send</span>
+                          <Send size={11} />
+                        </a>
+                      </div>
                     </div>
-                  )}
 
-                  {/* Publish button */}
-                  <button
-                    type="button"
-                    disabled={socialPublishing || (!zernioSelected.length && !whatsappSelected) || !socialCaption.trim()}
-                    onClick={handlePublishAll}
-                    className="w-full py-2.5 bg-[color:var(--cyan)] hover:bg-opacity-90 on-fill font-semibold text-[13px] rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-1"
-                  >
-                    {socialPublishing ? (
-                      <><Loader2 size={13} className="animate-spin" /> Publishing...</>
-                    ) : (
-                      <><Send size={13} /> Publish to {selectedAccounts.size} selected</>
-                    )}
-                  </button>
+                    {/* Facebook Business Page */}
+                    <div className="bg-black/30 border border-white/5 rounded-xl p-3 flex flex-col gap-2 hover:border-blue-600/30 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Facebook size={14} className="text-[#1877F2]" />
+                          <span className="text-[12px] font-semibold text-white">Facebook Business Page</span>
+                        </div>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-blue-600/10 text-blue-400">Brand</span>
+                      </div>
+                      <p className="text-[11px] text-[rgba(232,234,230,0.6)] line-clamp-1">
+                        Dealership arrival announcement with rich OpenGraph preview.
+                      </p>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(fbPageText);
+                            setSocialResult({ ok: true, message: "Facebook post copied!" });
+                          }}
+                          className="flex-1 py-1 bg-white/10 hover:bg-white/15 text-[11px] font-medium rounded-lg text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Copy size={11} /> Copy Post
+                        </button>
+                        <a
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[11px] rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                          title="Share to Facebook"
+                        >
+                          <span>Share</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Instagram */}
+                    <div className="bg-black/30 border border-white/5 rounded-xl p-3 flex flex-col gap-2 hover:border-pink-500/30 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Instagram size={14} className="text-[#E4405F]" />
+                          <span className="text-[12px] font-semibold text-white">Instagram Feed &amp; Story</span>
+                        </div>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-pink-500/10 text-pink-400">Feed/Story</span>
+                      </div>
+                      <p className="text-[11px] text-[rgba(232,234,230,0.6)] line-clamp-1">
+                        Aesthetic bulleted caption, financing breakdown &amp; smart hashtags.
+                      </p>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(igData.caption);
+                            setSocialResult({ ok: true, message: "Instagram caption copied!" });
+                          }}
+                          className="flex-1 py-1 bg-white/10 hover:bg-white/15 text-[11px] font-medium rounded-lg text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Copy size={11} /> Copy Caption
+                        </button>
+                        <a
+                          href="https://www.instagram.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 bg-pink-600/20 hover:bg-pink-600/30 text-pink-400 text-[11px] rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                          title="Open Instagram"
+                        >
+                          <span>Open</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* LinkedIn & Google Business in 2 cols */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(liText);
+                          setSocialResult({ ok: true, message: "LinkedIn post copied!" });
+                        }}
+                        className="py-2 px-2.5 bg-black/30 hover:bg-black/40 border border-white/5 hover:border-blue-700/30 rounded-xl text-left cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-1.5 text-blue-400 text-[11.5px] font-semibold mb-0.5">
+                          <Linkedin size={13} /> LinkedIn B2B
+                        </div>
+                        <span className="text-[10px] text-[rgba(232,234,230,0.5)] block">Click to copy post</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(gbpData.summary);
+                          setSocialResult({ ok: true, message: "Google Business update copied!" });
+                        }}
+                        className="py-2 px-2.5 bg-black/30 hover:bg-black/40 border border-white/5 hover:border-amber-500/30 rounded-xl text-left cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-1.5 text-[#4285F4] text-[11.5px] font-semibold mb-0.5">
+                          <Globe size={13} /> Google Business
+                        </div>
+                        <span className="text-[10px] text-[rgba(232,234,230,0.5)] block">Click to copy update</span>
+                      </button>
+                    </div>
+                  </div>
 
                   {socialResult && (
-                    <div className={
-                      "text-[13px] px-3 py-2 rounded-lg border " +
-                      (socialResult.ok
-                        ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-                        : "text-red-400 bg-red-500/10 border-red-500/20")
-                    }>
-                      {socialResult.message}
+                    <div className="text-[12px] px-3 py-1.5 rounded-lg border text-emerald-400 bg-emerald-500/10 border-emerald-500/20 flex items-center gap-1.5 animate-in fade-in">
+                      <Check size={13} />
+                      <span>{socialResult.message}</span>
                     </div>
                   )}
                 </div>
-
-                {/* Marketplace (coming soon) */}
-                <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3 opacity-50">
-                  <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Marketplace syndication</h4>
-                  <p className="text-[13px] text-[rgba(232,234,230,0.55)]">AutoTrader SA, Cars.co.za — coming soon</p>
-                </div>
-              </div>
               );
             })()}
           </div>
@@ -1867,16 +1892,15 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           >
             <MessageCircle size={18} />
           </button>
-          {truSocialEnabled && (
-            <button
-              type="button"
-              onClick={() => setActiveTab("publish")}
-              aria-label="Publish to connected channels"
-              className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
-            >
-              <Share2 size={18} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setShowSocialModal(true)}
+            aria-label="TruSocial 1-Click Pack"
+            title="TruSocial 1-Click Pack"
+            className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--cyan)] hover:text-white bg-[color:var(--glass)] hover:bg-[color:var(--cyan-soft)] border border-[color:var(--glass-line)] cursor-pointer transition-all"
+          >
+            <Share2 size={18} />
+          </button>
         </div>
       </div>
 
@@ -2004,6 +2028,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           </div>
         );
       })()}
+
+      {showSocialModal && (
+        <SocialShareModal
+          vehicle={vehicle}
+          dealership={dealership}
+          onClose={() => setShowSocialModal(false)}
+        />
+      )}
     </div>
   );
 }
