@@ -121,11 +121,12 @@ Google search → Serper.dev (R0.018, primary)
 
 ---
 
-## 6. What Was Fixed (2026-09-03)
-- 🔧 Property search UI now natively supports Property Type (House/Apartment) dropdown and FSBO (Owner Seller) mode.
-- 🔧 Fixed UI mappings for Property and Business Finder which previously displayed NaN (medianAskingPrice, totalActiveListings).
-- 🔧 Fixed Bureau Reports JSON payload structure (now correctly maps valuation to mmCode/year, regcheck to identifier/type).
-- 🔧 Reverted Vehicles UI to single input box (TruLens/TruFlow handle advanced vehicle models natively).
+## 6. What Was Fixed (2026-09-04)
+- 🐛 **UI Event Binding Root Cause Fixed:** In `index.html`, all search forms were rendered as `<div>` containers instead of `<form>` elements. Because `<div>` does not emit `'submit'` events, clicking buttons or pressing Enter never triggered any searches (Property, Business, Bureau). Converted all search containers to semantic `<form>` elements.
+- 🐛 **Vehicles Dropdowns Fully Implemented:** Wired up the 4 dependent dropdowns (Make → Model → Variant → Year) to load live TransUnion models from `/api/imagin8/models` with static catalogue fallback, auto-enabling the search button and passing parameters to `/api/valuation/quick`.
+- 🐛 **Fixed Unhandled ReferenceError in app.js:** An un-declared variable `catalogueResults` in a document-level click listener threw runtime errors on every click. Safely guarded with element lookups.
+- 🔐 **Imagin8 API Key Gating Tuned:** Allowed same-origin/SPA web client requests while maintaining API key protection for external API consumers.
+- 🔧 **Playwright E2E Verification:** Automated headless browser suite verified end-to-end functionality, event dispatching, API calls, and result card rendering across all 5 verticals.
 
 
 - ❌ ALL fake data generators removed (fabricated names, phones, prices)

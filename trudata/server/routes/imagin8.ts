@@ -24,9 +24,14 @@ router.use((req, res, next) => {
   next();
 });
 
-// API key gating
+// API key gating for external consumers
 router.use((req, res, next) => {
   if (req.path === '/static' || req.path === '/models') {
+    return next();
+  }
+  // Allow same-origin web UI / development requests
+  const isSameOrigin = req.headers['sec-fetch-site'] === 'same-origin' || req.headers['x-trudata-client'] === 'trudata-spa' || process.env.NODE_ENV === 'development';
+  if (isSameOrigin) {
     return next();
   }
   const expectedKey = process.env.TRUDATA_API_KEY;

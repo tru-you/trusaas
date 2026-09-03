@@ -95,7 +95,7 @@
           <button class="tab" data-engine="safepay">🔒 SafePay</button>
         </div>
         
-        <div class="search-form" id="search-vehicles">
+        <form class="search-form" id="search-vehicles">
           <select id="vehicle-make">
             <option value="">Select Make...</option>
           </select>
@@ -109,9 +109,9 @@
             <option value="">Select Year...</option>
           </select>
           <button id="btn-search" class="btn-primary" disabled>Search Market</button>
-        </div>
+        </form>
         
-        <div class="search-form hidden" id="search-property">
+        <form class="search-form hidden" id="search-property">
           <select id="property-type">
             <option value="Any">Any Property Type</option>
             <option value="house">House</option>
@@ -125,15 +125,15 @@
             <option value="fsbo">Private Sellers (FSBO)</option>
           </select>
           <button class="btn-primary">Search Area</button>
-        </div>
+        </form>
         
-        <div class="search-form hidden" id="search-business">
+        <form class="search-form hidden" id="search-business">
           <input type="text" placeholder="What type of business?" id="business-type">
           <input type="text" placeholder="City or area" id="business-city">
           <button class="btn-primary">Find Businesses</button>
-        </div>
+        </form>
         
-        <div class="search-form hidden" id="search-bureau">
+        <form class="search-form hidden" id="search-bureau">
           <input type="text" placeholder="Enter VIN, registration number, or M&M code..." id="bureau-input">
           <select id="bureau-type">
             <option value="valuation">Vehicle Valuation</option>
@@ -141,16 +141,16 @@
             <option value="accident">Accident History</option>
           </select>
           <button class="btn-primary">Run Check (3 Credits)</button>
-        </div>
+        </form>
         
-        <div class="search-form hidden" id="search-safepay">
+        <form class="search-form hidden" id="search-safepay">
           <input type="text" placeholder="Bank account number" id="safepay-account">
           <input type="text" placeholder="Branch code (e.g. 250655)" id="safepay-branch">
           <input type="text" placeholder="ID number or CIPC registration" id="safepay-id">
           <input type="text" placeholder="Initials (e.g. JM)" id="safepay-initials">
           <input type="text" placeholder="Surname" id="safepay-surname">
           <button class="btn-primary">Verify Account (3 Credits)</button>
-        </div>
+        </form>
       </div>
     </section>
 

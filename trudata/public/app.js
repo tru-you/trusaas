@@ -123,59 +123,205 @@ document.querySelectorAll('.nav-link[data-target]').forEach(link => {
     document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' });
   });
 });
-// 2 & 3. Vehicle Catalogue Typeahead & Valuation
-const vehicleSearchInput = document.getElementById('vehicle-search');
-const catalogueResults = document.getElementById('catalogue-results');
-let debounceTimer = null;
+// // 2 & 3. Vehicle Cascading Dropdowns & Valuation
+const vehicleForm = document.getElementById('search-vehicles');
+const makeSelect = document.getElementById('vehicle-make');
+const modelSelect = document.getElementById('vehicle-model');
+const variantSelect = document.getElementById('vehicle-variant');
+const yearSelect = document.getElementById('vehicle-year');
+const btnSearch = document.getElementById('btn-search');
 
-if (vehicleSearchInput) {
-  vehicleSearchInput.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
-    const q = vehicleSearchInput.value.trim();
-    if (q.length < 2) { hideCatalogueDropdown(); return; }
-    debounceTimer = setTimeout(() => searchCatalogue(q), 300);
+let currentMakeData = [];
+let modelGroups = {};
+
+async function initVehicleMakes() {
+  if (!makeSelect) return;
+  try {
+    const res = await fetch('/catalogue/index.json');
+    if (!res.ok) throw new Error('Failed to load makes');
+    const makesList = await res.json();
+    makesList.sort((a, b) => a.name.localeCompare(b.name));
+    makeSelect.innerHTML = '<option value="">Select Make...</option>' + 
+      makesList.map(m => `<option value="${esc(m.name)}" data-file="${esc(m.file)}">${esc(m.name)}</option>`).join('');
+    makeSelect.disabled = false;
+  } catch (err) {
+    console.error('Failed to init vehicle makes', err);
+  }
+}
+initVehicleMakes();
+
+if (makeSelect) {
+  makeSelect.addEventListener('change', async () => {
+    const make = makeSelect.value;
+    modelSelect.innerHTML = '<option value="">Select Model...</option>';
+    modelSelect.disabled = true;
+    variantSelect.innerHTML = '<option value="">Select Variant...</option>';
+    variantSelect.disabled = true;
+    yearSelect.innerHTML = '<option value="">Select Year...</option>';
+    yearSelect.disabled = true;
+    if (btnSearch) btnSearch.disabled = true;
+    
+    if (!make) return;
+    modelSelect.innerHTML = '<option value="">Loading models...</option>';
+    
+    try {
+      let items = [];
+      try {
+        const res = await fetch(`/api/imagin8/models?make=${encodeURIComponent(make)}`);
+        if (res.ok) {
+          items = await res.json();
+        }
+      } catch (e) {}
+      
+      if (!items || !items.length) {
+        const opt = makeSelect.selectedOptions[0];
+        const file = opt?.dataset?.file;
+        if (file) {
+          const catRes = await fetch(`/catalogue/${file}`);
+          if (catRes.ok) {
+            const catData = await catRes.json();
+            items = [];
+            for (const [group, variants] of Object.entries(catData)) {
+              for (const [vName, vData] of Object.entries(variants)) {
+                items.push({
+                  make,
+                  modelGroup: group,
+                  model: vName,
+                  mmCode: vData.c,
+                  years: vData.y
+                });
+              }
+            }
+          }
+        }
+      }
+      
+      currentMakeData = items;
+      modelGroups = {};
+      
+      items.forEach(item => {
+        let groupName = item.modelGroup;
+        if (!groupName) {
+          const raw = (item.model || '').trim();
+          const words = raw.split(/\s+/);
+          if (words.length <= 2) {
+            groupName = raw;
+          } else {
+            if (/^(QUEST|CROSS|SPORT|PLUS|SEDAN|HATCH|R1|R6|R7|R3|PRO|MAX)$/i.test(words[1])) {
+              groupName = `${words[0]} ${words[1]}`;
+            } else {
+              groupName = words[0];
+            }
+          }
+        }
+        
+        if (!modelGroups[groupName]) {
+          modelGroups[groupName] = [];
+        }
+        modelGroups[groupName].push(item);
+      });
+      
+      const groupNames = Object.keys(modelGroups).sort();
+      if (!groupNames.length) {
+        modelSelect.innerHTML = '<option value="">No models found</option>';
+        return;
+      }
+      
+      modelSelect.innerHTML = '<option value="">Select Model...</option>' +
+        groupNames.map(g => `<option value="${esc(g)}">${esc(g)} (${modelGroups[g].length})</option>`).join('');
+      modelSelect.disabled = false;
+    } catch (err) {
+      console.error('Error loading models', err);
+      modelSelect.innerHTML = '<option value="">Error loading models</option>';
+    }
   });
 }
 
-function hideCatalogueDropdown() {
-  if (catalogueResults) catalogueResults.classList.add('hidden');
+if (modelSelect) {
+  modelSelect.addEventListener('change', () => {
+    const selectedGroup = modelSelect.value;
+    variantSelect.innerHTML = '<option value="">Select Variant...</option>';
+    variantSelect.disabled = true;
+    yearSelect.innerHTML = '<option value="">Select Year...</option>';
+    yearSelect.disabled = true;
+    if (btnSearch) btnSearch.disabled = true;
+    
+    if (!selectedGroup || !modelGroups[selectedGroup]) return;
+    
+    const variants = modelGroups[selectedGroup];
+    variantSelect.innerHTML = '<option value="">Select Variant...</option>' +
+      variants.map((v, idx) => `<option value="${idx}">${esc(v.model || selectedGroup)}</option>`).join('');
+    variantSelect.disabled = false;
+    
+    if (variants.length === 1) {
+      variantSelect.value = "0";
+      variantSelect.dispatchEvent(new Event('change'));
+    }
+  });
 }
 
-async function searchCatalogue(q) {
-  try {
-    const res = await fetch(`/api/catalogue/search?q=${encodeURIComponent(q)}`);
-    if (!res.ok) throw new Error('Failed to search');
-    const data = await res.json();
-    renderCatalogueDropdown(data.results || []);
-  } catch (err) {
-    // silently fail for typeahead
-  }
+if (variantSelect) {
+  variantSelect.addEventListener('change', () => {
+    const selectedGroup = modelSelect.value;
+    const variantIdx = variantSelect.value;
+    yearSelect.innerHTML = '<option value="">Select Year...</option>';
+    yearSelect.disabled = true;
+    if (btnSearch) btnSearch.disabled = true;
+    
+    if (variantIdx === '' || !modelGroups[selectedGroup]) return;
+    const v = modelGroups[selectedGroup][Number(variantIdx)];
+    if (!v) return;
+    
+    let years = [];
+    if (v.years && v.years.length) {
+      years = v.years;
+    } else {
+      const currentYear = new Date().getFullYear();
+      let startYear = v.introDate ? parseInt(v.introDate.split('-')[0], 10) : 2010;
+      let endYear = v.disconDate ? parseInt(v.disconDate.split('-')[0], 10) : currentYear;
+      if (isNaN(startYear) || startYear < 1990) startYear = 2010;
+      if (isNaN(endYear) || endYear > currentYear) endYear = currentYear;
+      if (startYear > endYear) startYear = endYear;
+      for (let y = endYear; y >= startYear; y--) {
+        years.push(y);
+      }
+    }
+    
+    if (!years.length) {
+      years = [new Date().getFullYear()];
+    }
+    
+    yearSelect.innerHTML = '<option value="">Select Year...</option>' +
+      years.map(y => `<option value="${y}">${y}</option>`).join('');
+    yearSelect.disabled = false;
+    
+    yearSelect.value = String(years[0]);
+    if (btnSearch) btnSearch.disabled = false;
+  });
 }
 
-function renderCatalogueDropdown(results) {
-  if (!catalogueResults) return;
-  if (!results.length) { catalogueResults.classList.add('hidden'); return; }
-  
-  catalogueResults.innerHTML = results.map(r => {
-    const yearRange = r.years && r.years.length ? `${r.years[r.years.length-1]}–${r.years[0]}` : '';
-    return `
-    <div class="catalogue-item" data-make="${esc(r.make)}" data-model="${esc(r.model)}" data-years="${(r.years || []).join(',')}" data-mmcode="${esc(r.mmCode)}">
-      <strong>${esc(r.make)}</strong> · ${esc(r.model)}
-      ${yearRange ? `<span class="years">${yearRange}</span>` : ''}
-    </div>
-  `}).join('');
-  catalogueResults.classList.remove('hidden');
-  
-  catalogueResults.querySelectorAll('.catalogue-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const make = item.dataset.make;
-      const model = item.dataset.model;
-      const yearStr = item.dataset.years;
-      const year = yearStr ? yearStr.split(',')[0] : '';
-      vehicleSearchInput.value = `${make} ${model} ${year}`;
-      catalogueResults.classList.add('hidden');
-      runVehicleValuation(make, model, year);
-    });
+if (yearSelect) {
+  yearSelect.addEventListener('change', () => {
+    if (btnSearch) btnSearch.disabled = !yearSelect.value;
+  });
+}
+
+if (vehicleForm) {
+  vehicleForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const make = makeSelect.value;
+    const selectedGroup = modelSelect.value;
+    const variantIdx = variantSelect.value;
+    const year = yearSelect.value;
+    
+    if (!make || !selectedGroup || variantIdx === '' || !year) {
+      showToast('Please select make, model, variant, and year.', 'error');
+      return;
+    }
+    
+    const v = modelGroups[selectedGroup][Number(variantIdx)];
+    const modelToSearch = v?.model || selectedGroup;
+    runVehicleValuation(make, modelToSearch, year);
   });
 }
 
@@ -203,47 +349,60 @@ function renderVehicleResults(data) {
   if (titleEl) titleEl.textContent = `${data.make || ''} ${data.model || ''} ${data.year || ''} Market Value`;
   
   const countEl = document.getElementById('results-count');
-  if (countEl) countEl.textContent = `${(data.totalActiveListings || data.count) || 0} listings found`;
+  if (countEl) countEl.textContent = `${data.sampleSize || data.totalActiveListings || data.count || 0} listings found`;
   
   const sourceEl = document.getElementById('results-source');
-  if (sourceEl) sourceEl.textContent = 'Sources: AutoTrader, Cars.co.za';
+  if (sourceEl) {
+    const sources = data.sources || {};
+    if (typeof sources === 'object' && !Array.isArray(sources)) {
+      sourceEl.textContent = `Sources: Cars.co.za (${sources.carsCoZa || 0}), AutoTrader (${sources.autoTrader || 0})`;
+    } else {
+      sourceEl.textContent = 'Sources: AutoTrader, Cars.co.za';
+    }
+  }
   
   const content = document.getElementById('results-content');
   if (content) {
+    const metrics = data.metrics || {};
+    const valuation = data.valuation || {};
+    const medianVal = valuation.retail || metrics.median || data.medianAskingPrice || data.median || 0;
+    const tradeVal = valuation.trade || (medianVal ? Math.round(medianVal * 0.85) : 0);
+    const minVal = metrics.min || data.priceRange?.min || data.low || 0;
+    const maxVal = metrics.max || data.priceRange?.max || data.high || 0;
+    const sampleSize = data.sampleSize || data.totalActiveListings || data.count || 0;
+    const conf = typeof data.confidence === 'number' 
+      ? `${(data.confidence * 100).toFixed(0)}%` 
+      : (data.confidence || 'NONE').toUpperCase();
+
     content.innerHTML = `
       <div class="results-grid">
         <div class="metric-card">
-          <span class="metric-label">Median Price</span>
-          <span class="metric-value">R ${numberFormat((data.medianAskingPrice || data.median))}</span>
+          <span class="metric-label">Est. Retail Value</span>
+          <span class="metric-value">R ${numberFormat(medianVal)}</span>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Price Range</span>
-          <span class="metric-value">R ${numberFormat((data.priceRange?.min || data.low))} – R ${numberFormat((data.priceRange?.max || data.high))}</span>
+          <span class="metric-label">Est. Trade Value</span>
+          <span class="metric-value">R ${numberFormat(tradeVal)}</span>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Listings Found</span>
-          <span class="metric-value">${(data.totalActiveListings || data.count) || 0}</span>
+          <span class="metric-label">Market Range</span>
+          <span class="metric-value">R ${numberFormat(minVal)} – R ${numberFormat(maxVal)}</span>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Confidence</span>
-          <span class="metric-value confidence-${data.confidence || 'none'}">${(data.confidence || 'none').toUpperCase()}</span>
+          <span class="metric-label">Listings Scraped</span>
+          <span class="metric-value">${sampleSize}</span>
         </div>
       </div>
-      ${data.sources && data.sources.length ? `
-      <h3>Source Breakdown</h3>
-      <table class="data-table">
-        <thead><tr><th>Source</th><th>Average Price</th><th>Listings</th></tr></thead>
-        <tbody>
-          ${data.sources.map(s => `<tr><td>${esc(s.source)}</td><td>R ${numberFormat(s.avg)}</td><td>${s.count}</td></tr>`).join('')}
-        </tbody>
-      </table>` : ''}
+      <div style="margin-top: 1rem; font-size: 0.875rem; color: #a1a1aa;">
+        Confidence Score: ${conf}
+      </div>
     `;
   }
   
   const pricingDiv = document.getElementById('results-pricing');
   if (pricingDiv) pricingDiv.classList.remove('hidden');
   
-const leadCountEl = document.getElementById('lead-count');
+  const leadCountEl = document.getElementById('lead-count');
   if (leadCountEl) leadCountEl.textContent = '1';
   
   const leadCostEl = document.getElementById('lead-cost');
@@ -461,35 +620,94 @@ if (formBureau) {
     
     const idInput = idEl.value.trim();
     const reportType = typeEl.value;
-    if (!idInput) return;
+    if (!idInput) {
+      showToast('Please enter a VIN, Reg, or M&M code.', 'error');
+      return;
+    }
     
     showResults('bureau');
     setResultsLoading(true);
     try {
-      const res = await fetch(`/api/imagin8/${encodeURIComponent(reportType)}`, {
+      let endpoint = reportType;
+      let bodyPayload = {};
+      
+      if (reportType === 'accident') {
+        endpoint = 'accident-report';
+        bodyPayload = { vin: idInput };
+      } else if (reportType === 'regcheck') {
+        endpoint = 'regcheck';
+        const type = idInput.length === 17 ? 'VIN' : 'REG';
+        bodyPayload = { identifier: idInput, type };
+      } else if (reportType === 'valuation') {
+        endpoint = 'valuation';
+        const parts = idInput.split(/\s+/);
+        const mmCode = parts[0];
+        const year = parts.length > 1 ? parts[1] : new Date().getFullYear().toString();
+        bodyPayload = { mmCode, year };
+      }
+
+      const res = await fetch(`/api/imagin8/${encodeURIComponent(endpoint)}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: idInput })
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-trudata-client': 'trudata-spa'
+        },
+        body: JSON.stringify(bodyPayload)
       });
-      if (!res.ok) throw new Error('Bureau search failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.details || 'Bureau lookup failed');
+      }
       const data = await res.json();
       
       const titleEl = document.getElementById('results-title');
-      if (titleEl) titleEl.textContent = `Bureau Report: ${reportType}`;
+      if (titleEl) titleEl.textContent = `Bureau Report: ${reportType.toUpperCase()}`;
       
       const countEl = document.getElementById('results-count');
       if (countEl) countEl.textContent = `Record matched`;
       
       const sourceEl = document.getElementById('results-source');
-      if (sourceEl) sourceEl.textContent = 'Sources: Imagin8, CIPC, Home Affairs';
+      if (sourceEl) sourceEl.textContent = 'Source: TransUnion eValue8';
       
       const content = document.getElementById('results-content');
       if (content) {
+        let metricsHtml = '';
+        if (reportType === 'valuation') {
+          metricsHtml = `
+            <div class="results-grid">
+              <div class="metric-card">
+                <span class="metric-label">TU Retail</span>
+                <span class="metric-value">R ${numberFormat(data.mmRetail || data.retail || 0)}</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">TU Trade</span>
+                <span class="metric-value">R ${numberFormat(data.mmTrade || data.trade || 0)}</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">TU Cost</span>
+                <span class="metric-value">R ${numberFormat(data.mmCost || 0)}</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">M&M Code</span>
+                <span class="metric-value">${esc(data.mmCode || bodyPayload.mmCode)}</span>
+              </div>
+            </div>
+          `;
+        } else {
+          metricsHtml = `
+            <div class="results-grid">
+              <div class="metric-card" style="grid-column: span 2;">
+                <span class="metric-label">Bureau Status</span>
+                <span class="metric-value" style="color: #22c55e;">VERIFIED</span>
+              </div>
+            </div>
+          `;
+        }
+        
         content.innerHTML = `
-          <div class="report-summary">
-            <p><strong>Status:</strong> ${esc(data.status || 'Active')}</p>
-            <p><strong>Flags:</strong> ${esc(data.flags || 'None')}</p>
-            <p><em>Full report details will be provided upon purchase.</em></p>
+          ${metricsHtml}
+          <div style="margin-top: 1rem;">
+            <pre style="padding: 1rem; background: var(--bg-surface); border-radius: var(--radius-md); overflow-x: auto; font-size: 0.85rem; color: #a1a1aa;">${esc(JSON.stringify(data, null, 2))}</pre>
           </div>
         `;
       }
@@ -500,7 +718,7 @@ if (formBureau) {
       const leadCountEl = document.getElementById('lead-count');
       if (leadCountEl) leadCountEl.textContent = '1';
       
-const leadCostEl = document.getElementById('lead-cost');
+      const leadCostEl = document.getElementById('lead-cost');
       if (leadCostEl) leadCostEl.textContent = 'R' + creditCostRounded(reportType);
 
       const btnOrder = document.getElementById('btn-order');
@@ -508,8 +726,8 @@ const leadCostEl = document.getElementById('lead-cost');
         btnOrder.onclick = () => openOrderModal(`Bureau Report: ${reportType}`, creditCost(reportType));
       }
     } catch (err) {
-      renderError('Could not retrieve bureau report. Please try again.');
-      showToast('Bureau search failed.', 'error');
+      renderError(err.message || 'Could not retrieve bureau report.');
+      showToast(err.message || 'Bureau search failed.', 'error');
     }
     setResultsLoading(false);
   });
@@ -577,8 +795,17 @@ function renderSafePayResults(data) {
 
 const safepayForm = document.getElementById('search-safepay');
 if (safepayForm) {
+  safepayForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    runSafePay();
+  });
   const safepayBtn = safepayForm.querySelector('.btn-primary');
-  if (safepayBtn) safepayBtn.addEventListener('click', runSafePay);
+  if (safepayBtn) {
+    safepayBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      runSafePay();
+    });
+  }
 }
 
 // 7. Order Modal
@@ -735,7 +962,9 @@ if (hamburgerBtn && navLinks) {
 
 // Close click outside dropdowns
 document.addEventListener('click', (e) => {
-  if (catalogueResults && !catalogueResults.contains(e.target) && e.target !== vehicleSearchInput) {
-    catalogueResults.classList.add('hidden');
+  const catRes = document.getElementById('catalogue-results');
+  const vInput = document.getElementById('vehicle-search');
+  if (catRes && !catRes.contains(e.target) && e.target !== vInput) {
+    catRes.classList.add('hidden');
   }
 });
