@@ -11,181 +11,209 @@
 </script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>TruDealer Caravans — Coming Soon for Caravan & Trailer Dealers</title>
-<meta name="description" content="TruDealer Caravans is coming soon. The dedicated operating system for caravan, motorhome, and trailer dealerships. Register for early access."/>
+<title>TruDealer Caravans — Caravan & Trailer Dealership Software</title>
+<meta name="description" content="Digital condition grading, habitation check templates, and trade-in valuations for caravan and trailer dealers."/>
 <link rel="canonical" href="https://trudealer.tru-saas.com/caravans.html"/>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="apple-touch-icon" href="favicon.svg"/>
-<meta name="theme-color" content="#F3F0E7"/>
-<meta property="og:title" content="TruDealer Caravans — Coming Soon"/>
-<meta property="og:description" content="Dedicated caravan and trailer DMS in development. Coming soon to South African dealerships."/>
-<meta property="og:url" content="https://trudealer.tru-saas.com/caravans.html"/>
-<meta property="og:type" content="website"/>
-<meta property="og:image" content="https://trudealer.tru-saas.com/trudealer-futureautomotive-8k-transparent.png"/>
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="TruDealer Caravans — Coming Soon"/>
-<meta name="twitter:description" content="Dedicated caravan DMS: habitation checks, chassis reports, and leisure trade-ins in development."/>
-<meta name="twitter:image" content="https://trudealer.tru-saas.com/trudealer-futureautomotive-8k-transparent.png"/>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "TruDealer Caravans (Coming Soon)",
-  "url": "https://trudealer.tru-saas.com/caravans.html",
-  "description": "TruDealer Caravans is in development for caravan, camper, and trailer dealerships.",
-  "publisher": {
-    "@type": "Organization",
-    "name": "TruDealer",
-    "url": "https://trudealer.tru-saas.com/"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://trudealer.tru-saas.com/" },
-    { "@type": "ListItem", "position": 2, "name": "Verticals", "item": "https://trudealer.tru-saas.com/#verticals" },
-    { "@type": "ListItem", "position": 3, "name": "TruDealer Caravans", "item": "https://trudealer.tru-saas.com/caravans.html" }
-  ]
-}
-</script>
-
+<meta name="theme-color" content="#0B0F17"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-
 <style>
 :root{
-  --ink:#F3F0E7;--ink-2:#0F1923;--white:#14141F;--white-dim:rgba(20,20,31,.78);
-  --muted:rgba(64,78,100,.92);--faint:rgba(64,78,100,.58);
-  --cyan:#0B7C72;--cyan-soft:rgba(13,148,136,.18);--cyan-glow:rgba(13,148,136,.2);
-  --amber:#D4942A;--amber-soft:rgba(212,148,42,.2);
-  --border:rgba(0,0,0,.08);--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
-  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
-  --display:'Fraunces','Inter Tight',Georgia,serif;
+  --bg:#0B0F17; --surface:#0F1621; --card:rgba(255,255,255,0.035);
+  --border:rgba(255,255,255,0.08); --border-hover:rgba(0,242,254,0.3);
+  --text:#FFFFFF; --text-dim:#94A3B8; --text-muted:#64748B;
+  --cyan:#00F2FE; --cyan-glow:rgba(0,242,254,0.25);
+  --green:#10B981; --amber:#F59E0B;
+  --mono:'JetBrains Mono',monospace; --sans:'Inter Tight',sans-serif; --display:'Fraunces',Georgia,serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;scroll-padding-top:90px;}
-body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.6;}
 a{color:inherit;text-decoration:none;}
-::selection{background:var(--cyan);color:#fff;}
-a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px;}
+::selection{background:var(--cyan);color:#0B0F17;}
 
-.nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.08);border-radius:99px;backdrop-filter:blur(18px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:1160px;width:calc(100% - 32px);}
-.nav-brand{display:flex;align-items:center;color:var(--white);font-weight:800;font-size:22px;letter-spacing:-.02em;}
-.nav-brand .t{color:#1E293B;}
-.nav-brand .d{color:var(--cyan);}
-.nav-links{display:flex;align-items:center;gap:18px;font-size:13px;color:var(--white-dim);}
-.nav-links a:hover{color:var(--white);}
-.nav-links a.active{color:var(--cyan);font-weight:600;}
-.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:7px 14px;border:1px solid var(--cyan);border-radius:100px;color:var(--cyan);transition:all .2s;}
-.nav-cta:hover{background:var(--cyan);color:#fff;}
+/* Responsive Navigation Bar */
+.nav-wrap{position:fixed;top:16px;left:0;right:0;z-index:100;display:flex;justify-content:center;padding:0 16px;}
+.nav{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;padding:10px 20px;background:rgba(15,22,33,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:100px;box-shadow:0 12px 36px rgba(0,0,0,0.4);}
+.nav-brand{display:flex;align-items:center;gap:6px;font-weight:800;font-size:20px;letter-spacing:-0.02em;}
+.nav-brand .t{color:#fff;} .nav-brand .d{color:var(--cyan);}
+.nav-links{display:flex;align-items:center;gap:20px;font-size:13.5px;color:var(--text-dim);}
+.nav-links a:hover{color:#fff;} .nav-links a.active{color:var(--cyan);font-weight:600;}
+.nav-actions{display:flex;align-items:center;gap:12px;}
+.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border:1px solid rgba(0,242,254,0.4);background:rgba(0,242,254,0.08);color:var(--cyan);border-radius:100px;transition:all .2s;}
+.nav-cta:hover{background:var(--cyan);color:#0B0F17;}
+.nav-burger{display:none;background:none;border:none;color:#fff;cursor:pointer;padding:6px;}
 
-.container{max-width:960px;margin:0 auto;padding:0 24px;}
-.hero{padding:150px 0 80px;text-align:center;}
-.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--amber-soft);background:rgba(212,148,42,.08);border-radius:100px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:20px;}
-.badge .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);}
-h1{font-family:var(--display);font-size:clamp(36px,5.5vw,60px);line-height:1.08;letter-spacing:-.03em;font-weight:400;margin-bottom:22px;text-wrap:balance;}
+@media (max-width: 900px) {
+  .nav-links{display:none;}
+  .nav-burger{display:block;}
+}
+
+/* Mobile Drawer */
+.mobile-menu{display:none;position:fixed;top:74px;left:16px;right:16px;background:rgba(15,22,33,0.95);backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:24px;padding:20px;z-index:99;flex-direction:column;gap:14px;box-shadow:0 20px 40px rgba(0,0,0,0.6);}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{font-size:15px;color:var(--text-dim);padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.mobile-menu a:hover{color:var(--cyan);}
+
+/* Content Container */
+.container{max-width:1040px;margin:0 auto;padding:120px 24px 60px;}
+.hero{text-align:center;margin-bottom:60px;}
+.tag{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;background:rgba(0,242,254,0.08);border:1px solid rgba(0,242,254,0.25);border-radius:100px;font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);margin-bottom:18px;}
+h1{font-family:var(--display);font-size:clamp(32px,5vw,56px);line-height:1.1;letter-spacing:-0.03em;font-weight:400;margin-bottom:18px;}
 h1 em{font-style:italic;color:var(--cyan);}
-.hero-p{font-size:clamp(16px,1.8vw,20px);color:var(--muted);max-width:640px;margin:0 auto 36px;line-height:1.6;}
-.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--cyan);color:#fff;font-weight:600;font-size:15px;padding:14px 28px;border-radius:100px;box-shadow:0 8px 24px -6px var(--cyan-glow);transition:all .2s;}
-.btn-primary:hover{background:#0F766E;transform:translateY(-1px);}
+.lede{font-size:clamp(16px,1.8vw,19px);color:var(--text-dim);max-width:680px;margin:0 auto 32px;line-height:1.6;}
+.actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.btn-p{display:inline-flex;align-items:center;gap:8px;background:var(--cyan);color:#0B0F17;font-weight:700;font-size:14px;padding:12px 26px;border-radius:100px;box-shadow:0 4px 20px var(--cyan-glow);transition:all .2s;}
+.btn-p:hover{transform:translateY(-1px);background:#fff;}
+.btn-g{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#fff;font-weight:600;font-size:14px;padding:12px 26px;border-radius:100px;transition:all .2s;}
+.btn-g:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);}
 
-.roadmap-card{background:#FBF9F3;border:1px solid var(--border);border-radius:24px;padding:36px;box-shadow:0 4px 24px rgba(0,0,0,.03);margin-top:40px;text-align:left;}
-.roadmap-card h3{font-family:var(--display);font-size:24px;margin-bottom:14px;}
-.roadmap-card p{font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
-.roadmap-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
-.roadmap-list li{font-size:14.5px;color:var(--white-dim);display:flex;align-items:flex-start;gap:10px;}
-.roadmap-list li .pill{font-family:var(--mono);font-size:10px;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(11,124,114,.1);color:var(--cyan);white-space:nowrap;margin-top:2px;}
+/* Responsive Cards & Tables */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px;margin:40px 0;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;transition:all .25s;}
+.card:hover{border-color:var(--border-hover);transform:translateY(-2px);background:rgba(255,255,255,0.05);}
+.card h3{font-family:var(--display);font-size:20px;margin-bottom:10px;color:#fff;}
+.card p{font-size:14px;color:var(--text-dim);line-height:1.6;}
 
-footer{padding:60px 0 40px;border-top:1px solid var(--border);margin-top:80px;font-size:13px;color:var(--muted);}
-.footer-grid{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:40px;margin-bottom:40px;}
-.footer-col h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--white);margin-bottom:14px;}
+/* Table wrap with smooth mobile scrolling */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;margin:40px 0;}
+table{width:100%;min-width:620px;border-collapse:collapse;text-align:left;font-size:14px;}
+th,td{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:top;}
+th{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);}
+td.hl{color:var(--cyan);background:rgba(0,242,254,0.03);font-weight:600;}
+
+/* Accordion FAQ */
+.faq-list{display:flex;flex-direction:column;gap:12px;margin:40px 0;}
+details{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 22px;transition:all .2s;}
+details[open]{border-color:rgba(0,242,254,0.3);background:rgba(255,255,255,0.05);}
+summary{font-size:15.5px;font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;color:#fff;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+";font-family:var(--mono);font-size:18px;color:var(--cyan);}
+details[open] summary::after{content:"−";}
+details p{margin-top:12px;font-size:14px;color:var(--text-dim);line-height:1.6;}
+
+/* Footer */
+footer{padding:60px 0 40px;border-top:1px solid var(--border);margin-top:80px;font-size:13px;color:var(--text-muted);}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px;margin-bottom:40px;}
+.footer-col h4{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#fff;margin-bottom:12px;}
 .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
 .footer-col a:hover{color:var(--cyan);}
-@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;}}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.04);font-size:12px;}
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <a href="index.html" class="nav-brand">
-    <span class="t">Tru</span><span class="d">Dealer</span>
-    <span style="font-size:11px;font-family:var(--mono);margin-left:6px;padding:2px 7px;background:rgba(212,148,42,.12);color:var(--amber);border-radius:6px;">CARAVANS</span>
-  </a>
-  <div class="nav-links">
-    <a href="index.html">Cars</a>
-    <a href="moto.html">Moto</a>
-    <a href="marine.html">Marine</a>
-    <a href="commercial.html">Commercial</a>
-    <a href="caravans.html" class="active">Caravans</a>
-    <a href="packages.html">Pricing</a>
-    <a href="faq.html">FAQ</a>
-    <a href="guides/">Guides</a>
-  </div>
-  <a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%20am%20interested%20in%20TruDealer%20Caravans%20early%20access" class="nav-cta">Early Access</a>
-</nav>
+<div class="nav-wrap">
+  <nav class="nav">
+    <a href="index.html" class="nav-brand"><span class="t">Tru</span><span class="d">Dealer</span></a>
+    <div class="nav-links">
+      <a href="index.html">Cars</a>
+      <a href="moto.html">Moto</a>
+      <a href="marine.html">Marine</a>
+      <a href="commercial.html">Commercial</a>
+      <a href="caravans.html">Caravans</a>
+      <a href="packages.html">Pricing</a>
+      <a href="faq.html">FAQ</a>
+      <a href="guides/">Guides</a>
+    </div>
+    <div class="nav-actions">
+      <a href="demo.html" class="nav-cta">Demo</a>
+      <button type="button" class="nav-burger" onclick="document.getElementById('mobileMenu').classList.toggle('open')" aria-label="Toggle Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Cars &amp; Auto</a>
+  <a href="moto.html">TruDealer Moto</a>
+  <a href="marine.html">Boats &amp; Marine</a>
+  <a href="commercial.html">Commercial Trucks</a>
+  <a href="caravans.html">Caravans &amp; Trailers</a>
+  <a href="packages.html">Pricing Packages</a>
+  <a href="faq.html">Master FAQ</a>
+  <a href="trudealer-vs-vmg.html">TruDealer vs VMG</a>
+  <a href="trudealer-vs-autoxloo.html">TruDealer vs AutoXloo</a>
+  <a href="demo.html" style="color:var(--cyan);font-weight:700;">Book Interactive Demo ↗</a>
+</div>
 
 <main class="container">
-  <section class="hero">
-    <div class="badge"><span class="dot"></span> In Development · Coming Soon</div>
-    <h1>TruDealer Caravans is <em>in the works</em></h1>
-    <p class="hero-p">We are building specialized leisure vehicle workflows for caravan, motorhome, and trailer dealerships. Dedicated habitation checklists, damp inspection reports, and leisure finance tools.</p>
-    <a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%20am%20interested%20in%20TruDealer%20Caravans%20early%20access" class="btn-primary">Request Early Access on WhatsApp →</a>
-
-    <div class="roadmap-card">
-      <h3>What we're building for caravan & leisure dealers:</h3>
-      <p>Following the launch of <b>TruDealer Moto</b>, caravans, camper trailers, and motorhomes are on our roadmap.</p>
-      <ul class="roadmap-list">
-        <li><span class="pill">Planned</span> <b>18-Angle Habitation Capture:</b> Exterior 3/4, deployed tent/awning, living space, dinette, bedding, and chassis.</li>
-        <li><span class="pill">Planned</span> <b>Habitation & Damp Inspection:</b> Moisture ingress logs, gas line compliance (COC), 12V/220V electrical checks, and water pump systems.</li>
-        <li><span class="pill">Planned</span> <b>Chassis & Tow Hitch Grading:</b> Coupler, overrun brake test, axle bearings, and corner steadies.</li>
-        <li><span class="pill">Planned</span> <b>Leisure Trade-In Widget:</b> Value caravans and off-road camping trailers on your website.</li>
-      </ul>
+  <div class="hero">
+    <div class="tag">Vertical Expansion · Early Access</div>
+    <h1>TruDealer for <em>Caravans & Trailers</em></h1>
+    <p class="lede">Digital condition grading, habitation check templates, and trade-in valuations for caravan and trailer dealers.</p>
+    <div class="actions">
+      <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%20am%20interested%20in%20Caravans%20%26%20Trailers%20early%20access" class="btn-p">Request Early Access &rarr;</a>
+      <a href="index.html" class="btn-g">&larr; Back to Cars</a>
     </div>
-  </section>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Tailored Photo Angles</h3>
+      <p>Specialized capture angles and inspection templates configured specifically for caravans & trailers dealers, eliminating generic automotive workarounds.</p>
+    </div>
+    <div class="card">
+      <h3>TransUnion Specialty Catalogue</h3>
+      <p>Powered by TransUnion's comprehensive specialty catalogue, covering boat models, commercial truck chassis, and trailer specifications.</p>
+    </div>
+    <div class="card">
+      <h3>Unified Cloud DMS</h3>
+      <p>Full deal jacket tracking, tax invoicing, customer CRM, and live Codat accounting sync (Xero &amp; QuickBooks) built into one platform.</p>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;padding:50px 24px;border-color:rgba(0,242,254,0.25);background:rgba(0,242,254,0.03);margin-top:40px;">
+    <h2 style="font-family:var(--display);font-size:clamp(26px,3.5vw,38px);margin-bottom:14px;">Join the Caravans & Trailers Beta</h2>
+    <p style="font-size:15px;color:var(--text-dim);max-width:540px;margin:0 auto 24px;">Be the first dealership in your sector to run on TruDealer. Early access partners receive locked-in founding pricing.</p>
+    <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%20am%20interested%20in%20Caravans%20%26%20Trailers%20early%20access" class="btn-p">Join the Waitlist on WhatsApp &rarr;</a>
+  </div>
 </main>
-
 <footer>
-  <div class="container footer-grid">
-    <div>
-      <div style="font-weight:800;font-size:20px;margin-bottom:10px;"><span style="color:#1E293B;">Tru</span><span style="color:var(--cyan);">Dealer</span> Caravans</div>
-      <p>Operating system for independent caravan, camper, and trailer dealerships. Coming soon from TruSaaS.</p>
+  <div class="container" style="padding-top:0;padding-bottom:0;">
+    <div class="footer-grid">
+      <div>
+        <div style="font-weight:800;font-size:20px;margin-bottom:8px;"><span style="color:#fff;">Tru</span><span style="color:var(--cyan);">Dealer</span></div>
+        <p style="font-size:13px;line-height:1.6;color:var(--text-dim);">The modern operating system for independent dealerships in South Africa and the United Kingdom. Built in Cape Town.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Verticals</h4>
+        <ul>
+          <li><a href="index.html">Cars &amp; Auto</a></li>
+          <li><a href="moto.html">Motorcycles</a></li>
+          <li><a href="marine.html">Boats &amp; Marine</a></li>
+          <li><a href="commercial.html">Commercial Trucks</a></li>
+          <li><a href="caravans.html">Caravans &amp; Trailers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Markets &amp; Compare</h4>
+        <ul>
+          <li><a href="packages.html">South Africa (ZAR)</a></li>
+          <li><a href="uk.html">United Kingdom (GBP)</a></li>
+          <li><a href="trudealer-vs-vmg.html">TruDealer vs VMG</a></li>
+          <li><a href="trudealer-vs-autoxloo.html">TruDealer vs AutoXloo</a></li>
+          <li><a href="trudealer-vs-dms.html">TruDealer vs DMS</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="faq.html">Master FAQ</a></li>
+          <li><a href="guides/">Field Guides</a></li>
+          <li><a href="llms.txt">AI Documentation</a></li>
+          <li><a href="https://wa.me/27620502091">WhatsApp Support</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="footer-col">
-      <h4>Verticals</h4>
-      <ul>
-        <li><a href="index.html">Cars & Auto</a></li>
-        <li><a href="moto.html">Motorcycles (Live)</a></li>
-        <li><a href="marine.html">Boats & Marine</a></li>
-        <li><a href="commercial.html">Commercial Trucks</a></li>
-        <li><a href="caravans.html">Caravans & Trailers</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Product</h4>
-      <ul>
-        <li><a href="packages.html">Pricing Tiers</a></li>
-        <li><a href="faq.html">Master FAQ</a></li>
-        <li><a href="what-is-trudealer.html">What is TruDealer?</a></li>
-        <li><a href="guides/">Field Guides</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Connect</h4>
-      <ul>
-        <li><a href="demo.html">Book a Demo</a></li>
-        <li><a href="https://wa.me/27620502091">WhatsApp Support</a></li>
-        <li><a href="llms.txt">AI Documentation</a></li>
-        <li><a href="sitemap.xml">Sitemap</a></li>
-      </ul>
+    <div class="footer-bottom">
+      <span>&copy; 2026 TruDealer &middot; a TruSaas company &middot; Cape Town</span>
+      <span style="color:var(--cyan);">GDPR &amp; POPIA-aligned &middot; Hosted in EU-West</span>
     </div>
   </div>
 </footer>
-
 </body>
 </html>
