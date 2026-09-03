@@ -57,6 +57,7 @@
     theme: getAttr("data-theme", "dark"),
     text: getAttr("data-text", ""),
     scale: getAttr("data-scale", ""),
+    vertical: getAttr("data-vertical", ""),
     position: getAttr("data-position", "right"),
     baseBottom: parseInt(getAttr("data-bottom", "24"), 10) || 24,
     // "nested" (default) resolves each widget as <name>/<name>.js — the folder
@@ -106,10 +107,11 @@
     }
   }
 
-  // Shared appearance globals every widget understands: text colour + size.
+  // Shared appearance globals every widget understands: text colour + size + vertical.
   function applyGlobalStyle(tag) {
     if (globalCfg.text) tag.setAttribute("data-text", globalCfg.text);
     if (globalCfg.scale) tag.setAttribute("data-scale", globalCfg.scale);
+    if (globalCfg.vertical) tag.setAttribute("data-vertical", globalCfg.vertical);
   }
 
   // Resolve a path relative to the standalone package root (the folder that

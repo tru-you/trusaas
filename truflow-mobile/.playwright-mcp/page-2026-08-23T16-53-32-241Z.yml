@@ -1,0 +1,124 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - banner [ref=f2e3]:
+      - button "How do I…?" [ref=f2e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f2e23] [cursor=pointer]
+      - generic [ref=f2e26] [cursor=pointer]: DD
+    - main [ref=f2e27]:
+      - generic [ref=f2e574]:
+        - generic [ref=f2e575]:
+          - 'textbox "Search make, model, stock #" [ref=f2e580]'
+          - generic [ref=f2e581]:
+            - generic [ref=f2e582] [cursor=pointer]: All
+            - generic [ref=f2e583] [cursor=pointer]: In stock
+            - generic [ref=f2e584] [cursor=pointer]: Live
+            - generic [ref=f2e585] [cursor=pointer]: Draft
+            - generic [ref=f2e586] [cursor=pointer]: Sold
+          - generic [ref=f2e587]:
+            - generic [ref=f2e588]: Sort
+            - combobox [ref=f2e589]:
+              - option "Newest first" [selected]
+              - option "Oldest first"
+              - option "Price high–low"
+              - option "Price low–high"
+              - option "Lowest km"
+        - generic [ref=f2e590]:
+          - generic [ref=f2e591] [cursor=pointer]:
+            - generic [ref=f2e592]:
+              - generic [ref=f2e593]: Draft
+              - generic [ref=f2e595]: Shoot in TruLens
+            - generic [ref=f2e599]:
+              - generic [ref=f2e600]:
+                - generic [ref=f2e601]: 2018 Ford EcoSport
+                - generic [ref=f2e602]: R249 900
+              - generic [ref=f2e603]:
+                - generic [ref=f2e604]: 96 800 km
+                - generic [ref=f2e605]: Manual
+                - generic [ref=f2e606]: Petrol
+                - generic [ref=f2e607]: 1.5 Ambiente
+          - generic [ref=f2e608] [cursor=pointer]:
+            - generic [ref=f2e609]:
+              - generic [ref=f2e610]: Draft
+              - generic [ref=f2e612]: Shoot in TruLens
+            - generic [ref=f2e616]:
+              - generic [ref=f2e617]:
+                - generic [ref=f2e618]: 2021 Volkswagen Polo
+                - generic [ref=f2e619]: R269 900
+              - generic [ref=f2e620]:
+                - generic [ref=f2e621]: 52 300 km
+                - generic [ref=f2e622]: Manual
+                - generic [ref=f2e623]: Petrol
+                - generic [ref=f2e624]: 1.0 TSI Comfortline
+          - generic [ref=f2e625] [cursor=pointer]:
+            - generic [ref=f2e626]:
+              - generic [ref=f2e627]: Sold
+              - generic [ref=f2e629]: Shoot in TruLens
+            - generic [ref=f2e633]:
+              - generic [ref=f2e634]:
+                - generic [ref=f2e635]: 2020 Toyota Hilux
+                - generic [ref=f2e636]: R379 900
+              - generic [ref=f2e637]:
+                - generic [ref=f2e638]: 112 000 km
+                - generic [ref=f2e639]: Manual
+                - generic [ref=f2e640]: Diesel
+                - generic [ref=f2e641]: 2.4 GD-6 SRX
+    - navigation [ref=f2e160]:
+      - generic [ref=f2e161] [cursor=pointer]: Home
+      - generic [ref=f2e166] [cursor=pointer]: Leads
+      - generic [ref=f2e173] [cursor=pointer]: Stock
+      - generic [ref=f2e179] [cursor=pointer]: Activity
+      - generic [ref=f2e183] [cursor=pointer]: Add
+      - generic [ref=f2e186] [cursor=pointer]: Account
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - generic [ref=f2e191]:
+      - generic [ref=f2e193]:
+        - generic [ref=f2e196]:
+          - generic [ref=f2e200]:
+            - generic [ref=f2e201]: Follow-up
+            - generic [ref=f2e202]: created for your floor list
+          - button [ref=f2e203] [cursor=pointer]
+        - generic [ref=f2e207]:
+          - generic [ref=f2e208]: What needs doing
+          - textbox [ref=f2e209]: Call back
+        - generic [ref=f2e210]:
+          - generic [ref=f2e211]:
+            - generic [ref=f2e212]: Due date
+            - textbox [ref=f2e213]: 2026-08-09
+          - generic [ref=f2e214]:
+            - generic [ref=f2e215]: Priority
+            - combobox [ref=f2e216]:
+              - option "Normal" [selected]
+              - option "Urgent"
+        - generic [ref=f2e217]: Status
+        - generic [ref=f2e218]:
+          - button "To do" [ref=f2e219] [cursor=pointer]
+          - button "Active" [ref=f2e220] [cursor=pointer]
+          - button "Done" [ref=f2e221] [cursor=pointer]
+      - generic [ref=f2e194]:
+        - button "Save" [disabled] [ref=f2e222] [cursor=pointer]
+        - button "Delete" [ref=f2e225] [cursor=pointer]
+    - generic: Added — due today
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

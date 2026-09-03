@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { DEFAULT_TEMPLATE } from '../templates';
+import { useVertical } from './VerticalContext';
+import { getTemplate, getTemplateForVertical, DEFAULT_TEMPLATE } from '../templates';
 
 interface CameraGuideProps {
   vehicle: Vehicle;
@@ -19,6 +20,11 @@ interface CameraGuideProps {
 
 export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptured, onBulkPhotosUploaded, onOpenDamageTagger, onOpenChecklist }: CameraGuideProps) {
   const { user } = useAuth();
+  const { id: verticalId } = useVertical();
+  const template = React.useMemo(() => {
+    return vehicle.templateId ? getTemplate(vehicle.templateId) : getTemplateForVertical(vehicle.vertical || verticalId);
+  }, [vehicle.templateId, vehicle.vertical, verticalId]);
+
   // Crash-safe: never read vehicle.photos when undefined
   const photos = vehicle?.photos || {};
   /* Every capture here routes through SlotReview for a condition assessment,
@@ -29,7 +35,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
      initializer so this only runs once, at mount — compute the real first
      gap from what's already captured instead of assuming slot 1. */
   const [selectedSlotId, setSelectedSlotId] = React.useState<string>(
-    () => DEFAULT_TEMPLATE.slots.find((s) => !vehicle.photos?.[s.id])?.id || DEFAULT_TEMPLATE.slots[0].id,
+    () => template.slots.find((s) => !vehicle.photos?.[s.id])?.id || template.slots[0].id,
   );
   const [isCameraActive, setIsCameraActive] = React.useState(false);
   const [hasCamPermission, setHasCamPermission] = React.useState<boolean | null>(null);
@@ -72,14 +78,14 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   });
 
   // Active slot information
-  const activeSlot = DEFAULT_TEMPLATE.slots.find(s => s.id === selectedSlotId) || DEFAULT_TEMPLATE.slots[0];
-  const activeSlotIndex = DEFAULT_TEMPLATE.slots.findIndex(s => s.id === selectedSlotId);
+  const activeSlot = template.slots.find(s => s.id === selectedSlotId) || template.slots[0];
+  const activeSlotIndex = template.slots.findIndex(s => s.id === selectedSlotId);
 
   // Progress tracker calculation
-  const completedSlots = DEFAULT_TEMPLATE.slots.filter(slot => !!photos[slot.id]);
-  const progressPercentage = Math.round((completedSlots.length / DEFAULT_TEMPLATE.slots.length) * 100);
+  const completedSlots = template.slots.filter(slot => !!photos[slot.id]);
+  const progressPercentage = Math.round((completedSlots.length / template.slots.length) * 100);
 
-  const allSlots = DEFAULT_TEMPLATE.slots;
+  const allSlots = template.slots;
   const chipStripRef = React.useRef<HTMLDivElement>(null);
 
   // Auto-scroll the chip strip so the active slot is always visible

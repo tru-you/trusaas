@@ -9,10 +9,19 @@ export type InspectionCondition = 'Showroom' | 'Good' | 'Average' | 'Poor' | 'Ne
 
 export type ItemType = 'visual_panel' | 'accessory' | 'documentation' | 'verification';
 
-const TYRE_ITEM_IDS = new Set(['wheel_front_right', 'wheel_rear_right', 'wheel_rear_left', 'wheel_front_left']);
+const TYRE_ITEM_IDS = new Set([
+  'wheel_front_right', 'wheel_rear_right', 'wheel_rear_left', 'wheel_front_left',
+  'front_wheel_brake', 'rear_wheel_chain', 'wheel_front', 'wheel_rear'
+]);
 export function isTyreItem(itemId: string): boolean { return TYRE_ITEM_IDS.has(itemId); }
 
-export type ItemCategory = 'Front & Engine' | 'Clockwise Exterior' | 'Interior, History & Verification';
+export type ItemCategory =
+  | 'Front & Engine'
+  | 'Clockwise Exterior'
+  | 'Interior, History & Verification'
+  | 'Front & Controls'
+  | 'Frame, Engine & Final Drive'
+  | 'History & Documentation';
 
 export interface InspectionItem {
   id: string;
@@ -198,8 +207,38 @@ export const TRADE_IN_ITEMS: TradeInItemDef[] = [
   { id: 'spare_keys', label: 'Spare Keys & Remote Transponders', category: 'Interior, History & Verification', itemType: 'accessory' },
 ];
 
-export function createDefaultItems(): InspectionItem[] {
-  return TRADE_IN_ITEMS.map((def) => ({
+export const MOTO_TRADE_IN_ITEMS: TradeInItemDef[] = [
+  // Category 1: Front & Controls
+  { id: 'front_wheel_brake', label: 'Front Wheel, Tyre & Calipers', category: 'Front & Controls', itemType: 'visual_panel' },
+  { id: 'front_forks', label: 'Front Forks & Stanchions', category: 'Front & Controls', itemType: 'visual_panel' },
+  { id: 'cockpit_handlebars', label: 'Handlebars, Grips & Levers', category: 'Front & Controls', itemType: 'visual_panel' },
+  { id: 'mirrors_lights', label: 'Mirrors, Headlight & Indicators', category: 'Front & Controls', itemType: 'visual_panel' },
+  { id: 'odometer', label: 'Odometer & Instrument Cluster', category: 'Front & Controls', itemType: 'verification' },
+
+  // Category 2: Frame, Engine & Final Drive
+  { id: 'fuel_tank', label: 'Fuel Tank & Fairings / Bodywork', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+  { id: 'engine_left', label: 'Engine Left Side & Shifter', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+  { id: 'engine_right', label: 'Engine Right Side & Rear Brake', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+  { id: 'exhaust_silencer', label: 'Exhaust Headers & Silencer', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+  { id: 'frame_swingarm', label: 'Frame, Headstock & Swingarm', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+  { id: 'rear_wheel_chain', label: 'Rear Wheel, Tyre & Drive Chain / Sprockets', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+  { id: 'rear_suspension', label: 'Rear Suspension / Monoshock', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+  { id: 'rear_tail', label: 'Rear Tail, Brake Light & Plate Mount', category: 'Frame, Engine & Final Drive', itemType: 'visual_panel' },
+
+  // Category 3: History & Documentation
+  { id: 'license_disc', label: 'License Disc & Roadworthy', category: 'History & Documentation', itemType: 'documentation' },
+  { id: 'vin_plate', label: 'VIN / Frame Stamping Verification', category: 'History & Documentation', itemType: 'verification' },
+  { id: 'service_book', label: 'Service Book & Invoices', category: 'History & Documentation', itemType: 'documentation' },
+  { id: 'spare_keys', label: 'Spare Keys & Tool Kit', category: 'History & Documentation', itemType: 'accessory' },
+];
+
+export function getTradeInItems(vertical?: string | null): TradeInItemDef[] {
+  return vertical === 'moto' ? MOTO_TRADE_IN_ITEMS : TRADE_IN_ITEMS;
+}
+
+export function createDefaultItems(vertical?: string | null): InspectionItem[] {
+  const items = getTradeInItems(vertical);
+  return items.map((def) => ({
     ...def,
     status: def.itemType === 'accessory' ? 'PRESENT' as InspectionStatus :
             def.id === 'license_disc' ? 'VALID' as InspectionStatus :

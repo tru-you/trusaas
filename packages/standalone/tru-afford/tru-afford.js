@@ -71,7 +71,8 @@
     cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),
     slug: attr("data-slug", ""),
     market: attr("data-market", "za"),
-    mount: attr("data-mount", "") || attr("data-target", "")
+    mount: attr("data-mount", "") || attr("data-target", ""),
+    vertical: (attr("data-vertical", "") || "").toLowerCase()
   };
 
   var preset = MARKETS[cfg.market] || MARKETS.za;

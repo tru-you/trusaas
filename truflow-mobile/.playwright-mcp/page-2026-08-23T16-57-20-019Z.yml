@@ -1,0 +1,156 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - banner [ref=f2e3]:
+      - button "How do I…?" [ref=f2e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f2e23] [cursor=pointer]
+      - generic [ref=f2e26] [cursor=pointer]: DD
+    - main [ref=f2e27]:
+      - generic [ref=f2e886]:
+        - generic [ref=f2e887]: Add a vehicle
+        - generic [ref=f2e888]:
+          - generic [ref=f2e889]: The car
+          - generic [ref=f2e890]:
+            - generic [ref=f2e891]:
+              - generic [ref=f2e892]: Year
+              - textbox "2024" [ref=f2e893]
+            - generic [ref=f2e894]:
+              - generic [ref=f2e895]: Make
+              - textbox "Toyota" [ref=f2e896]
+          - generic [ref=f2e897]:
+            - generic [ref=f2e898]:
+              - generic [ref=f2e899]: Model
+              - textbox "Corolla Cross" [ref=f2e900]
+            - generic [ref=f2e901]:
+              - generic [ref=f2e902]: Variant / trim
+              - textbox "1.8 XR" [ref=f2e903]
+          - generic [ref=f2e904]:
+            - generic [ref=f2e905]:
+              - generic [ref=f2e906]: Body
+              - combobox [ref=f2e907]:
+                - option "—" [selected]
+                - option "SUV"
+                - option "Hatchback"
+                - option "Sedan"
+                - option "Bakkie"
+                - option "Coupe"
+            - generic [ref=f2e908]:
+              - generic [ref=f2e909]: Fuel
+              - combobox [ref=f2e910]:
+                - option "Petrol" [selected]
+                - option "Diesel"
+                - option "Hybrid"
+                - option "Electric"
+          - generic [ref=f2e911]:
+            - generic [ref=f2e912]:
+              - generic [ref=f2e913]: Transmission
+              - combobox [ref=f2e914]:
+                - option "Automatic" [selected]
+                - option "Manual"
+            - generic [ref=f2e915]:
+              - generic [ref=f2e916]: Mileage (km)
+              - textbox "28500" [ref=f2e917]
+          - generic [ref=f2e918]: The money
+          - generic [ref=f2e919]:
+            - generic [ref=f2e920]:
+              - generic [ref=f2e921]: Asking price (R)
+              - textbox "459900" [ref=f2e922]
+            - generic [ref=f2e923]:
+              - generic [ref=f2e924]: TruPrice (R)
+              - textbox "479000" [ref=f2e925]
+          - button "Get market value Free" [ref=f2e926] [cursor=pointer]:
+            - text: Get market value
+            - generic [ref=f2e930]: Free
+          - button "Add to inventory" [ref=f2e931] [cursor=pointer]
+          - paragraph [ref=f2e933]: Saved unpublished · shoot in TruLens to go live
+    - navigation [ref=f2e160]:
+      - generic [ref=f2e161] [cursor=pointer]: Home
+      - generic [ref=f2e166] [cursor=pointer]: Leads
+      - generic [ref=f2e173] [cursor=pointer]: Stock
+      - generic [ref=f2e179] [cursor=pointer]: Activity
+      - generic [ref=f2e183] [cursor=pointer]: Add
+      - generic [ref=f2e186] [cursor=pointer]: Account
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - generic [ref=f2e191]:
+      - generic [ref=f2e193]:
+        - generic [ref=f2e693]:
+          - button [ref=f2e694] [cursor=pointer]
+          - generic [ref=f2e698]: Draft
+          - generic [ref=f2e700]: No photos — capture in TruLens
+        - generic [ref=f2e706]:
+          - generic [ref=f2e707]:
+            - text: 2021 Volkswagen Polo
+            - generic [ref=f2e708]: 1.0 TSI Comfortline
+          - generic [ref=f2e709]: R269 900
+        - generic [ref=f2e710]:
+          - generic [ref=f2e711]: 52 300 km
+          - generic [ref=f2e712]: Manual
+          - generic [ref=f2e713]: Petrol
+          - generic [ref=f2e714]: DEMO-101
+        - button "Share this car WhatsApp · link" [ref=f2e715] [cursor=pointer]:
+          - text: Share this car
+          - generic [ref=f2e722]: WhatsApp · link
+        - generic [ref=f2e723]: Listing
+        - generic [ref=f2e724]:
+          - generic [ref=f2e725]:
+            - generic [ref=f2e726]: Live on website
+            - switch [ref=f2e727] [cursor=pointer]
+          - generic [ref=f2e728]:
+            - generic [ref=f2e729]: Status
+            - generic [ref=f2e730]:
+              - button "In stock" [ref=f2e731] [cursor=pointer]
+              - button "Sold" [ref=f2e732] [cursor=pointer]
+        - generic [ref=f2e733]: Details
+        - generic [ref=f2e734]:
+          - generic [ref=f2e735]:
+            - generic [ref=f2e736]: Asking price (R)
+            - textbox [ref=f2e737]: "243358"
+          - generic [ref=f2e738]:
+            - generic [ref=f2e739]: Mileage (km)
+            - textbox [ref=f2e740]: "52300"
+        - button "Get market value Free" [ref=f2e741] [cursor=pointer]:
+          - text: Get market value
+          - generic [ref=f2e745]: Free
+        - generic [ref=f2e761]:
+          - generic [ref=f2e762]:
+            - generic [ref=f2e763]: Market average
+            - generic [ref=f2e764]: R243 358
+          - generic [ref=f2e765]:
+            - generic [ref=f2e766]: Sample
+            - generic [ref=f2e767]: 35 listings · km-adjusted
+          - generic [ref=f2e768]: Market median 75 200 km
+          - generic [ref=f2e769]: Asking R269 900 is R26 542 above the market average.
+          - button "Use as asking price" [ref=f2e770] [cursor=pointer]
+        - generic [ref=f2e746]:
+          - generic [ref=f2e747]: Variant / trim
+          - textbox [ref=f2e748]: 1.0 TSI Comfortline
+        - generic [ref=f2e749]:
+          - generic [ref=f2e750]: Listing blurb
+          - textbox "Short blurb for the listing…" [ref=f2e751]: 2021 Volkswagen Polo — sample stock for the demo.
+      - generic [ref=f2e194]:
+        - button "Save changes" [ref=f2e753] [cursor=pointer]
+        - button "Delete" [ref=f2e756] [cursor=pointer]
+    - generic: Asking price set — tap Save
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

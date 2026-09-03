@@ -461,3 +461,205 @@ export const vehicleTemplate: InspectionTemplate = {
   checklistPoints: CHECKLIST_POINTS,
   disclosureQuestions: DISCLOSURE_QUESTIONS,
 };
+
+/* Motorcycle VIR Template */
+export const MOTO_SLOTS: TemplateSlot[] = [
+  {
+    id: 'front_wheel_brake',
+    name: 'Front Wheel & Disc Brakes',
+    description: 'Front tyre tread, rim condition, brake discs and calipers.',
+    required: true,
+    idealAngle: { pitch: 15, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Controls',
+  },
+  {
+    id: 'front_forks',
+    name: 'Front Forks & Stanchions',
+    description: 'Check for fork seal oil weeping, stanchion pitting or bend.',
+    required: true,
+    idealAngle: { pitch: 10, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Controls',
+  },
+  {
+    id: 'cockpit_handlebars',
+    name: 'Handlebars, Grips & Levers',
+    description: 'Handlebar straightness, lever ends, switchgear and mirrors.',
+    required: true,
+    idealAngle: { pitch: 20, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Controls',
+  },
+  {
+    id: 'odometer',
+    name: 'Odometer & Instrument Cluster',
+    description: 'Clear, legible photo of the cluster showing mileage.',
+    required: true,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Controls',
+  },
+  {
+    id: 'fuel_tank',
+    name: 'Fuel Tank & Bodywork',
+    description: 'Inspect tank for dents, scratches, fuel leaks and fairing cracks.',
+    required: true,
+    idealAngle: { pitch: 25, roll: 0, yaw: 0 },
+    phase: 2,
+    category: 'Frame, Engine & Final Drive',
+  },
+  {
+    id: 'engine_left',
+    name: 'Engine Left Side',
+    description: 'Left side crankcase, clutch/stator cover, gear linkage.',
+    required: true,
+    idealAngle: { pitch: 0, roll: 0, yaw: -90 },
+    phase: 2,
+    category: 'Frame, Engine & Final Drive',
+  },
+  {
+    id: 'engine_right',
+    name: 'Engine Right Side',
+    description: 'Right side crankcase, oil inspection window, water pump.',
+    required: true,
+    idealAngle: { pitch: 0, roll: 0, yaw: 90 },
+    phase: 2,
+    category: 'Frame, Engine & Final Drive',
+  },
+  {
+    id: 'exhaust_silencer',
+    name: 'Exhaust & Silencer',
+    description: 'Exhaust headers, catalytic converter/baffle, silencer body.',
+    required: true,
+    idealAngle: { pitch: 5, roll: 0, yaw: 120 },
+    phase: 2,
+    category: 'Frame, Engine & Final Drive',
+  },
+  {
+    id: 'frame_swingarm',
+    name: 'Frame, Headstock & Swingarm',
+    description: 'Inspect frame welds, headstock bearings and swingarm pivot.',
+    required: true,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 2,
+    category: 'Frame, Engine & Final Drive',
+  },
+  {
+    id: 'rear_wheel_chain',
+    name: 'Rear Wheel, Tyre & Chain / Belt',
+    description: 'Tyre tread depth, rim, chain tension, sprocket tooth wear.',
+    required: true,
+    idealAngle: { pitch: 10, roll: 0, yaw: -135 },
+    phase: 2,
+    category: 'Frame, Engine & Final Drive',
+  },
+  {
+    id: 'license_disc',
+    name: 'License Disc & Roadworthy',
+    description: 'Photograph current licence disc on the bike.',
+    required: true,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 3,
+    category: 'History & Documentation',
+  },
+  {
+    id: 'vin_plate',
+    name: 'VIN / Frame Stamping Verification',
+    description: 'Clear photograph of the VIN stamped onto the headstock.',
+    required: true,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 3,
+    category: 'History & Documentation',
+  },
+  {
+    id: 'service_book',
+    name: 'Service Book & Invoices',
+    description: 'Service book stamps, maintenance invoices, owner manual.',
+    required: true,
+    idealAngle: { pitch: -20, roll: 0, yaw: 0 },
+    phase: 3,
+    category: 'History & Documentation',
+  },
+  {
+    id: 'spare_keys',
+    name: 'Spare Keys & Tool Kit',
+    description: 'Spare master keys, immobiliser fobs, factory under-seat tools.',
+    required: false,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 3,
+    category: 'History & Documentation',
+  },
+];
+
+const MOTO_PHASES: TemplatePhase[] = [
+  { id: 1, name: 'Front & Controls', reportCard: { label: 'Front & Controls', iconKey: 'wrench' } },
+  { id: 2, name: 'Frame, Engine & Drive', reportCard: { label: 'Frame & Engine', iconKey: 'camera' } },
+  { id: 3, name: 'History & Documentation', reportCard: { label: 'Documentation', iconKey: 'clipboard' } },
+];
+
+const MOTO_CHECKLIST_GROUPS: ChecklistGroup[] = [
+  { id: 'controls', name: 'Controls & Ergonomics' },
+  { id: 'engine_drivetrain', name: 'Engine & Transmission' },
+  { id: 'chassis_suspension', name: 'Chassis & Suspension' },
+  { id: 'brakes_tyres', name: 'Brakes & Tyres' },
+  { id: 'electrics_lights', name: 'Electrics & Lighting' },
+  { id: 'compliance', name: 'Compliance & History' },
+];
+
+const MOTO_CHECKLIST_POINTS: ChecklistPoint[] = [
+  { id: 'fork_seals', group: 'chassis_suspension', name: 'Fork seals leak-free', kind: 'condition', photoSlotId: 'front_forks' },
+  { id: 'headstock_bearings', group: 'chassis_suspension', name: 'Headstock bearings smooth with no notch', kind: 'function' },
+  { id: 'chain_slack', group: 'engine_drivetrain', name: 'Drive chain/belt properly tensioned & lubricated', kind: 'condition', photoSlotId: 'rear_wheel_chain' },
+  { id: 'sprocket_wear', group: 'engine_drivetrain', name: 'Sprocket teeth even with no shark-fining', kind: 'condition' },
+  { id: 'brake_pads', group: 'brakes_tyres', name: 'Brake pads >2mm friction material remaining', kind: 'condition', photoSlotId: 'front_wheel_brake' },
+  { id: 'brake_discs', group: 'brakes_tyres', name: 'Brake discs within thickness spec with no deep lip', kind: 'condition' },
+  { id: 'oil_leaks', group: 'engine_drivetrain', name: 'Engine, sump & radiator free of oil/coolant leaks', kind: 'condition' },
+  { id: 'lights_indicators', group: 'electrics_lights', name: 'Headlight, tail light, brake switches and indicators operating', kind: 'function' },
+  { id: 'exhaust_legal', group: 'engine_drivetrain', name: 'Exhaust securely mounted and baffle/silencer intact', kind: 'condition', photoSlotId: 'exhaust_silencer' },
+  { id: 'vin_verified', group: 'compliance', name: 'Headstock VIN matches licensing papers', kind: 'presence', photoSlotId: 'vin_plate' },
+  { id: 'service_history', group: 'compliance', name: 'Service record / schedule verified', kind: 'service_history', photoSlotId: 'service_book' },
+];
+
+const MOTO_DISCLOSURE_QUESTIONS: { section: string; items: DisclosureQuestion[] }[] = [
+  {
+    section: 'Accident & frame condition',
+    items: [
+      { id: 'drop_damage', q: 'Any evidence of being dropped or low-sided (scuffed bar ends, pedals, casing)?', flagWhen: 'yes' },
+      { id: 'frame_straight', q: 'Frame alignment straight with no fork/swingarm twist?', flagWhen: 'no' },
+      { id: 'fuel_tank_clean', q: 'Fuel tank inside clean and rust-free?', flagWhen: 'no' },
+    ],
+  },
+  {
+    section: 'Wheels, tyres & drive',
+    items: [
+      { id: 'tyre_tread', q: 'Front and rear tyres above 2mm tread?', flagWhen: 'no' },
+      { id: 'tyre_square', q: 'Tyres profile round (not heavily squared-off)?', flagWhen: 'no' },
+      { id: 'chain_sprocket', q: 'Chain and sprockets in serviceable condition?', flagWhen: 'no' },
+    ],
+  },
+  {
+    section: 'Documents & keys',
+    items: [
+      { id: 'license_disc', q: 'License disc present and valid?', flagWhen: 'no' },
+      { id: 'spare_key', q: 'Red master key / spare key present?', flagWhen: 'no' },
+      { id: 'vin_match', q: 'Headstock VIN matches documentation?', flagWhen: 'no' },
+    ],
+  },
+];
+
+export const motoTemplate: InspectionTemplate = {
+  id: 'moto-v1',
+  label: 'Motorcycle capture & VIR',
+  slots: MOTO_SLOTS,
+  phases: MOTO_PHASES,
+  checklistGroups: MOTO_CHECKLIST_GROUPS,
+  checklistPoints: MOTO_CHECKLIST_POINTS,
+  disclosureQuestions: MOTO_DISCLOSURE_QUESTIONS,
+};
+
+export function getTemplateForVertical(vertical?: string | null): InspectionTemplate {
+  if (vertical === 'moto') return motoTemplate;
+  return vehicleTemplate;
+}
+

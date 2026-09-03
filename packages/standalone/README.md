@@ -62,6 +62,42 @@ full-width (bottom-sheet) on mobile. No configuration needed.
 
 ---
 
+## 🎯 Embed inline (in-page, not floating)
+
+Every lead widget can render **inside a page element** instead of as a floating
+launcher — drop it into a section, a pricing card, a hero. Point it at a target
+selector and the launcher flattens into an in-page card.
+
+| Widget | Inline attribute | Notes |
+|---|---|---|
+| **TruAfford** | `data-mount="#el"` | launcher → inline card |
+| **TruValue**  | `data-mount="#el"` | inline trade-in estimate |
+| **TruRepay**  | `data-target="#el"` | inline by default; add `data-mode="float"` for a FAB |
+| **TruForm**   | `data-target="#el"` | inline enquiry form |
+| TruBook / TruShare | — | launcher-only (no inline mode) |
+
+Example — three widgets in one "try the tools" block:
+
+```html
+<div id="afford-here"></div>
+<div id="value-here"></div>
+<div id="repay-here"></div>
+
+<script src=".../tru-afford/tru-afford.js" data-dealer="Demo Motors" data-wa="27..." data-mount="#afford-here"></script>
+<script src=".../tru-value/tru-value.js"   data-dealer="Demo Motors" data-wa="27..." data-mount="#value-here"></script>
+<script src=".../tru-repay/tru-repay.js"   data-dealer="Demo Motors" data-wa="27..." data-target="#repay-here" data-price="389900" data-vehicle="2023 VW Polo 1.0 TSI"></script>
+```
+
+The widget mounts on `DOMContentLoaded`, so the target `<div>` just needs to exist
+in the markup. If the selector doesn't resolve, the widget degrades to its default
+placement rather than erroring.
+
+> ⚠️ **Attribute name isn't unified yet:** TruAfford/TruValue read `data-mount`,
+> TruRepay/TruForm read `data-target`. Use the table above. Worth collapsing to a
+> single `data-mount` alias across all four in a future pass.
+
+---
+
 ## 📬 How leads reach the dealer
 
 Each lead widget fires **every configured channel** — they stack, so nothing is

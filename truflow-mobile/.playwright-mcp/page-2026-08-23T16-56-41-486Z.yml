@@ -1,0 +1,210 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - banner [ref=f2e3]:
+      - button "How do I…?" [ref=f2e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f2e23] [cursor=pointer]
+      - generic [ref=f2e26] [cursor=pointer]: DD
+    - main [ref=f2e27]:
+      - generic [ref=f2e28]:
+        - generic [ref=f2e29]: Demo Dealership
+        - generic [ref=f2e30]: Your floor at a glance.
+        - generic [ref=f2e31]:
+          - generic [ref=f2e771]:
+            - generic [ref=f2e772]: In stock
+            - generic [ref=f2e773]: "2"
+            - generic [ref=f2e774]: on the floor
+          - generic [ref=f2e775]:
+            - generic [ref=f2e776]: Live on site
+            - generic [ref=f2e777]: "0"
+            - generic [ref=f2e778]: 0 of 3 published
+          - generic [ref=f2e779]:
+            - generic [ref=f2e780]: Active leads
+            - generic [ref=f2e781]: "3"
+            - generic [ref=f2e782]: 1 new
+          - generic [ref=f2e783]:
+            - generic [ref=f2e784]: Unpublished
+            - generic [ref=f2e785]: "2"
+            - generic [ref=f2e786]: not live on site yet
+          - generic [ref=f2e788]:
+            - generic [ref=f2e789]: Follow-ups
+            - generic [ref=f2e790]: "2"
+            - generic [ref=f2e791]: due today
+        - generic [ref=f2e55]:
+          - heading "Due today" [level=2] [ref=f2e56]
+          - generic [ref=f2e57] [cursor=pointer]: All
+          - generic [ref=f2e58] [cursor=pointer]: + Follow-up
+        - generic [ref=f2e59]:
+          - generic [ref=f2e795] [cursor=pointer]:
+            - button "Mark done" [ref=f2e796]
+            - generic [ref=f2e799]:
+              - generic [ref=f2e800]: Call back tomorrow
+              - generic [ref=f2e801]: Lead · Test NewLead
+              - generic [ref=f2e802]: Overdue · 08 Aug
+          - generic [ref=f2e804] [cursor=pointer]:
+            - button "Mark done" [ref=f2e805]
+            - generic [ref=f2e808]:
+              - generic [ref=f2e809]: Send pics of the Polo to Thabo
+              - generic [ref=f2e810]: Today
+        - generic [ref=f2e77]:
+          - heading "Follow up" [level=2] [ref=f2e78]
+          - generic [ref=f2e79] [cursor=pointer]: All leads →
+        - generic [ref=f2e80]:
+          - generic [ref=f2e812] [cursor=pointer]:
+            - generic [ref=f2e813]: TN
+            - generic [ref=f2e814]:
+              - generic [ref=f2e815]: Test NewLead
+              - generic [ref=f2e816]: Generated automatically from web widget.
+              - generic [ref=f2e817]:
+                - generic [ref=f2e818]: Website
+                - generic [ref=f2e819]: ·
+                - generic [ref=f2e820]: "+27000000000"
+                - generic [ref=f2e821]: ·
+                - generic [ref=f2e822]: 17d
+            - link [ref=f2e823]:
+              - /url: https://wa.me/27000000000
+          - generic [ref=f2e827] [cursor=pointer]:
+            - generic [ref=f2e828]: SN
+            - generic [ref=f2e829]:
+              - generic [ref=f2e830]: Sipho Ndlovu
+              - generic [ref=f2e831]: just a note
+              - generic [ref=f2e832]:
+                - generic [ref=f2e833]: Website
+                - generic [ref=f2e834]: ·
+                - generic [ref=f2e835]: 079 000 0001
+                - generic [ref=f2e836]: ·
+                - generic [ref=f2e837]: 24d
+            - generic [ref=f2e838]: Won
+          - generic [ref=f2e840] [cursor=pointer]:
+            - generic [ref=f2e841]: JS
+            - generic [ref=f2e842]:
+              - generic [ref=f2e843]: John Smith
+              - generic [ref=f2e844]: Wants a trade-in valuation.
+              - generic [ref=f2e845]:
+                - generic [ref=f2e846]: Walk-in
+                - generic [ref=f2e847]: ·
+                - generic [ref=f2e848]: 082 555 1234
+                - generic [ref=f2e849]: ·
+                - generic [ref=f2e850]: 33d
+            - generic [ref=f2e851]: Negotiating
+        - generic [ref=f2e122]:
+          - heading "Recent stock" [level=2] [ref=f2e123]
+          - generic [ref=f2e124] [cursor=pointer]: Manage →
+        - generic [ref=f2e125]:
+          - generic [ref=f2e852] [cursor=pointer]:
+            - generic [ref=f2e853]:
+              - generic [ref=f2e854]: Draft
+              - generic [ref=f2e856]: Shoot in TruLens
+            - generic [ref=f2e860]:
+              - generic [ref=f2e861]:
+                - generic [ref=f2e862]: 2018 Ford EcoSport
+                - generic [ref=f2e863]: R249 900
+              - generic [ref=f2e864]:
+                - generic [ref=f2e865]: 96 800 km
+                - generic [ref=f2e866]: Manual
+                - generic [ref=f2e867]: Petrol
+                - generic [ref=f2e868]: 1.5 Ambiente
+          - generic [ref=f2e869] [cursor=pointer]:
+            - generic [ref=f2e870]:
+              - generic [ref=f2e871]: Draft
+              - generic [ref=f2e873]: Shoot in TruLens
+            - generic [ref=f2e877]:
+              - generic [ref=f2e878]:
+                - generic [ref=f2e879]: 2021 Volkswagen Polo
+                - generic [ref=f2e880]: R269 900
+              - generic [ref=f2e881]:
+                - generic [ref=f2e882]: 52 300 km
+                - generic [ref=f2e883]: Manual
+                - generic [ref=f2e884]: Petrol
+                - generic [ref=f2e885]: 1.0 TSI Comfortline
+    - navigation [ref=f2e160]:
+      - generic [ref=f2e161] [cursor=pointer]: Home
+      - generic [ref=f2e166] [cursor=pointer]: Leads
+      - generic [ref=f2e173] [cursor=pointer]: Stock
+      - generic [ref=f2e179] [cursor=pointer]: Activity
+      - generic [ref=f2e183] [cursor=pointer]: Add
+      - generic [ref=f2e186] [cursor=pointer]: Account
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - generic [ref=f2e191]:
+      - generic [ref=f2e193]:
+        - generic [ref=f2e693]:
+          - button [ref=f2e694] [cursor=pointer]
+          - generic [ref=f2e698]: Draft
+          - generic [ref=f2e700]: No photos — capture in TruLens
+        - generic [ref=f2e706]:
+          - generic [ref=f2e707]:
+            - text: 2021 Volkswagen Polo
+            - generic [ref=f2e708]: 1.0 TSI Comfortline
+          - generic [ref=f2e709]: R269 900
+        - generic [ref=f2e710]:
+          - generic [ref=f2e711]: 52 300 km
+          - generic [ref=f2e712]: Manual
+          - generic [ref=f2e713]: Petrol
+          - generic [ref=f2e714]: DEMO-101
+        - button "Share this car WhatsApp · link" [ref=f2e715] [cursor=pointer]:
+          - text: Share this car
+          - generic [ref=f2e722]: WhatsApp · link
+        - generic [ref=f2e723]: Listing
+        - generic [ref=f2e724]:
+          - generic [ref=f2e725]:
+            - generic [ref=f2e726]: Live on website
+            - switch [ref=f2e727] [cursor=pointer]
+          - generic [ref=f2e728]:
+            - generic [ref=f2e729]: Status
+            - generic [ref=f2e730]:
+              - button "In stock" [ref=f2e731] [cursor=pointer]
+              - button "Sold" [ref=f2e732] [cursor=pointer]
+        - generic [ref=f2e733]: Details
+        - generic [ref=f2e734]:
+          - generic [ref=f2e735]:
+            - generic [ref=f2e736]: Asking price (R)
+            - textbox [ref=f2e737]: "243358"
+          - generic [ref=f2e738]:
+            - generic [ref=f2e739]: Mileage (km)
+            - textbox [ref=f2e740]: "52300"
+        - button "Get market value Free" [ref=f2e741] [cursor=pointer]:
+          - text: Get market value
+          - generic [ref=f2e745]: Free
+        - generic [ref=f2e761]:
+          - generic [ref=f2e762]:
+            - generic [ref=f2e763]: Market average
+            - generic [ref=f2e764]: R243 358
+          - generic [ref=f2e765]:
+            - generic [ref=f2e766]: Sample
+            - generic [ref=f2e767]: 35 listings · km-adjusted
+          - generic [ref=f2e768]: Market median 75 200 km
+          - generic [ref=f2e769]: Asking R269 900 is R26 542 above the market average.
+          - button "Use as asking price" [ref=f2e770] [cursor=pointer]
+        - generic [ref=f2e746]:
+          - generic [ref=f2e747]: Variant / trim
+          - textbox [ref=f2e748]: 1.0 TSI Comfortline
+        - generic [ref=f2e749]:
+          - generic [ref=f2e750]: Listing blurb
+          - textbox "Short blurb for the listing…" [ref=f2e751]: 2021 Volkswagen Polo — sample stock for the demo.
+      - generic [ref=f2e194]:
+        - button "Save changes" [ref=f2e753] [cursor=pointer]
+        - button "Delete" [ref=f2e756] [cursor=pointer]
+    - generic: Asking price set — tap Save
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

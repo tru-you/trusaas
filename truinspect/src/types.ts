@@ -37,6 +37,8 @@ export interface Vehicle {
   color: string;
   price: number;
   vehicleType?: string; // Bakkie, Sedan, SUV, etc.
+  vertical?: string;
+  templateId?: string;
   mileage?: number;
   transmission?: 'Automatic' | 'Manual';
   fuelType?: 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric';

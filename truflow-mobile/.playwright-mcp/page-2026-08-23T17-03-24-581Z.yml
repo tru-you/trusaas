@@ -1,0 +1,106 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - banner [ref=f4e3]:
+      - button "How do I…?" [ref=f4e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f4e23] [cursor=pointer]
+      - generic [ref=f4e26] [cursor=pointer]: DD
+    - main [ref=f4e27]:
+      - generic [ref=f4e195]:
+        - generic [ref=f4e196]: Add a vehicle
+        - generic [ref=f4e197]:
+          - generic [ref=f4e198]: The car
+          - generic [ref=f4e199]:
+            - generic [ref=f4e200]:
+              - generic [ref=f4e201]: Year
+              - textbox "2024" [ref=f4e202]: "2020"
+            - generic [ref=f4e203]:
+              - generic [ref=f4e204]: Make
+              - textbox "Toyota" [ref=f4e205]
+          - generic [ref=f4e206]:
+            - generic [ref=f4e207]:
+              - generic [ref=f4e208]: Model
+              - textbox "Corolla Cross" [ref=f4e209]: Corolla
+            - generic [ref=f4e210]:
+              - generic [ref=f4e211]: Variant / trim
+              - textbox "1.8 XR" [ref=f4e212]
+          - generic [ref=f4e213]:
+            - generic [ref=f4e214]:
+              - generic [ref=f4e215]: Body
+              - combobox [ref=f4e216]:
+                - option "—" [selected]
+                - option "SUV"
+                - option "Hatchback"
+                - option "Sedan"
+                - option "Bakkie"
+                - option "Coupe"
+            - generic [ref=f4e217]:
+              - generic [ref=f4e218]: Fuel
+              - combobox [ref=f4e219]:
+                - option "Petrol" [selected]
+                - option "Diesel"
+                - option "Hybrid"
+                - option "Electric"
+          - generic [ref=f4e220]:
+            - generic [ref=f4e221]:
+              - generic [ref=f4e222]: Transmission
+              - combobox [ref=f4e223]:
+                - option "Automatic" [selected]
+                - option "Manual"
+            - generic [ref=f4e224]:
+              - generic [ref=f4e225]: Mileage (km)
+              - textbox "28500" [ref=f4e226]: "45000"
+          - generic [ref=f4e227]: The money
+          - generic [ref=f4e228]:
+            - generic [ref=f4e229]:
+              - generic [ref=f4e230]: Asking price (R)
+              - textbox "459900" [ref=f4e231]
+            - generic [ref=f4e232]:
+              - generic [ref=f4e233]: TruPrice (R)
+              - textbox "479000" [ref=f4e234]
+          - button "Get market value Free" [ref=f4e235] [cursor=pointer]:
+            - text: Get market value
+            - generic [ref=f4e239]: Free
+          - generic [ref=f4e241]:
+            - generic [ref=f4e242]:
+              - generic [ref=f4e243]: Market average
+              - generic [ref=f4e244]: R247 431
+            - generic [ref=f4e245]:
+              - generic [ref=f4e246]: Sample
+              - generic [ref=f4e247]: 21 listings · km-adjusted
+            - generic [ref=f4e248]: Market median 50 920 km
+            - button "Use as asking price" [ref=f4e249] [cursor=pointer]
+          - button "Add to inventory" [ref=f4e250] [cursor=pointer]
+          - paragraph [ref=f4e252]: Saved unpublished · shoot in TruLens to go live
+    - navigation [ref=f4e160]:
+      - generic [ref=f4e161] [cursor=pointer]: Home
+      - generic [ref=f4e166] [cursor=pointer]: Leads
+      - generic [ref=f4e173] [cursor=pointer]: Stock
+      - generic [ref=f4e179] [cursor=pointer]: Activity
+      - generic [ref=f4e183] [cursor=pointer]: Add
+      - generic [ref=f4e186] [cursor=pointer]: Account
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - generic: Saved
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

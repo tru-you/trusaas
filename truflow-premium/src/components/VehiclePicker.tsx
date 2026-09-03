@@ -29,12 +29,64 @@ function loadMakeIndex(): Promise<MakeIndexEntry[]> {
   return makeIndexPromise;
 }
 
+/** Transform live Imagin8 getModels response into the CatalogueMake shape. */
+function liveToCatalogue(variants: any[]): CatalogueMake {
+  const out: CatalogueMake = {};
+  for (const v of variants) {
+    const mmCode = v.mmCode || v.mvCode || "";
+    const fullModel = v.model || v.mmModel || v.mvModel || "";
+    if (!mmCode || !fullModel) continue;
+    // Heuristic: first word = model, rest = variant
+    const words = fullModel.trim().split(/\s+/);
+    const modelKey = words[0] || fullModel;
+    const variantKey = words.slice(1).join(" ") || fullModel;
+    // Build year list from introDate / disconDate
+    const years: number[] = [];
+    const intro = v.introDate || v.IntroYear;
+    const discon = v.disconDate || v.DisconYear;
+    const startYear = intro ? parseInt(String(intro).slice(0, 4), 10) : new Date().getFullYear() - 10;
+    const endYear = discon ? parseInt(String(discon).slice(0, 4), 10) : new Date().getFullYear() + 1;
+    if (Number.isFinite(startYear) && Number.isFinite(endYear)) {
+      for (let y = startYear; y <= endYear; y++) years.push(y);
+    }
+    if (!out[modelKey]) out[modelKey] = {};
+    out[modelKey][variantKey] = { c: mmCode, y: years.length ? years : [new Date().getFullYear()] };
+  }
+  return out;
+}
+
+/** Fetch live model data from Imagin8 (flat-fee unlimited). */
+async function loadLiveMakeData(make: string): Promise<CatalogueMake | null> {
+  try {
+    const qs = new URLSearchParams({ make }).toString();
+    const res = await fetch(`/api/imagin8/models?${qs}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const variants = Array.isArray(data.variants) ? data.variants : [];
+    if (!variants.length) return null;
+    return liveToCatalogue(variants);
+  } catch (err: any) {
+    console.error("[VehiclePicker] live getModels failed:", err?.message || err);
+    return null;
+  }
+}
+
 function loadMakeData(make: string): Promise<CatalogueMake> {
   const cached = makeDataCache.get(make);
   if (cached) return Promise.resolve(cached);
   const pending = makeDataPromises.get(make);
   if (pending) return pending;
-  const p = loadMakeIndex().then((idx) => {
+  const p = loadMakeIndex().then(async (idx) => {
+    // Try live Imagin8 getModels first (flat-fee unlimited)
+    const live = await loadLiveMakeData(make);
+    if (live && Object.keys(live).length) {
+      makeDataCache.set(make, live);
+      return live;
+    }
+    // Fall back to static curated catalogue if offline or disconnected
     const entry = idx.find((e) => e.name === make);
     if (!entry) return {} as CatalogueMake;
     return fetch(`/catalogue/${entry.file}`)

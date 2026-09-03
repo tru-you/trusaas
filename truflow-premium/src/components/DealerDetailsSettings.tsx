@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Check, Loader2, Building2, ShieldCheck } from "lucide-react";
 import type { Dealership } from "../types";
 import { updateDealershipSelf } from "../api";
+import { VERTICALS, VerticalId } from "./vertical";
 
 interface Props {
   dealership: Dealership;
@@ -23,6 +24,7 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
     contactEmail: dealership.contactEmail || "",
     address: dealership.address || "",
     websiteUrl: dealership.websiteUrl || "",
+    vertical: (dealership.vertical || "cars") as VerticalId,
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -80,6 +82,23 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
           {field("VAT number", "vatNumber", "4001234567")}
           {field("Contact email", "contactEmail", "sales@example.co.za", "email")}
           {field("Website", "websiteUrl", "https://example.co.za", "url")}
+          <label className="flex flex-col gap-1">
+            <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Industry Vertical</span>
+            <select
+              value={form.vertical}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, vertical: e.target.value as VerticalId }));
+                setSaved(false);
+              }}
+              className="px-3 py-2 min-h-[40px] rounded-md bg-white/5 border border-[rgba(138,162,184,0.15)] text-[13px] text-[color:var(--white)] focus:border-[color:var(--cyan)] focus:outline-none"
+            >
+              {Object.values(VERTICALS).map((v) => (
+                <option key={v.id} value={v.id} className="bg-[#10141a] text-white">
+                  {v.label} ({v.assetNoun})
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         {field("Address", "address", "12 Main Rd, Kariega, 6229")}
         <div className="border-t border-white/5 pt-3 mt-1">

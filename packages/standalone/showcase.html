@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TruDealer Standalone Widgets</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Drop-in dealer widgets that work on any site — no CRM, no DMS. Affordability, finance, enquiry, booking, chat and share. Brand them your colour and size in one line.">
+<meta name="theme-color" content="#06080D">
+<!-- Shareable link unfurl -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Dealer widgets that work anywhere">
+<meta property="og:description" content="Six drop-in widgets for any dealer site — no CRM required. Brand them your colour and size in one line of code. Tap to try them live.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TruDealer Standalone Widgets">
+<meta name="twitter:description" content="Six drop-in dealer widgets for any site. No CRM needed. Brand and size them live.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  /* ── brand colour (live-editable) — three derived stops + rgb for glows ── */
+  --brand:#0B7C72; --brand-light:#3BBFB2; --brand-dark:#065A53; --brand-rgb:13,148,136;
+  --grad:linear-gradient(115deg,var(--brand-light),var(--brand) 48%,var(--brand-dark));
+  --scale:1;
+
+  /* ── page shell (cream editorial) ── */
+  --ink:#F3F0E7; --ink-2:#EAE6DA; --panel-page:#FBF9F3;
+  --white:#17171F; --white-dim:rgba(46,52,68,.82);
+  --muted:rgba(84,98,120,.85); --faint:rgba(84,98,120,.55);
+  --border:rgba(60,50,30,.12); --border-2:rgba(60,50,30,.07);
+  --card:#FBF9F3; --card-shadow:0 2px 12px rgba(60,50,30,.07);
+
+  /* ── widget panel surfaces (flip with the theme toggle) ── */
+  --panel-bg:rgba(12,16,24,.9); --panel-line:rgba(255,255,255,.1);
+  --panel-text:#e8eaf0; --panel-dim:rgba(255,255,255,.5);
+  --field-bg:rgba(255,255,255,.06); --field-line:rgba(255,255,255,.12); --field-text:#e8eaf0;
+  --field-ph:rgba(255,255,255,.35); --sub-line:rgba(255,255,255,.06);
+  --chip-bg:rgba(255,255,255,.06); --chip-line:rgba(255,255,255,.12); --chip-text:rgba(255,255,255,.7);
+
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces','Inter Tight',Georgia,serif;
+}
+/* light widget theme */
+body[data-wtheme="light"]{
+  --panel-bg:rgba(255,255,255,.94); --panel-line:rgba(0,0,0,.08);
+  --panel-text:#141821; --panel-dim:rgba(20,24,33,.55);
+  --field-bg:rgba(0,0,0,.03); --field-line:rgba(0,0,0,.12); --field-text:#141821;
+  --field-ph:rgba(20,24,33,.4); --sub-line:rgba(0,0,0,.07);
+  --chip-bg:rgba(0,0,0,.03); --chip-line:rgba(0,0,0,.1); --chip-text:rgba(20,24,33,.7);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;scroll-padding-top:80px;}
+body{background:
+    radial-gradient(1100px 640px at 82% -12%,rgba(var(--brand-rgb),.06),transparent 60%),
+    radial-gradient(820px 520px at -12% 22%,rgba(var(--brand-rgb),.045),transparent 55%),
+    var(--ink);
+  color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;line-height:1.6;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit;}
+::selection{background:var(--brand);color:#fff;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+section{padding:84px 0;}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brand-light);margin-bottom:16px;}
+h2.disp{font-family:var(--display);font-size:clamp(26px,4vw,40px);line-height:1.08;letter-spacing:-.03em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:10px;}
+h2.disp em{font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;color:var(--brand-light);}
+.sec-lead{color:var(--white-dim);font-size:15px;line-height:1.65;max-width:560px;}
+
+/* ── top bar ── */
+.topbar{position:sticky;top:0;z-index:80;display:flex;align-items:center;gap:12px;padding:14px 24px;
+  background:rgba(243,240,231,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.tb-mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-weight:800;color:#fff;font-size:15px;box-shadow:0 6px 18px -6px rgba(var(--brand-rgb),.5);}
+.tb-name{font-weight:800;letter-spacing:-.02em;font-size:15px;}
+.tb-name span{color:var(--brand-light);}
+.tb-pill{margin-left:auto;font-size:11px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--border);border-radius:999px;padding:5px 12px;}
+@media(max-width:560px){.tb-pill{display:none;}}
+
+/* ── hero ── */
+.hero{padding:96px 0 44px;max-width:760px;margin:0 auto;padding-left:24px;padding-right:24px;}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--brand-light);
+  background:rgba(var(--brand-rgb),.1);border:1px solid rgba(var(--brand-rgb),.3);border-radius:999px;padding:6px 14px;margin-bottom:22px;}
+.hero .badge b{width:7px;height:7px;border-radius:50%;background:var(--brand-light);box-shadow:0 0 10px var(--brand-light);}
+.hero h1{font-family:var(--display);font-size:clamp(38px,6vw,64px);line-height:1.02;letter-spacing:-.04em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30,"WONK" 0;margin-bottom:22px;text-wrap:balance;}
+.hero h1 em{font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;color:var(--brand-light);}
+.hero p{font-size:17px;color:var(--white-dim);line-height:1.65;max-width:600px;text-wrap:pretty;}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;}
+.hero .cta a{display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:14px;font-weight:700;font-size:14px;transition:transform .3s cubic-bezier(.34,1.4,.64,1),filter .2s,border-color .2s;}
+.hero .cta .primary{background:var(--grad);color:#fff;box-shadow:0 12px 30px -12px rgba(var(--brand-rgb),.6);}
+.hero .cta .primary:hover{filter:brightness(1.08);transform:translateY(-2px);}
+.hero .cta .ghost{border:1px solid var(--border);color:var(--white-dim);}
+.hero .cta .ghost:hover{border-color:rgba(var(--brand-rgb),.4);color:#fff;transform:translateY(-2px);}
+
+/* ── brand-it control strip ── */
+.brandbar-section{border-top:1px solid var(--border);background:linear-gradient(180deg,rgba(var(--brand-rgb),.04),transparent);}
+.brandbar{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:22px 24px;box-shadow:var(--card-shadow);}
+@media(max-width:760px){.brandbar{grid-template-columns:1fr;gap:22px;}}
+.bb-group label.bb-lbl{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;}
+.swatches{display:flex;flex-wrap:wrap;gap:9px;align-items:center;}
+.sw{width:34px;height:34px;border-radius:11px;cursor:pointer;border:2px solid transparent;transition:transform .2s,border-color .2s;box-shadow:0 4px 12px -4px rgba(0,0,0,.5);}
+.sw:hover{transform:translateY(-2px) scale(1.06);}
+.sw.active{border-color:#fff;transform:scale(1.08);}
+.sw-pick{position:relative;width:34px;height:34px;border-radius:11px;overflow:hidden;border:2px dashed var(--border);display:grid;place-items:center;cursor:pointer;}
+.sw-pick svg{width:16px;height:16px;stroke:var(--muted);pointer-events:none;}
+.sw-pick input{position:absolute;inset:-6px;width:150%;height:150%;opacity:0;cursor:pointer;border:0;padding:0;}
+.bb-row{display:flex;align-items:center;gap:14px;margin-top:6px;}
+.bb-row .rng{flex:1;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:100px;background:var(--grad);outline:none;margin:4px 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--brand);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer;}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--brand);border:3px solid #fff;cursor:pointer;}
+.bb-val{min-width:52px;text-align:right;font-weight:800;font-family:var(--mono);font-size:13px;color:var(--brand-light);}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.seg button{padding:9px 18px;font-size:13px;font-weight:700;color:var(--white-dim);transition:background .2s,color .2s;}
+.seg button.on{background:var(--brand);color:#fff;}
+.bb-hint{font-size:12px;color:var(--faint);margin-top:14px;line-height:1.5;}
+.bb-hint code{font-family:var(--mono);font-size:11.5px;color:var(--brand-light);background:rgba(var(--brand-rgb),.1);padding:1px 6px;border-radius:5px;}
+
+/* ── pipeline ── */
+.pipeline{display:flex;flex-direction:column;margin-top:40px;}
+.pipe-step{display:grid;grid-template-columns:44px 1fr;position:relative;cursor:pointer;}
+.pipe-line{display:flex;flex-direction:column;align-items:center;padding:20px 0 0;}
+.pipe-dot{width:10px;height:10px;border-radius:50%;border:2px solid rgba(140,152,168,.35);background:var(--ink);transition:all .4s cubic-bezier(.22,1,.36,1);flex-shrink:0;}
+.pipe-rail{flex:1;width:1px;background:rgba(140,152,168,.18);margin-top:4px;}
+.pipe-step:last-child .pipe-rail{display:none;}
+.pipe-step.active .pipe-dot{border-color:var(--brand-light);background:var(--brand-light);box-shadow:0 0 12px var(--brand-light);}
+.pipe-body{padding:16px 20px 30px;border-bottom:1px solid var(--border);}
+.pipe-step:last-child .pipe-body{border-bottom:none;}
+.pipe-body h3{font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:4px;}
+.pipe-desc{color:var(--white-dim);font-size:14.5px;line-height:1.65;max-height:0;overflow:hidden;opacity:0;transition:max-height .5s cubic-bezier(.22,1,.36,1),opacity .4s,margin .4s;}
+.pipe-step.active .pipe-desc{max-height:320px;opacity:1;margin-top:10px;}
+
+/* ── interactive demo ── */
+.demo-section{border-top:1px solid var(--border);background:var(--ink-2);}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
+@media(max-width:860px){.demo-grid{grid-template-columns:1fr;}}
+.json-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:24px;opacity:.6;transition:opacity .4s;box-shadow:var(--card-shadow);}
+.json-panel.visible{opacity:1;}
+.json-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em;}
+.json-bar .method{color:var(--brand);font-weight:700;}
+.json-body{padding:14px 16px;font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--white-dim);overflow-x:auto;white-space:pre;}
+.json-body .key{color:var(--brand);} .json-body .str{color:#0D9488;}
+
+/* mock inline form */
+.mock-form{background:var(--panel-bg);border:1px solid var(--panel-line);border-radius:20px;overflow:hidden;backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);color:var(--panel-text);}
+.mock-head{padding:16px 18px 13px;display:flex;align-items:center;gap:12px;background:var(--grad);color:#fff;position:relative;overflow:hidden;}
+.mock-head::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);animation:shine 3s ease-in-out infinite;}
+@keyframes shine{0%,100%{transform:translateX(-120%)}50%{transform:translateX(120%)}}
+.mock-head .hi{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center;flex-shrink:0;}
+.mock-head .hi svg{width:20px;height:20px;}
+.mock-head b{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em;}
+.mock-head span{display:block;font-size:11px;opacity:.85;margin-top:1px;}
+.mock-body{padding:18px;}
+
+/* ── shared field + button styles (theme-variable driven) ── */
+.tf-field{margin-bottom:12px;}
+.tf-field label{display:block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--panel-dim);margin:0 0 5px;}
+.tf-field input,.tf-field select,.tf-field textarea{width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid var(--field-line);background:var(--field-bg);color:var(--field-text);font:600 14px 'Inter Tight',system-ui,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;}
+.tf-field textarea{resize:none;min-height:84px;line-height:1.5;}
+.tf-field input::placeholder,.tf-field textarea::placeholder{color:var(--field-ph);font-weight:500;}
+.tf-field input:focus,.tf-field select:focus,.tf-field textarea:focus{border-color:rgba(var(--brand-rgb),.6);box-shadow:0 0 0 3px rgba(var(--brand-rgb),.16);}
+.tf-field select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.tf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tf-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.tf-btn{flex:1 1 auto;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:14px;font-weight:800;font-size:13px;transition:transform .3s cubic-bezier(.34,1.4,.64,1),filter .2s;position:relative;overflow:hidden;}
+.tf-btn:active{transform:scale(.97);}
+.tf-btn-primary{background:var(--grad);color:#fff;box-shadow:0 10px 26px -10px rgba(var(--brand-rgb),.5);}
+.tf-btn-primary:hover{filter:brightness(1.08);transform:translateY(-2px);}
+.tf-btn-wa{background:linear-gradient(145deg,#25D366,#059669);color:#fff;box-shadow:0 10px 26px -10px rgba(16,185,129,.4);}
+.tf-btn-wa:hover{filter:brightness(1.08);transform:translateY(-2px);}
+.tf-btn-wa svg{width:16px;height:16px;}
+.tf-btn-ghost{border:1.5px solid var(--field-line);color:var(--panel-dim);background:var(--field-bg);font-weight:700;font-size:13px;}
+.sub-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-light);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.sub-block{margin:18px 0 12px;padding-top:14px;border-top:1px solid var(--sub-line);}
+
+/* ── widgets grid ── */
+.widgets-section{border-top:1px solid var(--border);}
+.widgets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:44px;}
+@media(max-width:860px){.widgets-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.widgets-grid{grid-template-columns:1fr;}}
+.w-btn{width:100%;padding:22px;border-radius:18px;background:var(--card);border:1px solid var(--border);
+  box-shadow:var(--card-shadow);transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s,border-color .35s;
+  cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:12px;}
+.w-btn:hover{transform:translateY(-4px);box-shadow:0 22px 50px -18px rgba(var(--brand-rgb),.28);border-color:rgba(var(--brand-rgb),.4);}
+.w-btn:active{transform:scale(.98);}
+.w-ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex-shrink:0;background:var(--grad);box-shadow:0 8px 20px -6px rgba(var(--brand-rgb),.5);}
+.w-ico svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.w-name{font-family:var(--display);font-size:22px;letter-spacing:-.02em;font-weight:400;font-variation-settings:"opsz" 72,"SOFT" 30;}
+.w-desc{font-size:13.5px;line-height:1.5;color:var(--white-dim);}
+.w-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-light);margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+.w-tag.need{color:var(--faint);}
+
+/* ── overlays ── */
+.widget-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
+.widget-overlay.open{display:flex;}
+.widget-backdrop{position:absolute;inset:0;background:rgba(2,4,8,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.widget-panel{position:relative;z-index:2;width:min(420px,calc(100vw - 40px));max-height:min(84vh,700px);
+  border-radius:20px;overflow:hidden;display:flex;flex-direction:column;
+  background:var(--panel-bg);backdrop-filter:blur(32px) saturate(1.4);-webkit-backdrop-filter:blur(32px) saturate(1.4);
+  border:1px solid var(--panel-line);color:var(--panel-text);
+  box-shadow:0 28px 70px -20px rgba(0,0,0,.6),0 0 40px -16px rgba(var(--brand-rgb),.14);
+  transform:scale(var(--scale));transform-origin:center;animation:panelIn .4s cubic-bezier(.34,1.4,.64,1);}
+@keyframes panelIn{from{opacity:0;transform:translateY(16px) scale(calc(var(--scale)*.94))}to{opacity:1;transform:scale(var(--scale))}}
+.wp-head{padding:16px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;flex-shrink:0;color:#fff;background:var(--grad);}
+.wp-head::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);animation:shine 3s ease-in-out infinite;}
+.wp-hi{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.2);}
+.wp-hi svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.wp-head b{display:block;font-size:16px;font-weight:800;letter-spacing:-.01em;}
+.wp-head span{display:block;font-size:11.5px;opacity:.85;margin-top:1px;}
+.wp-x{margin-left:auto;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.14);color:rgba(255,255,255,.85);font-size:18px;display:grid;place-items:center;cursor:pointer;transition:background .2s;position:relative;z-index:2;border:1px solid rgba(255,255,255,.14);}
+.wp-x:hover{background:rgba(255,255,255,.24);}
+.wp-body{padding:18px;overflow-y:auto;flex:1;min-height:0;}
+.wp-foot{padding:8px 14px 10px;border-top:1px solid var(--sub-line);flex-shrink:0;font-size:9.5px;color:var(--panel-dim);text-align:center;letter-spacing:.03em;}
+.wp-foot b{color:var(--brand-light);font-weight:700;}
+
+/* ── mobile: popups become full-width bottom-sheets ── */
+@media(max-width:560px){
+  .widget-overlay{align-items:flex-end;justify-content:stretch;padding:0;}
+  .widget-panel{width:100%;max-width:100%;max-height:90vh;border-radius:22px 22px 0 0;
+    transform:none;animation:sheetIn .42s cubic-bezier(.22,1,.36,1);
+    box-shadow:0 -18px 50px rgba(0,0,0,.4);padding-bottom:env(safe-area-inset-bottom,0px);}
+  .widget-panel::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.4);z-index:5;pointer-events:none;}
+  .wp-head{padding-top:20px;}
+}
+@keyframes sheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* TruRepay */
+.tr-result{background:var(--field-bg);border:1px solid var(--field-line);border-radius:16px;padding:16px;margin-bottom:16px;}
+.tr-lbl{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--panel-dim);}
+.tr-amt{font-size:34px;font-weight:800;line-height:1.05;margin:4px 0 12px;letter-spacing:-.02em;color:var(--panel-text);}
+.tr-amt small{font-size:15px;font-weight:600;color:var(--panel-dim);margin-left:2px;}
+.tr-rb{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px solid var(--sub-line);}
+.tr-rb span{color:var(--panel-dim);} .tr-rb b{font-weight:700;color:var(--panel-text);}
+.tr-range{margin-bottom:14px;}
+.tr-range .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.tr-range .top label{font-size:11px;font-weight:700;color:var(--panel-dim);}
+.tr-range .top b{font-size:13px;font-weight:800;color:var(--panel-text);}
+.tr-note{font-size:10.5px;color:var(--panel-dim);line-height:1.5;margin-top:10px;}
+
+/* TruAfford */
+.ta-lbl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--panel-dim);margin-bottom:10px;}
+.ta-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.ta-chip{padding:9px 14px;border-radius:100px;font-size:12px;font-weight:700;border:1px solid var(--chip-line);background:var(--chip-bg);color:var(--chip-text);cursor:pointer;transition:all .25s;}
+.ta-chip:hover{border-color:rgba(var(--brand-rgb),.4);color:var(--panel-text);}
+.ta-chip.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px -6px rgba(var(--brand-rgb),.45);}
+.ta-band{padding:14px 16px;border-radius:14px;text-align:center;margin-bottom:16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);}
+.ta-band .bl{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--panel-dim);margin-bottom:4px;}
+.ta-band b{color:#34d399;}
+
+/* ── delivery channels ── */
+.deliver-section{border-top:1px solid var(--border);background:var(--ink-2);}
+.chan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:44px;}
+@media(max-width:760px){.chan-grid{grid-template-columns:1fr;}}
+.chan{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;position:relative;overflow:hidden;box-shadow:var(--card-shadow);}
+.chan .n{position:absolute;top:16px;right:20px;font-family:var(--display);font-size:44px;font-weight:400;color:rgba(60,50,30,.08);font-variation-settings:"opsz" 144;}
+.chan .cico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;margin-bottom:14px;background:var(--grad);box-shadow:0 8px 20px -8px rgba(var(--brand-rgb),.5);}
+.chan .cico svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.chan h3{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px;}
+.chan p{font-size:13.5px;color:var(--white-dim);line-height:1.6;}
+.chan .badge{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:4px 9px;border-radius:6px;background:rgba(var(--brand-rgb),.1);color:var(--brand-light);}
+.chan .badge.floor{background:rgba(var(--brand-rgb),.1);color:var(--brand);}
+.chan .badge.opt{background:rgba(var(--brand-rgb),.1);color:var(--brand);}
+
+/* ── setup section ── */
+.setup-section{border-top:1px solid var(--border);}
+.chooser{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:32px;}
+@media(max-width:760px){.chooser{grid-template-columns:1fr 1fr;}}
+@media(max-width:440px){.chooser{grid-template-columns:1fr;}}
+.choice{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:var(--card);border:1.5px solid var(--border);box-shadow:var(--card-shadow);cursor:pointer;transition:border-color .2s,transform .18s cubic-bezier(.34,1.4,.64,1),box-shadow .2s,opacity .2s;text-align:left;width:100%;}
+.choice:hover{transform:translateY(-2px);border-color:rgba(var(--brand-rgb),.4);}
+.choice.off{opacity:.5;}
+.choice.on{border-color:var(--brand);box-shadow:0 10px 24px -12px rgba(var(--brand-rgb),.45);}
+.choice .ci{width:38px;height:38px;border-radius:11px;background:var(--grad);display:grid;place-items:center;flex-shrink:0;box-shadow:0 6px 14px -6px rgba(var(--brand-rgb),.5);}
+.choice .ci svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.choice .cmeta{min-width:0;flex:1;}
+.choice .cn{font-weight:700;font-size:14px;letter-spacing:-.01em;}
+.choice .cs{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.choice .tick{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:grid;place-items:center;flex-shrink:0;transition:all .2s;}
+.choice.on .tick{background:var(--brand);border-color:var(--brand);}
+.choice .tick svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .2s;}
+.choice.on .tick svg{opacity:1;}
+.chooser-count{margin-top:20px;font-size:15px;color:var(--white-dim);}
+.chooser-count b{color:var(--brand);font-weight:800;}
+.setup-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;}
+@media(max-width:760px){.setup-steps{grid-template-columns:1fr;}}
+.step{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--card-shadow);}
+.step .sn{width:34px;height:34px;border-radius:10px;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800;font-family:var(--mono);font-size:14px;margin-bottom:14px;box-shadow:0 8px 18px -8px rgba(var(--brand-rgb),.5);}
+.step h3{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px;}
+.step p{font-size:13.5px;color:var(--white-dim);line-height:1.6;}
+.setup-cta{margin-top:36px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.setup-cta a{display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:14px;font-weight:800;font-size:15px;background:var(--grad);color:#fff;box-shadow:0 14px 32px -12px rgba(var(--brand-rgb),.6);transition:transform .3s cubic-bezier(.34,1.4,.64,1),filter .2s;}
+.setup-cta a:hover{filter:brightness(1.08);transform:translateY(-2px);}
+.setup-cta span{font-size:13.5px;color:var(--muted);}
+
+/* ── footer ── */
+.foot{padding:48px 0;text-align:center;color:var(--faint);font-size:13px;border-top:1px solid var(--border);}
+
+/* ── floating launchers ── */
+.fab-cluster{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:900;display:flex;flex-direction:column-reverse;gap:12px;align-items:center;transition:left .35s cubic-bezier(.34,1.4,.64,1),right .35s cubic-bezier(.34,1.4,.64,1);}
+body[data-side="left"] .fab-cluster{right:auto;left:calc(16px + env(safe-area-inset-left,0px));}
+body[data-side="left"] .fab-label{right:auto;left:calc(100% + 12px);transform:translateX(-6px);}
+body[data-side="left"] .fab-btn:hover .fab-label{transform:translateX(0);}
+.fab-btn{position:relative;width:calc(54px*var(--scale));height:calc(54px*var(--scale));border-radius:50%;border:1px solid rgba(255,255,255,.1);
+  background:rgba(14,18,26,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  display:grid;place-items:center;box-shadow:0 8px 24px -8px rgba(0,0,0,.5),0 0 0 1px rgba(var(--brand-rgb),.1);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,border-color .25s;color:var(--brand-light);}
+.fab-shine{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;}
+.fab-shine::before{content:'';position:absolute;top:-40%;left:-40%;width:180%;height:180%;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.38) 50%,transparent 58%);
+  transform:translateX(-58%);animation:fabShine 5s ease-in-out infinite;}
+.fab-btn.main .fab-shine::before{animation-delay:.5s;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.5) 50%,transparent 58%);}
+@keyframes fabShine{0%{transform:translateX(-58%)}55%,100%{transform:translateX(58%)}}
+.fab-btn:hover{transform:scale(1.12);border-color:rgba(var(--brand-rgb),.4);box-shadow:0 10px 30px -8px rgba(0,0,0,.55),0 0 18px -4px rgba(var(--brand-rgb),.3);}
+.fab-btn:active{transform:scale(.94);}
+.fab-btn svg{width:calc(22px*var(--scale));height:calc(22px*var(--scale));}
+.fab-btn.main{width:calc(62px*var(--scale));height:calc(62px*var(--scale));background:linear-gradient(145deg,rgba(var(--brand-rgb),.22),rgba(12,16,24,.92));border:1px solid rgba(var(--brand-rgb),.35);box-shadow:0 12px 32px -8px rgba(0,0,0,.55),0 0 0 3px rgba(var(--brand-rgb),.14);}
+.fab-label{position:absolute;right:calc(100% + 12px);white-space:nowrap;background:rgba(12,16,24,.94);border:1px solid rgba(255,255,255,.1);
+  padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;color:#e8eaf0;pointer-events:none;opacity:0;transform:translateX(6px);transition:opacity .2s,transform .2s;box-shadow:0 8px 20px -8px rgba(0,0,0,.4);}
+.fab-btn:hover .fab-label{opacity:1;transform:translateX(0);}
+@media(max-width:560px){.fab-label{display:none;}}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important;}}
+</style>
+</head>
+<body data-wtheme="dark" data-side="right">
+
+<!-- ═══════ TOP BAR ═══════ -->
+<div class="topbar">
+  <div class="tb-mark">T</div>
+  <div class="tb-name">Tru<span>Dealer</span></div>
+  <div class="tb-pill">Standalone widgets</div>
+</div>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <div class="badge"><b></b> No CRM · No DMS · One tag</div>
+  <h1>Dealer widgets that work <em>anywhere</em></h1>
+  <p>Six drop-in widgets for any dealer website — affordability, finance, enquiry, booking, chat and share. Leads route to whatever the dealer already has: a webhook, a WhatsApp ping, or a tap-to-chat handoff. And every widget takes <strong style="color:var(--white)">your brand colour and size</strong> in a single line.</p>
+  <div class="cta">
+    <a class="primary" href="#widgets">Try the widgets ↓</a>
+    <a class="ghost" href="#setup">Setup in 5 minutes</a>
+  </div>
+</section>
+
+<!-- ═══════ BRAND-IT CONTROL STRIP ═══════ -->
+<section class="brandbar-section">
+<div class="wrap">
+  <div class="eyebrow">Make it yours — live</div>
+  <h2 class="disp">Your colour. Your <em>size</em>. Instantly.</h2>
+  <p class="sec-lead" style="margin-bottom:28px;">Change these and watch every widget on this page re-brand in real time — the launchers, the panels, the buttons, all of it. This is exactly what a dealer sets on the loader tag.</p>
+
+  <div class="brandbar">
+    <div class="bb-group">
+      <label class="bb-lbl">Accent colour</label>
+      <div class="swatches" id="swatches">
+        <span class="sw" data-c="#0B7C72" style="background:linear-gradient(115deg,#3BBFB2,#065A53)"></span>
+        <span class="sw" data-c="#e30613" style="background:linear-gradient(115deg,#ff5a52,#9b0410)"></span>
+        <span class="sw" data-c="#1466E0" style="background:linear-gradient(115deg,#4d94ff,#0b3f96)"></span>
+        <span class="sw" data-c="#D4942A" style="background:linear-gradient(115deg,#f0b341,#a06b1a)"></span>
+        <span class="sw" data-c="#7C3AED" style="background:linear-gradient(115deg,#a978f5,#5b21b6)"></span>
+        <span class="sw" data-c="#DB2777" style="background:linear-gradient(115deg,#f472b6,#9d174d)"></span>
+        <label class="sw-pick" title="Pick any colour">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3.3 0 6-2.7 6-6 0-4.7-4.5-8-10-8z"/></svg>
+          <input type="color" id="colorPick" value="#0B7C72">
+        </label>
+      </div>
+      <div class="bb-hint">Every widget picks up your colour — gradients, buttons, focus rings, the lot.</div>
+    </div>
+
+    <div class="bb-group">
+      <label class="bb-lbl">Widget size</label>
+      <div class="bb-row">
+        <div class="rng"><input type="range" id="sizeRange" min="0.8" max="1.3" step="0.05" value="1"></div>
+        <div class="bb-val" id="sizeVal">1.00×</div>
+      </div>
+      <div class="bb-hint" style="margin-bottom:18px;">Bigger or smaller — the corner launchers grow with it.</div>
+
+      <div style="display:flex;gap:26px;flex-wrap:wrap;">
+        <div>
+          <label class="bb-lbl">Panel theme</label>
+          <div class="seg" id="themeSeg">
+            <button class="on" data-t="dark">Dark</button>
+            <button data-t="light">Light</button>
+          </div>
+        </div>
+        <div>
+          <label class="bb-lbl">Launcher side</label>
+          <div class="seg" id="sideSeg">
+            <button data-s="left">Left</button>
+            <button class="on" data-s="right">Right</button>
+          </div>
+        </div>
+      </div>
+      <div class="bb-hint">Dark or light panels, and which side the floating buttons sit. Open any widget to see it flip.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════ WIDGETS ═══════ -->
+<section class="widgets-section" id="widgets">
+<div class="wrap">
+  <div class="eyebrow">Seven ways in · you pick</div>
+  <h2 class="disp">Tap any widget to <em>try it</em></h2>
+  <p class="sec-lead">You don’t switch your whole system to get started. Pick the widgets that fit your floor — one, or the lot — and leave the rest. Each one turns a browser into a lead: our new <strong>Auto Trade-in</strong> valuer does it in 30 seconds flat, handing you a seller with a car and a number. Every lead fires straight to your webhook, into your CRM via API, or to WhatsApp — whatever you already run. <strong>R 250 to install, live the same day.</strong> Everything below is real — type in them, drag the sliders, watch them respond in your brand colour.</p>
+
+<style>
+.w-btn{position:relative;}
+.w-new{position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;font-weight:700;padding:4px 8px;border-radius:100px;background:var(--grad);color:#fff;box-shadow:0 6px 14px -6px rgba(var(--brand-rgb),.6);}
+</style>
+  <div class="widgets-grid">
+    <div><button class="w-btn" onclick="openWidget('truvalue')">
+      <span class="w-new">NEW</span>
+      <div class="w-ico"><svg viewBox="0 0 24 24"><path d="M16 3l4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/></svg></div>
+      <div class="w-name">Auto Trade-in</div>
+      <div class="w-desc">Instant, market-based trade-in value in 30 seconds. Turns a "just looking" visitor into a lead with a car to sell — and a reason to walk in.</div>
+      <div class="w-tag">Trade-in valuation</div>
+    </button></div>
+
+    <div><button class="w-btn" onclick="openWidget('truafford')">
+      <div class="w-ico"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg></div>
+      <div class="w-name">TruAfford</div>
+      <div class="w-desc">Soft affordability check — captures income details and a qualified lead.</div>
+      <div class="w-tag">Pre-qualification</div>
+    </button></div>
+
+    <div><button class="w-btn" onclick="openWidget('trurepay')">
+      <div class="w-ico"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M8 14h2M8 18h2M14 10h2v8h-2z"/></svg></div>
+      <div class="w-name">TruRepay</div>
+      <div class="w-desc">Finance repayment calculator — when a visitor runs the numbers, they convert.</div>
+      <div class="w-tag">Finance calculator</div>
+    </button></div>
+
+    <div><button class="w-btn" onclick="openWidget('truform')">
+      <div class="w-ico"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 7L2 7"/></svg></div>
+      <div class="w-name">TruForm</div>
+      <div class="w-desc">Enquiry capture with optional vehicle, trade-in and finance fields.</div>
+      <div class="w-tag">Contact form</div>
+    </button></div>
+
+    <div><button class="w-btn" onclick="openWidget('trubook')">
+      <div class="w-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="1"/></svg></div>
+      <div class="w-name">TruBook</div>
+      <div class="w-desc">Test-drive and appointment booking that files the details as a lead.</div>
+      <div class="w-tag">Booking panel</div>
+    </button></div>
+
+    <div><button class="w-btn" onclick="openWidget('trushare')">
+      <div class="w-ico"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg></div>
+      <div class="w-name">TruShare</div>
+      <div class="w-desc">Per-vehicle sharing to WhatsApp, Facebook and copy-link. Pure share, no backend.</div>
+      <div class="w-tag">Share panel</div>
+    </button></div>
+
+    <div><button class="w-btn" onclick="openWidget('truchat')">
+      <div class="w-ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="w-name">TruChat</div>
+      <div class="w-desc">AI showroom assistant that qualifies visitors through conversation.</div>
+      <div class="w-tag need">Needs an AI backend</div>
+    </button></div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════ HOW A LEAD REACHES YOU (pipeline) ═══════ -->
+<section style="border-top:1px solid var(--border);">
+<div class="wrap">
+  <div class="eyebrow">How a lead reaches you</div>
+  <h2 class="disp">From tap to your phone — <em>no CRM in between</em></h2>
+  <div class="pipeline" id="pipeline">
+    <div class="pipe-step active">
+      <div class="pipe-line"><div class="pipe-dot"></div><div class="pipe-rail"></div></div>
+      <div class="pipe-body"><h3>The widget captures the enquiry</h3>
+        <div class="pipe-desc">A visitor fills in a widget — name, phone, the vehicle they like, their finance situation. Clean, mobile-first, in your brand colour. No account, no login.</div></div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-line"><div class="pipe-dot"></div><div class="pipe-rail"></div></div>
+      <div class="pipe-body"><h3>Spam gets filtered</h3>
+        <div class="pipe-desc">A hidden honeypot field and a timing check catch bots before they reach you. Automated submissions see a fake success; real leads sail through.</div></div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-line"><div class="pipe-dot"></div><div class="pipe-rail"></div></div>
+      <div class="pipe-body"><h3>Every channel fires at once</h3>
+        <div class="pipe-desc">The widget delivers to <em>every</em> channel you've configured — they stack, so nothing is lost. Webhook, WhatsApp ping, and the customer's own tap-to-chat all fire together.</div></div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-line"><div class="pipe-dot"></div></div>
+      <div class="pipe-body"><h3>You get it where you already work</h3>
+        <div class="pipe-desc">A Zapier/CRM record, an instant WhatsApp message, or an email — whatever the dealer has. A dealer with zero tooling still catches every lead.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════ INTERACTIVE DEMO ═══════ -->
+<section class="demo-section">
+<div class="wrap">
+  <div class="demo-grid">
+    <div>
+      <div class="eyebrow">Interactive</div>
+      <h2 class="disp">Watch the lead <em>build</em></h2>
+      <p class="sec-lead">Fill in the form and the payload builds live. This is exactly the JSON that POSTs to your <code style="font-family:var(--mono);font-size:13px;color:var(--brand-light)">data-webhook</code> when a visitor submits.</p>
+      <div class="json-panel" id="jsonPanel">
+        <div class="json-bar"><span><span class="method">POST</span> your data-webhook</span><span>application/json</span></div>
+        <div class="json-body" id="jsonBody"></div>
+      </div>
+    </div>
+    <div>
+      <div class="mock-form">
+        <div class="mock-head">
+          <div class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 7L2 7"/></svg></div>
+          <div><b>Get in Touch</b><span>We'll get back to you shortly</span></div>
+        </div>
+        <div class="mock-body">
+          <div class="tf-row">
+            <div class="tf-field"><label>First name</label><input type="text" id="f-first" placeholder="Sarah"></div>
+            <div class="tf-field"><label>Last name</label><input type="text" id="f-last" placeholder="Ndlovu"></div>
+          </div>
+          <div class="tf-field"><label>Phone</label><input type="tel" id="f-phone" placeholder="082 456 7890"></div>
+          <div class="tf-field"><label>Email</label><input type="email" id="f-email" placeholder="sarah@example.co.za"></div>
+          <div class="tf-field"><label>Interested in</label><select id="f-interest"><option>Buying a vehicle</option><option>Trading in</option><option>Finance enquiry</option><option>General enquiry</option></select></div>
+          <div class="tf-field"><label>Vehicle</label><input type="text" id="f-vehicle" placeholder="2024 Toyota Fortuner 2.8 GD-6"></div>
+          <div class="tf-actions">
+            <button class="tf-btn tf-btn-primary" id="btnSend">Send enquiry</button>
+            <button class="tf-btn tf-btn-wa"><svg viewBox="0 0 24 24" fill="#fff" width="16" height="16"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.13-.13.3-.35.44-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.63-.93-2.23-.24-.59-.49-.5-.68-.52h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.94 1.24 3.14c.15.2 2.14 3.27 5.18 4.58.72.31 1.29.5 1.73.64.73.23 1.39.2 1.91.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.3.18-1.42-.08-.12-.28-.2-.58-.35z"/></svg> WhatsApp</button>
+          </div>
+        </div>
+        <div class="wp-foot" style="border-top:1px solid var(--sub-line);">Powered by <b>TruDealer</b></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════ DELIVERY CHANNELS ═══════ -->
+<section class="deliver-section">
+<div class="wrap">
+  <div class="eyebrow">Lead delivery</div>
+  <h2 class="disp">Three channels. They <em>stack</em>.</h2>
+  <p class="sec-lead">Configure as many as the dealer has — every one fires on each lead, so nothing slips through. Even a dealer with no tooling at all still gets the ping.</p>
+  <div class="chan-grid">
+    <div class="chan">
+      <div class="n">1</div>
+      <div class="cico"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/></svg></div>
+      <h3>Webhook</h3>
+      <p>Points at Zapier, Make, n8n or any endpoint that accepts a JSON POST. The durable system of record.</p>
+      <span class="badge">data-webhook</span>
+    </div>
+    <div class="chan">
+      <div class="n">2</div>
+      <div class="cico"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.5 7.3L3 21l2.2-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg></div>
+      <h3>WhatsApp ping</h3>
+      <p>CallMeBot messages the dealer's personal WhatsApp the instant a lead completes — no CRM needed.</p>
+      <span class="badge opt">data-callmebot-key · opt-in</span>
+    </div>
+    <div class="chan">
+      <div class="n">3</div>
+      <div class="cico"><svg viewBox="0 0 24 24"><path d="M8 12h8M8 8h8M8 16h5"/><path d="M4 4h16v13a2 2 0 0 1-2 2H9l-5 4z"/></svg></div>
+      <h3>Tap-to-chat floor</h3>
+      <p>The always-there CTA — the customer taps to WhatsApp or email you directly. No account, no backend, no PII leaves the browser.</p>
+      <span class="badge floor">data-wa · always on</span>
+    </div>
+  </div>
+  <p class="embed-note" style="margin-top:24px;max-width:640px;"><strong style="color:var(--white)">A privacy note:</strong> CallMeBot delivers by putting the lead's details in a URL to a free third-party relay. Use it as a notification <em>alongside</em> a webhook — never as the only record.</p>
+</div>
+</section>
+
+<!-- ═══════ SETUP ═══════ -->
+<section class="setup-section" id="setup">
+<div class="wrap">
+  <div class="eyebrow">Installation</div>
+  <h2 class="disp">Live in <em>5 minutes</em></h2>
+  <p class="sec-lead">No developer, no code to write. Pick the widgets you want, tell us your brand colour and WhatsApp number, and we set it up for you — usually the same day.</p>
+
+  <div class="chooser" id="chooser">
+    <button class="choice on" data-w="truvalue"><span class="ci"><svg viewBox="0 0 24 24"><path d="M16 3l4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/></svg></span><span class="cmeta"><span class="cn">Auto Trade-in</span><span class="cs">Instant trade-in value</span></span><span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="choice on" data-w="afford"><span class="ci"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg></span><span class="cmeta"><span class="cn">TruAfford</span><span class="cs">Affordability check</span></span><span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="choice on" data-w="repay"><span class="ci"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M8 14h2M8 18h2M14 10h2v8h-2z"/></svg></span><span class="cmeta"><span class="cn">TruRepay</span><span class="cs">Finance calculator</span></span><span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="choice on" data-w="form"><span class="ci"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 7L2 7"/></svg></span><span class="cmeta"><span class="cn">TruForm</span><span class="cs">Enquiry capture</span></span><span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="choice on" data-w="book"><span class="ci"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="1"/></svg></span><span class="cmeta"><span class="cn">TruBook</span><span class="cs">Test-drive booking</span></span><span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="choice on" data-w="share"><span class="ci"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg></span><span class="cmeta"><span class="cn">TruShare</span><span class="cs">Vehicle sharing</span></span><span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="choice off" data-w="chat"><span class="ci"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="cmeta"><span class="cn">TruChat</span><span class="cs">AI assistant · needs backend</span></span><span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+  </div>
+  <div class="chooser-count" id="chooserCount"><b>6</b> widgets selected — tap to add or remove.</div>
+
+  <div class="setup-steps">
+    <div class="step"><div class="sn">1</div><h3>Choose your widgets</h3><p>Tick the ones above. Start with a couple or take the lot — you can change them anytime.</p></div>
+    <div class="step"><div class="sn">2</div><h3>Send us your details</h3><p>Your brand colour, logo and WhatsApp number. Point us at a Zapier/CRM webhook if you have one — or we'll use WhatsApp.</p></div>
+    <div class="step"><div class="sn">3</div><h3>You're live</h3><p>We install it on your site and hand it over the same day. One lightweight tag, nothing to maintain.</p></div>
+  </div>
+
+  <div class="setup-cta">
+    <a href="https://wa.me/447476995694" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="#fff" width="18" height="18"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.13-.13.3-.35.44-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.63-.93-2.23-.24-.59-.49-.5-.68-.52h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.94 1.24 3.14c.15.2 2.14 3.27 5.18 4.58.72.31 1.29.5 1.73.64.73.23 1.39.2 1.91.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.3.18-1.42-.08-.12-.28-.2-.58-.35z"/></svg> Get set up on WhatsApp</a>
+    <span>R 250 to install · live the same day · no lock-in</span>
+  </div>
+</div>
+</section>
+
+<footer class="foot"><div class="wrap">TruDealer Standalone Widgets — drop-in dealer tools for any website</div></footer>
+
+<!-- ═══════ WIDGET OVERLAYS ═══════ -->
+
+<!-- Auto Trade-in (TruValue) -->
+<div class="widget-overlay" id="overlay-truvalue">
+  <div class="widget-backdrop" onclick="closeWidget('truvalue')"></div>
+  <div class="widget-panel">
+    <div class="wp-head"><div class="wp-hi"><svg viewBox="0 0 24 24"><path d="M16 3l4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/></svg></div>
+      <div><b>What's My Car Worth?</b><span>Instant trade-in estimate</span></div>
+      <button class="wp-x" onclick="closeWidget('truvalue')">×</button></div>
+    <div class="wp-body">
+      <div class="tf-field"><label>Registration</label><input type="text" value="CA 123-456"></div>
+      <div class="tf-row"><div class="tf-field"><label>Make</label><input type="text" value="Toyota"></div><div class="tf-field"><label>Model</label><input type="text" value="Hilux 2.8 GD-6"></div></div>
+      <div class="tf-row"><div class="tf-field"><label>Year</label><input type="text" value="2021"></div><div class="tf-field"><label>Mileage</label><input type="text" value="62 400 km"></div></div>
+      <div class="ta-lbl">Condition</div>
+      <div class="ta-chips"><button class="ta-chip">Fair</button><button class="ta-chip active">Good</button><button class="ta-chip">Excellent</button></div>
+      <div class="ta-band"><div class="bl">Estimated offer · market value less 15%</div><b>R 385 000 – R 415 000</b></div>
+      <div class="tr-note">A live market-related value, less a standard 15% — the dealer’s working margin. Indicative only and subject to a physical viewing; the final figure is agreed with the dealer, and a stronger offer can be discussed on inspection.</div>
+      <div class="tf-actions" style="margin-top:14px;">
+        <button class="tf-btn tf-btn-primary">Get my value + report</button>
+        <button class="tf-btn tf-btn-wa"><svg viewBox="0 0 24 24" fill="#fff" width="16" height="16"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.13-.13.3-.35.44-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.63-.93-2.23-.24-.59-.49-.5-.68-.52h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.94 1.24 3.14c.15.2 2.14 3.27 5.18 4.58.72.31 1.29.5 1.73.64.73.23 1.39.2 1.91.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.3.18-1.42-.08-.12-.28-.2-.58-.35z"/></svg> WhatsApp</button>
+      </div>
+    </div>
+    <div class="wp-foot">Powered by <b>TruDealer</b></div>
+  </div>
+</div>
+
+<!-- TruAfford -->
+<div class="widget-overlay" id="overlay-truafford">
+  <div class="widget-backdrop" onclick="closeWidget('truafford')"></div>
+  <div class="widget-panel">
+    <div class="wp-head"><div class="wp-hi"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg></div>
+      <div><b>What Can I Afford?</b><span>Quick affordability check</span></div>
+      <button class="wp-x" onclick="closeWidget('truafford')">×</button></div>
+    <div class="wp-body">
+      <div class="ta-lbl">Employment type</div>
+      <div class="ta-chips"><button class="ta-chip active">Permanent</button><button class="ta-chip">Contract</button><button class="ta-chip">Self-employed</button></div>
+      <div class="tf-field"><label>Monthly income (gross)</label><input type="text" value="R 35 000"></div>
+      <div class="tf-field"><label>Monthly expenses</label><input type="text" value="R 18 000"></div>
+      <div class="tr-range"><div class="top"><label>Deposit available</label><b>10%</b></div><input type="range" min="0" max="50" value="10"></div>
+      <div class="tr-range"><div class="top"><label>Preferred term</label><b>72 months</b></div><input type="range" min="12" max="84" value="72" step="12"></div>
+      <div class="ta-band"><div class="bl">Affordability band</div><b>Strong — R 280 000 to R 420 000</b></div>
+      <div class="tr-note">Soft estimate only — not a credit bureau check. The final rate is risk-based and set by the bank.</div>
+      <div class="tf-actions" style="margin-top:14px;"><button class="tf-btn tf-btn-primary">Find vehicles in my range</button></div>
+    </div>
+    <div class="wp-foot">Powered by <b>TruDealer</b></div>
+  </div>
+</div>
+
+<!-- TruRepay -->
+<div class="widget-overlay" id="overlay-trurepay">
+  <div class="widget-backdrop" onclick="closeWidget('trurepay')"></div>
+  <div class="widget-panel">
+    <div class="wp-head"><div class="wp-hi"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M8 14h2M8 18h2M14 10h2v8h-2z"/></svg></div>
+      <div><b>Finance Calculator</b><span>Work out your monthly instalment</span></div>
+      <button class="wp-x" onclick="closeWidget('trurepay')">×</button></div>
+    <div class="wp-body">
+      <div class="tr-result">
+        <div class="tr-lbl">Estimated monthly</div>
+        <div class="tr-amt" id="tr-monthly">R 6 842<small>/mo</small></div>
+        <div class="tr-rb"><span>Vehicle price</span><b>R 459 900</b></div>
+        <div class="tr-rb"><span>Deposit</span><b id="tr-dep-amt">R 45 990</b></div>
+        <div class="tr-rb"><span>Loan amount</span><b id="tr-loan">R 413 910</b></div>
+        <div class="tr-rb"><span>Term</span><b id="tr-term-b">72 months</b></div>
+        <div class="tr-rb"><span>Interest rate</span><b>11.75%</b></div>
+      </div>
+      <div class="tr-range"><div class="top"><label>Deposit</label><b id="tr-dep-val">10%</b></div><input type="range" min="0" max="50" value="10" id="tr-dep"></div>
+      <div class="tr-range"><div class="top"><label>Term</label><b id="tr-term-val">72 months</b></div><input type="range" min="12" max="84" value="72" step="12" id="tr-term"></div>
+      <div class="tr-note">Estimate only. Excludes initiation fee (R 1 207) and monthly admin (R 69). Interest is risk-based and set by the bank — not a quote or credit approval.</div>
+      <div class="tf-actions" style="margin-top:14px;">
+        <button class="tf-btn tf-btn-primary">Get this deal</button>
+        <button class="tf-btn tf-btn-wa"><svg viewBox="0 0 24 24" fill="#fff" width="16" height="16"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.13-.13.3-.35.44-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.63-.93-2.23-.24-.59-.49-.5-.68-.52h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.94 1.24 3.14c.15.2 2.14 3.27 5.18 4.58.72.31 1.29.5 1.73.64.73.23 1.39.2 1.91.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.3.18-1.42-.08-.12-.28-.2-.58-.35z"/></svg> WhatsApp</button>
+      </div>
+    </div>
+    <div class="wp-foot">Powered by <b>TruDealer</b></div>
+  </div>
+</div>
+
+<!-- TruForm -->
+<div class="widget-overlay" id="overlay-truform">
+  <div class="widget-backdrop" onclick="closeWidget('truform')"></div>
+  <div class="widget-panel">
+    <div class="wp-head"><div class="wp-hi"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 7L2 7"/></svg></div>
+      <div><b>Get in Touch</b><span>We'll get back to you shortly</span></div>
+      <button class="wp-x" onclick="closeWidget('truform')">×</button></div>
+    <div class="wp-body">
+      <div class="tf-row"><div class="tf-field"><label>First name *</label><input type="text" placeholder="First name"></div><div class="tf-field"><label>Last name</label><input type="text" placeholder="Last name"></div></div>
+      <div class="tf-row"><div class="tf-field"><label>Phone *</label><input type="tel" placeholder="082 123 4567"></div><div class="tf-field"><label>Email</label><input type="email" placeholder="you@example.com"></div></div>
+      <div class="tf-field"><label>Interested in</label><select><option value="">Select an option…</option><option>Buying a vehicle</option><option>Selling / trade-in</option><option>Finance enquiry</option><option>Test drive</option><option>General enquiry</option></select></div>
+      <div class="sub-block"><div class="sub-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M5 17h14M5 17a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h8l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg> Vehicle interest</div>
+        <div class="tf-field"><label>Which vehicle?</label><input type="text" placeholder="e.g. 2023 Toyota Fortuner"></div></div>
+      <div class="sub-block"><div class="sub-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M16 3l4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/></svg> Trade-in</div>
+        <div class="tf-row"><div class="tf-field"><label>Year</label><input type="text" placeholder="2019"></div><div class="tf-field"><label>Make</label><input type="text" placeholder="Toyota"></div></div>
+        <div class="tf-row"><div class="tf-field"><label>Model</label><input type="text" placeholder="Hilux 2.8 GD-6"></div><div class="tf-field"><label>Mileage</label><input type="text" placeholder="85 000 km"></div></div></div>
+      <div class="sub-block"><div class="sub-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h.01M2 10h20"/></svg> Finance</div>
+        <div class="tf-field"><label>Employment status</label><select><option value="">Select…</option><option>Permanently employed</option><option>Contract / temporary</option><option>Self-employed</option></select></div>
+        <div class="tf-field"><label>Deposit available?</label><select><option value="">Select…</option><option>None</option><option>Under 10%</option><option>10% – 20%</option><option>Over 20%</option></select></div></div>
+      <div class="tf-field"><label>Message</label><textarea placeholder="How can we help?"></textarea></div>
+      <div class="tf-actions">
+        <button class="tf-btn tf-btn-primary">Send enquiry</button>
+        <button class="tf-btn tf-btn-wa"><svg viewBox="0 0 24 24" fill="#fff" width="16" height="16"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.13-.13.3-.35.44-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.63-.93-2.23-.24-.59-.49-.5-.68-.52h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.94 1.24 3.14c.15.2 2.14 3.27 5.18 4.58.72.31 1.29.5 1.73.64.73.23 1.39.2 1.91.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.3.18-1.42-.08-.12-.28-.2-.58-.35z"/></svg> WhatsApp</button>
+      </div>
+    </div>
+    <div class="wp-foot">Powered by <b>TruDealer</b></div>
+  </div>
+</div>
+
+<!-- TruBook -->
+<div class="widget-overlay" id="overlay-trubook">
+  <div class="widget-backdrop" onclick="closeWidget('trubook')"></div>
+  <div class="widget-panel">
+    <div class="wp-head"><div class="wp-hi"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="1"/></svg></div>
+      <div><b>Book a Test Drive</b><span>Pick a date and time that works</span></div>
+      <button class="wp-x" onclick="closeWidget('trubook')">×</button></div>
+    <div class="wp-body">
+      <div class="tf-row"><div class="tf-field"><label>First name</label><input type="text" placeholder="Sarah"></div><div class="tf-field"><label>Last name</label><input type="text" placeholder="Ndlovu"></div></div>
+      <div class="tf-field"><label>Phone</label><input type="tel" placeholder="082 456 7890"></div>
+      <div class="tf-field"><label>Vehicle</label><input type="text" placeholder="2024 Toyota Fortuner 2.8 GD-6"></div>
+      <div class="tf-field"><label>Preferred date</label><input type="text" placeholder="Saturday 23 August"></div>
+      <div class="tf-field"><label>Preferred time</label><select><option>Morning (9:00 – 12:00)</option><option>Afternoon (12:00 – 15:00)</option><option>Late afternoon (15:00 – 17:00)</option></select></div>
+      <div class="tf-field"><label>Notes</label><input type="text" placeholder="Anything we should know"></div>
+      <div class="tf-actions">
+        <button class="tf-btn tf-btn-primary">Book appointment</button>
+        <button class="tf-btn tf-btn-wa"><svg viewBox="0 0 24 24" fill="#fff" width="16" height="16"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.13-.13.3-.35.44-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.63-.93-2.23-.24-.59-.49-.5-.68-.52h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.94 1.24 3.14c.15.2 2.14 3.27 5.18 4.58.72.31 1.29.5 1.73.64.73.23 1.39.2 1.91.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.3.18-1.42-.08-.12-.28-.2-.58-.35z"/></svg> WhatsApp</button>
+      </div>
+    </div>
+    <div class="wp-foot">Powered by <b>TruDealer</b></div>
+  </div>
+</div>
+
+<!-- TruShare -->
+<div class="widget-overlay" id="overlay-trushare">
+  <div class="widget-backdrop" onclick="closeWidget('trushare')"></div>
+  <div class="widget-panel">
+    <div class="wp-head"><div class="wp-hi"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg></div>
+      <div><b>Share This Vehicle</b><span>Send it to a friend or save for later</span></div>
+      <button class="wp-x" onclick="closeWidget('trushare')">×</button></div>
+    <div class="wp-body">
+      <div style="display:flex;gap:14px;padding:14px 16px;background:var(--field-bg);border:1px solid var(--field-line);border-radius:16px;margin-bottom:18px;align-items:center;">
+        <div style="width:72px;height:52px;border-radius:10px;background:var(--chip-bg);display:grid;place-items:center;flex-shrink:0;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--panel-dim)" stroke-width="1.5" width="28" height="28"><path d="M5 17h14M5 17a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h8l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg></div>
+        <div><div style="font-weight:700;font-size:14px;color:var(--panel-text);">2024 Toyota Fortuner 2.8 GD-6</div><div style="font-size:12.5px;color:var(--panel-dim);margin-top:2px;">R 479 900 · 34 200 km · Auto · Diesel</div></div>
+      </div>
+      <div style="background:var(--field-bg);border:1px solid var(--sub-line);border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.6;color:var(--panel-dim);margin-bottom:16px;font-family:var(--mono);">
+        Check out this 2024 Toyota Fortuner 2.8 GD-6 — R479 900<br>34 200 km · Auto · Diesel<br><br><span style="color:var(--brand-light);word-break:break-all;">yourdealer.co.za/vehicle/?stock=TC-4821</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="tf-btn tf-btn-ghost" style="justify-content:flex-start;gap:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--panel-dim)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg> Share (native)</button>
+        <button class="tf-btn tf-btn-wa" style="justify-content:flex-start;gap:12px;"><svg viewBox="0 0 24 24" fill="#fff" width="18" height="18"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.13-.13.3-.35.44-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.63-.93-2.23-.24-.59-.49-.5-.68-.52h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.94 1.24 3.14c.15.2 2.14 3.27 5.18 4.58.72.31 1.29.5 1.73.64.73.23 1.39.2 1.91.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.3.18-1.42-.08-.12-.28-.2-.58-.35z"/></svg> Send via WhatsApp</button>
+        <button class="tf-btn tf-btn-ghost" style="justify-content:flex-start;gap:12px;"><svg viewBox="0 0 24 24" fill="var(--panel-dim)" width="18" height="18"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Share on Facebook</button>
+        <button class="tf-btn tf-btn-ghost" style="justify-content:flex-start;gap:12px;" id="copyLinkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--panel-dim)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Copy link</button>
+      </div>
+      <div class="tr-note" style="margin-top:14px;">Pure share links — no backend, no PII. Shared links unfurl with the vehicle photo, model and price.</div>
+    </div>
+    <div class="wp-foot">Powered by <b>TruDealer</b></div>
+  </div>
+</div>
+
+<!-- TruChat (brand-themed AI assistant) -->
+<div class="widget-overlay" id="overlay-truchat">
+  <div class="widget-backdrop" onclick="closeWidget('truchat')"></div>
+  <div class="widget-panel" style="max-height:min(80vh,640px);">
+    <div class="wp-head" style="padding:13px 14px;">
+      <div style="position:relative;width:42px;height:42px;flex-shrink:0;">
+        <div style="width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;">L</div>
+      </div>
+      <div style="flex:1;min-width:0;"><b>Lerato</b><span style="display:flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399;"></span> AI assistant · online</span></div>
+      <button class="wp-x" onclick="closeWidget('truchat')">×</button>
+    </div>
+    <div class="wp-body" style="display:flex;flex-direction:column;gap:11px;">
+      <div style="max-width:92%;padding:12px 14px;border-radius:16px 16px 16px 6px;font-size:13.5px;line-height:1.55;background:var(--field-bg);border:1px solid var(--field-line);align-self:flex-start;">Hey! I'm <strong>Lerato</strong>, your AI showroom assistant. I can help with stock, finance, trade-ins or bookings. What are you after?</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <span class="ta-chip">Looking for a vehicle</span><span class="ta-chip">Finance question</span><span class="ta-chip">Trade-in value</span>
+      </div>
+      <div style="max-width:80%;padding:12px 14px;border-radius:16px 16px 6px 16px;font-size:13.5px;line-height:1.55;background:var(--grad);color:#fff;align-self:flex-end;box-shadow:0 6px 18px -10px rgba(var(--brand-rgb),.5);">Fortuner under R500k, low km</div>
+      <div style="max-width:92%;padding:12px 14px;border-radius:16px 16px 16px 6px;font-size:13.5px;line-height:1.55;background:var(--field-bg);border:1px solid var(--field-line);align-self:flex-start;">I found <strong>3 Fortuners</strong> under R500k. Here's the top match:</div>
+      <div style="max-width:94%;width:100%;align-self:flex-start;background:var(--field-bg);border:1px solid var(--field-line);border-radius:14px;overflow:hidden;">
+        <div style="width:100%;height:80px;background:var(--chip-bg);display:grid;place-items:center;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--panel-dim)" stroke-width="1.5" width="36" height="36"><path d="M5 17h14M5 17a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h8l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg></div>
+        <div style="padding:10px 12px 11px;">
+          <b style="display:block;font-size:14px;margin-bottom:4px;color:var(--panel-text);">2023 Fortuner 2.8 GD-6 4×4</b>
+          <div style="font-size:12px;color:var(--panel-dim);">34 200 km · Auto · Diesel</div>
+          <div style="font-size:15px;font-weight:800;margin:8px 0 4px;color:var(--panel-text);">R 479 900</div>
+          <div style="display:flex;gap:7px;margin-top:10px;">
+            <button class="tf-btn tf-btn-primary" style="padding:9px;font-size:11px;min-width:0;">Enquire</button>
+            <button class="tf-btn tf-btn-ghost" style="padding:9px;font-size:11px;min-width:0;">Test drive</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 14px 12px;border-top:1px solid var(--sub-line);display:flex;gap:8px;align-items:center;flex-shrink:0;">
+      <input type="text" placeholder="Type a message…" style="flex:1;padding:10px 14px;border-radius:100px;border:1.5px solid var(--field-line);background:var(--field-bg);font:500 13px var(--sans);color:var(--field-text);outline:none;">
+      <button style="width:36px;height:36px;border-radius:50%;background:var(--grad);border:none;display:grid;place-items:center;flex-shrink:0;box-shadow:0 6px 18px -4px rgba(var(--brand-rgb),.5);"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+    </div>
+    <div class="wp-foot">This one needs an AI backend · Powered by <b>TruChat</b></div>
+  </div>
+</div>
+
+<!-- ═══════ FLOATING LAUNCHERS ═══════ -->
+<div class="fab-cluster">
+  <button class="fab-btn main" onclick="openWidget('truform')"><span class="fab-shine"></span><span class="fab-label">Get in touch</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></button>
+  <button class="fab-btn" onclick="openWidget('truchat')"><span class="fab-shine"></span><span class="fab-label">Chat with us</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+  <button class="fab-btn" onclick="openWidget('trurepay')"><span class="fab-shine"></span><span class="fab-label">Finance calculator</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="12" y2="10"/><rect x="8" y="14" width="8" height="4" rx="1"/></svg></button>
+</div>
+
+<script>
+"use strict";
+var root = document.documentElement, body = document.body;
+
+/* ── brand colour engine — derive light/dark stops + rgb from one hex ── */
+function hexToRgb(h){ h=h.replace('#',''); if(h.length===3) h=h.split('').map(function(c){return c+c;}).join(''); var n=parseInt(h,16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function rgbToHsl(r,g,b){ r/=255;g/=255;b/=255; var mx=Math.max(r,g,b),mn=Math.min(r,g,b),h,s,l=(mx+mn)/2; if(mx===mn){h=s=0;} else { var d=mx-mn; s=l>0.5?d/(2-mx-mn):d/(mx+mn); switch(mx){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;} h/=6; } return [h*360,s*100,l*100]; }
+function hslToHex(h,s,l){ h/=360;s/=100;l/=100; var r,g,b; if(s===0){r=g=b=l;} else { var hue=function(p,q,t){ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; }; var q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q; r=hue(p,q,h+1/3);g=hue(p,q,h);b=hue(p,q,h-1/3); } var to=function(x){ return ('0'+Math.round(x*255).toString(16)).slice(-2); }; return '#'+to(r)+to(g)+to(b); }
+function setBrand(hex){
+  var rgb = hexToRgb(hex), hsl = rgbToHsl(rgb[0],rgb[1],rgb[2]);
+  var light = hslToHex(hsl[0], Math.min(hsl[1],80), Math.min(hsl[2]+16,74));
+  var dark  = hslToHex(hsl[0], hsl[1], Math.max(hsl[2]-16,14));
+  root.style.setProperty('--brand', hex);
+  root.style.setProperty('--brand-light', light);
+  root.style.setProperty('--brand-dark', dark);
+  root.style.setProperty('--brand-rgb', rgb.join(','));
+  var meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', hex);
+}
+
+/* ── controls ── */
+var swatches = document.getElementById('swatches');
+var colorPick = document.getElementById('colorPick');
+function markActive(hex){
+  swatches.querySelectorAll('.sw').forEach(function(s){ s.classList.toggle('active', (s.getAttribute('data-c')||'').toLowerCase()===hex.toLowerCase()); });
+}
+swatches.querySelectorAll('.sw').forEach(function(s){
+  s.addEventListener('click', function(){ var c=s.getAttribute('data-c'); setBrand(c); colorPick.value=c; markActive(c); });
+});
+colorPick.addEventListener('input', function(){ setBrand(colorPick.value); markActive(colorPick.value); });
+
+var sizeRange = document.getElementById('sizeRange'), sizeVal = document.getElementById('sizeVal');
+sizeRange.addEventListener('input', function(){
+  root.style.setProperty('--scale', sizeRange.value);
+  sizeVal.textContent = parseFloat(sizeRange.value).toFixed(2) + '×';
+});
+
+document.getElementById('themeSeg').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  this.querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); });
+  b.classList.add('on');
+  body.setAttribute('data-wtheme', b.getAttribute('data-t'));
+});
+
+document.getElementById('sideSeg').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  this.querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); });
+  b.classList.add('on');
+  body.setAttribute('data-side', b.getAttribute('data-s'));
+});
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── widget chooser ── */
+(function(){
+  var chooser=document.getElementById('chooser'), count=document.getElementById('chooserCount');
+  function refresh(){ var n=chooser.querySelectorAll('.choice.on').length; count.innerHTML='<b>'+n+'</b> widget'+(n===1?'':'s')+' selected — tap to add or remove.'; }
+  chooser.querySelectorAll('.choice').forEach(function(c){
+    c.addEventListener('click', function(){ c.classList.toggle('on'); c.classList.toggle('off'); refresh(); });
+  });
+  refresh();
+})();
+
+/* ── overlays ── */
+function openWidget(name){ document.getElementById('overlay-'+name).classList.add('open'); body.style.overflow='hidden'; }
+function closeWidget(name){ document.getElementById('overlay-'+name).classList.remove('open'); body.style.overflow=''; }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ ['truafford','trurepay','truform','trubook','trushare','truchat'].forEach(closeWidget); } });
+
+/* ── pipeline accordion ── */
+var steps = document.querySelectorAll('.pipe-step'), autoTimer;
+steps.forEach(function(s){ s.addEventListener('click', function(){ clearInterval(autoTimer); steps.forEach(function(x){x.classList.remove('active');}); s.classList.add('active'); }); });
+(function(){ var i=0; autoTimer=setInterval(function(){ i=(i+1)%steps.length; steps.forEach(function(x){x.classList.remove('active');}); steps[i].classList.add('active'); },4000); })();
+
+/* ── chip toggles ── */
+document.querySelectorAll('.ta-chips').forEach(function(group){
+  group.querySelectorAll('.ta-chip').forEach(function(c){
+    c.addEventListener('click', function(){ group.querySelectorAll('.ta-chip').forEach(function(x){x.classList.remove('active');}); c.classList.add('active'); });
+  });
+});
+
+/* ── TruRepay live calc ── */
+var trDep=document.getElementById('tr-dep'), trTerm=document.getElementById('tr-term');
+function money(n){ return 'R ' + Math.round(n).toLocaleString('en-ZA').replace(/,/g,' '); }
+function calc(){
+  var price=459900, dep=parseInt(trDep.value)/100, term=parseInt(trTerm.value), r=11.75/100/12;
+  var loan=price*(1-dep), pmt=loan*r/(1-Math.pow(1+r,-term));
+  document.getElementById('tr-monthly').innerHTML = money(pmt) + '<small>/mo</small>';
+  document.getElementById('tr-dep-val').textContent = trDep.value+'%';
+  document.getElementById('tr-term-val').textContent = trTerm.value+' months';
+  document.getElementById('tr-dep-amt').textContent = money(price*dep);
+  document.getElementById('tr-loan').textContent = money(loan);
+  document.getElementById('tr-term-b').textContent = trTerm.value+' months';
+}
+if(trDep&&trTerm){ trDep.addEventListener('input',calc); trTerm.addEventListener('input',calc); }
+
+/* ── copy-link demo ── */
+var clb=document.getElementById('copyLinkBtn');
+if(clb){ clb.addEventListener('click', function(){ var t=clb.innerHTML; clb.innerHTML='✓ Link copied'; setTimeout(function(){ clb.innerHTML=t; },1500); }); }
+
+/* ── live JSON preview ── */
+var panel=document.getElementById('jsonPanel'), jsonBody=document.getElementById('jsonBody');
+function updateJSON(){
+  var g=function(id){ return document.getElementById(id).value; };
+  var first=g('f-first'), last=g('f-last'), phone=g('f-phone'), email=g('f-email'), interest=g('f-interest'), vehicle=g('f-vehicle');
+  if(first||last||phone||email||vehicle){
+    panel.classList.add('visible');
+    var notes = 'Interest: '+interest + (vehicle?'\\nVehicle: '+esc(vehicle):'');
+    jsonBody.innerHTML = ['{',
+      '  <span class="key">"firstName"</span>: <span class="str">"'+esc(first||'…')+'"</span>,',
+      '  <span class="key">"lastName"</span>:  <span class="str">"'+esc(last||'…')+'"</span>,',
+      '  <span class="key">"phone"</span>:     <span class="str">"'+esc(phone||'…')+'"</span>,',
+      '  <span class="key">"email"</span>:     <span class="str">"'+esc(email||'…')+'"</span>,',
+      '  <span class="key">"source"</span>:    <span class="str">"TruForm"</span>,',
+      '  <span class="key">"notes"</span>:     <span class="str">"'+notes+'"</span>',
+    '}'].join('\n');
+  } else { panel.classList.remove('visible'); }
+}
+['f-first','f-last','f-phone','f-email','f-interest','f-vehicle'].forEach(function(id){
+  var el=document.getElementById(id); el.addEventListener('input',updateJSON); el.addEventListener('change',updateJSON);
+});
+
+/* ── demo send button ── */
+var btnSend=document.getElementById('btnSend');
+btnSend.addEventListener('click', function(){
+  var orig=btnSend.textContent;
+  btnSend.textContent='Sending…'; btnSend.style.opacity='.7'; btnSend.style.pointerEvents='none';
+  setTimeout(function(){
+    btnSend.textContent='✓ Delivered to your webhook';
+    btnSend.style.background='linear-gradient(145deg,#22C55E,#16A34A)'; btnSend.style.opacity='1';
+    setTimeout(function(){ btnSend.textContent=orig; btnSend.style.background=''; btnSend.style.pointerEvents=''; },2600);
+  },1100);
+});
+
+/* ── scroll reveal ── */
+var obs=new IntersectionObserver(function(entries){ entries.forEach(function(e){ if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; } }); },{threshold:0.1});
+document.querySelectorAll('section').forEach(function(s){ s.style.opacity='0'; s.style.transform='translateY(20px)'; s.style.transition='opacity .7s ease, transform .7s ease'; obs.observe(s); });
+
+/* ── init ── */
+markActive('#0B7C72');
+</script>
+</body>
+</html>

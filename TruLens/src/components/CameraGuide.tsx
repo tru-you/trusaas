@@ -5,7 +5,8 @@ import {
   RotateCcw, SkipForward} from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { DEFAULT_TEMPLATE } from '../templates';
+import { useVertical } from './VerticalContext';
+import { getTemplate, getTemplateForVertical, DEFAULT_TEMPLATE } from '../templates';
 
 interface CameraGuideProps {
   vehicle: Vehicle;
@@ -22,6 +23,11 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   // glance, keep or redo — no forced save-and-edit between every angle.
   const [pendingShot, setPendingShot] = React.useState<{ slotId: string; base64: string; report: QualityReport; kind: 'photo' | 'video' } | null>(null);
   const { user } = useAuth();
+  const { id: verticalId } = useVertical();
+  const template = React.useMemo(() => {
+    return vehicle.templateId ? getTemplate(vehicle.templateId) : getTemplateForVertical(vehicle.vertical || verticalId);
+  }, [vehicle.templateId, vehicle.vertical, verticalId]);
+
   // Crash-safe: never read vehicle.photos when undefined
   const photos = vehicle?.photos || {};
   /* Lazy initializer so this only runs once, at mount — reopening a
@@ -31,9 +37,9 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
     // Resume at the first empty CORE shot, then any empty shot, then slot 1 —
     // so onboarding leads with the ~10 that make a car listing-ready.
     const p = vehicle.photos || {};
-    const firstEmptyCore = DEFAULT_TEMPLATE.slots.find((s) => s.tier === 'core' && !p[s.id]);
-    const firstEmptyAny = DEFAULT_TEMPLATE.slots.find((s) => !p[s.id]);
-    return (firstEmptyCore || firstEmptyAny || DEFAULT_TEMPLATE.slots[0]).id;
+    const firstEmptyCore = template.slots.find((s) => s.tier === 'core' && !p[s.id]);
+    const firstEmptyAny = template.slots.find((s) => !p[s.id]);
+    return (firstEmptyCore || firstEmptyAny || template.slots[0]).id;
   });
   const [isCameraActive, setIsCameraActive] = React.useState(false);
   const [hasCamPermission, setHasCamPermission] = React.useState<boolean | null>(null);
@@ -66,10 +72,10 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   });
 
   // Active slot information
-  const activeSlot = DEFAULT_TEMPLATE.slots.find(s => s.id === selectedSlotId) || DEFAULT_TEMPLATE.slots[0];
-  const activeSlotIndex = DEFAULT_TEMPLATE.slots.findIndex(s => s.id === selectedSlotId);
+  const activeSlot = template.slots.find(s => s.id === selectedSlotId) || template.slots[0];
+  const activeSlotIndex = template.slots.findIndex(s => s.id === selectedSlotId);
 
-  const allSlots = DEFAULT_TEMPLATE.slots;
+  const allSlots = template.slots;
   // Core = the honest listing minimum; the rest sit behind an "add more" toggle
   // so onboarding a car reads as ~10 guided shots, not 27 fields.
   const coreSlots = allSlots.filter((s) => s.tier === 'core');
@@ -519,8 +525,8 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       // Advance through CORE first, then anything else — so the guided flow
       // completes the listing minimum before offering the optional shots.
       const next =
-        DEFAULT_TEMPLATE.slots.find((s) => s.tier === 'core' && !photos[s.id]) ||
-        DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
+        template.slots.find((s) => s.tier === 'core' && !photos[s.id]) ||
+        template.slots.find((s) => !photos[s.id]);
       if (next) {
         // Reveal the optional strip when the next shot lives there, or its chip
         // would be hidden behind the collapsed toggle.

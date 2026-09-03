@@ -103,12 +103,15 @@
        TruDealer" on every site using the default. */
     brand: attr("data-brand", "TruDealer"),
     theme: attr("data-theme", "dark"),
+    vertical: (attr("data-vertical", "") || "").toLowerCase(),
   /* data-surface="#hex" — retune the panel to the host's ground tone. Custom
      properties can't pierce :host{all:initial}, so the override compiles in. */
   surface: attr("data-surface", ""),
     z: attr("data-z", "2147300000"),
     fields: (attr("data-fields", "") || "").split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean)
   };
+
+  var isMoto = cfg.vertical === "moto";
 
   var has = {
     vehicle: cfg.fields.indexOf("vehicle") !== -1,
@@ -568,10 +571,10 @@
           '<div class="tf-field"><label for="tf-interest">Interested in</label>',
             '<select id="tf-interest">',
               '<option value="">Select an option...</option>',
-              '<option value="Buying a vehicle">Buying a vehicle</option>',
+              isMoto ? '<option value="Buying a motorcycle">Buying a motorcycle</option>' : '<option value="Buying a vehicle">Buying a vehicle</option>',
               '<option value="Selling / trade-in">Selling / trade-in</option>',
               '<option value="Finance enquiry">Finance enquiry</option>',
-              '<option value="Test drive">Test drive</option>',
+              isMoto ? '<option value="Demo ride">Book a demo ride</option>' : '<option value="Test drive">Test drive</option>',
               '<option value="General enquiry">General enquiry</option>',
             '</select></div>',
 

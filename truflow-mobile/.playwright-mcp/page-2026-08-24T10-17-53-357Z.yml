@@ -1,0 +1,99 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - banner [ref=f5e3]:
+      - button "How do I…?" [ref=f5e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f5e23] [cursor=pointer]
+      - generic [ref=f5e26] [cursor=pointer]: DD
+    - main [ref=f5e27]:
+      - generic [ref=f5e193]:
+        - generic [ref=f5e194]:
+          - 'textbox "Search make, model, stock #" [ref=f5e199]'
+          - generic [ref=f5e200]:
+            - button "All" [pressed] [ref=f5e201] [cursor=pointer]
+            - button "In stock" [ref=f5e202] [cursor=pointer]
+            - button "Live" [ref=f5e203] [cursor=pointer]
+            - button "Draft" [ref=f5e204] [cursor=pointer]
+            - button "Sold" [ref=f5e205] [cursor=pointer]
+          - generic [ref=f5e206]:
+            - generic [ref=f5e207]: Sort
+            - combobox [ref=f5e208]:
+              - option "Newest first" [selected]
+              - option "Oldest first"
+              - option "Price high–low"
+              - option "Price low–high"
+              - option "Lowest km"
+        - generic [ref=f5e209]:
+          - 'button "Vehicle: 2018 Ford EcoSport, R249 900, draft" [ref=f5e210] [cursor=pointer]':
+            - generic [ref=f5e211]:
+              - generic [ref=f5e212]: Draft
+              - generic [ref=f5e214]: Shoot in TruLens
+            - generic [ref=f5e218]:
+              - generic [ref=f5e219]:
+                - generic [ref=f5e220]: 2018 Ford EcoSport
+                - generic [ref=f5e221]: R249 900
+              - generic [ref=f5e222]:
+                - generic [ref=f5e223]: 96 800 km
+                - generic [ref=f5e224]: Manual
+                - generic [ref=f5e225]: Petrol
+                - generic [ref=f5e226]: 1.5 Ambiente
+          - 'button "Vehicle: 2021 Volkswagen Polo, R269 900, live" [ref=f5e227] [cursor=pointer]':
+            - generic [ref=f5e228]:
+              - generic [ref=f5e229]: Live
+              - generic [ref=f5e231]: 1 photos
+            - generic [ref=f5e233]:
+              - generic [ref=f5e234]:
+                - generic [ref=f5e235]: 2021 Volkswagen Polo
+                - generic [ref=f5e236]: R269 900
+              - generic [ref=f5e237]:
+                - generic [ref=f5e238]: 52 300 km
+                - generic [ref=f5e239]: Manual
+                - generic [ref=f5e240]: Petrol
+                - generic [ref=f5e241]: 1.0 TSI Comfortline
+          - 'button "Vehicle: 2020 Toyota Hilux, R379 900, sold" [ref=f5e242] [cursor=pointer]':
+            - generic [ref=f5e243]:
+              - generic [ref=f5e244]: Sold
+              - generic [ref=f5e246]: Shoot in TruLens
+            - generic [ref=f5e250]:
+              - generic [ref=f5e251]:
+                - generic [ref=f5e252]: 2020 Toyota Hilux
+                - generic [ref=f5e253]: R379 900
+              - generic [ref=f5e254]:
+                - generic [ref=f5e255]: 112 000 km
+                - generic [ref=f5e256]: Manual
+                - generic [ref=f5e257]: Diesel
+                - generic [ref=f5e258]: 2.4 GD-6 SRX
+    - navigation [ref=f5e158]:
+      - button "Home" [ref=f5e159] [cursor=pointer]
+      - button "Leads" [ref=f5e164] [cursor=pointer]
+      - button "Stock" [ref=f5e171] [cursor=pointer]
+      - button "Activity" [ref=f5e177] [cursor=pointer]
+      - button "Add" [ref=f5e181] [cursor=pointer]
+      - button "Account" [ref=f5e184] [cursor=pointer]
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button "Close chat"
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button "Close guide"
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - dialog [ref=f5e189]
+    - status:
+      - generic: Saved
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

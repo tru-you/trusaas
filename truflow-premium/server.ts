@@ -1625,9 +1625,13 @@ app.get("/api/state", (req: any, res) => {
   // The whole DMS in one payload — scope every collection, or a dealer would
   // read every other dealer's leads straight out of the bootstrap call.
   const s = readState();
+  const currentDealer = req.auth?.dealershipId
+    ? (s.dealerships || []).find((d: any) => d.id === req.auth.dealershipId)
+    : undefined;
   res.json({
     ...s,
     market: INSTANCE_MARKET,
+    vertical: String(currentDealer?.vertical || INSTANCE_VERTICAL).toLowerCase(),
     dealerships: req.auth?.role === "admin"
       ? s.dealerships
       : (s.dealerships || []).filter((d: any) => d.id === req.auth?.dealershipId),
@@ -1645,15 +1649,20 @@ app.get("/api/state", (req: any, res) => {
   });
 });
 
-/* Instance market — same endpoint name Lens/Inspect expose, so the shared
- * MarketContext works unchanged here. Instance-level (MARKET env), not dealer
- * data; a dealership-level market field can override later. */
+/* Instance market & vertical — same endpoint name Lens/Inspect expose, so the shared
+ * MarketContext/VerticalContext works unchanged here. Instance-level env fallback,
+ * with dealership-level override. */
 app.get("/api/dealership/settings", (req: any, res) => {
   const s = readState();
-  const dealerMarket = req.auth?.dealershipId
-    ? (s.dealerships || []).find((d: any) => d.id === req.auth.dealershipId)?.market
+  const dealer = req.auth?.dealershipId
+    ? (s.dealerships || []).find((d: any) => d.id === req.auth.dealershipId)
     : undefined;
-  res.json({ market: String(dealerMarket || INSTANCE_MARKET).toLowerCase() });
+  const dealerMarket = dealer?.market;
+  const dealerVertical = dealer?.vertical;
+  res.json({
+    market: String(dealerMarket || INSTANCE_MARKET).toLowerCase(),
+    vertical: String(dealerVertical || INSTANCE_VERTICAL).toLowerCase(),
+  });
 });
 
 /** Download the entire DMS as a file. Admin only.
@@ -3626,7 +3635,7 @@ app.put("/api/dealership/self", (req: any, res) => {
   const i = (state.dealerships || []).findIndex((d: any) => d.id === targetId);
   if (i === -1) return res.status(404).json({ error: "Dealership not found" });
 
-  const { name, tradingAs, vatNumber, contactEmail, address, registrationNumber, websiteUrl, docSettings } = req.body || {};
+  const { name, tradingAs, vatNumber, contactEmail, address, registrationNumber, websiteUrl, vertical, docSettings } = req.body || {};
   const d = state.dealerships[i] as any;
   if (typeof name === "string" && name.trim()) d.name = name.trim();
   if (typeof tradingAs === "string") d.tradingAs = tradingAs.trim();
@@ -3635,6 +3644,7 @@ app.put("/api/dealership/self", (req: any, res) => {
   if (typeof address === "string") d.address = address.trim();
   if (typeof registrationNumber === "string") d.registrationNumber = registrationNumber.trim();
   if (typeof websiteUrl === "string") d.websiteUrl = websiteUrl.trim();
+  if (typeof vertical === "string") d.vertical = vertical.trim().toLowerCase();
   if (docSettings && typeof docSettings === "object") {
     const prev = d.docSettings || {};
     const next = { ...prev };
@@ -5506,13 +5516,14 @@ app.put("/api/dealerships/:id", (req: any, res) => {
   /* Slug and id are deliberately not editable. Vehicles are tagged by id and
      dealer websites are wired to the slug; changing either detaches stock
      from the dealer it belongs to. Retire and recreate instead. */
-  const { name, location, websiteUrl, products, address, registrationNumber, vatNumber } = req.body || {};
+  const { name, location, websiteUrl, products, address, registrationNumber, vatNumber, vertical } = req.body || {};
   if (typeof name === "string" && name.trim()) state.dealerships[i].name = name.trim();
   if (typeof location === "string" && location.trim()) state.dealerships[i].location = location.trim();
   if (typeof websiteUrl === "string") state.dealerships[i].websiteUrl = websiteUrl.trim();
   if (typeof address === "string") state.dealerships[i].address = address.trim();
   if (typeof registrationNumber === "string") state.dealerships[i].registrationNumber = registrationNumber.trim();
   if (typeof vatNumber === "string") state.dealerships[i].vatNumber = vatNumber.trim();
+  if (typeof vertical === "string") state.dealerships[i].vertical = vertical.trim().toLowerCase();
 
   /* Per-dealer Imagin8 customer credentials — owner-managed ONLY via this
      admin route (the dealer-facing /dealership/self whitelist drops them by
@@ -6578,7 +6589,7 @@ app.post("/api/integration/webhook-codat", (req, res) => {
 
 // ==================== IMAGIN8 / TRANSUNION ====================
 
-import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice, getStaticInfo as imagin8GetStaticInfo, accidentReport as imagin8AccidentReport, simulatedValuation as imagin8SimValuation, simulatedRegCheck as imagin8SimRegCheck, simulatedAccidentReport as imagin8SimAccidentReport, DEMO_IMAGIN8_ALLOWANCE } from "../packages/imagin8";
+import { getValues as imagin8GetValues, getModels as imagin8GetModels, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice, getStaticInfo as imagin8GetStaticInfo, accidentReport as imagin8AccidentReport, simulatedValuation as imagin8SimValuation, simulatedRegCheck as imagin8SimRegCheck, simulatedAccidentReport as imagin8SimAccidentReport, DEMO_IMAGIN8_ALLOWANCE } from "../packages/imagin8";
 import { fetchValuation } from "./src/lib/scraper";
 /* Market-aware engine (UK/US-ready) behind a kill-switch:
  *   VALUATION_ENGINE=legacy  → the in-tree SA fork (production default)
@@ -6590,6 +6601,7 @@ import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from "../p
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || "legacy").toLowerCase();
 const INSTANCE_MARKET = (process.env.MARKET || "za").toLowerCase();
+const INSTANCE_VERTICAL = (process.env.VERTICAL || "cars").toLowerCase();
 
 const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
@@ -6899,6 +6911,26 @@ app.post("/api/imagin8/static", authenticate, async (req: any, res) => {
   } catch (err: any) {
     console.error("[imagin8] static info failed:", err?.message || err);
     res.status(502).json({ error: err?.message || "Static info failed" });
+  }
+});
+
+// Live model catalogue for the Add Vehicle picker (platform key / flat subscription).
+// Returns { variants: CatalogueVariant[] } so the picker can build model → variant → mmCode.
+app.get("/api/imagin8/models", authenticate, async (req: any, res) => {
+  const make = req.query?.make;
+  if (!make) return res.status(400).json({ error: "make is required" });
+  const state = readState();
+  const apiKey = dealerImagin8Key(state, req.user?.dealershipId) || IMAGIN8_PLATFORM_KEY;
+  const customerId = dealerImagin8CustomerId(state, req.user?.dealershipId) || IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) {
+    return res.status(503).json({ error: "IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured" });
+  }
+  try {
+    const variants = await imagin8GetModels(String(make), { apiKey, customerId });
+    res.json({ variants });
+  } catch (err: any) {
+    console.error("[imagin8] getModels failed:", err?.message || err);
+    res.status(502).json({ error: err?.message || "Model lookup failed" });
   }
 });
 

@@ -18,6 +18,7 @@ import { lookupRegistration, lookupCarHistory, regLookupConfigured, regLookupPro
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
 const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
+const INSTANCE_VERTICAL = (process.env.VERTICAL || 'cars').toLowerCase();
 import {
   initPhotoStore,
   mediaDir,
@@ -1324,6 +1325,7 @@ app.get('/api/dealership/settings', authenticate, (req: any, res) => {
   // regLookup flags gate the plate-lookup UI the same way.
   const marketMeta = {
     market: INSTANCE_MARKET,
+    vertical: INSTANCE_VERTICAL,
     regLookup: regLookupConfigured(),
     regLookupProvider: regLookupProvider(),
     historyChecks: historyCheckEnabled(),

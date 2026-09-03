@@ -1,0 +1,147 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - button "How do I…?" [ref=e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=e23] [cursor=pointer]
+      - generic [ref=e26] [cursor=pointer]: DD
+    - main [ref=e27]:
+      - generic [ref=e346]:
+        - generic [ref=e347]:
+          - 'textbox "Search make, model, stock #" [ref=e352]'
+          - generic [ref=e353]:
+            - button "All" [pressed] [ref=e354] [cursor=pointer]
+            - button "In stock" [ref=e355] [cursor=pointer]
+            - button "Live" [ref=e356] [cursor=pointer]
+            - button "Draft" [ref=e357] [cursor=pointer]
+            - button "Sold" [ref=e358] [cursor=pointer]
+          - generic [ref=e359]:
+            - generic [ref=e360]: Sort
+            - combobox [ref=e361]:
+              - option "Newest first" [selected]
+              - option "Oldest first"
+              - option "Price high–low"
+              - option "Price low–high"
+              - option "Lowest km"
+        - generic [ref=e362]:
+          - 'button "Vehicle: 2018 Ford EcoSport, R249 900, live" [ref=e481] [cursor=pointer]':
+            - generic [ref=e482]:
+              - generic [ref=e483]: Live
+              - generic [ref=e485]: Shoot in TruLens
+            - generic [ref=e489]:
+              - generic [ref=e490]:
+                - generic [ref=e491]: 2018 Ford EcoSport
+                - generic [ref=e492]: R249 900
+              - generic [ref=e493]:
+                - generic [ref=e494]: 96 800 km
+                - generic [ref=e495]: Manual
+                - generic [ref=e496]: Petrol
+                - generic [ref=e497]: 1.5 Ambiente
+          - 'button "Vehicle: 2021 Volkswagen Polo, R269 900, draft" [ref=e498] [cursor=pointer]':
+            - generic [ref=e499]:
+              - generic [ref=e500]: Draft
+              - generic [ref=e502]: Shoot in TruLens
+            - generic [ref=e506]:
+              - generic [ref=e507]:
+                - generic [ref=e508]: 2021 Volkswagen Polo
+                - generic [ref=e509]: R269 900
+              - generic [ref=e510]:
+                - generic [ref=e511]: 52 300 km
+                - generic [ref=e512]: Manual
+                - generic [ref=e513]: Petrol
+                - generic [ref=e514]: 1.0 TSI Comfortline
+          - 'button "Vehicle: 2020 Toyota Hilux, R379 900, sold" [ref=e515] [cursor=pointer]':
+            - generic [ref=e516]:
+              - generic [ref=e517]: Sold
+              - generic [ref=e519]: Shoot in TruLens
+            - generic [ref=e523]:
+              - generic [ref=e524]:
+                - generic [ref=e525]: 2020 Toyota Hilux
+                - generic [ref=e526]: R379 900
+              - generic [ref=e527]:
+                - generic [ref=e528]: 112 000 km
+                - generic [ref=e529]: Manual
+                - generic [ref=e530]: Diesel
+                - generic [ref=e531]: 2.4 GD-6 SRX
+    - navigation [ref=e160]:
+      - button "Home" [ref=e161] [cursor=pointer]
+      - button "Leads" [ref=e166] [cursor=pointer]
+      - button "Stock" [ref=e173] [cursor=pointer]
+      - button "Activity" [ref=e179] [cursor=pointer]
+      - button "Add" [ref=e183] [cursor=pointer]
+      - button "Account" [ref=e186] [cursor=pointer]
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button "Close chat"
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button "Close guide"
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - dialog [ref=e191]:
+      - generic [ref=e193]:
+        - generic [ref=e414]:
+          - button "Close" [ref=e415] [cursor=pointer]
+          - generic [ref=e419]: Draft
+          - generic [ref=e421]: No photos — capture in TruLens
+        - generic [ref=e427]:
+          - generic [ref=e428]:
+            - text: 2018 Ford EcoSport
+            - generic [ref=e429]: 1.5 Ambiente
+          - generic [ref=e430]: R249 900
+        - generic [ref=e431]:
+          - generic [ref=e432]: 96 800 km
+          - generic [ref=e433]: Manual
+          - generic [ref=e434]: Petrol
+          - generic [ref=e435]: DEMO-102
+        - button "Share this car WhatsApp · link" [ref=e436] [cursor=pointer]:
+          - text: Share this car
+          - generic [ref=e443]: WhatsApp · link
+        - generic [ref=e444]: Listing
+        - generic [ref=e445]:
+          - generic [ref=e446]:
+            - generic [ref=e447]: Live on website
+            - switch "Live on website" [checked] [active] [ref=e448] [cursor=pointer]
+          - generic [ref=e449]:
+            - generic [ref=e450]: Status
+            - generic [ref=e451]:
+              - button "In stock" [pressed] [ref=e452] [cursor=pointer]
+              - button "Sold" [ref=e453] [cursor=pointer]
+        - generic [ref=e454]: Details
+        - generic [ref=e455]:
+          - generic [ref=e456]:
+            - generic [ref=e457]: Asking price (R)
+            - textbox [ref=e458]: "249900"
+          - generic [ref=e459]:
+            - generic [ref=e460]: Mileage (km)
+            - textbox [ref=e461]: "96800"
+        - button "Get market value Free" [ref=e462] [cursor=pointer]:
+          - text: Get market value
+          - generic [ref=e466]: Free
+        - generic [ref=e467]:
+          - generic [ref=e468]: Variant / trim
+          - textbox [ref=e469]: 1.5 Ambiente
+        - generic [ref=e470]:
+          - generic [ref=e471]: Listing blurb
+          - textbox "Short blurb for the listing…" [ref=e472]: 2018 Ford EcoSport — sample stock for the demo.
+      - generic [ref=e194]:
+        - button "Save changes" [ref=e474] [cursor=pointer]
+        - button "Delete" [ref=e477] [cursor=pointer]
+    - status:
+      - generic: Published to your site
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

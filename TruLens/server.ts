@@ -28,6 +28,7 @@ import { lookupRegistration, lookupCarHistory, regLookupConfigured, regLookupPro
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
 const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
+const INSTANCE_VERTICAL = (process.env.VERTICAL || 'cars').toLowerCase();
 
 /* Every TruLens template slot is `required: false` (dealer's call what goes on
    their site — see src/template.ts), so there is no `required` subset to pull
@@ -1021,6 +1022,7 @@ function hasDealerScope(req: any): boolean {
 app.get('/api/dealership/settings', authenticate, (_req: any, res) => {
   res.json({
     market: INSTANCE_MARKET,
+    vertical: INSTANCE_VERTICAL,
     regLookup: regLookupConfigured(),
     regLookupProvider: regLookupProvider(),
     historyChecks: historyCheckEnabled(),

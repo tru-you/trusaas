@@ -121,6 +121,27 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ## 4. Recent Changes (2026-08-21)
 
+### 🚀 PRODUCT ROADMAP: Multi-vertical DMS beyond cars (2026-09-03)
+
+**Owner directive:** TruDealer should NOT be limited to car dealerships. The TransUnion M&M catalogue (`TruLens/public/catalogue/`) already covers motorcycles (Harley Davidson, Ducati, KTM, Kawasaki, Honda, Yamaha, etc.), boats/jetski (SPECIALTY), caravans (SPECIALTY), trailers, generators, yellow metal/construction equipment, golf carts, bicycles, and tractors/agriculture (John Deere, Massey Ferguson, New Holland).
+
+**Status & Action items:**
+- [x] **TruDealer Moto** — Motorcycle sales DMS (Completed 2026-09-03). Full substrate across 4 apps (TruLens, TruInspect, TruFlow Premium, TruFlow Mobile) + 8 standalone widgets (`packages/standalone/`).
+- [ ] **TruDealer Marine** — Boat & jetski sales DMS (catalogue data already exists in SPECIALTY section)
+- [ ] **TruDealer Trucks** — Commercial vehicle & trucking DMS (catalogue has truck makes + YELLOW METAL)
+- [ ] **TruDealer Caravans** — Caravan & trailer sales DMS (catalogue has CARAVAN + TRAILER categories)
+
+**Why:** Each of these is the same TruFlow DMS with a vertical-specific skin, default catalogue filters, and tailored reporting. The data layer (valuations, TransUnion lookups, Imagin8 checks) works identically — the M&M code is the universal key.
+
+**Implementation details (TruDealer Moto):**
+- **Substrate:** `packages/tru-ui-src/src/vertical.ts` (`VERTICALS`, `verticalById`, `MOTO_MAKES`, `isMotoMake`) + `VerticalContext.tsx` (`useVertical`). Synced via `sync:ui` to Lens and Inspect; copied to Premium.
+- **Resolution hierarchy:** Dealership record (`d.vertical`) → Server environment (`VERTICAL` env var, default `cars`) → App fallback (`cars`). 100% backward-compatible.
+- **TruLens:** 14 motorcycle studio slots (`moto-v1`: Front 3/4 L/R, Profiles, Cockpit, Odo, Fuel Tank, Engine L/R, Exhaust, Chain/Sprocket, Tail, VIN plate). No camera overlays (as per directive).
+- **TruInspect:** `moto-v1` template with motorcycle phases (Frame & Controls, Engine & Powertrain, Wheels & Suspension, Electrical, Cosmetics & Exhaust, Final Road Test) and 2-tyre trade-in checklist.
+- **TruFlow Premium:** `vertical` in `Dealership` model, server state/settings API, and `DealershipAdmin` / `DealerDetailsSettings` vertical selector.
+- **TruFlow Mobile:** Dynamic vertical resolution from state profile, motorcycle share blurbs and `vert=moto` share query param.
+- **Standalone Widgets (`packages/standalone/`):** `tru-loader` (auto-propagates `data-vertical`), `tru-book` ("Book a demo ride"), `tru-value` ("What's my bike worth?", motorcycle makes/models placeholders), `tru-afford`, `tru-repay`, `tru-form`, `tru-share`.
+
 ### UK-first market expansion — market spine, all four apps, widgets (2026-08-31)
 
 **Program:** UK first, US as Phase 6. Locked decisions: separate regional deployments of ONE codebase (MARKET env per instance, Frankfurt region, fresh region-bound disks, `uk.*` subdomains); NO paid data providers at v1 (free scraper + VIN decode later; Imagin8/TU stays SA-only); full Premium desktop pass in-program; WP plugin EXCLUDED (retired one-off).

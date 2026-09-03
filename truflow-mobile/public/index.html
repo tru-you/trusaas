@@ -668,6 +668,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-ghost):not([class*="no-lift"])
      that are always km (market medians) convert via dist(). */
   var MARKET_TABLE={za:{currency:"R",locale:"en-ZA",unit:"km"},uk:{currency:"£",locale:"en-GB",unit:"mi"},us:{currency:"$",locale:"en-US",unit:"mi"}};
   var MARKET={id:"za",currency:"R",locale:"en-ZA",unit:"km"};
+  var VERTICAL="cars";
   /* ── Hub links: sibling app origins ──
      Both TruLens and TruInspect accept the /?stock=STK-123 deep-link contract
      (search + highlight + banner, built for Flow). Prod domains are fixed;
@@ -1628,6 +1629,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       var mid=String((s&&s.market)||"za").toLowerCase();
       var mt=MARKET_TABLE[mid]||MARKET_TABLE.za;
       MARKET={id:mid,currency:mt.currency,locale:mt.locale,unit:mt.unit};
+      VERTICAL=String((s&&s.vertical)||"cars").toLowerCase();
       var arr=(s&&s.dealerships)||[];
       for(var i=0;i<arr.length;i++){
         if(arr[i]&&arr[i].id===AUTH.dealershipId){
@@ -1635,6 +1637,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
           var p=Array.isArray(arr[i].products)?arr[i].products:[];
           DMS_CONNECTED=p.indexOf("flow")>=0||p.indexOf("flow-lite")>=0;
           if(arr[i].market){var dm=MARKET_TABLE[String(arr[i].market).toLowerCase()]||mt;MARKET={id:String(arr[i].market).toLowerCase(),currency:dm.currency,locale:dm.locale,unit:dm.unit};}
+          if(arr[i].vertical){VERTICAL=String(arr[i].vertical).toLowerCase();}
           break;
         }
       }
@@ -1642,7 +1645,8 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
   }
   function shareVehicle(v){
     ensureDealerProfile(function(){
-      var name=[v.year,v.make,v.model,v.trim].filter(Boolean).join(" ").replace(/\s+/g," ").trim()||"This car";
+      var isMoto=VERTICAL==="moto"||v.vertical==="moto";
+      var name=[v.year,v.make,v.model,v.trim].filter(Boolean).join(" ").replace(/\s+/g," ").trim()||(isMoto?"This motorcycle":"This car");
       var head=name+(vPrice(v)?" — "+money(vPrice(v)):"");
       var spec=[odo(v.mileage),v.transmission||"",v.fuelType||""].filter(Boolean).join(" · ");
       var text=head+(spec?"\n"+spec:"");
@@ -1653,10 +1657,11 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
         var add=function(k,val){if(val!==""&&val!=null)q.push(k+"="+encodeURIComponent(val));};
         add("stock",v.stockNumber||v.id);add("year",v.year||"");add("make",v.make||"");add("name",v.model||"");
         add("variant",v.trim||"");if(vPrice(v)>0)add("price",Math.round(vPrice(v)));add("km",v.mileage||"");
-        /* Market declarations ride only when non-default — SA links stay
+        /* Market and vertical declarations ride only when non-default — SA links stay
            byte-identical; the vehicle-og edge function reads cur/odu. */
         if(MARKET.currency!=="R")add("cur",MARKET.currency);
         if(MARKET.unit!=="km")add("odu",MARKET.unit);
+        if(isMoto)add("vert","moto");
         add("trans",v.transmission||"");add("fuel",v.fuelType||"");add("body",v.bodyType||"");
         if(hero)add("img",(location.origin+hero));
         url=DEALER_SITE+"/vehicle/?"+q.join("&");

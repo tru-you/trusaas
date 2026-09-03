@@ -1,0 +1,152 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - banner [ref=f6e3]:
+      - button "How do I…?" [ref=f6e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f6e23] [cursor=pointer]
+      - generic [ref=f6e26] [cursor=pointer]: DD
+    - main [ref=f6e27]:
+      - generic [ref=f6e28]:
+        - generic [ref=f6e29]: Demo Dealership
+        - generic [ref=f6e30]: Your floor at a glance.
+        - generic [ref=f6e31]:
+          - button "In stock" [ref=f6e259]:
+            - generic [ref=f6e261]: "2"
+            - generic [ref=f6e262]: on the floor
+          - button "Live on site" [ref=f6e263]:
+            - generic [ref=f6e265]: "1"
+            - generic [ref=f6e266]: 1 of 3 published
+          - button "Active leads" [ref=f6e267]:
+            - generic [ref=f6e269]: "3"
+            - generic [ref=f6e270]: 1 new
+          - button "Unpublished" [ref=f6e271]:
+            - generic [ref=f6e273]: "1"
+            - generic [ref=f6e274]: not live on site yet
+          - 'button "Follow-ups: due today" [ref=f6e275]':
+            - generic [ref=f6e276]:
+              - generic [ref=f6e277]: Follow-ups
+              - generic [ref=f6e278]: "2"
+              - generic [ref=f6e279]: due today
+        - generic [ref=f6e55]:
+          - heading "Due today" [level=2] [ref=f6e56]
+          - button "All" [ref=f6e57] [cursor=pointer]
+          - button "+ Follow-up" [ref=f6e58] [cursor=pointer]
+        - generic [ref=f6e59]:
+          - 'button "Follow-up: Call back tomorrow" [ref=f6e282]':
+            - generic [ref=f6e283] [cursor=pointer]:
+              - button "Mark done" [ref=f6e284]
+              - generic [ref=f6e287]:
+                - generic [ref=f6e288]: Call back tomorrow
+                - generic [ref=f6e289]: Lead · Test NewLead
+                - generic [ref=f6e290]: Overdue · 08 Aug
+          - 'button "Follow-up: Send pics of the Polo to Thabo" [ref=f6e291]':
+            - generic [ref=f6e292] [cursor=pointer]:
+              - button "Mark done" [ref=f6e293]
+              - generic [ref=f6e296]:
+                - generic [ref=f6e297]: Send pics of the Polo to Thabo
+                - generic [ref=f6e298]: Overdue · 23 Aug
+        - generic [ref=f6e77]:
+          - heading "Follow up" [level=2] [ref=f6e78]
+          - button "All leads →" [ref=f6e79] [cursor=pointer]
+        - generic [ref=f6e80]:
+          - 'button "Lead: Test NewLead, New" [ref=f6e300] [cursor=pointer]':
+            - generic [ref=f6e301]: TN
+            - generic [ref=f6e302]:
+              - generic [ref=f6e303]: Test NewLead
+              - generic [ref=f6e304]: Generated automatically from web widget.
+              - generic [ref=f6e305]:
+                - generic [ref=f6e306]: Website
+                - generic [ref=f6e307]: ·
+                - generic [ref=f6e308]: "+27000000000"
+                - generic [ref=f6e309]: ·
+                - generic [ref=f6e310]: 17d
+            - link [ref=f6e311]:
+              - /url: https://wa.me/27000000000
+          - 'button "Lead: Sipho Ndlovu, Won" [ref=f6e315] [cursor=pointer]':
+            - generic [ref=f6e316]: SN
+            - generic [ref=f6e317]:
+              - generic [ref=f6e318]: Sipho Ndlovu
+              - generic [ref=f6e319]: just a note
+              - generic [ref=f6e320]:
+                - generic [ref=f6e321]: Website
+                - generic [ref=f6e322]: ·
+                - generic [ref=f6e323]: 079 000 0001
+                - generic [ref=f6e324]: ·
+                - generic [ref=f6e325]: 24d
+            - generic [ref=f6e326]: Won
+          - 'button "Lead: John Smith, Negotiating" [ref=f6e328] [cursor=pointer]':
+            - generic [ref=f6e329]: JS
+            - generic [ref=f6e330]:
+              - generic [ref=f6e331]: John Smith
+              - generic [ref=f6e332]: Wants a trade-in valuation.
+              - generic [ref=f6e333]:
+                - generic [ref=f6e334]: Walk-in
+                - generic [ref=f6e335]: ·
+                - generic [ref=f6e336]: 082 555 1234
+                - generic [ref=f6e337]: ·
+                - generic [ref=f6e338]: 33d
+            - generic [ref=f6e339]: Negotiating
+        - generic [ref=f6e122]:
+          - heading "Recent stock" [level=2] [ref=f6e123]
+          - button "Manage →" [ref=f6e124] [cursor=pointer]
+        - generic [ref=f6e125]:
+          - 'button "Vehicle: 2018 Ford EcoSport, R249 900, draft" [ref=f6e340] [cursor=pointer]':
+            - generic [ref=f6e341]:
+              - generic [ref=f6e342]: Draft
+              - generic [ref=f6e344]: Shoot in TruLens
+            - generic [ref=f6e348]:
+              - generic [ref=f6e349]:
+                - generic [ref=f6e350]: 2018 Ford EcoSport
+                - generic [ref=f6e351]: R249 900
+              - generic [ref=f6e352]:
+                - generic [ref=f6e353]: 96 800 km
+                - generic [ref=f6e354]: Manual
+                - generic [ref=f6e355]: Petrol
+                - generic [ref=f6e356]: 1.5 Ambiente
+          - 'button "Vehicle: 2021 Volkswagen Polo, R269 900, live" [ref=f6e357] [cursor=pointer]':
+            - generic [ref=f6e358]:
+              - generic [ref=f6e359]: Live
+              - generic [ref=f6e361]: 1 photos
+            - generic [ref=f6e363]:
+              - generic [ref=f6e364]:
+                - generic [ref=f6e365]: 2021 Volkswagen Polo
+                - generic [ref=f6e366]: R269 900
+              - generic [ref=f6e367]:
+                - generic [ref=f6e368]: 52 300 km
+                - generic [ref=f6e369]: Manual
+                - generic [ref=f6e370]: Petrol
+                - generic [ref=f6e371]: 1.0 TSI Comfortline
+    - navigation [ref=f6e158]:
+      - button "Home" [ref=f6e159] [cursor=pointer]
+      - button "Leads" [ref=f6e164] [cursor=pointer]
+      - button "Stock" [ref=f6e171] [cursor=pointer]
+      - button "Activity" [ref=f6e177] [cursor=pointer]
+      - button "Add" [ref=f6e181] [cursor=pointer]
+      - button "Account" [ref=f6e184] [cursor=pointer]
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button "Close chat"
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button "Close guide"
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - dialog [ref=f6e189]
+    - status:
+      - generic: Saved
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

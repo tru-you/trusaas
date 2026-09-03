@@ -57,8 +57,11 @@
     accent: attr("data-accent", "#1466E0"),
     address: attr("data-address", "Showroom Branch"),
     brand: attr("data-brand", "Powered by TruDealer"),
-    theme: attr("data-theme", "dark")
+    theme: attr("data-theme", "dark"),
+    vertical: (attr("data-vertical", "") || "").toLowerCase()
   };
+
+  var isMoto = cfg.vertical === "moto";
 
   var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -73,17 +76,21 @@
       loc: cfg.address
     },
     live: {
-      label: "Test drive",
-      title: "Book a test drive",
-      sub: "Reserve the car and a driver — we'll have it fuelled, out front and ready when you arrive.",
+      label: isMoto ? "Demo ride" : "Test drive",
+      title: isMoto ? "Book a demo ride" : "Book a test drive",
+      sub: isMoto
+        ? "Reserve the motorcycle and a ride — we'll have it fuelled, out front and ready when you arrive."
+        : "Reserve the car and a driver — we'll have it fuelled, out front and ready when you arrive.",
       dur: 45,
-      ev: "Test drive — " + cfg.dealer,
+      ev: (isMoto ? "Demo ride — " : "Test drive — ") + cfg.dealer,
       loc: cfg.address
     },
     tradein: {
       label: "Workshop trade-in",
       title: "TruInspect Workshop Trade-In",
-      sub: "Drive your car in for a 20-minute TruInspect grading. Our buyer walks it with you and hands over a firm offer.",
+      sub: isMoto
+        ? "Ride your motorcycle in for a 20-minute TruInspect grading. Our buyer inspects it with you and hands over a firm offer."
+        : "Drive your car in for a 20-minute TruInspect grading. Our buyer walks it with you and hands over a firm offer.",
       dur: 30,
       ev: "TruInspect workshop trade-in — " + cfg.dealer,
       loc: cfg.address

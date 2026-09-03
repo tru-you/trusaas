@@ -1,0 +1,6 @@
+- generic [ref=e2]:
+  - heading "TruFlow" [level=1] [ref=e18]
+  - generic [ref=e19]: Mobile
+  - textbox "Dealer code" [ref=e20]
+  - button "Sign in" [ref=e21] [cursor=pointer]
+  - generic [ref=e22]: Powered by TruDealer

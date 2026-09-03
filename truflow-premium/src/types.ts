@@ -34,6 +34,9 @@ export interface Dealership {
    *  instance default (MARKET env, ZA) — a per-dealer override for future
    *  multi-market regions. */
   market?: string;
+  /** Vertical this dealership specializes in ('cars' | 'moto' | 'marine' | 'trucks' | 'caravans').
+   *  Absent = the instance default (VERTICAL env, 'cars'). */
+  vertical?: string;
   /** Which products this dealership's code opens — "lens", "flow", "inspect",
    *  "live", "value". Every product verifies codes against this instance, so a
    *  dealer gains or loses an app by this list changing, rather than by someone

@@ -107,7 +107,8 @@
     /* Market display: currency symbol for prices, odometer unit for the
        share contract. Defaults keep ZA sites byte-identical. */
     currency: attr("data-currency", "R"),
-    distanceUnit: attr("data-distance-unit", "km")
+    distanceUnit: attr("data-distance-unit", "km"),
+    vertical: (attr("data-vertical", "") || "").toLowerCase()
   };
 
   var INSTANCE = "tru-share";
@@ -128,12 +129,13 @@
   }
   function label(v) {
     v = v || {};
+    var isMoto = cfg.vertical === "moto" || v.vertical === "moto";
     var make = clean(v.make), name = clean(v.name);
     /* drop the make when the name already leads with it — "Ford Ford Ranger" */
     var parts = (make && name && name.toLowerCase().indexOf(make.toLowerCase()) === 0)
       ? [v.year, name]
       : [v.year, make, name];
-    return clean(parts.filter(Boolean).join(" ")) || "this vehicle";
+    return clean(parts.filter(Boolean).join(" ")) || (isMoto ? "this motorcycle" : "this vehicle");
   }
 
   /* ---------- the share URL ----------
@@ -143,6 +145,7 @@
   function shareUrl(v) {
     v = v || {};
     if (v.url) return v.url;
+    var isMoto = cfg.vertical === "moto" || v.vertical === "moto";
     var q = [];
     function add(k, val) {
       val = clean(val);
@@ -155,6 +158,7 @@
     add("variant", v.variant);
     if (Number(v.price) > 0) add("price", Math.round(Number(v.price)));
     add("km", v.km);
+    if (isMoto) add("vert", "moto");
     /* Market declarations ride along only when they differ from the launch
        defaults — SA share URLs stay byte-identical, and old edge functions
        ignore unknown params. Keep key names in step with vehicle-og.js. */

@@ -1,0 +1,178 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - banner [ref=f2e3]:
+      - button "How do I…?" [ref=f2e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f2e23] [cursor=pointer]
+      - generic [ref=f2e26] [cursor=pointer]: DD
+    - main [ref=f2e27]:
+      - generic [ref=f2e28]:
+        - generic [ref=f2e29]: Demo Dealership
+        - generic [ref=f2e30]: Your floor at a glance.
+        - generic [ref=f2e31]:
+          - generic [ref=f2e229]:
+            - generic [ref=f2e230]: In stock
+            - generic [ref=f2e231]: "2"
+            - generic [ref=f2e232]: on the floor
+          - generic [ref=f2e233]:
+            - generic [ref=f2e234]: Live on site
+            - generic [ref=f2e235]: "0"
+            - generic [ref=f2e236]: 0 of 3 published
+          - generic [ref=f2e237]:
+            - generic [ref=f2e238]: Active leads
+            - generic [ref=f2e239]: "3"
+            - generic [ref=f2e240]: 1 new
+          - generic [ref=f2e241]:
+            - generic [ref=f2e242]: Unpublished
+            - generic [ref=f2e243]: "2"
+            - generic [ref=f2e244]: not live on site yet
+          - generic [ref=f2e246]:
+            - generic [ref=f2e247]: Follow-ups
+            - generic [ref=f2e248]: "2"
+            - generic [ref=f2e249]: due today
+        - generic [ref=f2e55]:
+          - heading "Due today" [level=2] [ref=f2e56]
+          - generic [ref=f2e57] [cursor=pointer]: All
+          - generic [ref=f2e58] [cursor=pointer]: + Follow-up
+        - generic [ref=f2e59]:
+          - generic [ref=f2e253] [cursor=pointer]:
+            - button "Mark done" [ref=f2e254]
+            - generic [ref=f2e257]:
+              - generic [ref=f2e258]: Call back tomorrow
+              - generic [ref=f2e259]: Lead · Test NewLead
+              - generic [ref=f2e260]: Overdue · 08 Aug
+          - generic [ref=f2e262] [cursor=pointer]:
+            - button "Mark done" [ref=f2e263]
+            - generic [ref=f2e266]:
+              - generic [ref=f2e267]: Call back
+              - generic [ref=f2e268]: Overdue · 09 Aug
+        - generic [ref=f2e77]:
+          - heading "Follow up" [level=2] [ref=f2e78]
+          - generic [ref=f2e79] [cursor=pointer]: All leads →
+        - generic [ref=f2e80]:
+          - generic [ref=f2e270] [cursor=pointer]:
+            - generic [ref=f2e271]: TN
+            - generic [ref=f2e272]:
+              - generic [ref=f2e273]: Test NewLead
+              - generic [ref=f2e274]: Generated automatically from web widget.
+              - generic [ref=f2e275]:
+                - generic [ref=f2e276]: Website
+                - generic [ref=f2e277]: ·
+                - generic [ref=f2e278]: "+27000000000"
+                - generic [ref=f2e279]: ·
+                - generic [ref=f2e280]: 17d
+            - link [ref=f2e281]:
+              - /url: https://wa.me/27000000000
+          - generic [ref=f2e285] [cursor=pointer]:
+            - generic [ref=f2e286]: SN
+            - generic [ref=f2e287]:
+              - generic [ref=f2e288]: Sipho Ndlovu
+              - generic [ref=f2e289]: just a note
+              - generic [ref=f2e290]:
+                - generic [ref=f2e291]: Website
+                - generic [ref=f2e292]: ·
+                - generic [ref=f2e293]: 079 000 0001
+                - generic [ref=f2e294]: ·
+                - generic [ref=f2e295]: 24d
+            - generic [ref=f2e296]: Won
+          - generic [ref=f2e298] [cursor=pointer]:
+            - generic [ref=f2e299]: JS
+            - generic [ref=f2e300]:
+              - generic [ref=f2e301]: John Smith
+              - generic [ref=f2e302]: Wants a trade-in valuation.
+              - generic [ref=f2e303]:
+                - generic [ref=f2e304]: Walk-in
+                - generic [ref=f2e305]: ·
+                - generic [ref=f2e306]: 082 555 1234
+                - generic [ref=f2e307]: ·
+                - generic [ref=f2e308]: 33d
+            - generic [ref=f2e309]: Negotiating
+        - generic [ref=f2e122]:
+          - heading "Recent stock" [level=2] [ref=f2e123]
+          - generic [ref=f2e124] [cursor=pointer]: Manage →
+        - generic [ref=f2e125]:
+          - generic [ref=f2e310] [cursor=pointer]:
+            - generic [ref=f2e311]:
+              - generic [ref=f2e312]: Draft
+              - generic [ref=f2e314]: Shoot in TruLens
+            - generic [ref=f2e318]:
+              - generic [ref=f2e319]:
+                - generic [ref=f2e320]: 2018 Ford EcoSport
+                - generic [ref=f2e321]: R249 900
+              - generic [ref=f2e322]:
+                - generic [ref=f2e323]: 96 800 km
+                - generic [ref=f2e324]: Manual
+                - generic [ref=f2e325]: Petrol
+                - generic [ref=f2e326]: 1.5 Ambiente
+          - generic [ref=f2e327] [cursor=pointer]:
+            - generic [ref=f2e328]:
+              - generic [ref=f2e329]: Draft
+              - generic [ref=f2e331]: Shoot in TruLens
+            - generic [ref=f2e335]:
+              - generic [ref=f2e336]:
+                - generic [ref=f2e337]: 2021 Volkswagen Polo
+                - generic [ref=f2e338]: R269 900
+              - generic [ref=f2e339]:
+                - generic [ref=f2e340]: 52 300 km
+                - generic [ref=f2e341]: Manual
+                - generic [ref=f2e342]: Petrol
+                - generic [ref=f2e343]: 1.0 TSI Comfortline
+    - navigation [ref=f2e160]:
+      - generic [ref=f2e161] [cursor=pointer]: Home
+      - generic [ref=f2e166] [cursor=pointer]: Leads
+      - generic [ref=f2e173] [cursor=pointer]: Stock
+      - generic [ref=f2e179] [cursor=pointer]: Activity
+      - generic [ref=f2e183] [cursor=pointer]: Add
+      - generic [ref=f2e186] [cursor=pointer]: Account
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - generic [ref=f2e191]:
+      - generic [ref=f2e193]:
+        - generic [ref=f2e196]:
+          - generic [ref=f2e200]:
+            - generic [ref=f2e201]: Follow-up
+            - generic [ref=f2e202]: created for your floor list
+          - button [ref=f2e203] [cursor=pointer]
+        - generic [ref=f2e207]:
+          - generic [ref=f2e208]: What needs doing
+          - textbox [ref=f2e209]: Call back
+        - generic [ref=f2e210]:
+          - generic [ref=f2e211]:
+            - generic [ref=f2e212]: Due date
+            - textbox [ref=f2e213]: 2026-08-09
+          - generic [ref=f2e214]:
+            - generic [ref=f2e215]: Priority
+            - combobox [ref=f2e216]:
+              - option "Normal" [selected]
+              - option "Urgent"
+        - generic [ref=f2e217]: Status
+        - generic [ref=f2e218]:
+          - button "To do" [ref=f2e219] [cursor=pointer]
+          - button "Active" [ref=f2e220] [cursor=pointer]
+          - button "Done" [ref=f2e221] [cursor=pointer]
+      - generic [ref=f2e194]:
+        - button "Save" [disabled] [ref=f2e222] [cursor=pointer]
+        - button "Delete" [ref=f2e225] [cursor=pointer]
+    - generic: Follow-up saved
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

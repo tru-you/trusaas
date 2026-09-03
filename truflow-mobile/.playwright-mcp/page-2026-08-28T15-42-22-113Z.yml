@@ -1,0 +1,87 @@
+- generic [ref=e1]:
+  - generic [ref=e37]:
+    - banner [ref=e38]:
+      - button "How do I…?" [ref=e54] [cursor=pointer]
+      - button "Dealer Assist" [ref=e58] [cursor=pointer]
+      - generic [ref=e61] [cursor=pointer]: DD
+    - main [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - 'textbox "Search make, model, stock #" [ref=e69]'
+          - generic [ref=e70]:
+            - button "All" [pressed] [ref=e71] [cursor=pointer]
+            - button "In stock" [ref=e72] [cursor=pointer]
+            - button "Live" [ref=e73] [cursor=pointer]
+            - button "Draft" [ref=e74] [cursor=pointer]
+            - button "Sold" [ref=e75] [cursor=pointer]
+          - generic [ref=e76]:
+            - generic [ref=e77]: Sort
+            - combobox [ref=e78]:
+              - option "Newest first" [selected]
+              - option "Oldest first"
+              - option "Price high–low"
+              - option "Price low–high"
+              - option "Lowest km"
+        - generic [ref=e79]:
+          - 'button "Vehicle: 2020 Toyota Corolla, R249 900, draft" [ref=e80] [cursor=pointer]':
+            - generic [ref=e81]:
+              - generic [ref=e82]: Draft
+              - button "Shoot in TruLens" [active] [ref=e84]
+            - generic [ref=e88]:
+              - generic [ref=e89]:
+                - generic [ref=e90]: 2020 Toyota Corolla
+                - generic [ref=e91]: R249 900
+              - generic [ref=e92]:
+                - generic [ref=e93]: 45 000 km
+                - generic [ref=e94]: Automatic
+                - generic [ref=e95]: Petrol
+                - generic [ref=e96]: XS
+          - 'button "Vehicle: 2019 Volkswagen Polo, R189 900, draft" [ref=e97] [cursor=pointer]':
+            - generic [ref=e98]:
+              - generic [ref=e99]: Draft
+              - button "Shoot in TruLens" [ref=e101]
+            - generic [ref=e105]:
+              - generic [ref=e106]:
+                - generic [ref=e107]: 2019 Volkswagen Polo
+                - generic [ref=e108]: R189 900
+              - generic [ref=e109]:
+                - generic [ref=e110]: 61 000 km
+                - generic [ref=e111]: Manual
+                - generic [ref=e112]: Petrol
+                - generic [ref=e113]: TSI
+    - navigation [ref=e114]:
+      - button "Home" [ref=e115] [cursor=pointer]
+      - button "Leads" [ref=e120] [cursor=pointer]
+      - button "Stock" [ref=e127] [cursor=pointer]
+      - button "Activity" [ref=e133] [cursor=pointer]
+      - button "Add" [ref=e137] [cursor=pointer]
+      - button "Account" [ref=e140] [cursor=pointer]
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button "Close chat"
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button "Close guide"
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - dialog [ref=e145]
+    - status:
+      - generic: Saved
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - button "Try demo (24h)"
+    - generic: Powered by TruDealer

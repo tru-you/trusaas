@@ -1,0 +1,157 @@
+- generic [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - banner [ref=f7e3]:
+      - button "How do I…?" [ref=f7e19] [cursor=pointer]
+      - button "Dealer Assist" [ref=f7e23] [cursor=pointer]
+      - generic [ref=f7e26] [cursor=pointer]: DD
+    - main [ref=f7e27]:
+      - generic [ref=f7e193]:
+        - generic [ref=f7e194]:
+          - 'textbox "Search make, model, stock #" [ref=f7e199]'
+          - generic [ref=f7e200]:
+            - button "All" [pressed] [ref=f7e201] [cursor=pointer]
+            - button "In stock" [ref=f7e202] [cursor=pointer]
+            - button "Live" [ref=f7e203] [cursor=pointer]
+            - button "Draft" [ref=f7e204] [cursor=pointer]
+            - button "Sold" [ref=f7e205] [cursor=pointer]
+          - generic [ref=f7e206]:
+            - generic [ref=f7e207]: Sort
+            - combobox [ref=f7e208]:
+              - option "Newest first" [selected]
+              - option "Oldest first"
+              - option "Price high–low"
+              - option "Price low–high"
+              - option "Lowest km"
+        - generic [ref=f7e209]:
+          - 'button "Vehicle: 2018 Ford EcoSport, R249 900, draft" [ref=f7e210] [cursor=pointer]':
+            - generic [ref=f7e211]:
+              - generic [ref=f7e212]: Draft
+              - generic [ref=f7e214]: Shoot in TruLens
+            - generic [ref=f7e218]:
+              - generic [ref=f7e219]:
+                - generic [ref=f7e220]: 2018 Ford EcoSport
+                - generic [ref=f7e221]: R249 900
+              - generic [ref=f7e222]:
+                - generic [ref=f7e223]: 96 800 km
+                - generic [ref=f7e224]: Manual
+                - generic [ref=f7e225]: Petrol
+                - generic [ref=f7e226]: 1.5 Ambiente
+          - 'button "Vehicle: 2021 Volkswagen Polo, R269 900, live" [ref=f7e227] [cursor=pointer]':
+            - generic [ref=f7e228]:
+              - generic [ref=f7e229]: Live
+              - generic [ref=f7e231]: 1 photos
+            - generic [ref=f7e233]:
+              - generic [ref=f7e234]:
+                - generic [ref=f7e235]: 2021 Volkswagen Polo
+                - generic [ref=f7e236]: R269 900
+              - generic [ref=f7e237]:
+                - generic [ref=f7e238]: 52 300 km
+                - generic [ref=f7e239]: Manual
+                - generic [ref=f7e240]: Petrol
+                - generic [ref=f7e241]: 1.0 TSI Comfortline
+          - 'button "Vehicle: 2020 Toyota Hilux, R379 900, sold" [ref=f7e242] [cursor=pointer]':
+            - generic [ref=f7e243]:
+              - generic [ref=f7e244]: Sold
+              - generic [ref=f7e246]: Shoot in TruLens
+            - generic [ref=f7e250]:
+              - generic [ref=f7e251]:
+                - generic [ref=f7e252]: 2020 Toyota Hilux
+                - generic [ref=f7e253]: R379 900
+              - generic [ref=f7e254]:
+                - generic [ref=f7e255]: 112 000 km
+                - generic [ref=f7e256]: Manual
+                - generic [ref=f7e257]: Diesel
+                - generic [ref=f7e258]: 2.4 GD-6 SRX
+    - navigation [ref=f7e158]:
+      - button "Home" [ref=f7e159] [cursor=pointer]
+      - button "Leads" [ref=f7e164] [cursor=pointer]
+      - button "Stock" [ref=f7e171] [cursor=pointer]
+      - button "Activity" [ref=f7e177] [cursor=pointer]
+      - button "Add" [ref=f7e181] [cursor=pointer]
+      - button "Account" [ref=f7e184] [cursor=pointer]
+    - generic:
+      - generic:
+        - generic: Dealer Assist
+        - button "Close chat"
+      - generic: Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.
+      - generic:
+        - button "What's my best seller?"
+        - button "How many leads this week?"
+        - button "Stock over 60 days"
+      - generic:
+        - textbox "Ask anything…"
+        - button [disabled]
+    - generic:
+      - generic:
+        - generic: How do I…?
+        - button "Close guide"
+      - generic:
+        - link "Still stuck? Contact support":
+          - /url: https://wa.me/447476995694
+    - dialog [ref=f7e189]:
+      - generic [ref=f7e191]:
+        - generic [ref=f7e260]:
+          - button "Close" [active] [ref=f7e261] [cursor=pointer]
+          - generic [ref=f7e265]: Draft
+          - generic [ref=f7e267]: No photos — capture in TruLens
+        - generic [ref=f7e273]:
+          - generic [ref=f7e274]:
+            - text: 2018 Ford EcoSport
+            - generic [ref=f7e275]: 1.5 Ambiente
+          - generic [ref=f7e276]: R249 900
+        - generic [ref=f7e277]:
+          - generic [ref=f7e278]: 96 800 km
+          - generic [ref=f7e279]: Manual
+          - generic [ref=f7e280]: Petrol
+          - generic [ref=f7e281]: DEMO-102
+        - button "Share this car WhatsApp · link" [ref=f7e282] [cursor=pointer]:
+          - text: Share this car
+          - generic [ref=f7e289]: WhatsApp · link
+        - generic [ref=f7e290]: Listing
+        - generic [ref=f7e291]:
+          - generic [ref=f7e292]:
+            - generic [ref=f7e293]: Live on website
+            - switch "Live on website" [ref=f7e294] [cursor=pointer]
+          - generic [ref=f7e295]:
+            - generic [ref=f7e296]: Status
+            - generic [ref=f7e297]:
+              - button "In stock" [pressed] [ref=f7e298] [cursor=pointer]
+              - button "Sold" [ref=f7e299] [cursor=pointer]
+        - generic [ref=f7e300]: Details
+        - generic [ref=f7e301]:
+          - generic [ref=f7e302]:
+            - generic [ref=f7e303]: Asking price (R)
+            - textbox [ref=f7e304]: "249900"
+          - generic [ref=f7e305]:
+            - generic [ref=f7e306]: Mileage (km)
+            - textbox [ref=f7e307]: "96800"
+        - button "Get market value Free" [ref=f7e308] [cursor=pointer]:
+          - text: Get market value
+          - generic [ref=f7e312]: Free
+        - generic [ref=f7e314]:
+          - generic [ref=f7e315]:
+            - generic [ref=f7e316]: Market average
+            - generic [ref=f7e317]: R168 267
+          - generic [ref=f7e318]:
+            - generic [ref=f7e319]: Sample
+            - generic [ref=f7e320]: 14 listings · km-adjusted
+          - generic [ref=f7e321]: Market median 600 km
+          - generic [ref=f7e322]: Asking R249 900 is R81 633 above the market average.
+          - button "Use as asking price" [ref=f7e323] [cursor=pointer]
+        - generic [ref=f7e324]:
+          - generic [ref=f7e325]: Variant / trim
+          - textbox [ref=f7e326]: 1.5 Ambiente
+        - generic [ref=f7e327]:
+          - generic [ref=f7e328]: Listing blurb
+          - textbox "Short blurb for the listing…" [ref=f7e329]: 2018 Ford EcoSport — sample stock for the demo.
+      - generic [ref=f7e192]:
+        - button "Save changes" [ref=f7e331] [cursor=pointer]
+        - button "Delete" [ref=f7e334] [cursor=pointer]
+    - status:
+      - generic: Saved
+  - generic:
+    - heading "TruFlow" [level=1]
+    - generic: Mobile
+    - textbox "Dealer code"
+    - button "Sign in"
+    - generic: Powered by TruDealer

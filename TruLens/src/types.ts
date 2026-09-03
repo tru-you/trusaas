@@ -37,6 +37,8 @@ export interface Vehicle {
   color: string;
   price: number;
   vehicleType?: string; // Bakkie, Sedan, SUV, etc.
+  vertical?: string;
+  templateId?: string;
   /* Captured here because the dealer's website shows all three on every card,
      and nothing else in the chain knows them. TruFlow's importer has always
      read these off the export, but TruLens never sent them — so every car

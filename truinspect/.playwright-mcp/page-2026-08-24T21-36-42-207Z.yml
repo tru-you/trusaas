@@ -1,0 +1,529 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]: Demo storefront — every widget on this page is the live TruDealer product. Stock is illustrative.
+  - generic [ref=e4]:
+    - generic [ref=e5]: Opens tomorrow 08h00
+    - generic [ref=e6]: /
+    - generic [ref=e7]: Port Elizabeth, Eastern Cape
+    - generic [ref=e8]:
+      - link "+27620502091" [ref=e9] [cursor=pointer]:
+        - /url: tel:+27620502091
+      - generic [ref=e10]: /
+      - link "WhatsApp" [ref=e11] [cursor=pointer]:
+        - /url: https://wa.me/27620502091
+  - banner [ref=e12]:
+    - generic [ref=e13]:
+      - link "Truecars A TruDealer storefront" [ref=e14] [cursor=pointer]:
+        - /url: /index.html
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - text: "True"
+            - emphasis [ref=e18]: cars
+          - generic [ref=e19]: A TruDealer storefront
+      - navigation [ref=e20]:
+        - link "Home" [ref=e21] [cursor=pointer]:
+          - /url: /index.html
+        - link "Showroom" [ref=e22] [cursor=pointer]:
+          - /url: /stock.html
+        - link "Finance" [ref=e23] [cursor=pointer]:
+          - /url: /finance.html
+        - link "Sell / trade-in" [ref=e24] [cursor=pointer]:
+          - /url: /trade-in.html
+        - link "The system" [ref=e25] [cursor=pointer]:
+          - /url: https://www.trudealer.tru-saas.com
+        - link "Apply for finance" [ref=e26] [cursor=pointer]:
+          - /url: /finance.html
+  - main [ref=e27]:
+    - generic [ref=e29]:
+      - complementary "Filter stock" [ref=e30]:
+        - text: →
+        - generic [ref=e31]:
+          - heading "Search" [level=4] [ref=e32]
+          - searchbox "Make or model" [ref=e34]
+        - generic [ref=e35]:
+          - heading "Price (ZAR)" [level=4] [ref=e36]
+          - generic [ref=e37]:
+            - spinbutton "Min" [ref=e38]
+            - spinbutton "Max" [ref=e39]
+        - generic [ref=e40]:
+          - heading "Make" [level=4] [ref=e41]
+          - generic [ref=e42]:
+            - generic [ref=e43] [cursor=pointer]:
+              - radio "Audi 1" [ref=e44]
+              - text: Audi
+              - generic [ref=e45]: "1"
+            - generic [ref=e46] [cursor=pointer]:
+              - radio "BMW 2" [ref=e47]
+              - text: BMW
+              - generic [ref=e48]: "2"
+            - generic [ref=e49] [cursor=pointer]:
+              - radio "BWM 1" [ref=e50]
+              - text: BWM
+              - generic [ref=e51]: "1"
+            - generic [ref=e52] [cursor=pointer]:
+              - radio "Cherry 1" [ref=e53]
+              - text: Cherry
+              - generic [ref=e54]: "1"
+            - generic [ref=e55] [cursor=pointer]:
+              - radio "Ford 1" [ref=e56]
+              - text: Ford
+              - generic [ref=e57]: "1"
+            - generic [ref=e58] [cursor=pointer]:
+              - radio "Lamborghini 1" [ref=e59]
+              - text: Lamborghini
+              - generic [ref=e60]: "1"
+            - generic [ref=e61] [cursor=pointer]:
+              - radio "Land Rover 1" [ref=e62]
+              - text: Land Rover
+              - generic [ref=e63]: "1"
+            - generic [ref=e64] [cursor=pointer]:
+              - radio "Range Rover 1" [ref=e65]
+              - text: Range Rover
+              - generic [ref=e66]: "1"
+            - generic [ref=e67] [cursor=pointer]:
+              - radio "Toyota 2" [ref=e68]
+              - text: Toyota
+              - generic [ref=e69]: "2"
+            - generic [ref=e70] [cursor=pointer]:
+              - radio "VOLKSWAGEN 3" [ref=e71]
+              - text: VOLKSWAGEN
+              - generic [ref=e72]: "3"
+            - generic [ref=e73] [cursor=pointer]:
+              - radio "VW 1" [ref=e74]
+              - text: VW
+              - generic [ref=e75]: "1"
+            - generic [ref=e76] [cursor=pointer]:
+              - radio "Volkswagen 1" [ref=e77]
+              - text: Volkswagen
+              - generic [ref=e78]: "1"
+        - generic [ref=e79]:
+          - heading "Body" [level=4] [ref=e80]
+          - generic [ref=e81]:
+            - generic [ref=e82] [cursor=pointer]:
+              - radio "Bakkie 1" [ref=e83]
+              - text: Bakkie
+              - generic [ref=e84]: "1"
+            - generic [ref=e85] [cursor=pointer]:
+              - radio "Hatchback 4" [ref=e86]
+              - text: Hatchback
+              - generic [ref=e87]: "4"
+            - generic [ref=e88] [cursor=pointer]:
+              - radio "SUV 8" [ref=e89]
+              - text: SUV
+              - generic [ref=e90]: "8"
+            - generic [ref=e91] [cursor=pointer]:
+              - radio "Sedan 3" [ref=e92]
+              - text: Sedan
+              - generic [ref=e93]: "3"
+        - generic [ref=e94]:
+          - heading "Fuel" [level=4] [ref=e95]
+          - generic [ref=e96]:
+            - generic [ref=e97] [cursor=pointer]:
+              - radio "Diesel 3" [ref=e98]
+              - text: Diesel
+              - generic [ref=e99]: "3"
+            - generic [ref=e100] [cursor=pointer]:
+              - radio "Petrol 13" [ref=e101]
+              - text: Petrol
+              - generic [ref=e102]: "13"
+        - generic [ref=e103]:
+          - heading "Transmission" [level=4] [ref=e104]
+          - generic [ref=e105]:
+            - generic [ref=e106] [cursor=pointer]:
+              - radio "Automatic 2" [ref=e107]
+              - text: Automatic
+              - generic [ref=e108]: "2"
+            - generic [ref=e109] [cursor=pointer]:
+              - radio "Manual 14" [ref=e110]
+              - text: Manual
+              - generic [ref=e111]: "14"
+        - button "Clear all filters →" [ref=e113] [cursor=pointer]
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - heading "The showroom" [level=1] [ref=e116]
+          - generic [ref=e117]: 16 cars · live feed
+          - combobox "Sort" [ref=e118] [cursor=pointer]:
+            - option "Price / low" [selected]
+            - option "Price / high"
+            - option "Lowest monthly"
+            - option "Newest first"
+            - option "Lowest mileage"
+        - generic [ref=e119]:
+          - article [ref=e120]:
+            - link "2026 VOLKSWAGEN CADDY" [ref=e121] [cursor=pointer]:
+              - /url: /vehicle/?stock=STK-20260814133547
+              - img "2026 VOLKSWAGEN CADDY" [ref=e122]
+            - generic [ref=e123]:
+              - button "Share" [ref=e124] [cursor=pointer]
+              - button "Save" [ref=e128] [cursor=pointer]
+            - generic [ref=e131]:
+              - link "2026 · VOLKSWAGEN CADDY CADDY 1.6i" [ref=e132] [cursor=pointer]:
+                - /url: /vehicle/?stock=STK-20260814133547
+                - generic [ref=e133]: 2026 · VOLKSWAGEN
+                - generic [ref=e134]: CADDY
+                - generic [ref=e135]: CADDY 1.6i
+              - generic [ref=e136]:
+                - generic [ref=e137]: 124 000 km
+                - generic [ref=e138]: ·Manual
+              - generic [ref=e139]:
+                - generic [ref=e140]: R0
+                - generic [ref=e142]: From R0 / mo
+          - article [ref=e143]:
+            - link "2021 VOLKSWAGEN POLO PLAYA / POLO" [ref=e144] [cursor=pointer]:
+              - /url: /vehicle/?stock=Teu2929
+              - img "2021 VOLKSWAGEN POLO PLAYA / POLO" [ref=e145]
+            - generic [ref=e146]:
+              - button "Share" [ref=e147] [cursor=pointer]
+              - button "Save" [ref=e151] [cursor=pointer]
+            - generic [ref=e154]:
+              - link "2021 · VOLKSWAGEN POLO PLAYA / POLO POLO 1.0 TSI COMFORTLINE" [ref=e155] [cursor=pointer]:
+                - /url: /vehicle/?stock=Teu2929
+                - generic [ref=e156]: 2021 · VOLKSWAGEN
+                - generic [ref=e157]: POLO PLAYA / POLO
+                - generic [ref=e158]: POLO 1.0 TSI COMFORTLINE
+              - generic [ref=e159]:
+                - generic [ref=e160]: 120 000 km
+                - generic [ref=e161]: ·Manual
+              - generic [ref=e162]:
+                - generic [ref=e163]: R99 900
+                - generic [ref=e165]: From R1 746 / mo
+          - article [ref=e166]:
+            - link "2026 Toyota Yaris" [ref=e167] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tru2232rl
+              - img "2026 Toyota Yaris" [ref=e168]
+            - generic [ref=e169]:
+              - button "Share" [ref=e170] [cursor=pointer]
+              - button "Save" [ref=e174] [cursor=pointer]
+            - generic [ref=e177]:
+              - link "2026 · TOYOTA Yaris Base" [ref=e178] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tru2232rl
+                - generic [ref=e179]: 2026 · TOYOTA
+                - generic [ref=e180]: Yaris
+                - generic [ref=e181]: Base
+              - generic [ref=e182]:
+                - generic [ref=e183]: 78 500 km
+                - generic [ref=e184]: ·Manual
+              - generic [ref=e185]:
+                - generic [ref=e186]: R124 995
+                - generic [ref=e188]: From R2 185 / mo
+          - article [ref=e189]:
+            - link "2018 Ford EcoSport" [ref=e190] [cursor=pointer]:
+              - /url: /vehicle/?stock=DEMO-102
+              - img "2018 Ford EcoSport" [ref=e191]
+            - generic [ref=e192]:
+              - button "Share" [ref=e193] [cursor=pointer]
+              - button "Save" [ref=e197] [cursor=pointer]
+            - generic [ref=e200]:
+              - link "2018 · FORD EcoSport 1.5 Ambiente" [ref=e201] [cursor=pointer]:
+                - /url: /vehicle/?stock=DEMO-102
+                - generic [ref=e202]: 2018 · FORD
+                - generic [ref=e203]: EcoSport
+                - generic [ref=e204]: 1.5 Ambiente
+              - generic [ref=e205]:
+                - generic [ref=e206]: 96 800 km
+                - generic [ref=e207]: ·Manual
+              - generic [ref=e208]:
+                - generic [ref=e209]: R199 900
+                - generic [ref=e211]: From R3 494 / mo
+          - article [ref=e212]:
+            - link "2019 VOLKSWAGEN POLO" [ref=e213] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tru%20473iwll
+              - img "2019 VOLKSWAGEN POLO" [ref=e214]
+            - generic [ref=e215]:
+              - button "Share" [ref=e216] [cursor=pointer]
+              - button "Save" [ref=e220] [cursor=pointer]
+            - generic [ref=e223]:
+              - link "2019 · VOLKSWAGEN POLO 1.0 TSI COMFORTLINE DSG" [ref=e224] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tru%20473iwll
+                - generic [ref=e225]: 2019 · VOLKSWAGEN
+                - generic [ref=e226]: POLO
+                - generic [ref=e227]: 1.0 TSI COMFORTLINE DSG
+              - generic [ref=e228]:
+                - generic [ref=e229]: 75 500 km
+                - generic [ref=e230]: ·Manual
+              - generic [ref=e231]:
+                - generic [ref=e232]: R217 996
+                - generic [ref=e234]: From R3 810 / mo
+          - article [ref=e235]:
+            - link "2021 Volkswagen Polo" [ref=e236] [cursor=pointer]:
+              - /url: /vehicle/?stock=DEMO-101
+              - img "2021 Volkswagen Polo" [ref=e237]
+            - generic [ref=e238]:
+              - button "Share" [ref=e239] [cursor=pointer]
+              - button "Save" [ref=e243] [cursor=pointer]
+            - generic [ref=e246]:
+              - link "2021 · VOLKSWAGEN Polo 1.0 TSI Comfortline" [ref=e247] [cursor=pointer]:
+                - /url: /vehicle/?stock=DEMO-101
+                - generic [ref=e248]: 2021 · VOLKSWAGEN
+                - generic [ref=e249]: Polo
+                - generic [ref=e250]: 1.0 TSI Comfortline
+              - generic [ref=e251]:
+                - generic [ref=e252]: 52 300 km
+                - generic [ref=e253]: ·Manual
+              - generic [ref=e254]:
+                - generic [ref=e255]: R269 900
+                - generic [ref=e257]: From R4 717 / mo
+          - article [ref=e258]:
+            - link "2026 VW Transporter" [ref=e259] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tru3ue8
+              - img "2026 VW Transporter" [ref=e260]
+            - generic [ref=e261]:
+              - button "Share" [ref=e262] [cursor=pointer]
+              - button "Save" [ref=e266] [cursor=pointer]
+            - generic [ref=e269]:
+              - link "2026 · VW Transporter 4motion" [ref=e270] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tru3ue8
+                - generic [ref=e271]: 2026 · VW
+                - generic [ref=e272]: Transporter
+                - generic [ref=e273]: 4motion
+              - generic [ref=e274]:
+                - generic [ref=e275]: 128 000 km
+                - generic [ref=e276]: ·Manual
+              - generic [ref=e277]:
+                - generic [ref=e278]: R349 980
+                - generic [ref=e280]: From R6 117 / mo
+          - article [ref=e281]:
+            - link "2020 Toyota Hilux" [ref=e282] [cursor=pointer]:
+              - /url: /vehicle/?stock=DEMO-100
+              - img "2020 Toyota Hilux" [ref=e283]
+            - generic [ref=e284]:
+              - button "Share" [ref=e285] [cursor=pointer]
+              - button "Save" [ref=e289] [cursor=pointer]
+            - generic [ref=e292]:
+              - link "2020 · TOYOTA Hilux 2.4 GD-6 SRX" [ref=e293] [cursor=pointer]:
+                - /url: /vehicle/?stock=DEMO-100
+                - generic [ref=e294]: 2020 · TOYOTA
+                - generic [ref=e295]: Hilux
+                - generic [ref=e296]: 2.4 GD-6 SRX
+              - generic [ref=e297]:
+                - generic [ref=e298]: 112 000 km
+                - generic [ref=e299]: ·Manual
+              - generic [ref=e300]:
+                - generic [ref=e301]: R379 900
+                - generic [ref=e303]: From R6 640 / mo
+          - article [ref=e304]:
+            - link "2026 BWM X3 2.0" [ref=e305] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tei3929
+              - img "2026 BWM X3 2.0" [ref=e306]
+            - generic [ref=e307]:
+              - button "Share" [ref=e308] [cursor=pointer]
+              - button "Save" [ref=e312] [cursor=pointer]
+            - generic [ref=e315]:
+              - link "2026 · BWM X3 2.0 X Sport" [ref=e316] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tei3929
+                - generic [ref=e317]: 2026 · BWM
+                - generic [ref=e318]: X3 2.0
+                - generic [ref=e319]: X Sport
+              - generic [ref=e320]:
+                - generic [ref=e321]: 78 940 km
+                - generic [ref=e322]: ·Manual
+              - generic [ref=e323]:
+                - generic [ref=e324]: R449 000
+                - generic [ref=e326]: From R7 848 / mo
+          - article [ref=e327]:
+            - link "2026 Cherry Tiggo 9" [ref=e328] [cursor=pointer]:
+              - /url: /vehicle/?stock=U2iiwsi9w9
+              - img "2026 Cherry Tiggo 9" [ref=e329]
+            - generic [ref=e330]:
+              - button "Share" [ref=e331] [cursor=pointer]
+              - button "Save" [ref=e335] [cursor=pointer]
+            - generic [ref=e338]:
+              - link "2026 · CHERRY Tiggo 9 1.5T CSH Plug-in Hybrid Vanguard AWD" [ref=e339] [cursor=pointer]:
+                - /url: /vehicle/?stock=U2iiwsi9w9
+                - generic [ref=e340]: 2026 · CHERRY
+                - generic [ref=e341]: Tiggo 9
+                - generic [ref=e342]: 1.5T CSH Plug-in Hybrid Vanguard AWD
+              - generic [ref=e343]:
+                - generic [ref=e344]: 13 000 km
+                - generic [ref=e345]: ·Manual
+              - generic [ref=e346]:
+                - generic [ref=e347]: R790 000
+                - generic [ref=e349]: From R13 808 / mo
+          - article [ref=e350]:
+            - link "2026 BMW 3201" [ref=e351] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tru2829
+              - img "2026 BMW 3201" [ref=e352]
+            - generic [ref=e353]:
+              - button "Share" [ref=e354] [cursor=pointer]
+              - button "Save" [ref=e358] [cursor=pointer]
+            - generic [ref=e361]:
+              - link "2026 · BMW 3201 M Sport" [ref=e362] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tru2829
+                - generic [ref=e363]: 2026 · BMW
+                - generic [ref=e364]: "3201"
+                - generic [ref=e365]: M Sport
+              - generic [ref=e366]:
+                - generic [ref=e367]: 7 990 km
+                - generic [ref=e368]: ·Manual
+              - generic [ref=e369]:
+                - generic [ref=e370]: R819 000
+                - generic [ref=e372]: From R14 315 / mo
+          - article [ref=e373]:
+            - link "2019 Range Rover Evoque" [ref=e374] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tei2829d
+              - img "2019 Range Rover Evoque" [ref=e375]
+            - generic [ref=e376]:
+              - button "Share" [ref=e377] [cursor=pointer]
+              - button "Save" [ref=e381] [cursor=pointer]
+            - generic [ref=e384]:
+              - link "2019 · RANGE ROVER Evoque S Line" [ref=e385] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tei2829d
+                - generic [ref=e386]: 2019 · RANGE ROVER
+                - generic [ref=e387]: Evoque
+                - generic [ref=e388]: S Line
+              - generic [ref=e389]:
+                - generic [ref=e390]: 78 000 km
+                - generic [ref=e391]: ·Automatic
+              - generic [ref=e392]:
+                - generic [ref=e393]: R899 000
+                - generic [ref=e395]: From R15 713 / mo
+          - article [ref=e396]:
+            - link "2026 Audi A5" [ref=e397] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tei28299
+              - img "2026 Audi A5" [ref=e398]
+            - generic [ref=e399]:
+              - button "Share" [ref=e400] [cursor=pointer]
+              - button "Save" [ref=e404] [cursor=pointer]
+            - generic [ref=e407]:
+              - link "2026 · AUDI A5 S Line" [ref=e408] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tei28299
+                - generic [ref=e409]: 2026 · AUDI
+                - generic [ref=e410]: A5
+                - generic [ref=e411]: S Line
+              - generic [ref=e412]:
+                - generic [ref=e413]: 34 500 km
+                - generic [ref=e414]: ·Manual
+              - generic [ref=e415]:
+                - generic [ref=e416]: R899 000
+                - generic [ref=e418]: From R15 713 / mo
+          - article [ref=e419]:
+            - link "2023 Land Rover Range Rover Sport" [ref=e420] [cursor=pointer]:
+              - /url: /vehicle/?stock=Stk0020
+              - img "2023 Land Rover Range Rover Sport" [ref=e421]
+            - generic [ref=e422]:
+              - button "Share" [ref=e423] [cursor=pointer]
+              - button "Save" [ref=e427] [cursor=pointer]
+            - generic [ref=e430]:
+              - link "2023 · LAND ROVER Range Rover Sport 3D3 Dynamic" [ref=e431] [cursor=pointer]:
+                - /url: /vehicle/?stock=Stk0020
+                - generic [ref=e432]: 2023 · LAND ROVER
+                - generic [ref=e433]: Range Rover Sport
+                - generic [ref=e434]: 3D3 Dynamic
+              - generic [ref=e435]:
+                - generic [ref=e436]: 13 000 km
+                - generic [ref=e437]: ·Manual
+              - generic [ref=e438]:
+                - generic [ref=e439]: R1 299 900
+                - generic [ref=e441]: From R22 720 / mo
+          - article [ref=e442]:
+            - link "2025 BMW M5" [ref=e443] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tr29w9w9
+              - img "2025 BMW M5" [ref=e444]
+            - generic [ref=e445]:
+              - button "Share" [ref=e446] [cursor=pointer]
+              - button "Save" [ref=e450] [cursor=pointer]
+            - generic [ref=e453]:
+              - link "2025 · BMW M5 XDrive5e" [ref=e454] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tr29w9w9
+                - generic [ref=e455]: 2025 · BMW
+                - generic [ref=e456]: M5
+                - generic [ref=e457]: XDrive5e
+              - generic [ref=e458]:
+                - generic [ref=e459]: 36 000 km
+                - generic [ref=e460]: ·Automatic
+              - generic [ref=e461]:
+                - generic [ref=e462]: R1 500 000
+                - generic [ref=e464]: From R26 218 / mo
+          - article [ref=e465]:
+            - link "2026 Lamborghini Urus" [ref=e466] [cursor=pointer]:
+              - /url: /vehicle/?stock=Tru33927
+              - img "2026 Lamborghini Urus" [ref=e467]
+            - generic [ref=e468]:
+              - button "Share" [ref=e469] [cursor=pointer]
+              - button "Save" [ref=e473] [cursor=pointer]
+            - generic [ref=e476]:
+              - link "2026 · LAMBORGHINI Urus" [ref=e477] [cursor=pointer]:
+                - /url: /vehicle/?stock=Tru33927
+                - generic [ref=e478]: 2026 · LAMBORGHINI
+                - generic [ref=e479]: Urus
+              - generic [ref=e480]:
+                - generic [ref=e481]: 15 500 km
+                - generic [ref=e482]: ·Manual
+              - generic [ref=e483]:
+                - generic [ref=e484]: R2 459 000
+                - generic [ref=e486]: From R42 979 / mo
+  - generic [ref=e488]:
+    - heading [level=2] [ref=e489]:
+      - text: Twenty-five minutes,
+      - emphasis [ref=e490]: on your own stock.
+    - link "Book now→" [ref=e491] [cursor=pointer]:
+      - /url: https://wa.me/27620502091?text=I'd%20like%20to%20book%20a%20walkthrough%20of%20TruDealer.
+  - contentinfo [ref=e492]:
+    - generic [ref=e493]:
+      - link [ref=e494] [cursor=pointer]:
+        - /url: https://www.trudealer.tru-saas.com
+        - text: Inspection reports, guided capture, stock management and AI —
+        - emphasis [ref=e495]: one stack, any market.
+        - text: Built in Cape Town. Deployed anywhere. Join independent dealers thriving on our
+        - emphasis [ref=e496]: ecosystem
+        - text: .
+      - generic [ref=e497]:
+        - generic [ref=e498]:
+          - link "Truecars A TruDealer storefront" [ref=e499] [cursor=pointer]:
+            - /url: /index.html
+            - generic [ref=e501]:
+              - generic [ref=e502]:
+                - text: "True"
+                - emphasis [ref=e503]: cars
+              - generic [ref=e504]: A TruDealer storefront
+          - paragraph [ref=e505]: The demo storefront for the TruDealer platform — inventory, inspection, finance and messaging as one system.
+        - generic [ref=e506]:
+          - heading "Shop" [level=4] [ref=e507]
+          - list [ref=e508]:
+            - listitem [ref=e509]:
+              - link "All stock" [ref=e510] [cursor=pointer]:
+                - /url: /stock.html
+            - listitem [ref=e511]:
+              - link "SUVs" [ref=e512] [cursor=pointer]:
+                - /url: /stock.html?bodyType=SUV
+            - listitem [ref=e513]:
+              - link "Bakkies" [ref=e514] [cursor=pointer]:
+                - /url: /stock.html?bodyType=Bakkie
+            - listitem [ref=e515]:
+              - link "Hatchbacks" [ref=e516] [cursor=pointer]:
+                - /url: /stock.html?bodyType=Hatchback
+        - generic [ref=e517]:
+          - heading "Buy & sell" [level=4] [ref=e518]
+          - list [ref=e519]:
+            - listitem [ref=e520]:
+              - link "Finance calculator" [ref=e521] [cursor=pointer]:
+                - /url: /finance.html
+            - listitem [ref=e522]:
+              - link "Sell or trade in" [ref=e523] [cursor=pointer]:
+                - /url: /trade-in.html
+            - listitem [ref=e524]:
+              - link "WhatsApp us" [ref=e525] [cursor=pointer]:
+                - /url: https://wa.me/27620502091
+        - generic [ref=e526]:
+          - heading "Platform" [level=4] [ref=e527]
+          - list [ref=e528]:
+            - listitem [ref=e529]:
+              - link "TruDealer" [ref=e530] [cursor=pointer]:
+                - /url: https://www.tru-saas.com
+            - listitem [ref=e531]:
+              - link "The system" [ref=e532] [cursor=pointer]:
+                - /url: https://www.trudealer.tru-saas.com
+            - listitem [ref=e533]:
+              - link "Client sites" [ref=e534] [cursor=pointer]:
+                - /url: /demos/
+      - generic [ref=e535]:
+        - generic [ref=e536]: © 2026 TruSaaS · Cape Town
+        - generic [ref=e537]: Vehicles, prices & inspection data are illustrative
+  - generic [ref=e538]:
+    - link "WhatsApp United Kingdom +44 7476 995694" [ref=e539] [cursor=pointer]:
+      - /url: https://wa.me/447476995694
+      - generic [ref=e542]: UK
+    - link "WhatsApp South Africa +27 62 050 2091" [ref=e543] [cursor=pointer]:
+      - /url: https://wa.me/27620502091
+      - generic [ref=e546]: SA
+  - button "Chat with True" [ref=e547] [cursor=pointer]:
+    - img "True-Cars" [ref=e549]

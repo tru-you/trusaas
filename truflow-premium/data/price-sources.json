@@ -1,0 +1,85 @@
+{
+  "_comment": "Dealer stock pages feeding the market-valuation layer (Layer 1: real market). All enabled entries are fetched in parallel on every valuation (default 2 pages each — `pages` overrides; sites that ignore ?page=N just return page 1 again, and identical prices are deduped); only cards whose title mentions the vehicle's make AND model (within ±1 year) count. `match` adds title keywords, `cardSelector` overrides listing-card detection, `pageParam` changes the pagination query param, `enabled: false` parks a URL without hitting it. Verify each entry with `npm run check:dealers` before enabling. JS-only sites need the headless worker: run TruCRM's `npm run worker:dev` (or deploy dist/scrape-worker.cjs) and set SCRAPER_SERVICE_URL in .env.",
+  "dealers": [
+    {
+      "name": "WeBuyCars (nationwide)",
+      "url": "https://shop.webuycars.co.za/buy-a-car",
+      "cardSelector": ".grid-card",
+      "pages": 1
+    },
+    {
+      "name": "Bidvest McCarthy (all makes)",
+      "url": "https://www.mccarthy.co.za/search/all-vehicles?page=1&region=0&make=0&series=0&minprice=0&maxprice=99999999&minage=0&maxage=30&minkm=0&maxkm=9999999&gear=0&shape=0&fuel=0&orderby=1",
+      "pages": 1
+    },
+    {
+      "name": "McCarthy Toyota",
+      "url": "https://www.mccarthytoyota.co.za/buy/used-cars-for-sale-south-africa",
+      "json": {
+        "url": "https://api.gearsauto.co.za/mccarthy/VehicleStock",
+        "params": {
+          "Active": "1", "Deleted": "0", "OrderBy": "RetailPrice.ASC",
+          "PageNumber": "1", "PageSize": "9999",
+          "VehicleStockType": "PREOWNED", "SiteID_FK": "138"
+        },
+        "auth": {
+          "url": "https://api.gearsauto.co.za/mccarthy/AuthToken?APP_ID=CSE&API_KEY=3fb0b4f604c6eb39053c74a0186c1e14f6a1daabcefd0af513f2ae0002dd78f9c0e14ed1c871b1aeaf3e9aa84b1a2402a56d326a5445a6012158770cec186a9e&API_URL=api.gearsauto.co.za/mccarthy",
+          "tokenPath": "Data.AuthToken",
+          "tokenHeader": "Authorization-Token",
+          "headers": { "Authorization-ID": "CSE" }
+        },
+        "priceField": "RetailPrice",
+        "titleField": "WebFriendlyName",
+        "makeField": "VehicleMake",
+        "modelField": "VehicleSeries",
+        "yearField": "ModelYear"
+      },
+      "note": "Public gearsauto API as called by the site's own page (client key is embedded in their public JS); tenant-scoped to their SiteID_FK=138"
+    },
+    {
+      "name": "CMH Group used cars (KZN/JHB)",
+      "url": "https://cmh.co.za/used-cars/",
+      "cardSelector": "li.product"
+    },
+    {
+      "name": "CMH Ford (Durban/PTA/Randburg)",
+      "url": "https://cmhford.co.za/preowned/"
+    },
+    {
+      "name": "Auto Pedigree (nationwide)",
+      "url": "https://www.autopedigree.co.za/inventory-search",
+      "cardSelector": ".tt-col-item",
+      "pages": 1,
+      "enabled": false,
+      "note": "Renders are slow (~45-60s) — parked until a search URL exists"
+    },
+    {
+      "name": "Car Store Cape Town",
+      "url": "https://www.carstore.co.za/cars",
+      "pages": 1,
+      "json": {
+        "url": "https://api.carstore.co.za/api/cars/",
+        "params": { "make": "{make}", "page_size": "200" },
+        "resultsPath": "results",
+        "priceField": "price",
+        "titleField": "title",
+        "makeField": "make",
+        "modelField": "model",
+        "yearField": "year"
+      },
+      "note": "Public JSON API (no auth) — structured fields, no worker render needed. Tenant-safe: public endpoint only"
+    },
+    {
+      "name": "CFAO Mobility (nationwide)",
+      "url": "https://www.cfaomobility.co.za/used-cars/",
+      "enabled": false,
+      "note": "No prices in DOM even after headless render — AJAX loads after settle window"
+    },
+    {
+      "name": "Carshop (JHB/PTA)",
+      "url": "https://www.carshop.co.za/used-cars",
+      "enabled": false,
+      "note": "Inconsistent renders — bot protection"
+    }
+  ]
+}
