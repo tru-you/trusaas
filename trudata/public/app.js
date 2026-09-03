@@ -24,7 +24,7 @@ const BURN_RATES = {
   'bureau_accident': 3,
   'safepay': 3,
 };
-// Map form/report type → burn rate key
+// Map bureau form/report types → CREDIT_COSTS keys
 const BURN_KEY = {
   'valuation': 'bureau_valuation',
   'regcheck': 'bureau_regcheck',
@@ -243,15 +243,15 @@ function renderVehicleResults(data) {
   const pricingDiv = document.getElementById('results-pricing');
   if (pricingDiv) pricingDiv.classList.remove('hidden');
   
-  const leadCountEl = document.getElementById('lead-count');
+const leadCountEl = document.getElementById('lead-count');
   if (leadCountEl) leadCountEl.textContent = '1';
   
-const leadCostEl = document.getElementById('lead-cost');
-  if (leadCostEl) leadCostEl.textContent = 'R' + creditCostRounded('valuation');
+  const leadCostEl = document.getElementById('lead-cost');
+  if (leadCostEl) leadCostEl.textContent = 'R' + (BURN_RATES['valuation'] * PAYG_RATE).toFixed(2);
 
   const btnOrder = document.getElementById('btn-order');
   if (btnOrder) {
-    btnOrder.onclick = () => openOrderModal('valuation', creditCost('valuation'));
+    btnOrder.onclick = () => openOrderModal('valuation', BURN_RATES['valuation'] * PAYG_RATE);
   }
 }
 
