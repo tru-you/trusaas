@@ -1041,6 +1041,10 @@ services:
         sync: false
       - key: IMAGIN8_APP_NAME
         value: Flow
+      - key: TRUDATA_API_KEY
+        sync: false
+      - key: TRUDATA_MASTER_EMAIL
+        sync: false
       - key: PAYFAST_MERCHANT_ID
         sync: false
       - key: PAYFAST_MERCHANT_KEY
