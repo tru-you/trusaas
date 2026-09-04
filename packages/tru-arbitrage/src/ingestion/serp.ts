@@ -15,9 +15,11 @@
  * fully index. SERP calls bill per request — SERP_QUERY_BUDGET is the guard.
  */
 import axios from 'axios';
+import * as cheerio from 'cheerio';
 import { RawFbListing } from '../types';
 import { CONFIG } from '../config';
 import { db } from '../storage/db';
+import { fetchHtmlWithFallback } from '../engine/fetch-html';
 
 const PRICE_SCAN_RE = /R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,7})/i;
 
@@ -76,13 +78,37 @@ function parseNum(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** One SERP call → organic results array. BrightData SERP first, SerpApi fallback.
- *  Failures LOG THE HTTP STATUS loudly — a misconfigured zone (400) otherwise
- *  silently zeroes the whole discovery pass and looks like "no results". */
-async function runSerpQuery(q: string): Promise<any[]> {
-  try {
-    let json: any = null;
-    if (CONFIG.SERP_PROVIDER === 'brightdata') {
+/** Multi-provider SERP query runner with automatic fallback:
+ *  1. Serper.dev (if key provided)
+ *  2. BrightData SERP / Unlocker
+ *  3. SerpApi
+ *  4. Direct HTML Google Search fallback (Cheerio parser, no key required) */
+export async function runSerpQuery(q: string): Promise<any[]> {
+  // 1. Serper.dev Provider
+  if (CONFIG.SERPER_API_KEY || CONFIG.SERP_PROVIDER === 'serper') {
+    try {
+      const res = await axios.post(
+        'https://google.serper.dev/search',
+        { q, gl: 'za', hl: 'en', num: 20 },
+        {
+          headers: {
+            'X-API-KEY': CONFIG.SERPER_API_KEY || CONFIG.SERP_API_KEY,
+            'Content-Type': 'application/json',
+          },
+          timeout: CONFIG.SERP_TIMEOUT_MS,
+        }
+      );
+      if (res.status === 200 && Array.isArray(res.data?.organic)) {
+        return res.data.organic;
+      }
+    } catch (err: any) {
+      console.warn(`[serp-ingestion] Serper.dev query failed (${q.slice(0, 40)}…):`, err?.message || err);
+    }
+  }
+
+  // 2. BrightData SERP / Unlocker Provider
+  if (CONFIG.SERP_PROVIDER === 'brightdata' && CONFIG.SERP_API_KEY) {
+    try {
       const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(q)}&gl=za&hl=en&num=20&brd_json=1`;
       const res = await axios.post(
         CONFIG.SERP_API_URL || 'https://api.brightdata.com/request',
@@ -90,32 +116,54 @@ async function runSerpQuery(q: string): Promise<any[]> {
         {
           headers: { Authorization: `Bearer ${CONFIG.SERP_API_KEY}`, 'Content-Type': 'application/json' },
           timeout: CONFIG.SERP_TIMEOUT_MS,
-          validateStatus: () => true, // handle non-2xx ourselves — axios throws by default
+          validateStatus: () => true,
         }
       );
-      if (res.status !== 200) {
-        const body = typeof res.data === 'string' ? res.data.slice(0, 200) : JSON.stringify(res.data).slice(0, 200);
-        console.warn(`[serp-ingestion] BrightData HTTP ${res.status} on zone '${CONFIG.SERP_ZONE}' — check the zone name/type in the dashboard. Body: ${body}`);
-        return [];
+      if (res.status === 200) {
+        const json = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+        const organic = json?.organic_results || json?.organic || [];
+        if (Array.isArray(organic) && organic.length > 0) return organic;
+      } else {
+        const body = typeof res.data === 'string' ? res.data.slice(0, 150) : JSON.stringify(res.data).slice(0, 150);
+        console.warn(`[serp-ingestion] BrightData HTTP ${res.status} on zone '${CONFIG.SERP_ZONE}' (${body}) — trying direct fallback…`);
       }
-      json = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-    } else {
+    } catch (err: any) {
+      console.warn(`[serp-ingestion] BrightData SERP failed:`, err?.message || err);
+    }
+  }
+
+  // 3. SerpApi Provider
+  if (CONFIG.SERP_PROVIDER === 'serpapi' || (CONFIG.SERP_API_KEY && !CONFIG.SERP_API_KEY.startsWith('bd'))) {
+    try {
       const base = CONFIG.SERP_API_URL || 'https://serpapi.com/search.json';
       const url = `${base}?engine=google&google_domain=google.co.za&gl=za&hl=en&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(CONFIG.SERP_API_KEY)}`;
       const res = await axios.get(url, { timeout: CONFIG.SERP_TIMEOUT_MS });
-      json = res.data;
-    }
-    const organic = json?.organic_results || json?.organic || [];
-    if (!Array.isArray(organic) || organic.length === 0) {
-      console.warn(`[serp-ingestion] zone '${CONFIG.SERP_ZONE}' returned 0 organic results for: ${q.slice(0, 60)}…`);
-    }
-    return Array.isArray(organic) ? organic : [];
-  } catch (err: any) {
-    const status = err?.response?.status;
-    const detail = err?.response?.data ? JSON.stringify(err.response.data).slice(0, 200) : (err?.message || err);
-    console.warn(`[serp-ingestion] query failed${status ? ` (HTTP ${status})` : ''} (${q.slice(0, 60)}…):`, detail);
-    return [];
+      const organic = res.data?.organic_results || res.data?.organic || [];
+      if (Array.isArray(organic) && organic.length > 0) return organic;
+    } catch {}
   }
+
+  // 4. Direct HTML Scraping Fallback (No API key needed — uses 3-tier fetcher with Cheerio parser)
+  try {
+    const googleUrl = `https://www.google.co.za/search?q=${encodeURIComponent(q)}&gl=za&hl=en`;
+    const html = await fetchHtmlWithFallback(googleUrl);
+    if (html) {
+      const $ = cheerio.load(html);
+      const out: any[] = [];
+      $('div.g, [data-sokod]').each((_, el) => {
+        const $el = $(el);
+        const title = $el.find('h3').first().text().trim();
+        const href = $el.find('a[href^="http"]').first().attr('href');
+        const snippet = $el.find('[style*="line-clamp"], .VwiCbd, .s3fd5e').first().text().trim() || $el.text().slice(0, 200);
+        if (title && href) {
+          out.push({ title, link: href, snippet });
+        }
+      });
+      if (out.length > 0) return out;
+    }
+  } catch {}
+
+  return [];
 }
 
 function toListing(r: any, cities: string[]): RawFbListing | null {

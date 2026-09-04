@@ -504,6 +504,16 @@ services:
       # the surgical TU valuation backstop (deducts the right dealer's bundle).
       - key: TRUFLOW_SYNC_KEY
         sync: false
+      # Imagin8/TransUnion catalogue refresh (`npm run catalogue:refresh`) —
+      # flat-fee retainer, NOT used at request time. Refresh writes per-variant
+      # year ranges into data/tu-years.json (committed); the server reads the
+      # local file only.
+      - key: IMAGIN8_API_KEY
+        sync: false
+      - key: IMAGIN8_CUSTOMER_ID
+        sync: false
+      - key: IMAGIN8_APP_NAME
+        sync: false
       # Prospects demo the radar too (same doctrine as Lens/Inspect).
       - key: DEMO_ENABLED
         value: "1"
@@ -511,6 +521,9 @@ services:
         value: https://premium.tru-saas.com
       - key: BRIGHTDATA_API_KEY
         sync: false
+      # Zone name as created in the BrightData dashboard (Web Unlocker type).
+      # The radar's zone IS "auto" on the account — that's why the value is set
+      # here rather than sync:false like the sibling apps.
       - key: BRIGHTDATA_UNLOCKER_ZONE
         value: auto
       # Cloudflare-bypass switch. The free crawler is blocked on Cars.co.za/AutoTrader

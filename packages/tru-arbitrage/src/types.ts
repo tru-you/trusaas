@@ -53,10 +53,17 @@ export interface NormalizedVehicle {
 export interface ValuationComp {
   price: number;
   km?: number;
+  /** Model year of the listing — captured where the extractor can read it, so
+   *  the ranked price-check table shows the year mix and the valuation can
+   *  age-correct comps that fall a year either side of the subject. */
+  year?: number;
   source?: string;
   /** Listing URL where the extractor could capture one — cheapest-in-country
    *  results deep-link so the dealer can go straight to the listing. */
   url?: string;
+  /** True if this comp is a sister-model fallback within the same category & make (e.g. Golf / Polo Vivo for Polo) */
+  isRelatedModel?: boolean;
+  relatedModelName?: string;
 }
 
 export interface ValuationResult {
@@ -144,6 +151,10 @@ export interface DealerBuyBox {
   sources?: ListingSource[]; // Empty = all
   provinces: string[];
   allowedMakes?: string[]; // Empty = all
+  /** Scan targets — "Toyota" or "Toyota/Hilux" per entry. These drive the
+   *  targeted ingestion lane (P7): without them the scan samples only the
+   *  newest-page feed, so a make with hundreds on sale is missed entirely. */
+  watchTargets?: string[];
   maxPrice: number;
   maxMileageKm: number;
   minNetMargin: number;
@@ -160,4 +171,15 @@ export interface IngestionBatchResult {
   staleDealsFound: number;
   overpricedStockFound: number;
   alertsDispatched: number;
+  /** Per-stage drop funnel — a zero-deal scan must be diagnosable, not a
+   *  dead black box. Every listing falls through exactly one of these.
+   *  (P0 instrumentation.) */
+  rawBySource: Record<string, number>;
+  droppedNormalizer: number;
+  droppedDamagedWanted: number;
+  droppedMakeUnknown: number;
+  droppedNoComps: number;
+  droppedBelowConfidence: number;
+  droppedBelowMargin: number;
+  sourceHealth: Array<{ name: string; listings: number; tier: string; hostOk: boolean }>;
 }

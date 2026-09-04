@@ -1,10 +1,12 @@
 import * as cheerio from 'cheerio';
 import axios from 'axios';
 import { ValuationComp, ValuationResult } from '../types';
-import { adjustForMileage, robustAverage, median } from './mileage';
+import { adjustForMileage, adjustForYearGap, robustAverage, median } from './mileage';
+import { findCardYear, yearInBand } from './year';
 import { calculateValuationConfidence } from './confidence';
 import { CONFIG } from '../config';
 import { fetchHtmlWithFallback } from './fetch-html';
+import { categoryOfMake, listModels } from './catalogue';
 
 const MAX_CACHE_SIZE = 200;
 const cache = new Map<string, { data: ValuationResult; ts: number }>();
@@ -38,9 +40,19 @@ function cleanNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function extractJsonLdComps(html: string): ValuationComp[] {
+export function buildYearBand(year: number, tolerance: number): number[] {
+  const t = Math.max(0, Math.floor(tolerance || 0));
+  const out: number[] = [];
+  for (let y = year - t; y <= year + t; y++) out.push(y);
+  return out;
+}
+
+export function extractJsonLdComps(html: string, make?: string, model?: string, year?: number): ValuationComp[] {
   const $ = cheerio.load(html);
   const out: ValuationComp[] = [];
+  const yearTol = CONFIG.SCRAPER_YEAR_TOLERANCE;
+  const makeKey = make ? make.toLowerCase() : null;
+  const modelKey = model ? modelCore(model) : null;
 
   $('script[type="application/ld+json"]').each((_, el) => {
     const raw = $(el).contents().text() || $(el).text();
@@ -54,12 +66,21 @@ export function extractJsonLdComps(html: string): ValuationComp[] {
         const price = cleanNumber(rawPrice);
         if (!price || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) continue;
 
+        const title = `${node.brand?.name || ''} ${node.name || ''} ${node.model || ''} ${node.description || ''}`.toLowerCase();
+        if (makeKey && !title.includes(makeKey)) continue;
+        if (modelKey && !title.includes(modelKey)) continue;
+
+        const rawYear = cleanNumber(node.vehicleModelDate || node.productionDate);
+        const nodeYear = rawYear || findCardYear(title, makeKey);
+        if (year && nodeYear && Math.abs(nodeYear - year) > yearTol) continue;
+
         const odo = node.mileageFromOdometer;
         const km = cleanNumber(odo && typeof odo === 'object' ? odo.value : odo);
 
         out.push({
           price: Math.round(price),
           km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
+          year: nodeYear || year,
           source: 'json-ld',
           url: typeof node.url === 'string' ? node.url : undefined,
         });
@@ -70,11 +91,14 @@ export function extractJsonLdComps(html: string): ValuationComp[] {
   return out;
 }
 
-export function extractNextDataComps(html: string, _make: string, _model: string): ValuationComp[] {
+export function extractNextDataComps(html: string, make?: string, model?: string, year?: number): ValuationComp[] {
   const $ = cheerio.load(html);
   const out: ValuationComp[] = [];
   const script = $('script#__NEXT_DATA__').html();
   if (!script) return out;
+  const yearTol = CONFIG.SCRAPER_YEAR_TOLERANCE;
+  const makeKey = make ? make.toLowerCase() : null;
+  const modelKey = model ? modelCore(model) : null;
 
   try {
     const json = JSON.parse(script);
@@ -83,37 +107,57 @@ export function extractNextDataComps(html: string, _make: string, _model: string
       json?.props?.pageProps?.searchResults?.listings ||
       [];
 
-      for (const item of listings) {
-        const price = cleanNumber(item.price || item.priceValue);
-        if (!price || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) continue;
+    for (const item of listings) {
+      const price = cleanNumber(item.price || item.priceValue);
+      if (!price || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) continue;
 
-        const km = cleanNumber(item.mileage);
-        const rawUrl = typeof item.url === 'string' ? item.url : undefined;
-        out.push({
-          price: Math.round(price),
-          km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
-          source: 'next-data',
-          url: rawUrl && !rawUrl.startsWith('http') ? `https://www.cars.co.za${rawUrl}` : rawUrl,
-        });
-      }
+      const title = `${item.year || ''} ${item.make || ''} ${item.model || ''} ${item.variant || ''} ${item.title || ''}`.toLowerCase();
+      if (makeKey && !title.includes(makeKey)) continue;
+      if (modelKey && !title.includes(modelKey)) continue;
+
+      const itemYear = item.year ? Number(item.year) : null;
+      if (year && itemYear && Math.abs(itemYear - year) > yearTol) continue;
+
+      const km = cleanNumber(item.mileage);
+      const rawUrl = typeof item.url === 'string' ? item.url : undefined;
+      out.push({
+        price: Math.round(price),
+        km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
+        year: itemYear || year,
+        source: 'next-data',
+        url: rawUrl && !rawUrl.startsWith('http') ? `https://www.cars.co.za${rawUrl}` : rawUrl,
+      });
+    }
   } catch {}
 
   return out;
 }
 
-export function extractCssComps(html: string): ValuationComp[] {
+export function extractCssComps(html: string, make?: string, model?: string, year?: number): ValuationComp[] {
   const $ = cheerio.load(html);
   const out: ValuationComp[] = [];
+  const makeKey = make ? make.toLowerCase() : null;
+  const modelKey = model ? modelCore(model) : null;
+  const yearTol = CONFIG.SCRAPER_YEAR_TOLERANCE;
 
   $('[class*="price"], [data-price]').each((_, el) => {
-    const text = $(el).text();
-    const match = text.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,7})/i);
+    const $el = $(el);
+    const parentText = ($el.closest('[class*="card"], [class*="tile"], tr, li').text() || $el.text()).toLowerCase();
+    
+    if (makeKey && !parentText.includes(makeKey)) return;
+    if (modelKey && !parentText.includes(modelKey)) return;
+
+    const cardYear = findCardYear(parentText, make);
+    if (!yearInBand(cardYear, year, yearTol)) return;
+
+    const match = parentText.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,7})/i);
     if (!match) return;
     const price = cleanNumber(match[1]);
     if (!price || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) return;
 
     out.push({
       price: Math.round(price),
+      year: cardYear || year,
       source: 'css-selector',
     });
   });
@@ -129,7 +173,7 @@ function escapeRegex(s: string): string {
 /** Base model token: lowercase, and truncate at a trim/engine suffix so
  *  "Polo 1.2 TSI" matches a card titled just "Polo". Keeps the leading model
  *  word(s) — never strips the whole token. */
-function modelCore(text: string): string {
+export function modelCore(text: string): string {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return '';
   // Drop a trailing engine/trim fragment like "1.2 tsi", "2.8 gd-6 4x4", "comfortline".
@@ -157,7 +201,7 @@ export function extractCardComps(html: string, make: string, model: string, year
   const out: ValuationComp[] = [];
   const trimMatched: ValuationComp[] = [];
   const seen = new Set<string>();
-  const yearTol = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
+  const yearTol = CONFIG.SCRAPER_YEAR_TOLERANCE;
   const makeKey = make.toLowerCase();
   const modelKey = modelCore(model);
 
@@ -177,9 +221,11 @@ export function extractCardComps(html: string, make: string, model: string, year
     const text = $c.text().replace(/\s+/g, ' ').trim();
     if (!text || text.length < 8) return;
 
-    // Year filter.
-    const yearMatch = text.match(/\b(19|20)\d{2}\b/);
-    if (yearMatch && Math.abs(parseInt(yearMatch[0], 10) - year) > yearTol) return;
+    // Year filter. The card's model year must be readable AND inside the band;
+    // an unreadable year is rejected, never silently accepted (the old /\b…\b/
+    // matched nothing on concatenated AutoTrader text, so every card passed).
+    const cardYear = findCardYear(text, make);
+    if (!yearInBand(cardYear, year, yearTol)) return;
 
     // Make/model filter against the card text.
     const lower = text.toLowerCase();
@@ -211,6 +257,7 @@ export function extractCardComps(html: string, make: string, model: string, year
     const comp: ValuationComp = {
       price: Math.round(price),
       km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
+      year: cardYear || undefined,
       source: 'card',
       url,
     };
@@ -277,64 +324,174 @@ interface GatheredComps {
   sourcesOutput: Array<{ name: string; count: number; avg: number | null }>;
 }
 
-/** Fetch raw comps from the classifieds targets (no aggregate math). */
+/** Fetch raw comps from the classifieds targets — widened across the year band and multi-source fallbacks. */
 async function gatherComps(make: string, model: string, year: number, trim?: string): Promise<GatheredComps> {
   const allComps: ValuationComp[] = [];
-  const sourcesOutput: Array<{ name: string; count: number; avg: number | null }> = [];
+  const bySource = new Map<string, ValuationComp[]>();
+  const dedupe = new Set<string>();
 
-  const targets = [
+  const pages = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
+  const cleanMake = make.trim();
+  const cleanModel = model.trim();
+
+  // AutoTrader IGNORES the `year` query param (verified live: ?year=2021
+  // returns 2013/2016/2021 cards). The old code sent 5 identical band URLs and
+  // paid 5× for one page. One make/model URL per page + local year filtering
+  // in extractCardComps gives the SAME sample at 1/5 the requests.
+  const targets: Array<{ name: string; url: string; year: number; targetMake: string; targetModel: string; isRelated?: boolean }> = [];
+
+  for (let p = 1; p <= pages; p++) {
+    targets.push({
+      name: 'AutoTrader',
+      url: `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(cleanMake)}&model=${encodeURIComponent(cleanModel)}&sort=Price_Ascending&page=${p}`,
+      year,
+      targetMake: cleanMake,
+      targetModel: cleanModel,
+    });
+  }
+
+  // Cars.co.za honours `Year` and is 403 on plain HTTP — it resolves only via
+  // the headless worker / Bright Data unlocker tiers of fetchHtmlWithFallback.
+  // Keep the exact-year page + one keyword variant; the band is pointless here
+  // because extractCardComps filters by year locally and Cars.co.za's
+  // __NEXT_DATA__ carries typed years we validate anyway.
+  targets.push({
+    name: 'Cars.co.za',
+    url: `https://www.cars.co.za/usedcars/${encodeURIComponent(cleanMake)}/${encodeURIComponent(cleanModel)}/?Year=${year}`,
+    year,
+    targetMake: cleanMake,
+    targetModel: cleanModel,
+  });
+
+  // Gumtree SA is a dead lane: measured 0 tiles / ~4.5s per request. Off by
+  // default; SCRAPER_GUMTREE=1 resurrects it if they fix their markup.
+  if (process.env.SCRAPER_GUMTREE === '1') {
+    targets.push({
+      name: 'Gumtree',
+      url: `https://www.gumtree.co.za/s-cars-vehicles/v1c9077p1?q=${encodeURIComponent(cleanMake + ' ' + cleanModel)}&Year=${year}`,
+      year,
+      targetMake: cleanMake,
+      targetModel: cleanModel,
+    });
+  }
+
+  // Keyword query variations for non-standard make/model URL structures (motorcycles, trucks, special trims)
+  targets.push(
     {
       name: 'AutoTrader',
-      url: `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`,
+      url: `https://www.autotrader.co.za/cars-for-sale?keyword=${encodeURIComponent(cleanMake + ' ' + cleanModel)}&sort=Price_Ascending`,
+      year,
+      targetMake: cleanMake,
+      targetModel: cleanModel,
     },
     {
       name: 'Cars.co.za',
-      url: `https://www.cars.co.za/usedcars/${encodeURIComponent(make)}/${encodeURIComponent(model)}/?Year=${year}`,
-    },
-  ];
-
-  await Promise.all(
-    targets.map(async (target) => {
-      try {
-        const html = await fetchHtmlWithFallback(target.url);
-        if (html) {
-          const nextData = extractNextDataComps(html, make, model);
-          const jsonLd = extractJsonLdComps(html);
-          const card = extractCardComps(html, make, model, year, trim, target.url);
-          const css = extractCssComps(html);
-
-          // Prefer the RICHEST extraction, not the first non-empty. Autotrader's
-          // SPA card grid (20-30) beats its single JSON-LD node; Cars.co.za's
-          // card grid beats its stub __NEXT_DATA__. On pages where structured
-          // data is genuinely richer (older CSS sites), cards are empty and the
-          // Next/JSON-LD path still wins.
-          const candidates = [nextData, jsonLd, card, css];
-          const comps = candidates.reduce((best, c) => (c.length > best.length ? c : best), []);
-          allComps.push(...comps);
-
-          const prices = comps.map((c) => c.price);
-          sourcesOutput.push({
-            name: target.name,
-            count: comps.length,
-            avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null,
-          });
-        }
-      } catch {
-        sourcesOutput.push({ name: target.name, count: 0, avg: null });
-      }
-    })
+      url: `https://www.cars.co.za/usedcars/?make_model=${encodeURIComponent(cleanMake + ' ' + cleanModel)}&Year=${year}`,
+      year,
+      targetMake: cleanMake,
+      targetModel: cleanModel,
+    }
   );
 
-  // Deduplicate comps on price|km
-  const seen = new Set<string>();
-  const dedupedComps = allComps.filter((c) => {
-    const k = `${c.price}|${c.km ?? ''}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
+  const processTarget = async (target: { name: string; url: string; year: number; targetMake: string; targetModel: string; isRelated?: boolean }) => {
+    try {
+      const html = await fetchHtmlWithFallback(target.url);
+      if (!html) return;
 
-  return { dedupedComps, sourcesOutput };
+      const nextData = extractNextDataComps(html, target.targetMake, target.targetModel, target.year);
+      const jsonLd = extractJsonLdComps(html, target.targetMake, target.targetModel, target.year);
+      const card = extractCardComps(html, target.targetMake, target.targetModel, year, trim, target.url);
+      const css = extractCssComps(html, target.targetMake, target.targetModel, target.year);
+
+      // MERGE all extractors with dedupe (the old code picked ONE winner via
+      // reduce(max) and threw away the other three). css-selector comps carry
+      // neither km nor a deep link, so when enough verified comps exist they
+      // only pad a page that a real extractor already covered — keep them LAST
+      // so they never displace card/NEXT_DATA/json-ld rows.
+      const merged: ValuationComp[] = [];
+      const seenTarget = new Set<string>();
+      const absorb = (list: ValuationComp[]) => {
+        for (const c of list) {
+          const k = `${c.price}|${c.km ?? ''}|${c.year ?? ''}|${c.isRelatedModel ? c.relatedModelName : ''}|${c.source ?? ''}`;
+          if (seenTarget.has(k)) continue;
+          seenTarget.add(k);
+          merged.push(c);
+        }
+      };
+      absorb(card);
+      absorb(nextData);
+      absorb(jsonLd);
+      absorb(css);
+      const comps = merged;
+
+      if (target.isRelated) {
+        comps.forEach(c => {
+          c.isRelatedModel = true;
+          c.relatedModelName = `${target.targetMake} ${target.targetModel}`;
+        });
+      }
+
+      const seenKey = (c: ValuationComp) => `${c.price}|${c.km ?? ''}|${c.isRelatedModel ? c.relatedModelName : ''}`;
+      const seenLocal = new Set<string>();
+      const existing = bySource.get(target.name) || [];
+      bySource.set(target.name, existing.concat(comps.filter((c) => {
+        const k = seenKey(c);
+        if (seenLocal.has(k)) return false;
+        seenLocal.add(k);
+        return true;
+      })));
+
+      for (const c of comps) {
+        const k = seenKey(c);
+        if (dedupe.has(k)) continue;
+        dedupe.add(k);
+        allComps.push(c);
+      }
+    } catch {}
+  };
+
+  await Promise.all(targets.map(processTarget));
+
+  // Category-aware sister-model fallback: if exact comps < 3, search sister models of the SAME make & category
+  if (allComps.length < 3) {
+    const cat = categoryOfMake(cleanMake) || 'cars';
+    const sameMakeModels = listModels(cat, cleanMake).filter(m => m.toLowerCase() !== cleanModel.toLowerCase());
+    const sisterModels = sameMakeModels.slice(0, 2); // Top 2 sister models (e.g. Golf / Polo Vivo for Polo)
+
+    if (sisterModels.length > 0) {
+      const sisterTargets = sisterModels.flatMap(sisterModel => [
+        {
+          name: 'AutoTrader',
+          url: `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(cleanMake)}&model=${encodeURIComponent(sisterModel)}&sort=Price_Ascending`,
+          year: year,
+          targetMake: cleanMake,
+          targetModel: sisterModel,
+          isRelated: true,
+        },
+        {
+          name: 'Cars.co.za',
+          url: `https://www.cars.co.za/usedcars/${encodeURIComponent(cleanMake)}/${encodeURIComponent(sisterModel)}/?Year=${year}`,
+          year: year,
+          targetMake: cleanMake,
+          targetModel: sisterModel,
+          isRelated: true,
+        }
+      ]);
+      await Promise.all(sisterTargets.map(processTarget));
+    }
+  }
+
+  const sourcesOutput: Array<{ name: string; count: number; avg: number | null }> = [];
+  for (const [name, comps] of bySource) {
+    const prices = comps.map((c) => c.price);
+    sourcesOutput.push({
+      name,
+      count: comps.length,
+      avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null,
+    });
+  }
+
+  return { dedupedComps: allComps, sourcesOutput };
 }
 
 // Comp-list cache — the cheapest-in-country lookup consumes the same sample as
@@ -391,7 +548,13 @@ export async function fetchLiveComps(
   // Filter outlier-priced variants (e.g. base 1.9 vs top 3.0 V6) around the median
   const bandedComps = filterPriceBand(dedupedComps);
 
-  const adjustedComps = adjustForMileage(bandedComps, mileageKm, 'A', year);
+  // Age-correct band comps to the subject year BEFORE mileage adjustment —
+  // a 2019 comp vs a 2021 subject is worthless unless priced up to parity.
+  // (This was shipped as unit-tested code but never wired, so the ±2 band was
+  // averaging raw year-mixed prices and widening the IQR.)
+  const yearGapped = adjustForYearGap(bandedComps, year);
+
+  const adjustedComps = adjustForMileage(yearGapped, mileageKm, 'A', year);
   const avg = robustAverage(adjustedComps);
   const kmValues = bandedComps.map((c) => c.km).filter((k): k is number => typeof k === 'number');
 

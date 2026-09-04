@@ -137,19 +137,19 @@ export class ArbitrageDatabase {
       keptWatches[k] = v;
     }
 
+    const out: DatabaseSchema = {
+      trackedVehicles: keptTracked,
+      deals: keptDeals,
+      dealerSubscriptions: keptSubs,
+      watches: keptWatches,
+      discoveredDomains: data.discoveredDomains || {},
+    };
+
     if (changed) {
-      const out: DatabaseSchema = {
-        trackedVehicles: keptTracked,
-        deals: keptDeals,
-        dealerSubscriptions: keptSubs,
-        watches: keptWatches,
-        discoveredDomains: data.discoveredDomains || {},
-      };
       this.data = out;
       this.saveSync();
-      return out;
     }
-    return data;
+    return out;
   }
 
   private saveSync(): void {
@@ -415,6 +415,7 @@ export class ArbitrageDatabase {
 
   public getWatchedFingerprints(dealerSlug: string): string[] {
     const prefix = `${dealerSlug}:`;
+    if (!this.data.watches) this.data.watches = {};
     return Object.keys(this.data.watches)
       .filter((k) => k.startsWith(prefix))
       .map((k) => k.slice(prefix.length));
@@ -423,6 +424,7 @@ export class ArbitrageDatabase {
   /** Toggle a watch on a tracked fingerprint. Returns the new watched state. */
   public toggleWatch(dealerSlug: string, fingerprint: string): boolean {
     const key = tenantKey(dealerSlug, fingerprint);
+    if (!this.data.watches) this.data.watches = {};
     if (this.data.watches[key]) {
       delete this.data.watches[key];
       this.markDirty();
@@ -443,7 +445,13 @@ export class ArbitrageDatabase {
       return;
     }
     const prefix = `${dealerSlug}:`;
-    for (const map of [this.data.trackedVehicles, this.data.deals, this.data.dealerSubscriptions, this.data.watches] as Array<Record<string, unknown>>) {
+    const maps = [
+      this.data.trackedVehicles || {},
+      this.data.deals || {},
+      this.data.dealerSubscriptions || {},
+      this.data.watches || {}
+    ] as Array<Record<string, unknown>>;
+    for (const map of maps) {
       for (const k of Object.keys(map)) {
         if (k.startsWith(prefix)) delete map[k];
       }

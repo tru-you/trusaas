@@ -11,7 +11,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface TuVariant {
+export interface TuVariant {
   c: string;   // mmCode
   mk: string;  // make
   md: string;  // master model (e.g. "D-MAX")
@@ -60,7 +60,7 @@ function resolveCataloguePath(): string | null {
   return null;
 }
 
-function loadCatalogue(): Record<string, TuVariant[]> {
+export function loadCatalogue(): Record<string, TuVariant[]> {
   if (catalogue) return catalogue;
 
   const dataPath = resolveCataloguePath();

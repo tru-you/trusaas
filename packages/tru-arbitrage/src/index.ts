@@ -7,9 +7,25 @@ import { matchVariant } from './engine/tu-matcher';
 import { db } from './storage/db';
 import { dispatchDealAlerts } from './alerts/dispatcher';
 import { fetchAllClassifiedsNewest } from './ingestion/cars-autotrader';
+import { fetchAllTargets } from './ingestion/targets';
 import { fetchDealerWebsitesViaSerp } from './ingestion/serp';
 import { fetchFlowStockBySlugs } from './ingestion/flow-stock';
 import { dealerRegistry } from './auth/dealers';
+import { loadCatalogue } from './engine/tu-matcher';
+import { cacheStats } from './engine/fetch-html';
+
+/** Does this listing text name ANY make from the local TU catalogue?
+ *  Distinguishes "the normalizer failed on a known make" from "the make is
+ *  off-dictionary" in the drop funnel. Cheap: makes are uppercase keys. */
+function mentionsCatalogueMake(text: string): boolean {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  const makes = loadCatalogue();
+  for (const mk of Object.keys(makes)) {
+    if (mk.length >= 3 && lower.includes(mk.toLowerCase())) return true;
+  }
+  return false;
+}
 
 export class ScanProgress extends EventEmitter {
   scanId: string;
@@ -24,7 +40,7 @@ export async function processListingBatch(
   dealerSlug: string,
   emitter?: ScanProgress
 ): Promise<IngestionBatchResult> {
-  const CONCURRENCY = 5;
+  const CONCURRENCY = 3;
   const result: IngestionBatchResult = {
     totalRaw: rawListings.length,
     validNormalized: 0,
@@ -34,7 +50,19 @@ export async function processListingBatch(
     staleDealsFound: 0,
     overpricedStockFound: 0,
     alertsDispatched: 0,
+    rawBySource: {},
+    droppedNormalizer: 0,
+    droppedDamagedWanted: 0,
+    droppedMakeUnknown: 0,
+    droppedNoComps: 0,
+    droppedBelowConfidence: 0,
+    droppedBelowMargin: 0,
+    sourceHealth: [],
   };
+  for (const r of rawListings) {
+    const src = r.source || 'unknown';
+    result.rawBySource[src] = (result.rawBySource[src] || 0) + 1;
+  }
   const alertedFingerprints = new Set<string>(); // dedup alerts
   let processed = 0;
 
@@ -42,9 +70,25 @@ export async function processListingBatch(
   async function processOne(raw: RawFbListing): Promise<void> {
     // 1. Normalize
     const normalized = await normalizeListing(raw);
-    if (!normalized) { result.filteredOut++; return; }
-    if (normalized.isDamagedOrSalvage || normalized.isWantedAd || normalized.confidence < 0.7) {
-      result.filteredOut++; return;
+    if (!normalized) {
+      // Funnel: known make but the normalizer choked vs off-dictionary make.
+      if (mentionsCatalogueMake(`${raw.title || ''} ${raw.description || ''}`)) {
+        result.droppedNormalizer++;
+      } else {
+        result.droppedMakeUnknown++;
+      }
+      result.filteredOut++;
+      return;
+    }
+    if (normalized.isDamagedOrSalvage || normalized.isWantedAd) {
+      result.droppedDamagedWanted++;
+      result.filteredOut++;
+      return;
+    }
+    if (normalized.confidence < 0.7) {
+      result.droppedNormalizer++;
+      result.filteredOut++;
+      return;
     }
     result.validNormalized++;
 
@@ -89,6 +133,7 @@ export async function processListingBatch(
       valuation.averageRetailPrice = tuMatch.newListPrice;
     }
     if (!valuation || !valuation.averageRetailPrice) {
+      result.droppedNoComps++;
       processed++;
       emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: 'no_comps' });
       return;
@@ -101,6 +146,12 @@ export async function processListingBatch(
       ? evaluateOverpricedStock(normalized, valuation, tracked)
       : evaluateArbitrageOpportunity(normalized, valuation, tracked);
     if (!deal) {
+      // Funnel: confidence floor vs every other gate (margin / stale / sanity).
+      if (valuation.confidence < CONFIG.CONFIDENCE_FLOOR) {
+        result.droppedBelowConfidence++;
+      } else {
+        result.droppedBelowMargin++;
+      }
       processed++;
       emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: isMyStock ? 'healthy_stock' : 'below_margin' });
       return;
@@ -161,6 +212,26 @@ export async function processListingBatch(
   }
   await Promise.all(workers);
 
+  // Source health — what each lane actually yielded and whether its host is in
+  // a circuit-open state. An empty scan becomes diagnosable at a glance.
+  const SOURCE_META: Record<string, { name: string; host: string }> = {
+    autotrader: { name: 'AutoTrader', host: 'autotrader.co.za' },
+    cars_co_za: { name: 'Cars.co.za', host: 'cars.co.za' },
+    dealer_direct: { name: 'Dealer sites', host: '' },
+    flow_stock: { name: 'Flow stock', host: '' },
+  };
+  const openHosts = new Set(cacheStats().hostCircuits);
+  for (const [src, count] of Object.entries(result.rawBySource)) {
+    const meta = SOURCE_META[src] || { name: src, host: '' };
+    const hostOk = !meta.host || !openHosts.has(meta.host);
+    result.sourceHealth.push({
+      name: meta.name,
+      listings: count,
+      tier: meta.host && !hostOk ? 'circuit-open' : hostOk ? 'ok' : 'unknown',
+      hostOk,
+    });
+  }
+
   // Flush DB after batch
   await db.flush();
 
@@ -171,7 +242,21 @@ export async function runFullMultiSourceScan(dealerSlug: string, emitter?: ScanP
   console.log(`\n🌐 [TruArbitrage Multi-Source Radar] Initiating Scan for ${dealerSlug}...`);
   emitter?.emit('phase', { phase: 'ingestion', message: 'Fetching from classifieds, dealer SERP and Flow stock...' });
 
-  const [classifiedListings, serpListings] = await Promise.all([
+  // P7 — targeted lane: the dealer's watch targets drive make/model queries
+  // (cheapest-first, paginated) so "find deals" actually searches the market
+  // instead of sampling the newest 30 cars posted nationally. Without targets,
+  // the lane is skipped and the scan behaves exactly as before.
+  const targets = Array.from(
+    new Set(
+      db
+        .getSubscriptions(dealerSlug, true)
+        .flatMap((s) => s.watchTargets || [])
+        .map((t) => String(t).trim())
+        .filter(Boolean)
+    )
+  );
+
+  const [classifiedListings, serpListings, targetListings] = await Promise.all([
     fetchAllClassifiedsNewest().catch((err: any) => { emitter?.emit('error', { source: 'cars_autotrader', message: err?.message }); return []; }),
     // The dealer's own site domain is excluded — their stock in their own
     // radar is noise, not a market deal.
@@ -180,10 +265,13 @@ export async function runFullMultiSourceScan(dealerSlug: string, emitter?: ScanP
     // stock is Flow's domain (Stock-needing-action panel there), and scanning
     // it here burns scraper calls on data the buy radar never shows. The lane
     // stays alive for the Flow bolt-on via POST /api/mystock/scan.
+    targets.length
+      ? fetchAllTargets(targets).catch((err: any) => { emitter?.emit('error', { source: 'targets', message: err?.message }); return []; })
+      : Promise.resolve([]),
   ]);
 
-  const allRaw = [...classifiedListings, ...serpListings];
-  console.log(`📦 Loaded ${allRaw.length} listings (Cars/AT: ${classifiedListings.length}, SERP Dealer Sites: ${serpListings.length})`);
+  const allRaw = [...classifiedListings, ...serpListings, ...targetListings];
+  console.log(`📦 Loaded ${allRaw.length} listings (Cars/AT: ${classifiedListings.length}, SERP Dealer Sites: ${serpListings.length}${targets.length ? `, targeted: ${targetListings.length}` : ''})`);
 
   emitter?.emit('phase', { phase: 'processing', message: `Processing ${allRaw.length} listings...` });
   const result = await processListingBatch(allRaw, dealerSlug, emitter);

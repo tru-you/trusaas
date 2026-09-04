@@ -39,6 +39,36 @@ export const CANONICAL_MAKES: Record<string, string> = {
   'alfa romeo': 'Alfa Romeo',
   'alfa': 'Alfa Romeo',
   'mini': 'MINI',
+
+  // ── Motorcycles, quads & SxS (Live Deals vertical) — canonical names
+  // title-case exactly to the tu-variants.json keys so tu-matcher hits.
+  'aprilia': 'Aprilia', 'bajaj': 'Bajaj', 'benelli': 'Benelli', 'beta racing': 'Beta Racing',
+  'big boy': 'Big Boy', 'bimota': 'Bimota', 'can-am': 'BombardierCanam', 'bombardier': 'BombardierCanam',
+  'bombardiercanam': 'BombardierCanam', 'cagiva': 'Cagiva', 'daelim': 'Daelim', 'derbi': 'Derbi',
+  'ducati': 'Ducati', 'gas gas': 'Gas Gas', 'gomoto': 'Gomoto', 'harley': 'Harley Davidson',
+  'harley davidson': 'Harley Davidson', 'husaberg': 'Husaberg', 'husqvarna': 'Husqvarna',
+  'hyosung': 'Hyosung', 'indian': 'Indian', 'jawa': 'Jawa', 'kawasaki': 'Kawasaki',
+  'ktm': 'KTM', 'kymco': 'Kymco', 'laverda': 'Laverda', 'linhai': 'Linhai',
+  'moto guzzi': 'Moto Guzzi', 'mv agusta': 'MV Agusta', 'piaggio': 'Piaggio',
+  'polaris': 'Polaris', 'puzey': 'Puzey', 'royal enfield': 'Royal Enfield', 'sherco': 'Sherco',
+  'sym': 'Sym', 'triumph': 'Triumph', 'tvs': 'TVS', 'ural': 'Ural', 'vespa': 'Vespa',
+  'victory': 'Victory', 'yamaha': 'Yamaha', 'zhejiang cf moto': 'Zhejiang Cf Moto',
+  'zontes': 'Zontes',
+
+  // ── Trucks, buses & vans ──
+  'scania': 'Scania', 'iveco': 'Iveco', 'hino': 'Hino', 'ud trucks': 'Ud Trucks',
+  'tata': 'Tata', 'ashok leyland': 'Ashok Leyland', 'shacman': 'Shacman', 'leyland': 'Leyland',
+  'mack': 'Mack', 'international': 'International', 'freightliner': 'Freightliner',
+  'peterbilt': 'Peterbilt', 'western star': 'Western Star', 'fuso': 'Fuso', 'foton': 'Foton',
+  'golden dragon': 'Golden Dragon', 'daimler': 'Daimler', 'daf': 'D A F', 'erf': 'E R F',
+  'faw': 'Faw',
+
+  // ── Agri & heavy metal ──
+  'john deere': 'John Deere', 'kubota': 'Kubota', 'caterpillar': 'Caterpillar',
+  'massey ferguson': 'Massey Ferguson', 'new holland': 'New Holland',
+  'agco allis (agrotec)': 'Agco Allis (Agrotec)', 'belarus': 'Belarus', 'claas': 'Claas',
+  'landini': 'Landini', 'valtra (valmet)': 'Valtra (Valmet)',
+  'case international': 'Case International', 'anglo international': 'Anglo International',
 };
 
 export const COMMON_MODELS_BY_MAKE: Record<string, string[]> = {
@@ -54,6 +84,32 @@ export const COMMON_MODELS_BY_MAKE: Record<string, string[]> = {
   'Renault': ['Kwid', 'Triber', 'Kiger', 'Clio', 'Duster', 'Captur', 'Megane', 'Sandero'],
   'Isuzu': ['D-Max', 'KB', 'mu-X'],
   'Mazda': ['CX-3', 'CX-30', 'CX-5', 'Mazda2', 'Mazda3', 'BT-50'],
+
+  // ── Vertical makes (Live Deals) — top models that surface in SA classifieds ──
+  'Harley Davidson': ['Sportster', 'Softail', 'Dyna', 'CVO', 'Street', 'Street Glide', 'Road King', 'Fat Boy', 'Iron 883', 'Pan America'],
+  'Yamaha': ['MT-07', 'MT-09', 'MT-10', 'R1', 'R3', 'R6', 'XT', 'WR', 'FZ', 'YZ', 'Tracer', 'Tenere'],
+  'Ducati': ['Monster', 'Panigale', 'Streetfighter', 'Multistrada', 'Scrambler', 'Diavel', 'SuperSport'],
+  'Kawasaki': ['Ninja', 'Z900', 'Z650', 'Versys', 'KLR', 'KLX', 'Vulcan', 'H2'],
+  'KTM': ['Duke', 'RC', 'Adventure', 'EXC', 'SX'],
+  'Triumph': ['Bonneville', 'Street Twin', 'Scrambler', 'Tiger', 'Speed Triple', 'Thruxton', 'Rocket'],
+  'Can-Am': ['Maverick', 'Commander', 'Renegade', 'Outlander', 'Spyder'],
+  'BombardierCanam': ['Maverick', 'Commander', 'Renegade', 'Outlander', 'Spyder'],
+  'Polaris': ['RZR', 'Sportsman', 'Ranger', 'General', 'Scrambler'],
+  'Aprilia': ['RS', 'Tuono', 'RSV4', 'Shiver', 'Dorsoduro'],
+  'Royal Enfield': ['Classic', 'Bullet', 'Himalayan', 'Interceptor', 'Meteor', 'Hunter'],
+  'MV Agusta': ['F3', 'F4', 'Brutale', 'Dragster', 'Turismo'],
+  'Husqvarna': ['401', '701', 'TE', 'FE', 'Vitpilen', 'Svartpilen'],
+  'Gas Gas': ['EC', 'EX', 'MC', 'TX'],
+  'Scania': ['R-Series', 'G-Series', 'P-Series', 'L-Series', 'S-Series'],
+  'Hino': ['500 Series', '300 Series', '700 Series', 'Dutro'],
+  'Ud Trucks': ['Quon', 'Condor', 'Croner', 'Kazer'],
+  'Iveco': ['Eurocargo', 'Stralis', 'Daily', 'Trakker'],
+  'John Deere': ['5 Series', '6 Series', '7 Series', '8 Series', '9 Series', '1000', '2000', '3000', '5000', '6000', '7000', '8000'],
+  'Kubota': ['B Series', 'L Series', 'M Series', 'MX', 'BX', 'RTV', 'U17'],
+  'Caterpillar': ['D6', 'D8', '320D', '330D', '950K', '336F', 'M315D'],
+  'Massey Ferguson': ['MF 200', 'MF 300', 'MF 400', 'MF 500', 'MF 600', 'MF 700', 'MF 8000'],
+  'New Holland': ['T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'TS6', 'Workmaster'],
+  'Claas': ['Arion', 'Axia', 'Xerion', 'Axos', 'Nexos'],
 };
 
 export function canonicalMake(input: string): string | null {

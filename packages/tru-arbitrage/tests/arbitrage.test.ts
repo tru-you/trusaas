@@ -1,8 +1,14 @@
 import assert from 'assert';
 import crypto from 'crypto';
 import { normalizeViaRegex } from '../src/normalizer/regex-fastpath';
+import { canonicalMake } from '../src/normalizer/make-aliases';
 import { normalizeViaNativeScraper } from '../src/normalizer/native-scraper';
-import { adjustForMileage, robustAverage } from '../src/engine/mileage';
+import { adjustForMileage, adjustForYearGap, robustAverage } from '../src/engine/mileage';
+import {
+  listCategories, listMakes as catMakes, listModels as catModels,
+  listVariants as catVariants, resolveByMmCode, resolveVariant,
+} from '../src/engine/catalogue';
+import { buildYearBand } from '../src/engine/valuation';
 import { calculateUrgencyScore, evaluateArbitrageOpportunity, evaluateOverpricedStock, generateVehicleFingerprint, calculateReconBuffer } from '../src/engine/arbitrage';
 import { calculateValuationConfidence } from '../src/engine/confidence';
 import { matchesBuyBox } from '../src/alerts/dispatcher';
@@ -621,7 +627,293 @@ console.log('\n8. Testing Dealer Registry...');
   assert.strictEqual(titleCaseVehicle('POLO'), 'Polo', 'Model title-cased');
   console.log(`   ✅ Catalogue: ${makes.length} makes, ${toyotaModels.length} Toyota models, casing rules hold`);
 
-  console.log('\n🎉 ALL TRUARBITRAGE TESTS PASSED SUCCESSFULLY! (14/14 Suites)');
+  // ── 11b. Vertical make normalization (Live Deals scan path) ──
+  console.log('\n11b. Testing vertical make normalization (scan listings escape the car-only filter)...');
+
+  // Bikes: a Harley listing must resolve make+model to a canonical TU key.
+  assert.strictEqual(canonicalMake('harley'), 'Harley Davidson', 'harley alias resolves');
+  assert.strictEqual(canonicalMake('ducati'), 'Ducati', 'ducati alias resolves');
+  assert.strictEqual(canonicalMake('yamaha'), 'Yamaha', 'yamaha alias resolves');
+  assert.strictEqual(canonicalMake('ktm'), 'KTM', 'ktm alias resolves');
+  // Trucks + agri.
+  assert.strictEqual(canonicalMake('scania'), 'Scania', 'scania resolves');
+  assert.strictEqual(canonicalMake('john deere'), 'John Deere', 'john deere resolves');
+  assert.strictEqual(canonicalMake('kubota'), 'Kubota', 'kubota resolves');
+  // Legacy car aliases still work.
+  assert.strictEqual(canonicalMake('vw'), 'Volkswagen', 'vw still resolves');
+  assert.strictEqual(canonicalMake('merc'), 'Mercedes-Benz', 'merc still resolves');
+
+  // Full normalizeViaRegex run on a bike listing → a real NormalizedVehicle.
+  const harleyListing: RawFbListing = {
+    id: 'fb_bike_1', source: 'facebook', url: 'https://www.facebook.com/marketplace/item/x',
+    title: '2017 Harley Davidson Sportster 883',
+    description: 'Mileage: 12000 km. Cruiser, clean. R125 000.',
+    final_price: 125000, location: 'Cape Town',
+  };
+  const bikeNorm = normalizeViaRegex(harleyListing);
+  assert.ok(bikeNorm, 'Harley listing normalizes');
+  assert.strictEqual(bikeNorm!.make, 'Harley Davidson', 'Make canonicalized to TU key');
+  assert.ok(typeof bikeNorm!.model === 'string' && bikeNorm!.model.length > 0, 'Model resolved');
+  assert.strictEqual(bikeNorm!.year, 2017, 'Year parsed');
+  assert.strictEqual(bikeNorm!.confidence, 0.95, 'Mileage present → high regex confidence, passes the 0.9 gate');
+  const bikeNormUpper = { ...bikeNorm!, make: bikeNorm!.make.toUpperCase() };
+  assert.ok(listModels(bikeNormUpper.make).length > 0, `Canonical make ${bikeNormUpper.make} exists in the TU catalogue`);
+
+  // Camera-trucks: a Scania must not be filtered as an unknown make.
+  const scaniaListing: RawFbListing = {
+    id: 'fb_truck_1', source: 'facebook', url: 'https://www.facebook.com/marketplace/item/y',
+    title: '2015 Scania R560 6x4', description: 'Truck tractor, 450000 km, R850 000.', final_price: 850000,
+  };
+  const truckNorm = normalizeViaRegex(scaniaListing);
+  assert.ok(truckNorm, 'Scania listing normalizes');
+  assert.strictEqual(truckNorm!.make, 'Scania', 'Scania canonicalized');
+  assert.strictEqual(truckNorm!.year, 2015, 'Scania year parsed');
+
+  console.log('   ✅ Vertical normalization: bikes/trucks/agri escape the old car-only filter');
+
+  // ── 12. Vertical catalogue classifier (7 categories, per-variant rules) ──
+  console.log('\n12. Testing vertical catalogue classifier (7 buckets, mixed makes split)...');
+
+  const cats = listCategories();
+  assert.strictEqual(cats.length, 7, 'Seven categories');
+  for (const c of cats) {
+    assert.ok(c.makeCount > 0 && c.modelCount > 0, `${c.id} has makes + models (${c.makeCount}/${c.modelCount})`);
+  }
+  const byId = Object.fromEntries(cats.map((c) => [c.id, c]));
+
+  // Moto: Harley + the motorcycle aggregator all land in moto.
+  assert.ok(catMakes('moto').includes('HARLEY DAVIDSON'), 'Harley is moto');
+  assert.ok(catMakes('moto').includes('MULTIPLE MOTORCYCLE MANUFACTURERS'), 'Moto aggregator make is moto');
+  const harleyModel = catModels('moto', 'HARLEY DAVIDSON')[0];
+  assert.ok(harleyModel, 'Harley has a moto model');
+  const harleyVariants = catVariants('moto', 'HARLEY DAVIDSON', harleyModel);
+  assert.ok(harleyVariants.length > 0, 'Harley moto variants resolve');
+  assert.ok(harleyVariants.every((v) => v.category === 'moto'), 'Every Harley variant in this model is moto');
+
+  // Trucks: Scania forced by make, Mercedes trucks caught by body/axle alone.
+  assert.ok(catMakes('trucks').includes('SCANIA'), 'Scania is trucks');
+  const scaniaModel = catModels('trucks', 'SCANIA')[0];
+  assert.ok(scaniaModel, 'Scania has a truck model');
+  assert.ok(catVariants('trucks', 'SCANIA', scaniaModel).every((v) => v.category === 'trucks'), 'Scania variants all trucks');
+  assert.ok(catModels('trucks', 'MERCEDES-BENZ').length > 0, 'Mercedes trucks mixed into a car make are caught by body/axle');
+
+  // Agri: blank-body tractors need the make list — John Deere can't leak to cars.
+  assert.ok(catMakes('agri').includes('JOHN DEERE'), 'John Deere is agri');
+  assert.ok(catModels('agri', 'JOHN DEERE').length > 0, 'John Deere has agri models');
+  assert.strictEqual(catModels('cars', 'JOHN DEERE').length, 0, 'John Deere never leaks into cars');
+
+  // SPECIALTY pseudo-make routes to its four categories.
+  assert.ok(catModels('marine', 'SPECIALTY').includes('BOAT/JETSKI'), 'Boats live under SPECIALTY -> marine');
+  assert.ok(catModels('caravans', 'SPECIALTY').includes('CARAVAN'), 'Caravans -> caravans');
+  assert.ok(catModels('caravans', 'SPECIALTY').includes('TRAILER'), 'Trailers -> caravans');
+  assert.ok(catModels('agri', 'SPECIALTY').includes('YELLOW METAL'), 'Yellow metal -> agri');
+  assert.ok(catModels('specialty', 'SPECIALTY').includes('BICYCLE'), 'Bicycles -> specialty');
+
+  // Mixed make at the model level: BMW spawns BOTH cars and moto.
+  assert.ok(catModels('moto', 'BMW').length > 0, 'BMW has moto models');
+  assert.ok(catModels('cars', 'BMW').length > 0, 'BMW has car models');
+  const bmwMotoModel = catModels('moto', 'BMW')[0];
+  assert.ok(catVariants('moto', 'BMW', bmwMotoModel).every((v) => v.category === 'moto'), 'BMW model listed under moto is all moto');
+  const bmwCarModel = catModels('cars', 'BMW')[0];
+  assert.ok(catVariants('cars', 'BMW', bmwCarModel).every((v) => v.category === 'cars'), 'BMW model listed under cars is all cars');
+
+  // mmCode resolution + variant-text resolution.
+  const caravan = resolveByMmCode('99905001');
+  assert.ok(caravan && caravan.model === 'CARAVAN' && caravan.category === 'caravans', 'resolveByMmCode hits SPECIALTY caravan');
+  const boat = resolveVariant('marine', 'SPECIALTY', 'BOAT/JETSKI', 'BOAT/JETSKI');
+  assert.ok(boat && boat.mmCode === '99920001', 'resolveVariant resolves boat text to its mmCode');
+
+  // Cascade integrity: every variant has a resolvable mmCode + sane year set.
+  for (const make of ['TOYOTA', 'VOLKSWAGEN', 'BMW', 'SCANIA', 'HARLEY DAVIDSON', 'JOHN DEERE']) {
+    for (const model of catModels('cars', make).concat(catModels('moto', make)).concat(catModels('trucks', make)).concat(catModels('agri', make)).slice(0, 4)) {
+      for (const v of catVariants(undefined, make, model)) {
+        assert.ok(v.mmCode, `${make} ${model} variant has mmCode`);
+        assert.ok(Array.isArray(v.years) && v.years.length > 0, `${make} ${model} variant has years`);
+        assert.ok(v.years.every((y) => y >= 1980 && y <= new Date().getFullYear() + 1), `${make} ${model} years in sane range`);
+      }
+    }
+  }
+  console.log(`   ✅ Classifier: 7 buckets — ${byId.cars.makeCount} car makes · ${byId.moto.makeCount} moto · ${byId.trucks.makeCount} trucks · ${byId.marine.makeCount} marine · ${byId.caravans.makeCount} caravans · ${byId.agri.makeCount} agri · ${byId.specialty.makeCount} specialty`);
+
+  // ── 13. Year-band scraping + year-gap age correction ──
+  console.log('\n13. Testing year band (±1 SERP widening) + age-corrected comps...');
+
+  assert.deepStrictEqual(buildYearBand(2021, 1), [2020, 2021, 2022], 'Band of ±1 around the model year');
+  assert.deepStrictEqual(buildYearBand(2021, 0), [2021], 'Zero tolerance = exact year only');
+  assert.deepStrictEqual(buildYearBand(2021, -2), [2021], 'Negative tolerance clamps to 0');
+
+  // A 2019 comp on a 2021 subject must price UP (~0.88^-2); a same-year comp is untouched.
+  const subjectYear = 2021;
+  const adjusted = adjustForYearGap([
+    { price: 200000, year: 2019 },
+    { price: 200000, year: 2021 },
+    { price: 200000, km: 50000 }, // no year -> untouched
+  ], subjectYear);
+  assert.strictEqual(adjusted[1].price, 200000, 'Same-year comp unchanged');
+  assert.strictEqual(adjusted[2].price, 200000, 'Yearless comp unchanged');
+  assert.strictEqual(adjusted[0].price, Math.round(200000 * Math.pow(0.88, -2)), 'Older comp priced up to subject-year equivalence');
+
+  // Far-year escape is clamped, never allowed to swamp the average.
+  const clamped = adjustForYearGap([{ price: 100000, year: 2012 }], 2021);
+  assert.ok(clamped[0].price >= 100000 * 1.3 && clamped[0].price <= 100000 * 1.4 + 1, 'Far-year comp clamped to 1.4x');
+
+  console.log('   ✅ Band + age correction: thin exact-year samples widen, comps age-normalise to the subject year');
+
+  // ── 14. Lookup cascade binding (functional — routes are thin wrappers) ──
+  console.log('\n14. Testing lookup cascade binding (category → make → model → variant)...');
+
+  const motoMakes = catMakes('moto');
+  assert.ok(motoMakes.length > 0 && motoMakes.every((m) => catMakes().includes(m)), 'Category makes are a subset of the full index');
+  const allModels = catModels('cars', 'TOYOTA');
+  assert.ok(allModels.length > 0, 'Car models for Toyota load');
+  const variantSet = catVariants('cars', 'TOYOTA', allModels[0]);
+  assert.ok(variantSet.length > 0, 'Variants for a Toyota car model load');
+  assert.ok(variantSet.every((v) => v.category === 'cars'), 'Variant list is category-filtered');
+  assert.deepStrictEqual(catVariants('moto', 'TOYOTA', allModels[0]).length, 0, 'Moto view of a car model is empty');
+
+  console.log('   ✅ Lookup cascade: category filters propagate through make/model/variant');
+
+  // ── 15. Testing strict comp matching & sister-model fallback ──
+  console.log('\n15. Testing strict comp matching & sister-model fallback...');
+  const { extractNextDataComps, extractJsonLdComps, extractCardComps } = require('../src/engine/valuation');
+
+  const mockPoloPageHtml = `
+    <html>
+      <head>
+        <script id="__NEXT_DATA__" type="application/json">
+          {
+            "props": {
+              "pageProps": {
+                "listings": [
+                  { "year": 2018, "make": "Volkswagen", "model": "Polo", "price": 185000, "mileage": 60000, "url": "/polo-1" },
+                  { "year": 2018, "make": "Toyota", "model": "Hilux", "price": 450000, "mileage": 80000, "url": "/hilux-1" },
+                  { "year": 2018, "make": "Ford", "model": "Ranger", "price": 390000, "mileage": 90000, "url": "/ranger-1" }
+                ]
+              }
+            }
+          }
+        </script>
+        <script type="application/ld+json">
+          [
+            { "brand": { "name": "Volkswagen" }, "name": "Volkswagen Polo 1.2 TSI 2018", "price": 180000, "mileageFromOdometer": 55000 },
+            { "brand": { "name": "Toyota" }, "name": "Toyota Hilux 2.8 GD-6 2018", "price": 460000, "mileageFromOdometer": 85000 }
+          ]
+        </script>
+      </head>
+      <body>
+        <a class="result-tile" href="/polo-2">2018 Volkswagen Polo 1.0 TSI Comfortline R182,000 58,000 km</a>
+        <a class="result-tile" href="/hilux-2">2018 Toyota Hilux 2.4 GD-6 Raider R420,000 95,000 km</a>
+      </body>
+    </html>
+  `;
+
+  const nextComps = extractNextDataComps(mockPoloPageHtml, 'Volkswagen', 'Polo', 2018);
+  assert.strictEqual(nextComps.length, 1, 'extractNextDataComps must filter out Hilux & Ranger when searching Polo');
+  assert.strictEqual(nextComps[0].price, 185000, 'Matched Polo price extracted');
+
+  const jsonLdComps = extractJsonLdComps(mockPoloPageHtml, 'Volkswagen', 'Polo', 2018);
+  assert.strictEqual(jsonLdComps.length, 1, 'extractJsonLdComps must filter out Hilux when searching Polo');
+  assert.strictEqual(jsonLdComps[0].price, 180000, 'Matched JsonLd Polo price extracted');
+
+  const cardComps = extractCardComps(mockPoloPageHtml, 'Volkswagen', 'Polo', 2018);
+  assert.strictEqual(cardComps.length, 1, 'extractCardComps must filter out Hilux card');
+  assert.strictEqual(cardComps[0].price, 182000, 'Matched card Polo price extracted');
+
+  console.log('   ✅ Strict comp matching: non-matching make/model listings strictly filtered out');
+
+  // ── 16. Year extraction from CONCATENATED card text (the 0/800 bug) ──
+  console.log('\n16. Testing year extraction from concatenated AutoTrader card text...');
+  const { findCardYear, yearInBand } = require('../src/engine/year');
+
+  // Real AutoTrader tiles: no whitespace between the price/rating blob and the year.
+  const realTiles = [
+    '16R 669 000Fair Price2025 Toyota Hilux2.8GD-6 Double Cab Raider autoUsed23 000 kmAutomaticDiesel',
+    '11R 369 995Fair Price2013 Toyota Hilux3.0D-4D Double Cab 4x4 Raider AutoUsed241 929 km',
+    '26Insights availableR 459 900Great Price2021 Toyota Fortuner2.4GD-6 AutoUsed106 000 km',
+    '30R 809 900No Rating2026 GWM Tank 3002.4T Ultra Luxury 4WDNewAutomaticDiesel',
+    '2021 Toyota Hilux 2.8GD-6', // space-delimited still works
+  ];
+  const expected = [2025, 2013, 2021, 2026, 2021];
+
+  // The old /\b(19|20)\d{2}\b/ matched ZERO of these (the bug — no word
+  // boundary between "Price" and "2025"). The digit-boundary fix finds all.
+  for (let i = 0; i < realTiles.length; i++) {
+    if (i < realTiles.length - 1) {
+      assert.strictEqual(
+        realTiles[i].match(/\b(19|20)\d{2}\b/)?.[0] || null,
+        null,
+        `Sanity: old word-boundary pattern must fail on concatenated tile #${i}`
+      );
+    }
+    assert.strictEqual(
+      findCardYear(realTiles[i], 'Toyota'),
+      expected[i],
+      `findCardYear recovers ${expected[i]} from tile #${i}`
+    );
+  }
+
+  // Unknown year must be REJECTED by the band gate (the old code accepted it).
+  assert.strictEqual(yearInBand(null, 2021, 2), false, 'Unreadable year is rejected, never silently accepted');
+  assert.strictEqual(yearInBand(2024, 2021, 2), false, 'Outside 2-year tolerance rejected');
+  assert.strictEqual(yearInBand(2022, 2021, 2), true, 'Inside tolerance accepted');
+
+  console.log('   ✅ Year extraction: 5/5 concatenated tiles recovered, unknown years rejected');
+
+  // ── 17. Make dictionary — the 209-make blind spot (GWM etc.) ──
+  console.log('\n17. Testing full-catalogue make detection (formerly-blind makes)...');
+
+  const { detectMakeAndModel } = require('../src/normalizer/regex-fastpath');
+
+  const blindCases: Array<[string, string, string]> = [
+    ['2025 GWM P-Series 2.4T Double Cab LT R526,900', 'GWM', 'P-Series'],
+    ['2021 Changan Alsvin 1.5L R149,900', 'CHANGAN', 'Alsvin'],
+    ['2023 BYD Atto 3 R499,900', 'BYD', 'Atto'],
+    ['2019 SsangYong Korando 2.0 Diesel R189,900', 'SSANGYONG', 'Korando'],
+    ['2008 Datsun 1200 Bakkie R65,000', 'DATSUN', '1200'],
+  ];
+  for (const [title, make, model] of blindCases) {
+    const r = detectMakeAndModel(title);
+    assert.ok(r, `detectMakeAndModel resolves "${title}"`);
+    assert.strictEqual(r!.make, make, `Make canonicalized to catalogue key "${make}"`);
+    assert.ok(String(r!.model).length >= 2, `Model extracted for "${title}"`);
+  }
+
+  // Longest-first: "RANGE ROVER" must not half-match "LAND ROVER".
+  assert.strictEqual(detectMakeAndModel('2018 Land Rover Discovery')!.make, 'Land Rover', 'Alias path still wins for Land Rover');
+
+  // Boundary guard: "AMC" must NOT match inside "camera".
+  assert.strictEqual(detectMakeAndModel('2010 camera equipment box'), null, 'Substring inside a word is not a make mention');
+
+  // Known make behavior unchanged.
+  assert.strictEqual(detectMakeAndModel('2017 VW Polo 1.2 TSI')!.make, 'Volkswagen', 'Alias vw still resolves');
+
+  console.log('   ✅ Make dictionary: GWM/Changan/BYD/SsangYong/Datsun + boundary guards hold');
+
+  // ── 18. Targeted ingestion parser (P7 lane) ──
+  console.log('\n18. Testing targeted AutoTrader listing parser...');
+  const { parseAutoTraderListings } = require('../src/ingestion/targets');
+
+  const mockAtHtml = `
+    <html>
+      <body>
+        <a class="result-tile" href="/gwm-1"><span class="price">24R 249 900Great Price2021 GWM P300 LT Used30 000 kmAutomaticDiesel</span></a>
+        <a class="result-tile" href="/gwm-2">18R 629 995Fair Price2026 GWM Tank 300 Ultra Luxury Used50 kmAutomaticDiesel</a>
+        <a class="result-tile" href="/toyota-1">11R 369 995Fair Price2013 Toyota Hilux Raider AutoUsed241 929 km</a>
+        <a class="result-tile" href="/noyear-1">R 149 900 Great Price GWM Steed (no readable year) 200 000 km</a>
+      </body>
+    </html>
+  `;
+  const gwmListings = parseAutoTraderListings(mockAtHtml, 'GWM');
+  assert.strictEqual(gwmListings.length, 2, 'Only GWM cards with a readable year parse');
+  assert.ok(gwmListings[0].url.includes('gwm-1'), 'Listing carries its deep link');
+  assert.ok(gwmListings[0].final_price === 249900, 'Price parsed from concatenated tile');
+
+  const toyotaListings = parseAutoTraderListings(mockAtHtml, 'Toyota', 'Hilux');
+  assert.strictEqual(toyotaListings.length, 1, 'make+model filter keeps only Hilux');
+
+  console.log('   ✅ Targeted parser: make/model filter + readable-year gate hold');
+
+  console.log('\n🎉 ALL TRUARBITRAGE TESTS PASSED SUCCESSFULLY! (21/21 Suites)');
 })().catch((err) => {
   console.error('\n💥 TEST FAILURE:', err?.message || err);
   process.exit(1);

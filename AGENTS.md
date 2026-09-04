@@ -1,7 +1,15 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-08-24 by ox-alpha (OpenCode)
+**Last updated:** 2026-09-04 by Antigravity
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
+
+---
+
+## 0. Strict Agent Deployment & Brand Rules
+
+- **NEVER run live production deploys (Netlify, Render, etc.) automatically without explicit user review and confirmation.** Always preview changes locally or present generated assets in conversation/artifacts first.
+- **NEVER place internal administrative tools, scratch pages, or utility generators in public web root directories (e.g. `tddeploy/`).** Keep internal tools in `tools/` or local workspace directories to prevent public indexing and bad SEO.
+- **ALWAYS use official brand logo assets (`assets/brand/trudealer-logo-3d.svg` / `trudealer-logo-nav.svg`)** and get user review before finalizing co-branded banner designs.
 
 ---
 
@@ -210,7 +218,32 @@ A market-agnostic valuation engine lives in **`packages/market-scraper/`** — b
 - **Retired**: FB Marketplace lane (`brightdata.ts`, `mock-payloads.ts`, WhatsApp alerts) — webhook-only dispatch via `src/alerts/` (`formatDealAlertText`, `formatSellerOfferTemplate`).
 - **Flow ↔ radar**: Flow's public feed `GET /api/public/stock?dealer=<slug>` now exposes `dateAcquired` + live-derived `daysInInventory` (the stored field is write-once — derive from dateAcquired like App.tsx does). Master-admin provisioning: TruRadar tab in DealershipAdmin → Flow proxies `PUT /api/internal/truradar/dealers/:slug` to the radar's registry with the sync key (sync key never touches the browser). `TRU_RADAR_URL` env on premium.
 - **Deploy**: Render service `trusaas-arbitrage` (render.yaml §7) — `JWT_SECRET` + `TRUFLOW_SYNC_KEY` must be set in the dashboard (tokens forgeable without JWT_SECRET). Domain radar.tru-saas.com planned.
-- **Tests**: `npm test` (12 suites, no network). Browser-verified live: real scan surfaced 3 deals / R193k identified; dashboard login/demo/claim/session-persist all pass.
+- **Tests**: `npm test` (17 suites, no network). Browser-verified live: real scan surfaced 3 deals / R193k identified; dashboard login/demo/claim/session-persist all pass.
+
+### TruRadar scraper overhaul — year filter, per-host circuits, targeted scan (2026-09-05, packages/tru-arbitrage)
+
+Owner-reported: "find deals sometimes shows nothing of a make that clearly has hundreds for sale, while find cheapest always finds it." Root causes (verified against the live sites):
+
+- **Year filter was 100% dead on AutoTrader.** Tiles concatenate fields (`"Fair Price2025 Toyota"`) so `\b(19|20)\d{2}\b` matched 0/800 cards and every comp accepted any year → wide IQR → confidence under the 0.6 floor → deals suppressed. Fix: `src/engine/year.ts` (`findCardYear`/`yearInBand`) uses digit boundaries + make-anchored matching, recovers 31/32 cards, **rejects** unreadable years. Same `\b` bug fixed in `regex-fastpath.ts` `parseYear`.
+- **`adjustForYearGap` was dead code** (unit-tested since 2026-09-04 but never wired) — now called before `adjustForMileage`. `adjustForMileage` also preserves `year`.
+- **Scan had no targeting.** It sampled the newest ~32 cars posted nationally (`sort=Date_Descending` page 1); `allowedMakes` had no UI field and only filtered alerts. Fix: **Watch targets** — Buy Box modal now has a `watchTargets` field (`"Toyota"` / `"Toyota/Hilux"`), persisted on `DealerBuyBox`, driving a new targeted lane (`src/ingestion/targets.ts`) that queries AutoTrader cheapest-first + paginated. Verified live: 62 GWM listings from 2 pages.
+- **209 of 312 makes invisible to the normalizer** (hand alias table). `detectMakeAndModel` now falls through to the local TU catalogue (312 makes), so GWM/Changan/Omoda/Jaecoo/SsangYong/Datsun/BYD/JMC/JAC normalize. Targeted listings also carry typed `year/make/model/mileage` that `normalizeViaRegex` prefers over title parsing.
+- **Per-host circuit breakers** (was per-tier): cars.co.za's by-design 403 no longer opens the `direct` tier for AutoTrader (a 384ms working path). HTML fetch rewritten (`fetch-html.ts`): single-flight + 10-min cached HTML (cap 500) + 8-way concurrency cap + 2 retries with backoff. `cacheStats()` on `/api/health`.
+- **Waste cut ~75%**: AutoTrader ignores `year=` (5 band URLs = 5 copies of the same page) → one URL/page, local year filtering; Gumtree (0 tiles, ~4.5s) off unless `SCRAPER_GUMTREE=1`; `SCRAPER_CLASSIFIEDS_PAGES` default 3; `CONCURRENCY` 5→3. Four extractors merged with dedupe (was `reduce(max)` winner-takes-all); `css-selector` comps kept last (no km/link).
+- **Config parity with Lens/Inspect**: `SCRAPER_UNLOCKER_ENABLED` accepts `1|true|yes` (was strict `'1'`); `BRIGHTDATA_API_KEY` falls back to `SERP_API_KEY`; code zone default `unlocker` (was `tds2`). Note: the radar's REAL zone is `auto` (confirmed in the BrightData dashboard + render.yaml `value: auto`) — do not "fix" it to match the sibling default.
+- **Funnel instrumentation**: `IngestionBatchResult` now carries `rawBySource`, `droppedNormalizer/MakeUnknown/DamagedWanted/NoComps/BelowConfidence/BelowMargin` + `sourceHealth`. A zero-deal scan is diagnosable, not a black box.
+- **New tests**: suites 16–18 (concatenated-year recovery incl. the 0/800 regression, full-catalogue make detection + boundary guards, targeted parser). 21 suites pass; live smoke verified GWM P-Series 2025 → 21 comps, confidence 0.85.
+
+Config notes: `SCRAPER_GUMTREE` (off by default), `SCRAPER_CLASSIFIEDS_PAGES` (default 3), `SCRAPER_UNLOCKER_ENABLED` gate now regex, `BRIGHTDATA_UNLOCKER_ZONE` default `unlocker`. New files: `src/engine/year.ts`, `src/ingestion/targets.ts`.
+
+### TruRadar vertical catalogue — 7-category cascade + year-band scraping (2026-09-04, packages/tru-arbitrage)
+
+TruRadar's price-check went from a flat make→model→freeform-year to a **Category → Make → Model → Variant → Year** cascade backed by the local classified TransUnion dump (27,503 variants / 312 makes).
+
+- **Classifier (`src/engine/catalogue.ts`, new)**: per-VARIANT, deterministic, precedence-ordered → 7 buckets: cars/bakkies (S/D, H/B, SUV, S/W, D/C, S/C…), moto (bodies R/D/O/F/S/S/3W/4W/6W/ATV + axles 1X1/2X1 + `MULTIPLE MOTORCYCLE MANUFACTURERS`), trucks (make list Scania/Iveco/Hino/Tata/Foton… + bodies C/C/T/T/B/S/D/S/P/V… + axles 6X4/8X4/6X6…), marine (`BOAT/JETSKI`), caravans (`CARAVAN`/`TRAILER`/R/V), agri (make list John Deere/Kubota/Caterpillar/Case IH… — REQUIRED, agri rows carry blank body+axle), specialty (`SPECIALTY` pseudo-make + G/E/G/C/B/C). Mixed makes split at variant level — BMW yields both car and moto models.
+- **Server**: `GET /api/lookup/{categories,makes,models,variants}` (+category filter) all from the local file — zero per-keystroke API cost. `GET /api/lookup/cheapest` gains `category`, `variant`, `mmCode`; `resolveVariant` recovers an mmCode from text, and the classifieds URLs become version-specific instead of "Golf" guesses.
+- **Year-band scraping (`src/engine/{valuation,mileage}.ts`)**: classifieds SERPs now query `year-1 / year / year+1` (`SCRAPER_YEAR_TOLERANCE`, default 1 — dealer habit) so a thin exact-year page can't starve the sample. `ValuationComp` carries `year`; `adjustForYearGap` age-corrects band comps to the subject year (0.88/yr, clamped 0.7–1.4). Source counts dedupe so the results match `listingsFound`. **Price check and the scan valuation share `gatherComps`, so both got the band.**
+- **Refresh pipeline (`scripts/refresh-catalogue.ts`, `npm run catalogue:refresh`)**: Imagin8 `getModels` per make (flat-fee retainer) joins by mmCode → **`data/tu-years.json`** with real intro/discon year ranges. Server never calls Imagin8 at request time — reads the overlay only. Local run verified: 311/312 makes, 28,062 mmCodes (MCCORMICK returned 0 live rows — consolidated make, excluded). ⚠️ **`.gitignore` excludes `data/*.json`** — tu-variants/tu-kilometers are in git via force-add only; a `tu-years.json` refresh must be added with `git add -f`, or prod deploys without real year ranges. Env: `IMAGIN8_API_KEY`/`IMAGIN8_CUSTOMER_ID`/`IMAGIN8_APP_NAME` on the arbitrage Render service (sync: false).
 
 ### Inspector e-sign on all three reports (2026-08-24)
 

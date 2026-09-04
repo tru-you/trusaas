@@ -17,15 +17,18 @@ export const CONFIG = {
   FLOW_PREMIUM_URL: process.env.FLOW_PREMIUM_URL || 'https://premium.tru-saas.com',
 
   // Bright Data Keys & Endpoints (Solves Cloudflare on Cars.co.za / AutoTrader)
-  BRIGHTDATA_API_KEY: process.env.BRIGHTDATA_API_KEY || '',
-  BRIGHTDATA_UNLOCKER_ZONE: process.env.BRIGHTDATA_UNLOCKER_ZONE || process.env.UNLOCKER_ZONE || 'tds2',
+  BRIGHTDATA_API_KEY: process.env.BRIGHTDATA_API_KEY || process.env.SERP_API_KEY || '',
+  BRIGHTDATA_UNLOCKER_ZONE: process.env.BRIGHTDATA_UNLOCKER_ZONE || process.env.UNLOCKER_ZONE || 'unlocker',
   // Force the Web Unlocker lane even when BRIGHTDATA_API_KEY is unset (some services
-  // gate the unlocker behind dashboard-set keys). "1" = always attempt unlocker.
-  SCRAPER_UNLOCKER_ENABLED: process.env.SCRAPER_UNLOCKER_ENABLED === '1',
+  // gate the unlocker behind dashboard-set keys). "1"/"true"/"yes" = always attempt unlocker.
+  // Matches the sibling apps' /^(1|true|yes)$/i gate — the old strict ==='1' silently
+  // disabled the unlocker when the dashboard set "true".
+  SCRAPER_UNLOCKER_ENABLED: /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || ''),
 
   // Google SERP Ingestion for Dealer Sites — multi-city discovery matrix +
   // per-dealer deep hits. SERP calls bill per request; QUERY_BUDGET is the cap.
   SERP_API_KEY: process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || '',
+  SERPER_API_KEY: process.env.SERPER_API_KEY || process.env.SERP_KEY || '',
   SERP_API_URL: process.env.SERP_API_URL || '',
   SERP_PROVIDER: (process.env.SERP_PROVIDER || 'brightdata').toLowerCase(),
   SERP_ZONE: process.env.SERP_ZONE || process.env.BRIGHTDATA_SERP_ZONE || 'serp',
@@ -72,6 +75,10 @@ export const CONFIG = {
   // Scraper Timeout & Cache
   SCRAPER_TIMEOUT_MS: Number(process.env.SCRAPER_TIMEOUT_MS) || 15000,
   SCRAPER_CACHE_TTL_MS: Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1000,
+  // Year band for classifieds SERPs — query year-1 / year / year+1 (dealer
+  // habit: widen a year each side so a thin exact-year result set can't starve
+  // the sample). Also the card-level year tolerance. 0 = exact year only.
+  SCRAPER_YEAR_TOLERANCE: Math.max(0, Number(process.env.SCRAPER_YEAR_TOLERANCE) || 2),
   DATA_DIR: process.env.DATA_DIR || './data',
 
   // Auto-scan schedule

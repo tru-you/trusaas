@@ -169,8 +169,8 @@
   <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background: var(--bg-base)">
     <div class="tru-panel p-8 w-full max-w-sm">
       <div class="flex flex-col items-center gap-3 mb-6">
-        <img src="/favicon.svg" alt="TruRadar" class="w-16 h-16" style="filter: drop-shadow(0 10px 28px rgba(79,227,220,0.28))">
-        <p class="text-[13px]" style="color: var(--muted)">Vehicle sourcing radar • South Africa</p>
+        <img src="/truradar-logo-3d.svg" alt="TruRadar" class="h-16 w-auto max-w-[280px]" style="filter: drop-shadow(0 10px 28px rgba(79,227,220,0.28))">
+        <p class="text-[12px] font-mono tracking-wider uppercase text-center" style="color: var(--muted)">Multi-Vehicle Sourcing Radar • South Africa</p>
       </div>
       <p class="text-[13px] mb-6" style="color: var(--muted)">Sign in with your dealership slug and access code.</p>
       <div class="space-y-4">
@@ -196,12 +196,8 @@
     <header class="sticky top-0 z-50 glass-nav px-4 md:px-6 py-3 md:py-4">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <img src="/favicon.svg" alt="" class="w-10 h-10 rounded-xl shrink-0">
+          <img src="/truradar-logo-3d.svg" alt="TruRadar" class="h-10 w-auto shrink-0" style="filter: drop-shadow(0 4px 12px rgba(79,227,220,0.2))">
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="text-lg font-semibold tracking-tight">Tru<span style="color: var(--accent)">Radar</span></span>
-              <span class="hidden md:inline chip chip-accent">Sourcing Radar</span>
-            </div>
             <p class="text-[12px] font-medium truncate" style="color: var(--muted)" id="headerDealerName">—</p>
           </div>
         </div>
@@ -230,49 +226,66 @@
       <section id="viewSearch" class="view m-view pt-6 pb-2">
         <div class="tru-panel p-5">
           <div onclick="togglePriceCheck()" role="button" tabindex="0" aria-expanded="true" class="flex items-center justify-between gap-3 flex-wrap cursor-pointer select-none">
-            <h2 class="font-semibold text-[17px]">Price check — cheapest in the country</h2>
-            <span class="chip chip-accent">pick a car, see every live asking price <svg class="icon" style="width:14px;height:14px"><use href="#i-chev" id="lookupChevronUse"/></svg></span>
-          </div>
-          <div id="lookupPanel">
-            <p class="text-[13px] mt-2 mb-4" style="color: var(--muted)">Every live asking price in South Africa, cheapest first.</p>
-            <div class="flex items-end gap-3 flex-wrap">
-              <label class="flex flex-col gap-1 w-48">
-                <span class="tru-label">Make</span>
-                <select id="lookupMake" onchange="onLookupMakeChange()" class="tru-input"><option value="">Loading…</option></select>
-              </label>
-              <label class="flex flex-col gap-1 w-56">
-                <span class="tru-label">Model</span>
-                <select id="lookupModel" class="tru-input"><option value="">Pick a make first</option></select>
-              </label>
-              <label class="flex flex-col gap-1 w-28">
-                <span class="tru-label">Year</span>
-                <input type="number" id="lookupYear" min="1990" max="2027" placeholder="2019" class="tru-input font-mono-code">
-              </label>
-              <button onclick="doPriceCheck()" id="lookupBtn" class="btn-primary">Find cheapest</button>
-            </div>
-            <div id="lookupSummary" class="hidden mt-4 font-mono-code text-[13px]" style="color: var(--white-dim)"></div>
-            <div id="lookupResults" class="hidden mt-3 overflow-x-auto">
-              <div id="lookupLoading" class="hidden mt-3">
-                <div class="space-y-2">
-                  <div class="skeleton" style="height:40px"></div>
-                  <div class="skeleton" style="height:40px"></div>
-                  <div class="skeleton" style="height:40px"></div>
-                  <div class="skeleton" style="height:40px"></div>
-                </div>
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--accent-surface); color: var(--accent)">
+                <svg class="icon" style="width:18px;height:18px"><use href="#i-search"/></svg>
               </div>
-              <table class="w-full text-[13px] text-left border-collapse min-w-[520px]">
+              <div>
+                <h2 class="font-semibold text-[17px] text-white">Price check — cheapest in the country</h2>
+                <p class="text-[12px] hidden sm:block" style="color: var(--muted)">Instant market pricing across 7 vehicle categories</p>
+              </div>
+            </div>
+            <span class="chip chip-accent flex items-center gap-1">pick a vehicle, see every live asking price <svg class="icon" style="width:14px;height:14px"><use href="#i-chev" id="lookupChevronUse"/></svg></span>
+          </div>
+          <div id="lookupPanel" class="mt-4">
+            <p class="text-[13px] mb-4" style="color: var(--muted)">Every live asking price in South Africa, cheapest first — each query is widened a year either side of the model year so the sample is never starved.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+              <label class="flex flex-col gap-1 w-full">
+                <span class="tru-label">Category</span>
+                <select id="lookupCategory" onchange="onLookupCategoryChange()" class="tru-input w-full"><option value="">Loading…</option></select>
+              </label>
+              <label class="flex flex-col gap-1 w-full">
+                <span class="tru-label">Make</span>
+                <select id="lookupMake" onchange="onLookupMakeChange()" class="tru-input w-full"><option value="">Pick a category first</option></select>
+              </label>
+              <label class="flex flex-col gap-1 w-full">
+                <span class="tru-label">Model</span>
+                <select id="lookupModel" onchange="onLookupModelChange()" class="tru-input w-full"><option value="">Pick a make first</option></select>
+              </label>
+              <label class="flex flex-col gap-1 w-full">
+                <span class="tru-label">Variant</span>
+                <select id="lookupVariant" onchange="onLookupVariantChange()" class="tru-input w-full"><option value="">Pick a model first</option></select>
+              </label>
+              <label class="flex flex-col gap-1 w-full">
+                <span class="tru-label">Model year</span>
+                <select id="lookupYear" class="tru-input w-full"><option value="">Pick a variant first</option></select>
+              </label>
+            </div>
+            <div class="mt-4 flex items-center justify-between flex-wrap gap-3">
+              <div id="lookupSummary" class="hidden font-mono-code text-[13px]" style="color: var(--white-dim)"></div>
+              <button onclick="doPriceCheck()" id="lookupBtn" class="btn-primary w-full sm:w-auto min-w-[160px] sm:ml-auto">Find cheapest</button>
+            </div>
+            <div id="lookupResults" class="hidden mt-4 overflow-x-auto rounded-xl border border-[rgba(232,234,230,0.08)]">
+              <div id="lookupLoading" class="hidden p-4 space-y-2">
+                <div class="skeleton" style="height:36px"></div>
+                <div class="skeleton" style="height:36px"></div>
+                <div class="skeleton" style="height:36px"></div>
+                <div class="skeleton" style="height:36px"></div>
+              </div>
+              <table class="w-full text-[13px] text-left border-collapse min-w-[540px]">
                 <thead>
-                  <tr style="color: var(--muted)" class="border-b">
-                    <th class="py-2 px-2 font-medium font-mono-code">Price</th>
-                    <th class="py-2 px-2 font-medium font-mono-code">Mileage</th>
-                    <th class="py-2 px-2 font-medium font-mono-code">Source</th>
-                    <th class="py-2 px-2 font-medium font-mono-code">Listing</th>
+                  <tr style="color: var(--muted); background: rgba(232,234,230,0.02)" class="border-b border-[rgba(232,234,230,0.08)]">
+                    <th class="py-2.5 px-3 font-medium font-mono-code">Price</th>
+                    <th class="py-2.5 px-3 font-medium font-mono-code">Year</th>
+                    <th class="py-2.5 px-3 font-medium font-mono-code">Mileage</th>
+                    <th class="py-2.5 px-3 font-medium font-mono-code">Source</th>
+                    <th class="py-2.5 px-3 font-medium font-mono-code">Listing</th>
                   </tr>
                 </thead>
                 <tbody id="lookupBody"></tbody>
               </table>
             </div>
-            <div id="lookupError" class="hidden mt-3 text-[13px]" style="color: var(--danger)" role="alert"></div>
+            <div id="lookupError" class="hidden mt-3 text-[13px] p-3 rounded-lg bg-[rgba(184,106,106,0.1)] border border-[rgba(184,106,106,0.2)]" style="color: var(--danger)" role="alert"></div>
           </div>
         </div>
       </section>
@@ -336,6 +349,7 @@
                 <option value="ALL">All Deal Types</option><option value="underpriced_arbitrage">Underpriced</option>
                 <option value="stale_floorplan_distress">Stale Floorplan</option><option value="price_drop_velocity">Price Drops</option>
               </select>
+              <select id="filterVcat" onchange="onVcatFilterChange()" class="tru-input" aria-label="Vehicle category"><option value="ALL">All Categories</option></select>
               <select id="filterMake" onchange="renderDeals()" class="tru-input" aria-label="Make"><option value="ALL">All Makes</option></select>
               <select id="filterSort" onchange="renderDeals()" class="tru-input" aria-label="Sort">
                 <option value="profit_desc">Highest Net Margin</option><option value="dom_desc">Longest Listed</option>
@@ -371,6 +385,8 @@
             <select id="filterStatusM" onchange="renderDeals()" class="tru-input" aria-label="Status">
               <option value="open">Open</option><option value="claimed">Claimed</option><option value="ALL">All</option>
             </select>
+            <select id="filterVcatM" onchange="onVcatFilterChange()" class="tru-input" aria-label="Vehicle category"><option value="ALL">All Categories</option></select>
+            <select id="filterMakeM" onchange="renderDeals()" class="tru-input" aria-label="Make"><option value="ALL">All Makes</option></select>
             <select id="filterSortM" onchange="renderDeals()" class="tru-input" aria-label="Sort">
               <option value="profit_desc">Best margin</option><option value="price_asc">Cheapest</option>
               <option value="conf_desc">Most confident</option>
@@ -466,15 +482,14 @@
     </div>
   </div>
 
-  <!-- ══════════ OFFER / OTP MODAL ══════════ -->
-  <div id="offerModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="offerTitle">
+  <!-- ══════════ CONTACT SELLER MODAL ══════════ -->
+  <div id="contactModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
     <div class="modal tru-panel p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 id="offerTitle" class="text-[17px] font-semibold">Make an offer</h2>
-        <button onclick="closeOfferModal()" class="btn-ghost" style="min-height:44px;min-width:44px;padding:0" aria-label="Close"><svg class="icon-lg"><use href="#i-x"/></svg></button>
+        <h2 id="contactTitle" class="text-[17px] font-semibold text-white">Contact seller</h2>
+        <button onclick="closeContactModal()" class="btn-ghost" style="min-height:44px;min-width:44px;padding:0" aria-label="Close"><svg class="icon-lg"><use href="#i-x"/></svg></button>
       </div>
-      <div id="offerError" class="hidden text-[13px] mb-4" style="color: var(--state-error)" role="alert"></div>
-      <div id="offerBody"></div>
+      <div id="contactBody"></div>
     </div>
   </div>
 
@@ -496,6 +511,11 @@
           <div><label class="tru-label" for="bbMaxPrice">Max price ceiling (ZAR)</label><input type="number" id="bbMaxPrice" value="350000" class="tru-input w-full font-mono-code"></div>
         </div>
         <div><label class="tru-label" for="bbProvinces">Target provinces / cities</label><input type="text" id="bbProvinces" value="Gauteng, Western Cape, KwaZulu-Natal" class="tru-input w-full"></div>
+        <div>
+          <label class="tru-label" for="bbTargets">Watch targets — the scan hunts these makes/models</label>
+          <input type="text" id="bbTargets" placeholder="Toyota, Toyota/Hilux, GWM, Audi/A1" class="tru-input w-full">
+          <p class="text-[12px] mt-1" style="color: var(--muted)">Each entry is a make, or make/model with a slash. The scan queries AutoTrader cheapest-first for these instead of only sampling the newest listings nationally.</p>
+        </div>
       </div>
       <div class="mt-6 flex justify-end gap-3">
         <button onclick="closeBuyBoxModal()" class="btn-ghost">Cancel</button>
@@ -580,7 +600,8 @@
       setTab('viewDeals');
       loadDeals();
       loadBuyBox();
-      loadLookupMakes();
+      loadLookupCategories();
+      initCatalogueFilters();
       loadWatchlist();
       loadWatched();
     }
@@ -689,13 +710,53 @@
         document.getElementById('bbMinMargin').value = sub.minNetMargin || 25000;
         document.getElementById('bbMaxPrice').value = sub.maxPrice || 350000;
         document.getElementById('bbProvinces').value = (sub.provinces || []).join(', ');
+        document.getElementById('bbTargets').value = (sub.watchTargets || []).join(', ');
       } catch {}
     }
 
+    let catalogueVcats = [];          // [{id,label,...}] from /api/lookup/categories
+    let catalogueMakesByCat = {};   // { category: [makes] } — full catalogue
+    let allCatalogueMakes = [];     // flat union for the no-category case
+
+    async function initCatalogueFilters() {
+      try {
+        const res = await fetch('/api/lookup/categories', { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        catalogueVcats = data.categories || [];
+        const vcatOpts = '<option value="ALL">All Categories</option>' + catalogueVcats.map(c =>
+          `<option value="${c.id}">${c.label}</option>`).join('');
+        for (const id of ['filterVcat', 'filterVcatM']) {
+          const sel = document.getElementById(id);
+          if (sel) sel.innerHTML = vcatOpts;
+        }
+        // Pull each category's make list once (7 light local reads) and the
+        // full list — the category dropdown narrows the make dropdown instantly.
+        const [flat, ...perCat] = await Promise.all([
+          fetch('/api/lookup/makes', { headers: auth.headers() }).then(r => r.json()),
+          ...catalogueVcats.map(c => fetch(`/api/lookup/makes?category=${encodeURIComponent(c.id)}`, { headers: auth.headers() }).then(r => r.json()))
+        ]);
+        allCatalogueMakes = (flat.makes || []).sort((a, b) => a.localeCompare(b));
+        catalogueMakesByCat = {};
+        catalogueVcats.forEach((c, i) => { catalogueMakesByCat[c.id] = (perCat[i].makes || []).sort((a, b) => a.localeCompare(b)); });
+        populateMakeFilter();
+      } catch {}
+    }
+
+    function onVcatFilterChange() {
+      // Narrow the make list to the selected category (ALL = full catalogue),
+      // preserving a currently-selected make if it still fits.
+      populateMakeFilter();
+      renderDeals();
+    }
+
     function populateMakeFilter() {
-      const makes = new Set();
+      const cat = (document.getElementById('filterVcat') || {}).value || (document.getElementById('filterVcatM') || {}).value || 'ALL';
+      const base = cat !== 'ALL' && catalogueMakesByCat[cat] ? catalogueMakesByCat[cat] : allCatalogueMakes;
+      // Always let a deal's make appear even if the category mapping missed it.
+      const makes = new Set(base);
       allDeals.forEach(d => { const m = d.vehicle?.make; if (m) makes.add(m); });
-      const opts = '<option value="ALL">All Makes</option>' + Array.from(makes).sort().map(m => `<option value="${m}">${m}</option>`).join('');
+      const opts = '<option value="ALL">All Makes</option>' + Array.from(makes).sort((a, b) => a.localeCompare(b)).map(m => `<option value="${m}">${m}</option>`).join('');
       for (const id of ['filterMake', 'filterMakeM']) {
         const sel = document.getElementById(id);
         if (!sel) continue;
@@ -729,7 +790,7 @@
     }
 
     function resetFilters() {
-      const defaults = { filterSearch: '', filterMinMargin: '10000', filterSource: 'ALL', filterCategory: 'ALL', filterMake: 'ALL', filterSort: 'profit_desc', filterStatus: 'open' };
+      const defaults = { filterSearch: '', filterMinMargin: '10000', filterSource: 'ALL', filterCategory: 'ALL', filterVcat: 'ALL', filterMake: 'ALL', filterSort: 'profit_desc', filterStatus: 'open' };
       for (const base of FILTER_BASES) {
         const a = document.getElementById(base);
         const b = document.getElementById(base + 'M');
@@ -742,7 +803,7 @@
     // ── Filters — ONE source of truth, two mirrors ────────────────────────
     // Desktop bar and mobile details use mirrored inputs; every change writes
     // BOTH, so a hidden stale input can never override what the dealer typed.
-    const FILTER_BASES = ['filterSearch', 'filterMinMargin', 'filterSource', 'filterCategory', 'filterMake', 'filterSort', 'filterStatus'];
+    const FILTER_BASES = ['filterSearch', 'filterMinMargin', 'filterSource', 'filterCategory', 'filterVcat', 'filterMake', 'filterSort', 'filterStatus'];
     function bindFilterPair(base) {
       const a = document.getElementById(base);
       const b = document.getElementById(base + 'M');
@@ -761,6 +822,7 @@
         minMargin: Number(g('filterMinMargin') || 0),
         source: g('filterSource') || 'ALL',
         category: g('filterCategory') || 'ALL',
+        vcat: g('filterVcat') || 'ALL',
         make: g('filterMake') || 'ALL',
         sort: g('filterSort') || 'profit_desc',
         status: g('filterStatus') || 'open'
@@ -783,6 +845,16 @@
         if (f.minMargin > 0 && (deal.projectedNetMargin || 0) < f.minMargin && dealCat === 'underpriced_arbitrage') return false;
         if (f.source !== 'ALL' && vehicleSource !== f.source) return false;
         if (f.category !== 'ALL' && dealCat !== f.category) return false;
+        if (f.vcat !== 'ALL') {
+          const dc = (deal.category || '').toLowerCase();
+          if (dc && dc !== f.vcat.toLowerCase()) return false;
+          // Legacy rows without a server category fall back to the make's
+          // dominant vertical (catalogue-backed).
+          if (!dc) {
+            const mk = (v.make || '').toUpperCase();
+            if (!(catalogueMakesByCat[f.vcat] || []).includes(mk)) return false;
+          }
+        }
         if (f.make !== 'ALL' && (v.make || '').toLowerCase() !== f.make.toLowerCase()) return false;
         return true;
       });
@@ -792,13 +864,21 @@
       if (f.sort === 'price_asc') filtered.sort((a, b) => (a.askingPrice || 0) - (b.askingPrice || 0));
       if (f.sort === 'conf_desc') filtered.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
 
-      document.getElementById('dealCountBadge').textContent = filtered.length;
-      const bm = document.getElementById('dealCountBadgeM'); if (bm) bm.textContent = filtered.length;
+      const searchSuffix = f.search ? ` matching "${f.search}"` : '';
+      document.getElementById('dealCountBadge').textContent = `${filtered.length}${f.search ? ` (${filtered.length} of ${allDeals.length})` : ''}`;
+      const bm = document.getElementById('dealCountBadgeM'); if (bm) bm.textContent = `${filtered.length}${f.search ? ` (${filtered.length}/${allDeals.length})` : ''}`;
       const grid = document.getElementById('dealsGrid');
       const empty = document.getElementById('emptyState');
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
+        if (f.search) {
+          empty.querySelector('h3').textContent = `No deals match "${f.search}"`;
+          empty.querySelector('p').textContent = `No opportunities found matching "${f.search}". Use Price Check to search live asking prices for any specific make/model across South Africa.`;
+        } else {
+          empty.querySelector('h3').textContent = `No deals match your filters`;
+          empty.querySelector('p').textContent = `Only confidence-backed opportunities land here. Clear the filters or run a fresh market scan.`;
+        }
         empty.classList.remove('hidden');
         return;
       }
@@ -865,12 +945,12 @@
               </div>
             </div>
             <div class="mt-4 pt-3 flex items-center gap-2 flex-wrap" style="border-top: 1px solid var(--glass-line)">
+              <a href="${v.url || '#'}" target="_blank" rel="noopener" onclick="contactSeller('${deal.id}', event)" class="btn-primary flex-1 justify-center gap-1.5"><svg class="icon" style="width:14px;height:14px"><use href="#i-external"/></svg> Contact seller</a>
+              <button onclick="toggleWatch('${deal.fingerprint}')" class="btn-secondary" style="${watched ? 'color:var(--accent);background:var(--accent-surface);border-color:var(--accent-border)' : ''}">${watched ? '✓ Watching' : '+ Watch deal'}</button>
               ${claimed
-                ? '<span class="chip chip-claimed flex-1 text-center justify-center" style="padding:10px 14px">Claimed</span>'
-                : `<button onclick="setDealStatus('${deal.id}','claimed')" class="btn-primary flex-1">Claim deal</button>`}
-              <a href="${v.url || '#'}" target="_blank" rel="noopener" class="btn-secondary" title="Open source listing" aria-label="View listing"><svg class="icon"><use href="#i-external"/></svg></a>
-              <button onclick="makeOffer('${deal.id}')" class="btn-secondary" title="Generate offer + OTP negotiation text">Make offer</button>
-              <button onclick="setDealStatus('${deal.id}','archived')" class="btn-ghost" title="Archive" aria-label="Archive deal" style="color: var(--muted)"><svg class="icon"><use href="#i-archive"/></svg></button>
+                ? '<span class="chip chip-claimed text-center justify-center py-2 px-3">Claimed</span>'
+                : `<button onclick="setDealStatus('${deal.id}','claimed')" class="btn-secondary" title="Mark as claimed">Claim</button>`}
+              <button onclick="setDealStatus('${deal.id}','archived')" class="btn-ghost" title="Archive deal" aria-label="Archive deal" style="color: var(--muted)"><svg class="icon"><use href="#i-archive"/></svg></button>
             </div>
           </div>`;
       }).join('');
@@ -895,44 +975,45 @@
       }
     }
 
-    // ── Offer + OTP ───────────────────────────────────────────────────────
-    async function makeOffer(id) {
+    // ── Contact seller ────────────────────────────────────────────────────
+    function contactSeller(id, event) {
       const deal = allDeals.find(d => d.id === id);
       if (!deal) return;
       const v = deal.vehicle || {};
-      try {
-        const res = await fetch(`/api/deals/${id}/offer`, { method: 'POST', headers: auth.headers() });
-        if (res.status === 401) return authFailed();
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `Offer failed (${res.status})`);
-        document.getElementById('offerBody').innerHTML = `
-          <p class="text-[13px] mb-4" style="color: var(--muted)">
-            ${v.year} ${v.make} ${v.model} — asking R${(deal.askingPrice || 0).toLocaleString('en-ZA')}.
-            The OTP verifies your offer when the seller picks up the phone. Valid for 15 minutes; regenerating replaces it.
-          </p>
-          <div class="mb-4">
-            <div class="tru-label">One-time PIN — give this to the seller</div>
-            <div class="otp-big" id="otpValue">${data.otp}</div>
-            <button onclick="copyText('${data.otp}','otpCopyBtn')" class="btn-secondary w-full mt-2" id="otpCopyBtn"><svg class="icon"><use href="#i-copy"/></svg> Copy OTP</button>
-          </div>
-          <div class="mb-4">
-            <div class="tru-label">Offer message — ready to send</div>
-            <div class="offer-text" id="offerTextValue">${(data.offerText || '').replace(/</g,'&lt;')}</div>
-            <button onclick="copyText(${JSON.stringify(data.offerText).replace(/"/g,'&quot;')},'offerCopyBtn')" class="btn-secondary w-full mt-2" id="offerCopyBtn"><svg class="icon"><use href="#i-copy"/></svg> Copy message</button>
-          </div>
-          <p class="text-[12px]" style="color: var(--faint)"><svg class="icon" style="width:12px;height:12px;vertical-align:-2px"><use href="#i-clock"/></svg> Expires ${new Date(data.expiresAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}</p>`;
-        openOfferModal();
-      } catch (err) {
-        const errEl = document.getElementById('offerError');
-        if (errEl) { errEl.textContent = err.message || 'Failed to generate offer.'; errEl.classList.remove('hidden'); }
-        console.error(err);
+      if (v.url) {
+        if (event && event.type === 'click' && event.target && event.target.tagName === 'A') {
+          return; // Let standard link navigation open in new tab
+        }
+        window.open(v.url, '_blank', 'noopener,noreferrer');
+        return;
       }
+      if (event && event.preventDefault) event.preventDefault();
+      document.getElementById('contactBody').innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h3 class="text-[16px] font-semibold text-white">${v.year || ''} ${v.make || ''} ${v.model || ''}</h3>
+            <p class="text-[13px] mt-0.5" style="color: var(--muted)">Listed Asking Price: <span class="font-mono-code font-semibold text-white">R${(deal.askingPrice || 0).toLocaleString('en-ZA')}</span></p>
+          </div>
+          <div class="finbox p-4 space-y-2.5">
+            <div class="finrow"><span class="finlabel">Seller / Dealership</span><span class="font-medium text-white">${v.sellerName || 'Direct Seller'}</span></div>
+            <div class="finrow"><span class="finlabel">Location</span><span class="text-white">${v.location || 'South Africa'}</span></div>
+            <div class="finrow"><span class="finlabel">Source Platform</span><span class="chip chip-accent">${deal.source || 'Scraped Listing'}</span></div>
+            <div class="finrow"><span class="finlabel">Days on Market</span><span class="font-mono-code text-white">${deal.daysOnMarket || 0} days</span></div>
+          </div>
+          <div class="p-3 rounded-lg border border-[rgba(232,234,230,0.08)] bg-[rgba(232,234,230,0.02)] text-[12px]" style="color: var(--muted)">
+            Contact seller directly via ${deal.source || 'the platform'} using seller details above.
+          </div>
+          <div class="flex justify-end mt-4">
+            <button onclick="closeContactModal()" class="btn-primary w-full">Close</button>
+          </div>
+        </div>`;
+      openContactModal();
     }
     async function copyText(text, btnId) {
       try { await navigator.clipboard.writeText(text); const b = document.getElementById(btnId); if (b) { const old = b.innerHTML; b.innerHTML = '<svg class="icon"><use href="#i-check"/></svg> Copied'; setTimeout(() => b.innerHTML = old, 1600); } } catch {}
     }
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeOfferModal(); closeBuyBoxModal(); closeLightbox(); }
+      if (e.key === 'Escape') { closeContactModal(); closeBuyBoxModal(); closeLightbox(); }
       const pm = document.getElementById('photoModal');
       if (pm && !pm.classList.contains('hidden')) {
         if (e.key === 'ArrowLeft') lightboxPrev();
@@ -955,14 +1036,13 @@
       modalEl.addEventListener('keydown', handler);
       first.focus();
     }
-    function openOfferModal() {
+    function openContactModal() {
       lastFocusedEl = document.activeElement;
-      document.getElementById('offerError').classList.add('hidden');
-      document.getElementById('offerModal').classList.remove('hidden');
-      trapFocus(document.getElementById('offerModal'), closeOfferModal);
+      document.getElementById('contactModal').classList.remove('hidden');
+      trapFocus(document.getElementById('contactModal'), closeContactModal);
     }
-    function closeOfferModal() {
-      document.getElementById('offerModal').classList.add('hidden');
+    function closeContactModal() {
+      document.getElementById('contactModal').classList.add('hidden');
       if (lastFocusedEl) lastFocusedEl.focus();
     }
     function openBuyBoxModal() {
@@ -1223,71 +1303,209 @@
       use.setAttribute('href', open ? '#i-chev' : '#i-chev');
       header.setAttribute('aria-expanded', String(open));
       header.querySelector('svg').style.transform = open ? 'rotate(0deg)' : 'rotate(-90deg)';
-      if (open && document.getElementById('lookupMake').options.length <= 1) loadLookupMakes();
+      if (open && document.getElementById('lookupCategory').options.length <= 1) loadLookupCategories();
     }
     function tc(s) {
       return String(s || '').split(/\s+/).filter(Boolean).map(w =>
         w.split('-').map(p => p.length <= 3 ? p.toUpperCase() : p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('-')).join(' ');
     }
-    async function loadLookupMakes() {
+    async function loadLookupCategories() {
       try {
-        const res = await fetch('/api/lookup/makes', { headers: auth.headers() });
+        const res = await fetch('/api/lookup/categories', { headers: auth.headers() });
         if (res.status === 401) return authFailed();
         const data = await res.json();
-        const sel = document.getElementById('lookupMake');
-        sel.innerHTML = '<option value="">Pick a make…</option>' + (data.makes || []).map(m => `<option value="${m}">${tc(m)}</option>`).join('');
-      } catch {}
+        const sel = document.getElementById('lookupCategory');
+        const cats = data.categories || [];
+        if (!cats.length) {
+          sel.innerHTML = '<option value="">No categories available</option>';
+          return;
+        }
+        sel.innerHTML = '<option value="">Pick a category…</option>' + cats.map(c =>
+          `<option value="${c.id}">${c.label} · ${(c.modelCount || 0).toLocaleString('en-ZA')} models</option>`).join('');
+      } catch {
+        const sel = document.getElementById('lookupCategory');
+        if (sel) sel.innerHTML = '<option value="">Failed to load categories</option>';
+      }
+    }
+    async function onLookupCategoryChange() {
+      const category = document.getElementById('lookupCategory').value;
+      const makeSel = document.getElementById('lookupMake');
+      const modelSel = document.getElementById('lookupModel');
+      const variantSel = document.getElementById('lookupVariant');
+      const yearSel = document.getElementById('lookupYear');
+      const errEl = document.getElementById('lookupError');
+      if (errEl) errEl.classList.add('hidden');
+
+      yearSel.innerHTML = '<option value="">Pick a variant first</option>';
+      variantSel.innerHTML = '<option value="">Pick a model first</option>';
+      modelSel.innerHTML = '<option value="">Pick a make first</option>';
+
+      if (!category) {
+        makeSel.innerHTML = '<option value="">Pick a category first</option>';
+        return;
+      }
+      makeSel.innerHTML = '<option value="">Loading makes…</option>';
+      try {
+        const res = await fetch(`/api/lookup/makes?category=${encodeURIComponent(category)}`, { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        const makes = data.makes || [];
+        if (!makes.length) {
+          makeSel.innerHTML = '<option value="">No makes for this category</option>';
+          return;
+        }
+        makeSel.innerHTML = '<option value="">Pick a make…</option>' + makes.map(m => `<option value="${m}">${tc(m)}</option>`).join('');
+      } catch {
+        makeSel.innerHTML = '<option value="">Failed to load makes</option>';
+      }
     }
     async function onLookupMakeChange() {
+      const category = document.getElementById('lookupCategory').value;
       const make = document.getElementById('lookupMake').value;
       const modelSel = document.getElementById('lookupModel');
-      if (!make) { modelSel.innerHTML = '<option value="">Pick a make first</option>'; return; }
-      modelSel.innerHTML = '<option value="">Loading…</option>';
+      const variantSel = document.getElementById('lookupVariant');
+      const yearSel = document.getElementById('lookupYear');
+      const errEl = document.getElementById('lookupError');
+      if (errEl) errEl.classList.add('hidden');
+
+      yearSel.innerHTML = '<option value="">Pick a variant first</option>';
+      variantSel.innerHTML = '<option value="">Pick a model first</option>';
+
+      if (!make) {
+        modelSel.innerHTML = '<option value="">Pick a make first</option>';
+        return;
+      }
+      modelSel.innerHTML = '<option value="">Loading models…</option>';
       try {
-        const res = await fetch(`/api/lookup/models?make=${encodeURIComponent(make)}`, { headers: auth.headers() });
+        const res = await fetch(`/api/lookup/models?category=${encodeURIComponent(category)}&make=${encodeURIComponent(make)}`, { headers: auth.headers() });
         if (res.status === 401) return authFailed();
         const data = await res.json();
-        modelSel.innerHTML = '<option value="">Pick a model…</option>' + (data.models || []).map(m => `<option value="${m}">${tc(m)}</option>`).join('');
-      } catch { modelSel.innerHTML = '<option value="">Failed to load</option>'; }
+        const models = data.models || [];
+        if (!models.length) {
+          modelSel.innerHTML = '<option value="">No models for this make</option>';
+          return;
+        }
+        modelSel.innerHTML = '<option value="">Pick a model…</option>' + models.map(m => `<option value="${m}">${tc(m)}</option>`).join('');
+      } catch {
+        modelSel.innerHTML = '<option value="">Failed to load models</option>';
+      }
     }
-    async function doPriceCheck() {
+    async function onLookupModelChange() {
+      const category = document.getElementById('lookupCategory').value;
       const make = document.getElementById('lookupMake').value;
       const model = document.getElementById('lookupModel').value;
+      const variantSel = document.getElementById('lookupVariant');
+      const yearSel = document.getElementById('lookupYear');
+      const errEl = document.getElementById('lookupError');
+      if (errEl) errEl.classList.add('hidden');
+
+      yearSel.innerHTML = '<option value="">Pick a variant first</option>';
+      if (!model) {
+        variantSel.innerHTML = '<option value="">Pick a model first</option>';
+        return;
+      }
+      variantSel.innerHTML = '<option value="">Loading variants…</option>';
+      try {
+        const res = await fetch(`/api/lookup/variants?category=${encodeURIComponent(category)}&make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}`, { headers: auth.headers() });
+        if (res.status === 401) return authFailed();
+        const data = await res.json();
+        const variants = data.variants || [];
+        if (!variants.length) {
+          variantSel.innerHTML = '<option value="">No variants found</option>';
+          return;
+        }
+        variantSel.innerHTML = '<option value="">Pick a variant…</option>' + variants.map(v =>
+          `<option value="${v.variant}" data-years="${(v.years || []).join(',')}" data-mmcode="${v.mmCode ?? ''}">${tc(v.variant)}</option>`).join('');
+      } catch {
+        variantSel.innerHTML = '<option value="">Failed to load variants</option>';
+      }
+    }
+    function onLookupVariantChange() {
+      const yearSel = document.getElementById('lookupYear');
+      const opt = document.getElementById('lookupVariant').selectedOptions[0];
+      const errEl = document.getElementById('lookupError');
+      if (errEl) errEl.classList.add('hidden');
+      const years = (opt && opt.dataset.years ? opt.dataset.years.split(',') : []).map(Number).filter(Boolean);
+      if (!years.length) {
+        yearSel.innerHTML = '<option value="">No year data</option>';
+        return;
+      }
+      // Server returns years descending — preselect the newest.
+      yearSel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+      yearSel.value = String(years[0]);
+    }
+    async function doPriceCheck() {
+      const category = document.getElementById('lookupCategory') ? document.getElementById('lookupCategory').value : '';
+      const make = document.getElementById('lookupMake').value;
+      const model = document.getElementById('lookupModel').value;
+      const variant = document.getElementById('lookupVariant').value;
+      const variantOpt = document.getElementById('lookupVariant').selectedOptions[0];
+      const mmCode = variantOpt ? (variantOpt.dataset.mmcode || variantOpt.dataset.mmCode || '') : '';
       const year = Number(document.getElementById('lookupYear').value);
       const btn = document.getElementById('lookupBtn');
       const errEl = document.getElementById('lookupError');
       const summaryEl = document.getElementById('lookupSummary');
       const resultsEl = document.getElementById('lookupResults');
       const loadingEl = document.getElementById('lookupLoading');
+      const bodyEl = document.getElementById('lookupBody');
+
       errEl.classList.add('hidden'); summaryEl.classList.add('hidden'); resultsEl.classList.add('hidden');
-      if (!make || !model || !year) { errEl.textContent = 'Pick a make, a model and a year.'; errEl.classList.remove('hidden'); return; }
-      btn.disabled = true; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scanning…</span>';
+      if (!make || !model || !variant || !year) {
+        errEl.textContent = 'Please pick a category, make, model, variant and model year.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      btn.disabled = true;
+      btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scanning…</span>';
       if (loadingEl) loadingEl.classList.remove('hidden');
+      resultsEl.classList.remove('hidden');
+
       try {
-        const res = await fetch(`/api/lookup/cheapest?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${year}`, { headers: auth.headers() });
+        const qs = new URLSearchParams({ category, make, model, variant, year: String(year) });
+        if (mmCode) qs.set('mmCode', mmCode);
+        const res = await fetch(`/api/lookup/cheapest?${qs.toString()}`, { headers: auth.headers() });
         if (res.status === 401) return authFailed();
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `Lookup failed (${res.status})`);
-        if (loadingEl) loadingEl.classList.add('hidden');
+        
         const m = data.market || {};
         const comps = data.comps || [];
         const confPct = Math.round((m.confidence || 0) * 100);
+        
         summaryEl.innerHTML = `Market average: <span style="color: var(--accent)">R${(m.averageRetailPrice || 0).toLocaleString('en-ZA')}</span> · ${m.listingsFound || 0} live comps · confidence <span style="color: ${confPct >= 80 ? 'var(--accent)' : 'var(--state-attention)'}">${confPct}%</span>` +
           (comps.length ? ` · cheapest now: <span style="color: var(--white)">R${comps[0].price.toLocaleString('en-ZA')}</span>` : ' · no live listings found');
         summaryEl.classList.remove('hidden');
+
         if (comps.length) {
-          document.getElementById('lookupBody').innerHTML = comps.map((c, i) => `
-            <tr class="border-b" style="border-color: var(--glass-line)">
-              <td class="py-2 px-2 font-mono-code font-semibold" style="color: ${i === 0 ? 'var(--accent)' : 'var(--white)'}">R${c.price.toLocaleString('en-ZA')}</td>
-              <td class="py-2 px-2 font-mono-code" style="color: var(--muted)">${c.km ? c.km.toLocaleString('en-ZA') + ' km' : '—'}</td>
-              <td class="py-2 px-2 font-mono-code text-[12px]" style="color: var(--muted)">${c.source || '—'}</td>
-              <td class="py-2 px-2">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="underline flex items-center gap-1" style="color: var(--accent)"><svg class="icon" style="width:12px;height:12px"><use href="#i-external"/></svg>view</a>` : '<span style="color: var(--faint)">—</span>'}</td>
+          bodyEl.innerHTML = comps.map((c, i) => `
+            <tr class="border-b transition-colors hover:bg-[rgba(232,234,230,0.02)]" style="border-color: var(--glass-line)">
+              <td class="py-2.5 px-3 font-mono-code font-semibold" style="color: ${i === 0 ? 'var(--accent)' : 'var(--white)'}">
+                ${i === 0 ? '<span class="chip chip-accent text-[10px] mr-1.5 py-0 px-1.5 font-normal">CHEAPEST</span>' : ''}R${c.price.toLocaleString('en-ZA')}
+              </td>
+              <td class="py-2.5 px-3 font-mono-code" style="color: var(--white-dim)">${c.year ? c.year : '—'}</td>
+              <td class="py-2.5 px-3 font-mono-code" style="color: var(--muted)">${c.km ? c.km.toLocaleString('en-ZA') + ' km' : '—'}</td>
+              <td class="py-2.5 px-3 font-mono-code text-[12px]" style="color: var(--muted)">${c.source || '—'}</td>
+              <td class="py-2.5 px-3">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="underline flex items-center gap-1 hover:opacity-80" style="color: var(--accent)"><svg class="icon" style="width:12px;height:12px"><use href="#i-external"/></svg> view listing</a>` : '<span style="color: var(--faint)">—</span>'}</td>
             </tr>`).join('');
-          resultsEl.classList.remove('hidden');
+        } else {
+          bodyEl.innerHTML = `
+            <tr>
+              <td colspan="5" class="py-6 text-center text-[13px]" style="color: var(--muted)">
+                No live listings found for ${year} ${tc(make)} ${tc(model)} ${tc(variant)} in South Africa.
+              </td>
+            </tr>`;
         }
-      } catch (err) { errEl.textContent = err.message; errEl.classList.remove('hidden'); }
-      finally { btn.disabled = false; btn.textContent = 'Find cheapest'; }
+      } catch (err) {
+        errEl.textContent = err.message || 'Error executing price check.';
+        errEl.classList.remove('hidden');
+      } finally {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Find cheapest';
+      }
     }
+
+    // Price Check is the mobile search vision — the cascade loads with the app.
 
     // ── Buy-box / reset ───────────────────────────────────────────────────
     async function saveBuyBoxSettings() {
@@ -1297,7 +1515,8 @@
         webhookUrl: document.getElementById('bbWebhook').value.trim() || undefined,
         minNetMargin: Number(document.getElementById('bbMinMargin').value),
         maxPrice: Number(document.getElementById('bbMaxPrice').value),
-        provinces: document.getElementById('bbProvinces').value.split(',').map(s => s.trim()).filter(Boolean)
+        provinces: document.getElementById('bbProvinces').value.split(',').map(s => s.trim()).filter(Boolean),
+        watchTargets: document.getElementById('bbTargets').value.split(',').map(s => s.trim()).filter(Boolean)
       };
       try {
         const res = await fetch('/api/buybox', { method: 'POST', headers: auth.headers(), body: JSON.stringify(payload) });

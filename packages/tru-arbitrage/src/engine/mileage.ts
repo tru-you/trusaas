@@ -82,6 +82,33 @@ export function robustAverage(listings: ValuationComp[]): number | null {
   return Math.round(sum / trimmed.length);
 }
 
+/** Annual value decay used for year-age correction — mirrors the catalogue
+ *  depreciation benchmark (0.88/yr) so the band behaves like the fallback. */
+export const YEAR_DEPRECIATION_RATE = 0.88;
+
+/**
+ * Age-correct comps to the subject's model year when the comp falls a year
+ * either side of it. A comp one year OLDER than the subject is cheaper today;
+ * to make it comparable to the subject we price it UP (~0.88^-1). A comp one
+ * year NEWER gets priced DOWN. The band ±YEAR_TOLERANCE limits the gap, and
+ * the clamp keeps an escaped far-year card from ever swamping the average.
+ *
+ *   factor = 0.88^(compYear − subjectYear)
+ *
+ * Verified: comp 2019 vs subject 2021 → ×1.29; comp 2021 vs subject 2019 → ×0.77.
+ */
+export function adjustForYearGap(comps: ValuationComp[], subjectYear: number): ValuationComp[] {
+  if (!subjectYear || !Number.isFinite(subjectYear)) return comps;
+  const r = YEAR_DEPRECIATION_RATE;
+  return comps.map((c) => {
+    if (!c.year || !Number.isFinite(c.year) || c.year <= 0 || c.year === subjectYear) return c;
+    const gap = c.year - subjectYear;
+    let factor = Math.pow(r, gap);
+    factor = Math.max(0.7, Math.min(1.4, factor));
+    return { ...c, price: Math.round(c.price * factor) };
+  });
+}
+
 /**
  * Adjust each comp's price toward the subject vehicle's target mileage (km).
  * Uses TransUnion's official km adjustment data when available (vehicle type + year),
@@ -120,8 +147,11 @@ export function adjustForMileage(
     return {
       price: adjustedPrice,
       km: l.km,
+      year: l.year,
       source: l.source,
       url: l.url,
+      isRelatedModel: l.isRelatedModel,
+      relatedModelName: l.relatedModelName,
     };
   });
 }

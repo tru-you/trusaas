@@ -71,8 +71,10 @@ export async function fetchAutoTraderNewest(): Promise<RawFbListing[]> {
         if (!price || price < CONFIG.MIN_VEHICLE_PRICE) continue;
 
         const odo = num(node.mileageFromOdometer?.value ?? node.mileageFromOdometer);
+        // Full URL as the id — a base64-prefix slice collides for listing URLs
+        // that share a long prefix (the last path segment is the discriminator).
         out.push({
-          id: `at_${node.identifier || Buffer.from(node.url || '').toString('base64').slice(0, 16)}`,
+          id: `at_${node.url || node.identifier || Buffer.from(node.url || '').toString('base64').slice(0, 16)}`,
           source: 'autotrader',
           url: node.url || url,
           title: node.name || `${node.vehicleModelDate || ''} ${node.brand?.name || ''} ${node.model || ''}`,

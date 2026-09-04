@@ -10,8 +10,14 @@ import { signDealerToken, signDemoToken, HAS_REAL_TOKEN_SECRET } from './auth/jw
 import { requireAuth, rateLimitAuth, requireSyncKey } from './auth/middleware';
 import { dealerRegistry } from './auth/dealers';
 import { formatSellerOfferTemplate } from './alerts/alert-text';
-import { listMakes, listModels, titleCaseVehicle } from './engine/tu-matcher';
+import { titleCaseVehicle } from './engine/tu-matcher';
+import {
+  listCategories, listMakes as catalogueMakes, listModels as catalogueModels,
+  listVariants as catalogueVariants, resolveByMmCode, resolveVariant, isCategoryId,
+  categoryOfMake,
+} from './engine/catalogue';
 import { fetchLiveComps } from './engine/valuation';
+import { cacheStats } from './engine/fetch-html';
 
 const app = express();
 
@@ -32,7 +38,12 @@ app.use(express.static(publicDir));
 
 // Health Check
 app.get(['/health', '/api/health'], (_req: Request, res: Response) => {
-  res.json({ status: 'ok', service: 'TruRadar Engine', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    service: 'TruRadar Engine',
+    timestamp: new Date().toISOString(),
+    scraper: cacheStats(),
+  });
 });
 
 // ── Auth (standalone dealer JWT layer) ─────────────────────────────────────
@@ -61,34 +72,80 @@ app.post('/api/auth/demo', rateLimitAuth, (_req: Request, res: Response) => {
   res.json({ token, uid, demo: true, expiresInHours: 24 });
 });
 
-// ── Price check — static catalogue dropdowns + cheapest-in-country lookup ──
-// Dropdowns come from the local TU catalogue (free, zero API cost); the lookup
-// runs the same live comp scan the valuation engine uses, returned CHEAPEST
-// FIRST with deep links where the extractor could capture one.
+// ── Price check — vertical catalogue cascade + cheapest-in-country lookup ──
+// Category → Make → Model → Variant → Year all come from the LOCAL classifed
+// TransUnion catalogue (7 vertical buckets, zero per-keystroke API cost). The
+// lookup runs the same live comp scan the valuation engine uses — but widened
+// to the ±YEAR_TOLERANCE band so a thin exact-year SERP can't starve the
+// sample — returned CHEAPEST FIRST with deep links, and the comps' model year
+// shown alongside the price so a dealer can see the year mix at a glance.
+// skipTuBackstop: TU is the book, not live asking prices — a thin sample here
+// reports honestly instead of spending a credit on a book figure.
 
-app.get('/api/lookup/makes', requireAuth, (_req: Request, res: Response) => {
-  res.json({ makes: listMakes() });
+app.get('/api/lookup/categories', requireAuth, (_req: Request, res: Response) => {
+  res.json({ categories: listCategories() });
+});
+
+app.get('/api/lookup/makes', requireAuth, (req: Request, res: Response) => {
+  const raw = String(req.query.category || '');
+  const category = raw && isCategoryId(raw) ? raw : undefined;
+  res.json({ makes: catalogueMakes(category) });
 });
 
 app.get('/api/lookup/models', requireAuth, (req: Request, res: Response) => {
-  const make = String(req.query.make || '');
+  const raw = String(req.query.category || '');
+  const category = raw && isCategoryId(raw) ? raw : undefined;
+  const make = String(req.query.make || '').trim();
   if (!make) return res.status(400).json({ error: 'make is required' });
-  res.json({ models: listModels(make) });
+  res.json({ models: catalogueModels(category, make) });
+});
+
+app.get('/api/lookup/variants', requireAuth, (req: Request, res: Response) => {
+  const raw = String(req.query.category || '');
+  const category = raw && isCategoryId(raw) ? raw : undefined;
+  const make = String(req.query.make || '').trim();
+  const model = String(req.query.model || '').trim();
+  if (!make || !model) return res.status(400).json({ error: 'make and model are required' });
+  const variants = catalogueVariants(category, make, model).map((v) => ({
+    mmCode: v.mmCode,
+    variant: v.variant,
+    model: v.model,
+    cc: v.cc,
+    kw: v.kw,
+    fuel: v.fuel,
+    body: v.body,
+    axle: v.axle,
+    years: v.years,
+    category: v.category,
+  }));
+  res.json({ variants });
 });
 
 app.get('/api/lookup/cheapest', requireAuth, async (req: Request, res: Response) => {
+  const rawCat = String(req.query.category || '');
+  const category = rawCat && isCategoryId(rawCat) ? rawCat : undefined;
   const make = String(req.query.make || '').trim();
   const model = String(req.query.model || '').trim();
   const year = Number(req.query.year);
+  const requestedVariant = String(req.query.variant || '').trim();
+  let mmCode = String(req.query.mmCode || '').trim();
   if (!make || !model || !Number.isFinite(year) || year < 1990 || year > new Date().getFullYear() + 1) {
     return res.status(400).json({ error: 'make, model and a valid year are required' });
   }
   try {
+    // Resolve the exact variant (and its mmCode) when not supplied — a textual
+    // pick from the cascade still lands on a concrete M&M code, which is what
+    // makes the classifieds URLs version-specific instead of vague.
+    const resolved = resolveVariant(category, make, model, requestedVariant);
+    const trim = resolved?.variant || requestedVariant || undefined;
+    if (!mmCode && resolved) mmCode = resolved.mmCode;
+
     // Title-case for the classifieds search URLs — the catalogue is UPPERCASE
     // but AutoTrader/Cars.co.za match proper case more reliably.
-    // skipTuBackstop: TU is the book, not live asking prices — a thin sample
-    // here reports honestly instead of spending a credit on a book figure.
-    const { valuation, comps } = await fetchLiveComps(titleCaseVehicle(make), titleCaseVehicle(model), year, null, undefined, undefined, undefined, { skipTuBackstop: true });
+    const { valuation, comps } = await fetchLiveComps(
+      titleCaseVehicle(make), titleCaseVehicle(model), year, null,
+      trim, mmCode || undefined, undefined, { skipTuBackstop: true }
+    );
 
     // "Spot on" doctrine for the ranked list: a row the dealer acts on must be
     // a REAL listing, not a page fragment. css-selector comps carry neither km
@@ -97,7 +154,7 @@ app.get('/api/lookup/cheapest', requireAuth, async (req: Request, res: Response)
     const ranked = verified.length >= 5 ? verified : comps;
 
     res.json({
-      query: { make: titleCaseVehicle(make), model: titleCaseVehicle(model), year },
+      query: { category, make: titleCaseVehicle(make), model: titleCaseVehicle(model), year, variant: requestedVariant || undefined, mmCode: mmCode || undefined },
       market: {
         averageRetailPrice: valuation.averageRetailPrice,
         listingsFound: valuation.listingsFound,
@@ -264,6 +321,13 @@ app.get('/api/deals', requireAuth, (req: Request, res: Response) => {
 
   const deals = db.getDeals({ dealerSlug, minMargin, status, source: source && source !== 'ALL' ? source : undefined, dealCategory: dealCategory && dealCategory !== 'ALL' ? dealCategory : undefined });
 
+  // Attach the catalogue vertical to every deal so the Live Deals filters can
+  // group by category (bikes/trucks/agri…) the same way the price check does.
+  for (const d of deals) {
+    const byCode = d.mmCode ? resolveByMmCode(d.mmCode) : null;
+    (d as any).category = byCode?.category || categoryOfMake(d.vehicle?.make) || null;
+  }
+
   res.json({ total: deals.length, deals });
 });
 
@@ -345,6 +409,9 @@ app.post('/api/buybox', requireAuth, (req: Request, res: Response) => {
     webhookUrl: body.webhookUrl,
     provinces: body.provinces || ['Gauteng'],
     allowedMakes: body.allowedMakes,
+    watchTargets: Array.isArray(body.watchTargets)
+      ? body.watchTargets.map((t: string) => String(t).trim()).filter(Boolean)
+      : undefined,
     maxPrice: body.maxPrice || 350000,
     maxMileageKm: body.maxMileageKm || 180000,
     minNetMargin: body.minNetMargin || CONFIG.MIN_ARBITRAGE_MARGIN,
