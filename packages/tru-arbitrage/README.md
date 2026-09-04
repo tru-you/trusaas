@@ -26,7 +26,7 @@ scan → ingest (classifieds + SERP matrix) → normalize (native/regex/Gemini)
 ```
 
 - **Confidence layer (the moat)** — `src/engine/confidence.ts` scores every valuation (sample size + price-band tightness, cap 0.95). Alerts below `CONFIDENCE_FLOOR` (0.6) never fire.
-- **One gated call** — TU valuation backstop via TruFlow's internal route (`x-tru-sync-key`), only when comps are thin, deducts the *right dealer's* bundle, fails closed. TU book values never fill deal or price-check lists.
+- **Decoupled from Flow** — the radar is self-sufficient (own scraper + free local TU catalogue fallback). Flow has its own built-in price checker. The one chargeable radar→Flow call (TU backstop) is **off by default** (`RADAR_TU_BACKSTOP=1` arms it) so the radar can never spend a dealer's Imagin8 bundle in Flow.
 - **Dynamic recon** — `clamp(3% × marketRetail, R5k, R30k)`. No flat buffers.
 - **Sanity gate** — net margin > 40% of market retail is rejected: miracles are data errors (salvage misparse, snippet artifacts).
 - **Per-dealer isolation** — every store key is `${dealerSlug}:${id}`; a dealer's own site domain is excluded from their own scan.

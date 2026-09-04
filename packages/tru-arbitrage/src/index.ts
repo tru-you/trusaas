@@ -2,17 +2,17 @@ import { EventEmitter } from 'events';
 import { RawFbListing, IngestionBatchResult, ArbitrageDeal } from './types';
 import { normalizeListing } from './normalizer/gemini-extractor';
 import { fetchLiveMarketValuation } from './engine/valuation';
-import { evaluateArbitrageOpportunity, evaluateOverpricedStock } from './engine/arbitrage';
+import { evaluateArbitrageOpportunity } from './engine/arbitrage';
 import { matchVariant } from './engine/tu-matcher';
 import { db } from './storage/db';
 import { dispatchDealAlerts } from './alerts/dispatcher';
 import { fetchAllClassifiedsNewest } from './ingestion/cars-autotrader';
 import { fetchAllTargets } from './ingestion/targets';
 import { fetchDealerWebsitesViaSerp } from './ingestion/serp';
-import { fetchFlowStockBySlugs } from './ingestion/flow-stock';
 import { dealerRegistry } from './auth/dealers';
 import { loadCatalogue } from './engine/tu-matcher';
 import { cacheStats } from './engine/fetch-html';
+import { CONFIG } from './config';
 
 /** Does this listing text name ANY make from the local TU catalogue?
  *  Distinguishes "the normalizer failed on a known make" from "the make is
@@ -48,7 +48,6 @@ export async function processListingBatch(
     trackedUpdated: 0,
     arbitrageDealsFound: 0,
     staleDealsFound: 0,
-    overpricedStockFound: 0,
     alertsDispatched: 0,
     rawBySource: {},
     droppedNormalizer: 0,
@@ -139,12 +138,9 @@ export async function processListingBatch(
       return;
     }
 
-    // 4. Evaluate — the dealer's own stock gets the inverted gate (overpriced +
-    // stale), everything else gets the buy gate (underpriced / distress).
-    const isMyStock = normalized.source === 'flow_stock';
-    const deal = isMyStock
-      ? evaluateOverpricedStock(normalized, valuation, tracked)
-      : evaluateArbitrageOpportunity(normalized, valuation, tracked);
+    // The radar evaluates BUY-side opportunities only — the dealer's own
+    // stock is Flow's domain (Stock-needing-action panel there).
+    const deal = evaluateArbitrageOpportunity(normalized, valuation, tracked);
     if (!deal) {
       // Funnel: confidence floor vs every other gate (margin / stale / sanity).
       if (valuation.confidence < CONFIG.CONFIDENCE_FLOOR) {
@@ -153,7 +149,7 @@ export async function processListingBatch(
         result.droppedBelowMargin++;
       }
       processed++;
-      emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: isMyStock ? 'healthy_stock' : 'below_margin' });
+      emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: 'below_margin' });
       return;
     }
 
@@ -173,8 +169,6 @@ export async function processListingBatch(
     db.saveDeal(deal, dealerSlug);
     if (deal.dealCategory === 'stale_floorplan_distress') {
       result.staleDealsFound++;
-    } else if (deal.dealCategory === 'overpriced_stale_stock') {
-      result.overpricedStockFound++;
     } else {
       result.arbitrageDealsFound++;
     }
@@ -218,7 +212,6 @@ export async function processListingBatch(
     autotrader: { name: 'AutoTrader', host: 'autotrader.co.za' },
     cars_co_za: { name: 'Cars.co.za', host: 'cars.co.za' },
     dealer_direct: { name: 'Dealer sites', host: '' },
-    flow_stock: { name: 'Flow stock', host: '' },
   };
   const openHosts = new Set(cacheStats().hostCircuits);
   for (const [src, count] of Object.entries(result.rawBySource)) {
@@ -261,10 +254,9 @@ export async function runFullMultiSourceScan(dealerSlug: string, emitter?: ScanP
     // The dealer's own site domain is excluded — their stock in their own
     // radar is noise, not a market deal.
     fetchDealerWebsitesViaSerp([dealerRegistry.getDealer(dealerSlug)?.websiteDomain || '']).catch((err: any) => { emitter?.emit('error', { source: 'serp', message: err?.message }); return []; }),
-    // Flow-stock lane deliberately NOT in the market scan: the dealer's own
-    // stock is Flow's domain (Stock-needing-action panel there), and scanning
-    // it here burns scraper calls on data the buy radar never shows. The lane
-    // stays alive for the Flow bolt-on via POST /api/mystock/scan.
+    // The dealer's own stock is not in the market scan — Flow owns that
+    // surface (built-in price checker + Stock-needing-action panel). The
+    // radar only surveys BUY-side market opportunities.
     targets.length
       ? fetchAllTargets(targets).catch((err: any) => { emitter?.emit('error', { source: 'targets', message: err?.message }); return []; })
       : Promise.resolve([]),
@@ -280,24 +272,10 @@ export async function runFullMultiSourceScan(dealerSlug: string, emitter?: ScanP
   return result;
 }
 
-/** My-Stock-only scan — the dealer's own Flow feed, no classifieds. Light and
- *  fast, so it can run on a tighter cadence than the full multi-source radar. */
-export async function runMyStockScan(dealerSlug: string, emitter?: ScanProgress): Promise<IngestionBatchResult> {
-  console.log(`\n📦 [TruArbitrage My-Stock Scan] Repricing ${dealerSlug}'s published stock...`);
-  emitter?.emit('phase', { phase: 'ingestion', message: 'Fetching Flow stock feed...' });
-
-  const flowStockListings = await fetchFlowStockBySlugs([dealerSlug]).catch((err: any) => {
-    emitter?.emit('error', { source: 'flow_stock', message: err?.message });
-    return [];
-  });
-  console.log(`📦 Loaded ${flowStockListings.length} vehicles from Flow stock feed`);
-
-  emitter?.emit('phase', { phase: 'processing', message: `Processing ${flowStockListings.length} vehicles...` });
-  const result = await processListingBatch(flowStockListings, dealerSlug, emitter);
-
-  emitter?.emit('complete', result);
-  return result;
-}
+/* The My-Stock-only scan is removed: the dealer's own stock is Flow's domain.
+ *  Radar is decoupled from Flow (Flow has its own price checker). The radar
+ *  only surfaces BUY-side market opportunities — never the dealer's own units.
+ */
 
 // CLI Execution runner
 async function main() {

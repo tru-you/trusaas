@@ -8,14 +8,6 @@ export const CONFIG = {
   JWT_SECRET: process.env.JWT_SECRET || '',
   DEMO_ENABLED: process.env.DEMO_ENABLED !== '0',
 
-  // Shared secret with TruFlow — protects admin routes here and backs the
-  // surgical TransUnion valuation backstop (Phase 2). Also used as the token
-  // signing secret when JWT_SECRET is unset, like the sibling apps do.
-  TRUFLOW_SYNC_KEY: process.env.TRUFLOW_SYNC_KEY || '',
-
-  // Where the dealer's live stock is read from (My Stock surface, Phase 1)
-  FLOW_PREMIUM_URL: process.env.FLOW_PREMIUM_URL || 'https://premium.tru-saas.com',
-
   // Bright Data Keys & Endpoints (Solves Cloudflare on Cars.co.za / AutoTrader)
   BRIGHTDATA_API_KEY: process.env.BRIGHTDATA_API_KEY || process.env.SERP_API_KEY || '',
   BRIGHTDATA_UNLOCKER_ZONE: process.env.BRIGHTDATA_UNLOCKER_ZONE || process.env.UNLOCKER_ZONE || 'unlocker',
@@ -68,9 +60,6 @@ export const CONFIG = {
 
   // Valuation Confidence (the moat — Phase 2)
   CONFIDENCE_FLOOR: Number(process.env.CONFIDENCE_FLOOR) || 0.6,
-
-  // My Stock overpriced gate (Phase 3) — percent over market before a unit counts
-  OVERPRICED_THRESHOLD_PCT: Number(process.env.OVERPRICED_THRESHOLD_PCT) || 10,
 
   // Scraper Timeout & Cache
   SCRAPER_TIMEOUT_MS: Number(process.env.SCRAPER_TIMEOUT_MS) || 15000,

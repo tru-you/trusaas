@@ -71,7 +71,7 @@ export function extractJsonLdComps(html: string, make?: string, model?: string, 
         if (modelKey && !title.includes(modelKey)) continue;
 
         const rawYear = cleanNumber(node.vehicleModelDate || node.productionDate);
-        const nodeYear = rawYear || findCardYear(title, makeKey);
+        const nodeYear = rawYear || findCardYear(title, makeKey ?? undefined);
         if (year && nodeYear && Math.abs(nodeYear - year) > yearTol) continue;
 
         const odo = node.mileageFromOdometer;
@@ -148,7 +148,7 @@ export function extractCssComps(html: string, make?: string, model?: string, yea
     if (modelKey && !parentText.includes(modelKey)) return;
 
     const cardYear = findCardYear(parentText, make);
-    if (!yearInBand(cardYear, year, yearTol)) return;
+    if (year !== undefined && !yearInBand(cardYear, year, yearTol)) return;
 
     const match = parentText.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,7})/i);
     if (!match) return;
@@ -292,32 +292,10 @@ function filterPriceBand(comps: ValuationComp[]): ValuationComp[] {
   return filtered.length >= 3 ? filtered : comps;
 }
 
-/** Surgical TransUnion backstop — called ONLY when free-comp confidence sits
- *  below the floor. Mirrors the Lens/Inspect proxy pattern: chargeable calls
- *  relay to Flow's internal route over x-tru-sync-key; Flow unreachable or no
- *  key -> null, fail closed (honest no-valuation, never an invented price).
- *  dealershipId (the dealer's slug from their JWT) is REQUIRED by Flow's
- *  internal route — the deduction lands on THAT dealer's bundle, never the
- *  platform pool. */
-async function tuValuationBackstop(mmCode: string, year: number, mileageKm: number | null, dealershipId?: string): Promise<number | null> {
-  if (!CONFIG.TRUFLOW_SYNC_KEY || !mmCode || !dealershipId) return null;
-  try {
-    const res = await axios.post(
-      `${CONFIG.FLOW_PREMIUM_URL}/api/internal/imagin8/valuation`,
-      { mmCode, year, mileage: mileageKm ?? undefined, dealershipId },
-      {
-        headers: { 'x-tru-sync-key': CONFIG.TRUFLOW_SYNC_KEY, 'Content-Type': 'application/json' },
-        timeout: CONFIG.SCRAPER_TIMEOUT_MS,
-      }
-    );
-    const raw = res.data?.mmRetail ?? res.data?.averageRetailPrice ?? res.data?.retail;
-    const price = typeof raw === 'string' ? parseFloat(String(raw).replace(/[^\d.]/g, '')) : Number(raw);
-    return Number.isFinite(price) && price > 0 ? Math.round(price) : null;
-  } catch (err: any) {
-    console.warn(`[valuation] TU backstop unavailable (${err?.message || err}) — thin comps stay unalerted`);
-    return null;
-  }
-}
+/* The TU backstop is removed: radar is fully decoupled from Flow (Flow has its
+ * own price checker and the radar is a standalone product). Thin comps are
+ * served from the free local TU catalogue (`tu-matcher.ts`) — never via a
+ * chargeable TransUnion call on Flow's account. */
 
 interface GatheredComps {
   dedupedComps: ValuationComp[];
@@ -559,29 +537,11 @@ export async function fetchLiveComps(
   const kmValues = bandedComps.map((c) => c.km).filter((k): k is number => typeof k === 'number');
 
   // The moat: score the sample. Below the floor, the ONLY way a vehicle gets a
-  // price that can alert is the surgical TU backstop — never an invented comp.
-  // The price-check lookup skips it (TU is the book, not live asking prices).
+  // price that can alert is the free local TU catalogue fallback — never a
+  // chargeable TransUnion call on Flow's account (radar is decoupled from Flow).
+  // The price-check lookup also skips the fallback; the public market value is
+  // live asking prices, not the book.
   let confidence = calculateValuationConfidence(bandedComps, dedupedComps.length);
-
-  if ((!avg || confidence < CONFIG.CONFIDENCE_FLOOR) && mmCode && !opts?.skipTuBackstop) {
-    const tuPrice = await tuValuationBackstop(mmCode, year, mileageKm, dealershipId);
-    if (tuPrice) {
-      console.log(`[valuation] TU backstop engaged for ${make} ${model} ${year} (comps: ${dedupedComps.length}, conf ${confidence.toFixed(2)}) -> R${tuPrice.toLocaleString()}`);
-      const result: ValuationResult = {
-        averageRetailPrice: tuPrice,
-        listingsFound: Math.max(1, dedupedComps.length),
-        fallbackRequired: false,
-        mileageAdjusted: false,
-        sampleMedianKm: median(kmValues),
-        confidence: 0.8, // TransUnion is authoritative for the exact variant
-        sources: [...sourcesOutput, { name: 'TransUnion', count: 1, avg: tuPrice }],
-      };
-      cacheSet(key, result);
-      const comps = [...bandedComps].sort((a, b) => a.price - b.price);
-      compsCacheSet(key, comps);
-      return { valuation: result, comps };
-    }
-  }
 
   // Resilience fallback: when external live comps fail (e.g. Cloudflare barrier or scraper worker timeout),
   // check our local static TransUnion catalogue for this exact make/model/year.

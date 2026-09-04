@@ -12,21 +12,17 @@
  * apps apply to demo vehicles).
  */
 import crypto from 'crypto';
-import { CONFIG } from '../config';
 
 const DEALER_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // a week on the dashboard
 const DEMO_TTL_MS = 24 * 60 * 60 * 1000;
 
-/** The signing secret. Falls back to a hash of the sync key (already a shared
- *  secret), then a constant for local dev — which is NOT secret. */
+/** The signing secret. JWT_SECRET is required in production (server.ts warns
+ *  at boot when missing); the constant is local-dev only and is NOT secret. */
 export const TOKEN_SECRET =
-  process.env.JWT_SECRET ||
-  crypto.createHash('sha256').update(CONFIG.TRUFLOW_SYNC_KEY || 'tru-arbitrage-dev').digest('hex');
+  process.env.JWT_SECRET || 'tru-arbitrage-dev';
 
-/** Whether the signing secret is genuinely secret. When false, a forged token
- *  is trivial and the boot warning in server.ts tells the operator to set
- *  JWT_SECRET before anything real runs on this instance. */
-export const HAS_REAL_TOKEN_SECRET = Boolean(process.env.JWT_SECRET || CONFIG.TRUFLOW_SYNC_KEY);
+/** Whether the signing secret is genuinely secret. */
+export const HAS_REAL_TOKEN_SECRET = Boolean(process.env.JWT_SECRET);
 
 export interface TokenClaims {
   dealerSlug: string;

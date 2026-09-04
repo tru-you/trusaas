@@ -3,13 +3,13 @@
  *  - requireAuth: every dealer-scoped route. Sets req.user = { uid, dealerSlug, demo }.
  *  - rateLimitAuth: brute-force guard on /api/auth/* (same doctrine as the
  *    sibling apps — 10 attempts / IP / minute).
- *  - requireSyncKey: owner/admin routes. The header x-tru-sync-key must match
- *    TRUFLOW_SYNC_KEY. With no secrets configured at all (fresh local dev) the
- *    gate opens so a dealer registry can be bootstrapped — the server boot
- *    warning covers that case.
+ *
+ *  Note: the standalone radar no longer has any owner-admin registry routes.
+ *  Flow's master-admin TruRadar tab was removed in the radar-side decoupling;
+ *  deal registration rides on a dealer-scoped JWT (requireAuth) issued via
+ *  /api/auth/login against an access code.
  */
 import { verifyToken } from './jwt';
-import { CONFIG } from '../config';
 
 export interface AuthedUser {
   uid: string;
@@ -64,13 +64,4 @@ export function rateLimitAuth(req: any, res: any, next: any) {
     authAttempts.set(ip, { count: 1, resetAt: now + AUTH_WINDOW_MS });
   }
   next();
-}
-
-/** Owner/admin gate for the dealer registry routes. */
-export function requireSyncKey(req: any, res: any, next: any) {
-  const key = CONFIG.TRUFLOW_SYNC_KEY;
-  if (key && req.headers['x-tru-sync-key'] === key) return next();
-  // Fresh local dev with NO secrets configured: allow bootstrap, loudly warned at boot.
-  if (!key && !process.env.JWT_SECRET) return next();
-  return res.status(403).json({ error: 'Admin access requires the sync key.' });
 }

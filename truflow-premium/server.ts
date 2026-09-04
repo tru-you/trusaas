@@ -6816,50 +6816,6 @@ app.get("/api/internal/imagin8/bundles", requireSyncKey, (req: any, res) => {
   res.json(getDealerImagin8Bundles(dealershipId));
 });
 
-// ── TruRadar dealer provisioning (master-admin only) ────────────────────────
-// The radar (packages/tru-arbitrage) holds its own dealer registry keyed by
-// slug. Flow is the admin surface: the browser talks to Flow with the admin
-// JWT, and Flow relays to the radar with the sync key — the sync key never
-// touches the browser, the same doctrine as the Imagin8 centralization.
-const TRU_RADAR_URL = (process.env.TRU_RADAR_URL || "https://trusaas-arbitrage.onrender.com").replace(/\/$/, "");
-
-app.get("/api/internal/truradar/dealers/:slug", async (req: any, res) => {
-  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
-  if (!SYNC_SERVICE_KEY) return res.status(503).json({ error: "TRUFLOW_SYNC_KEY not configured" });
-  try {
-    const r = await fetch(`${TRU_RADAR_URL}/api/dealers`, { headers: { "x-tru-sync-key": SYNC_SERVICE_KEY } });
-    if (!r.ok) return res.status(502).json({ error: `Radar unreachable (${r.status})` });
-    const data = await r.json();
-    const rec = (data.dealers || []).find((d: any) => d.slug === req.params.slug) || null;
-    res.json({ configured: !!rec, dealer: rec });
-  } catch (err: any) {
-    res.status(502).json({ error: `Radar unreachable: ${err?.message || err}` });
-  }
-});
-
-app.put("/api/internal/truradar/dealers/:slug", async (req: any, res) => {
-  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
-  if (!SYNC_SERVICE_KEY) return res.status(503).json({ error: "TRUFLOW_SYNC_KEY not configured" });
-  const slug = String(req.params.slug || "").trim();
-  if (!slug) return res.status(400).json({ error: "slug is required" });
-  try {
-    const body: Record<string, unknown> = {};
-    if (typeof req.body?.accessCode === "string" && req.body.accessCode) body.accessCode = req.body.accessCode;
-    if (typeof req.body?.dealerName === "string") body.dealerName = req.body.dealerName;
-    if (typeof req.body?.webhookUrl === "string") body.webhookUrl = req.body.webhookUrl;
-    if (typeof req.body?.active === "boolean") body.active = req.body.active;
-    const r = await fetch(`${TRU_RADAR_URL}/api/dealers/${encodeURIComponent(slug)}`, {
-      method: "PUT",
-      headers: { "x-tru-sync-key": SYNC_SERVICE_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const out = await r.json().catch(() => ({}));
-    res.status(r.status).json(out);
-  } catch (err: any) {
-    res.status(502).json({ error: `Radar unreachable: ${err?.message || err}` });
-  }
-});
-
 // Bundle management. Reading your own balance is fine; CHANGING it is how a
 // dealer would mint free credits, so that is owner-only via the admin role.
 app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {

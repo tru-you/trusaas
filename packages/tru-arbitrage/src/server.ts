@@ -4,10 +4,10 @@ import path from 'path';
 import crypto from 'crypto';
 import { CONFIG } from './config';
 import { db } from './storage/db';
-import { processListingBatch, runFullMultiSourceScan, runMyStockScan, ScanProgress } from './index';
+import { processListingBatch, runFullMultiSourceScan, ScanProgress } from './index';
 import { DealerBuyBox, IngestionBatchResult } from './types';
 import { signDealerToken, signDemoToken, HAS_REAL_TOKEN_SECRET } from './auth/jwt';
-import { requireAuth, rateLimitAuth, requireSyncKey } from './auth/middleware';
+import { requireAuth, rateLimitAuth } from './auth/middleware';
 import { dealerRegistry } from './auth/dealers';
 import { formatSellerOfferTemplate } from './alerts/alert-text';
 import { titleCaseVehicle } from './engine/tu-matcher';
@@ -23,7 +23,7 @@ const app = express();
 
 if (!HAS_REAL_TOKEN_SECRET) {
   console.warn(
-    '\n⚠️  [TruRadar] No JWT_SECRET or TRUFLOW_SYNC_KEY configured.\n' +
+    '\n⚠️  [TruRadar] No JWT_SECRET configured.\n' +
     '   Token signing falls back to a constant — tokens are forgeable.\n' +
     '   Set JWT_SECRET before anything real runs on this instance.\n'
   );
@@ -168,30 +168,6 @@ app.get('/api/lookup/cheapest', requireAuth, async (req: Request, res: Response)
   }
 });
 
-// ── Dealer registry (owner/admin only, sync-key gated) ────────────────────
-
-app.get('/api/dealers', requireSyncKey, (_req: Request, res: Response) => {
-  res.json({ dealers: dealerRegistry.listDealers().map((d) => dealerRegistry.toPublicDealer(d)) });
-});
-
-app.put('/api/dealers/:slug', requireSyncKey, async (req: Request, res: Response) => {
-  try {
-    const rec = await dealerRegistry.upsertDealer({
-      slug: String(req.params.slug || '').trim(),
-      accessCode: req.body?.accessCode ? String(req.body.accessCode) : undefined,
-      dealerName: req.body?.dealerName ? String(req.body.dealerName) : undefined,
-      contactNumber: req.body?.contactNumber ? String(req.body.contactNumber) : undefined,
-      webhookUrl: req.body?.webhookUrl !== undefined ? String(req.body.webhookUrl) : undefined,
-      websiteDomain: req.body?.websiteDomain !== undefined ? String(req.body.websiteDomain) : undefined,
-      active: req.body?.active !== undefined ? Boolean(req.body.active) : undefined,
-    });
-    res.json({ success: true, dealer: dealerRegistry.toPublicDealer(rec) });
-  } catch (err: any) {
-    res.status(400).json({ error: err?.message || 'Failed to save dealer.' });
-  }
-});
-
-
 // 1. Ingestion Webhook (Push from Bright Data / External Scrapers) — scoped to the token's dealer
 app.post('/api/ingest/webhook', requireAuth, async (req: Request, res: Response) => {
   try {
@@ -230,21 +206,6 @@ app.post('/api/ingest/trigger', requireAuth, (req: Request, res: Response) => {
 
   // Fire and forget — process in background
   runFullMultiSourceScan(dealerSlug, emitter)
-    .then(result => { state.status = 'complete'; state.result = result; })
-    .catch(err => { state.status = 'error'; state.error = err?.message || String(err); });
-
-  res.json({ scanId, status: 'started' });
-});
-
-// 2d. My-Stock-only scan — the dealer's own Flow feed, no classifieds
-app.post('/api/mystock/scan', requireAuth, (req: Request, res: Response) => {
-  const scanId = `scan_${Date.now()}`;
-  const dealerSlug = req.user!.dealerSlug;
-  const emitter = new ScanProgress(scanId);
-  const state: ScanState = { id: scanId, status: 'running', dealerSlug, emitter };
-  scans.set(scanId, state);
-
-  runMyStockScan(dealerSlug, emitter)
     .then(result => { state.status = 'complete'; state.result = result; })
     .catch(err => { state.status = 'error'; state.error = err?.message || String(err); });
 

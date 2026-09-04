@@ -1,6 +1,6 @@
-export type ListingSource = 'facebook' | 'cars_co_za' | 'autotrader' | 'gumtree' | 'webuycars' | 'dealer_direct' | 'flow_stock';
+export type ListingSource = 'facebook' | 'cars_co_za' | 'autotrader' | 'gumtree' | 'webuycars' | 'dealer_direct';
 
-export type DealCategory = 'underpriced_arbitrage' | 'stale_floorplan_distress' | 'price_drop_velocity' | 'overpriced_stale_stock';
+export type DealCategory = 'underpriced_arbitrage' | 'stale_floorplan_distress' | 'price_drop_velocity';
 
 export interface RawFbListing {
   id?: string;
@@ -169,7 +169,6 @@ export interface IngestionBatchResult {
   trackedUpdated: number;
   arbitrageDealsFound: number;
   staleDealsFound: number;
-  overpricedStockFound: number;
   alertsDispatched: number;
   /** Per-stage drop funnel — a zero-deal scan must be diagnosable, not a
    *  dead black box. Every listing falls through exactly one of these.

@@ -7,15 +7,13 @@ export function matchesBuyBox(deal: ArbitrageDeal, buyBox: DealerBuyBox): boolea
 
   const v = deal.vehicle;
 
-  // 1. Margin threshold check — My Stock alerts carry a NEGATIVE margin
-  //    (the over-market exposure), so compare against the buy-box floor only
-  //    for buy-side deals.
-  if (deal.dealCategory !== 'overpriced_stale_stock' && deal.projectedNetMargin < buyBox.minNetMargin) {
+  // 1. Margin threshold check
+  if (deal.projectedNetMargin < buyBox.minNetMargin) {
     return false;
   }
 
-  // 2. Max Price check (buy side only — own stock has no buy-box price ceiling)
-  if (deal.dealCategory !== 'overpriced_stale_stock' && deal.askingPrice > buyBox.maxPrice) {
+  // 2. Max Price check
+  if (deal.askingPrice > buyBox.maxPrice) {
     return false;
   }
 
@@ -30,8 +28,8 @@ export function matchesBuyBox(deal: ArbitrageDeal, buyBox: DealerBuyBox): boolea
     if (!makeMatch) return false;
   }
 
-  // 5. Location / Province check — own stock always matches (it's theirs)
-  if (deal.dealCategory !== 'overpriced_stale_stock' && buyBox.provinces && buyBox.provinces.length > 0) {
+  // 5. Location / Province check
+  if (buyBox.provinces && buyBox.provinces.length > 0) {
     const loc = (v.location || '').toLowerCase();
     const provinceMatch = buyBox.provinces.some((p) => loc.includes(p.toLowerCase()));
     if (!provinceMatch && !loc.includes('south africa')) {

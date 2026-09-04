@@ -13,7 +13,6 @@ const SOURCE_LABELS: Record<string, string> = {
   cars_co_za: 'Cars.co.za Dealer Listing',
   autotrader: 'AutoTrader SA',
   dealer_direct: 'Independent Dealer Site (Google SERP)',
-  flow_stock: 'Own Stock (TruFlow DMS)',
   gumtree: 'Gumtree Private',
   webuycars: 'WeBuyCars Wholesale',
 };
@@ -22,35 +21,15 @@ const CATEGORY_BADGES: Record<string, string> = {
   underpriced_arbitrage: '⚡ UNDERPRICED ARBITRAGE',
   stale_floorplan_distress: `🔥 STALE FLOORPLAN DISTRESS`,
   price_drop_velocity: '📉 MAJOR PRICE DROP VELOCITY',
-  overpriced_stale_stock: '🏷️ OWN STOCK OVERPRICED + STALE',
 };
 
 /** Plain-text deal alert for the webhook payload (no channel-specific markup). */
 export function formatDealAlertText(deal: ArbitrageDeal, dealer: DealerBuyBox): string {
   const v = deal.vehicle;
   const kmFormatted = v.mileageKm ? `${v.mileageKm.toLocaleString('en-ZA')} km` : 'Unspecified km';
-  const isMyStock = deal.dealCategory === 'overpriced_stale_stock';
 
   const sourceLabel = SOURCE_LABELS[deal.source] || 'Private Market';
   const categoryBadge = CATEGORY_BADGES[deal.dealCategory] || '⭐ HIGH-MARGIN OPPORTUNITY';
-
-  if (isMyStock) {
-    const overBy = Math.abs(deal.projectedGrossMargin);
-    return `[TruRadar] ${categoryBadge} — ${dealer.dealerName}
-━━━━━━━━━━━━━━━━━━━━
-${v.year} ${v.make} ${v.model} ${v.trim ? `(${v.trim})` : ''} — Stock ${v.rawId.replace(/^flow_/, '')}
-Days held: ${deal.daysOnMarket} (Urgency: ${deal.urgencyScore}/100)
-Mileage: ${kmFormatted}
-
-PRICING:
-• Your asking price: R${deal.askingPrice.toLocaleString('en-ZA')}
-• Live market retail: R${deal.marketRetailPrice.toLocaleString('en-ZA')} (based on ${deal.sampleCompsCount} comps)
-• Sitting R${overBy.toLocaleString('en-ZA')} over market
-
-RECOMMENDED ACTION: drop to ~R${deal.marketRetailPrice.toLocaleString('en-ZA')} to match market, or trade the unit out.
-
-Listing: ${v.url}`;
-  }
 
   return `[TruRadar] ${categoryBadge} — for ${dealer.dealerName}
 ━━━━━━━━━━━━━━━━━━━━
