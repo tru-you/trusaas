@@ -16,6 +16,7 @@ function numberFormat(n) {
 const PAYG_RATE = 13.27; // R per credit (PAYG tier)
 const BURN_RATES = {
   'valuation': 1,
+  'electronics_valuation': 1,
   'property': 1,
   'business_audit': 2,
   'business_contacts': 2,
@@ -29,6 +30,7 @@ const BURN_KEY = {
   'valuation': 'bureau_valuation',
   'regcheck': 'bureau_regcheck',
   'accident': 'bureau_accident',
+  'electronics': 'electronics_valuation',
 };
 function creditCost(product) {
   const key = BURN_KEY[product] || product;
@@ -39,43 +41,146 @@ function creditCostRounded(product) {
   return creditCost(product).toFixed(2);
 }
 
-function showToast(msg, type = 'success') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.textContent = msg;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 4000);
+// User & Credit Wallet State
+function getUserEmail() {
+  let email = localStorage.getItem('trudata_user_email');
+  if (!email) {
+    email = 'client@dealership.co.za';
+    localStorage.setItem('trudata_user_email', email);
+  }
+  return email;
 }
 
-function setResultsLoading(isLoading) {
-  const content = document.getElementById('results-content');
-  if (!content) return;
-  if (isLoading) {
-    content.innerHTML = '<div class="loading"><div class="spinner"></div><span>Searching live sources...</span></div>';
+function setUserEmail(email) {
+  if (email && email.includes('@')) {
+    localStorage.setItem('trudata_user_email', email.trim().toLowerCase());
   }
 }
 
-function renderEmpty(msg) {
-  const content = document.getElementById('results-content');
-  if (content) {
-    content.innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span><p>${esc(msg || "No results found. You won't be charged.")}</p></div>`;
+async function updateWalletUI() {
+  const email = getUserEmail();
+  const pillText = document.getElementById('wallet-balance-text');
+  try {
+    const res = await fetch(`/api/orders/credits/balance?email=${encodeURIComponent(email)}`);
+    if (res.ok) {
+      const data = await res.json();
+      window._trudataWallet = data;
+      if (pillText) {
+        pillText.textContent = `${data.balance ?? 0} Credits`;
+      }
+      return data;
+    }
+  } catch (err) {
+    console.warn('Could not fetch wallet balance:', err);
   }
+  if (pillText) pillText.textContent = '0 Credits';
+  return { balance: 0 };
 }
 
-function showResults(engine) {
-  const resultsDiv = document.getElementById('results');
-  if (resultsDiv) resultsDiv.classList.remove('hidden');
-  const pricingDiv = document.getElementById('results-pricing');
-  if (pricingDiv) pricingDiv.classList.add('hidden');
+function openCreditModal(highlightPack = 'pro') {
+  const modal = document.getElementById('credit-modal');
+  if (!modal) return;
+  const emailInput = document.getElementById('credit-buyer-email');
+  if (emailInput && !emailInput.value) {
+    emailInput.value = getUserEmail();
+  }
+  // Select requested pack
+  document.querySelectorAll('.credit-pack-selector .pack-option').forEach(opt => {
+    const isTarget = opt.dataset.pack === highlightPack;
+    opt.classList.toggle('selected', isTarget);
+    const radio = opt.querySelector('input[type="radio"]');
+    if (radio) radio.checked = isTarget;
+  });
+  modal.classList.remove('hidden');
 }
 
-function renderError(msg) {
-  const content = document.getElementById('results-content');
-  if (content) {
-    content.innerHTML = `<div class="error-message">${esc(msg)}</div>`;
-  }
+function closeCreditModal() {
+  const modal = document.getElementById('credit-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+// Init wallet balance on load
+updateWalletUI();
+
+// Wallet trigger click listeners
+const walletPill = document.getElementById('wallet-pill');
+if (walletPill) {
+  walletPill.addEventListener('click', () => openCreditModal());
+}
+const btnBuyCredits = document.getElementById('btn-buy-credits');
+if (btnBuyCredits) {
+  btnBuyCredits.addEventListener('click', () => openCreditModal());
+}
+const closeCreditBtn = document.getElementById('close-credit-modal');
+if (closeCreditBtn) {
+  closeCreditBtn.addEventListener('click', closeCreditModal);
+}
+
+// Pack option radio toggle
+document.querySelectorAll('.credit-pack-selector .pack-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.credit-pack-selector .pack-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    const radio = opt.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+  });
+});
+
+// Credit purchase form submit (PayFast Integration)
+const creditPurchaseForm = document.getElementById('credit-purchase-form');
+if (creditPurchaseForm) {
+  creditPurchaseForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nameInput = document.getElementById('credit-buyer-name');
+    const emailInput = document.getElementById('credit-buyer-email');
+    const selectedPackOpt = document.querySelector('.credit-pack-selector .pack-option.selected');
+    const packId = selectedPackOpt ? selectedPackOpt.dataset.pack : 'pro';
+
+    const name = nameInput ? nameInput.value.trim() : 'Customer';
+    const email = emailInput ? emailInput.value.trim().toLowerCase() : getUserEmail();
+
+    if (!email || !email.includes('@')) {
+      showToast('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    setUserEmail(email);
+    const checkoutBtn = document.getElementById('btn-payfast-checkout');
+    if (checkoutBtn) {
+      checkoutBtn.disabled = true;
+      checkoutBtn.textContent = 'Preparing Secure Checkout... 🔒';
+    }
+
+    try {
+      const res = await fetch('/api/orders/credits/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, packId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to initialize purchase');
+
+      showToast(`Added ${data.credits?.added || 0} Credits to your wallet!`);
+      await updateWalletUI();
+      closeCreditModal();
+
+      if (data.paymentUrl) {
+        showToast('Redirecting to PayFast payment gateway...');
+        setTimeout(() => {
+          window.location.href = data.paymentUrl;
+        }, 1200);
+      }
+    } catch (err) {
+      console.error('Credit purchase error:', err);
+      showToast(err.message || 'Payment initiation failed. Please try again.', 'error');
+    } finally {
+      if (checkoutBtn) {
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = 'Proceed to PayFast Checkout 🔒';
+      }
+    }
+  });
 }
 
 // 1. Tab Switching
@@ -87,7 +192,7 @@ document.querySelectorAll('.engine-tabs .tab').forEach(tab => {
     
     // Hide all search forms, show the matching one
     const engine = tab.dataset.engine;
-    ['vehicles', 'property', 'business', 'bureau', 'safepay'].forEach(e => {
+    ['vehicles', 'electronics', 'property', 'business', 'bureau', 'safepay'].forEach(e => {
       const form = document.getElementById(`search-${e}`);
       if (form) {
         if (e === engine) {
@@ -123,7 +228,19 @@ document.querySelectorAll('.nav-link[data-target]').forEach(link => {
     document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' });
   });
 });
-// // 2 & 3. Vehicle Cascading Dropdowns & Valuation
+
+// 2. Vehicle Sub-Tabs (Verticals) & Cascading Dropdowns
+let currentVehicleVertical = 'cars';
+const vehicleVerticalBtns = document.querySelectorAll('#vehicle-verticals .sub-tab');
+
+vehicleVerticalBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    vehicleVerticalBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentVehicleVertical = btn.dataset.v || 'cars';
+    initVehicleMakes(currentVehicleVertical);
+  });
+});
 const vehicleForm = document.getElementById('search-vehicles');
 const makeSelect = document.getElementById('vehicle-make');
 const modelSelect = document.getElementById('vehicle-model');
@@ -134,21 +251,42 @@ const btnSearch = document.getElementById('btn-search');
 let currentMakeData = [];
 let modelGroups = {};
 
-async function initVehicleMakes() {
+async function initVehicleMakes(vertical = 'cars') {
   if (!makeSelect) return;
   try {
-    const res = await fetch('/catalogue/index.json');
-    if (!res.ok) throw new Error('Failed to load makes');
-    const makesList = await res.json();
+    const res = await fetch(`/api/catalogue/makes?vertical=${encodeURIComponent(vertical)}`);
+    let makesList = [];
+    if (res.ok) {
+      const data = await res.json();
+      makesList = data.makes || [];
+    } else {
+      const fallbackRes = await fetch('/catalogue/index.json');
+      if (fallbackRes.ok) makesList = await fallbackRes.json();
+    }
     makesList.sort((a, b) => a.name.localeCompare(b.name));
     makeSelect.innerHTML = '<option value="">Select Make...</option>' + 
       makesList.map(m => `<option value="${esc(m.name)}" data-file="${esc(m.file)}">${esc(m.name)}</option>`).join('');
     makeSelect.disabled = false;
+    
+    // Reset subordinate dropdowns
+    modelSelect.innerHTML = '<option value="">Select Model...</option>';
+    modelSelect.disabled = true;
+    variantSelect.innerHTML = '<option value="">Select Variant...</option>';
+    variantSelect.disabled = true;
+    yearSelect.innerHTML = '<option value="">Select Year...</option>';
+    yearSelect.disabled = true;
+    if (btnSearch) btnSearch.disabled = true;
+
+    // If only one make available (e.g. SPECIALTY for marine/caravans), auto-select it
+    if (makesList.length === 1) {
+      makeSelect.value = makesList[0].name;
+      makeSelect.dispatchEvent(new Event('change'));
+    }
   } catch (err) {
     console.error('Failed to init vehicle makes', err);
   }
 }
-initVehicleMakes();
+initVehicleMakes(currentVehicleVertical);
 
 if (makeSelect) {
   makeSelect.addEventListener('change', async () => {
@@ -181,7 +319,16 @@ if (makeSelect) {
           if (catRes.ok) {
             const catData = await catRes.json();
             items = [];
+            const SPECIALTY_SUB_MAP = {
+              marine: ['BOAT/JETSKI'],
+              caravans: ['CARAVAN', 'TRAILER'],
+              yellowmetal: ['YELLOW METAL', 'GENERATOR', 'GOLF CART'],
+              moto: ['BICYCLE'],
+            };
             for (const [group, variants] of Object.entries(catData)) {
+              if (make === 'SPECIALTY' && SPECIALTY_SUB_MAP[currentVehicleVertical]) {
+                if (!SPECIALTY_SUB_MAP[currentVehicleVertical].includes(group)) continue;
+              }
               for (const [vName, vData] of Object.entries(variants)) {
                 items.push({
                   make,
@@ -412,6 +559,127 @@ function renderVehicleResults(data) {
   const btnOrder = document.getElementById('btn-order');
   if (btnOrder) {
     btnOrder.onclick = () => openOrderModal('valuation', BURN_RATES['valuation'] * PAYG_RATE);
+  }
+}
+
+// 3. Electronics & Tech Valuation
+const formElectronics = document.getElementById('search-electronics');
+if (formElectronics) {
+  formElectronics.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const queryEl = document.getElementById('electronics-query');
+    const catEl = document.getElementById('electronics-category');
+    if (!queryEl) return;
+
+    const query = queryEl.value.trim();
+    const category = catEl ? catEl.value : 'all';
+
+    if (!query) {
+      showToast('Please enter an electronics model or device name.', 'error');
+      return;
+    }
+
+    showResults('electronics');
+    setResultsLoading(true);
+
+    try {
+      const res = await fetch('/api/electronics/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, category }),
+      });
+
+      if (!res.ok) throw new Error('Electronics valuation failed');
+      const data = await res.json();
+      renderElectronicsResults(data);
+    } catch (err) {
+      renderError('Could not retrieve electronics market value. Please try again.');
+      showToast('Failed to retrieve electronics valuation.', 'error');
+    }
+    setResultsLoading(false);
+  });
+}
+
+function renderElectronicsResults(data) {
+  const titleEl = document.getElementById('results-title');
+  if (titleEl) titleEl.textContent = `${data.query} Live Market Value`;
+
+  const countEl = document.getElementById('results-count');
+  if (countEl) countEl.textContent = `${data.count || 0} store listings analyzed`;
+
+  const sourceEl = document.getElementById('results-source');
+  if (sourceEl) {
+    const topStores = (data.sources || []).slice(0, 3).map(s => s.source).join(', ');
+    sourceEl.textContent = topStores ? `Sources: ${topStores}` : 'Sources: Google Shopping ZA, Takealot, iStore, Makro';
+  }
+
+  const content = document.getElementById('results-content');
+  if (content) {
+    if (!data.count || data.count === 0) {
+      content.innerHTML = `<div class="empty-state"><span class="empty-icon">📱</span><p>No verified prices found for "${esc(data.query)}". Try refining the brand or model name.</p></div>`;
+    } else {
+      const topListings = data.listings || [];
+      content.innerHTML = `
+        <div class="results-grid">
+          <div class="metric-card">
+            <span class="metric-label">Median Market Price</span>
+            <span class="metric-value">R ${numberFormat(data.median)}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Price Range</span>
+            <span class="metric-value">R ${numberFormat(data.low)} – R ${numberFormat(data.high)}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Listings Analyzed</span>
+            <span class="metric-value">${data.count}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Market Confidence</span>
+            <span class="metric-value confidence-${data.confidence || 'medium'}">${(data.confidence || 'medium').toUpperCase()}</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <h4 style="margin-bottom: 0.75rem; color: var(--text-primary); font-size: 1rem;">Live South Africa Retail &amp; Refurb Comps</h4>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Listing / Device</th>
+                <th>Price</th>
+                <th>Merchant</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${topListings.slice(0, 8).map(item => `
+                <tr>
+                  <td><strong>${esc(item.title)}</strong></td>
+                  <td style="color: var(--accent-volt); font-weight: 700;">R ${numberFormat(item.price)}</td>
+                  <td>${esc(item.source)}</td>
+                  <td>
+                    ${item.link ? `<a href="${esc(item.link)}" target="_blank" rel="noopener" style="color: var(--accent-volt); font-size: 0.85rem;">View Deal ↗</a>` : 'Verified'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+  }
+
+  const pricingDiv = document.getElementById('results-pricing');
+  if (pricingDiv) pricingDiv.classList.remove('hidden');
+
+  const leadCountEl = document.getElementById('lead-count');
+  if (leadCountEl) leadCountEl.textContent = '1';
+
+  const leadCostEl = document.getElementById('lead-cost');
+  if (leadCostEl) leadCostEl.textContent = 'R' + creditCostRounded('electronics');
+
+  const btnOrder = document.getElementById('btn-order');
+  if (btnOrder) {
+    btnOrder.onclick = () => openOrderModal(`Electronics Report: ${data.query}`, creditCost('electronics'));
   }
 }
 
@@ -655,6 +923,17 @@ if (formBureau) {
       return;
     }
     
+    const email = getUserEmail();
+    const productKey = BURN_KEY[reportType] || 'bureau_valuation';
+    
+    // Check wallet balance first
+    const wallet = await updateWalletUI();
+    if ((wallet.balance || 0) < 3) {
+      showToast('You need 3 credits for this official TransUnion report. Please top up your wallet.', 'error');
+      openCreditModal('pro');
+      return;
+    }
+    
     showResults('bureau');
     setResultsLoading(true);
     try {
@@ -689,6 +968,18 @@ if (formBureau) {
         throw new Error(errData.error || errData.details || 'Bureau lookup failed');
       }
       const data = await res.json();
+      
+      // Successfully got report — burn 3 credits
+      try {
+        await fetch('/api/orders/use', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, product: productKey })
+        });
+        await updateWalletUI();
+      } catch (burnErr) {
+        console.warn('Could not record credit burn:', burnErr);
+      }
       
       const titleEl = document.getElementById('results-title');
       if (titleEl) titleEl.textContent = `Bureau Report: ${reportType.toUpperCase()}`;
@@ -776,6 +1067,14 @@ async function runSafePay() {
     return;
   }
 
+  const email = getUserEmail();
+  const wallet = await updateWalletUI();
+  if ((wallet.balance || 0) < 3) {
+    showToast('SafePay requires 3 credits. Please top up your credit wallet.', 'error');
+    openCreditModal('pro');
+    return;
+  }
+
   showResults('safepay');
   setResultsLoading(true);
   try {
@@ -789,6 +1088,19 @@ async function runSafePay() {
       throw new Error(err.error || 'Verification failed');
     }
     const data = await res.json();
+
+    // Burn 3 credits for SafePay check
+    try {
+      await fetch('/api/orders/use', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, product: 'safepay' })
+      });
+      await updateWalletUI();
+    } catch (burnErr) {
+      console.warn('Could not record credit burn for safepay:', burnErr);
+    }
+
     renderSafePayResults(data);
   } catch (err) {
     renderError(err.message || 'Could not verify account. Please try again.');

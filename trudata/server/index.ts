@@ -20,6 +20,7 @@ import propertyRoutes from './routes/property';
 import catalogueRoutes from './routes/catalogue';
 import chatRoutes from './routes/chat';
 import safepayRoutes from './routes/safepay';
+import electronicsRoutes from './routes/electronics';
 
 // Initialize DB store
 import { initDb } from './lib/db';
@@ -74,6 +75,7 @@ app.use('/api/property', strictLimiter, propertyRoutes);
 app.use('/api/catalogue', catalogueRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/safepay', strictLimiter, safepayRoutes);
+app.use('/api/electronics', strictLimiter, electronicsRoutes);
 
 // API 404 handler
 app.all('/api/*', (req, res) => res.status(404).json({ error: 'Not found' }));

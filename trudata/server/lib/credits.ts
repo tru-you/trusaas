@@ -17,6 +17,7 @@ export interface CreditWallet {
 // Credit burn rates per product
 export const CREDIT_COSTS: Record<string, number> = {
   'valuation': 1,
+  'electronics_valuation': 1,
   'property': 1,
   'business_audit': 2,
   'business_contacts': 2,

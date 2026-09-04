@@ -59,6 +59,7 @@
       </div>
       <div class="nav-links desktop-only">
         <a href="#hero" class="nav-link" data-target="vehicles">Vehicles</a>
+        <a href="#hero" class="nav-link" data-target="electronics">Electronics</a>
         <a href="#hero" class="nav-link" data-target="property">Property</a>
         <a href="#hero" class="nav-link" data-target="business">Business Finder</a>
         <a href="#hero" class="nav-link" data-target="bureau">Bureau Reports</a>
@@ -66,7 +67,12 @@
         <a href="#pricing" class="nav-link">Pricing</a>
       </div>
       <div class="nav-actions desktop-only">
-        <button class="btn-primary">Try Free Search</button>
+        <div id="wallet-pill" class="wallet-pill" title="Your Credit Wallet">
+          <span class="wallet-icon">⚡</span>
+          <span id="wallet-balance-text">Loading...</span>
+        </div>
+        <button id="btn-buy-credits" class="btn-secondary btn-sm">Buy Credits</button>
+        <button class="btn-primary" onclick="document.getElementById('console-card')?.scrollIntoView({behavior:'smooth'})">Try Free Search</button>
       </div>
       <button id="hamburger-btn" class="mobile-menu-btn mobile-only" aria-label="Menu">
         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
@@ -89,6 +95,7 @@
       <div id="console-card">
         <div class="engine-tabs">
           <button class="tab active" data-engine="vehicles">🚗 Vehicles</button>
+          <button class="tab" data-engine="electronics">💻 Electronics</button>
           <button class="tab" data-engine="property">🏠 Property</button>
           <button class="tab" data-engine="business">🏢 Business Finder</button>
           <button class="tab" data-engine="bureau">📋 Bureau Reports</button>
@@ -96,19 +103,43 @@
         </div>
         
         <form class="search-form" id="search-vehicles">
-          <select id="vehicle-make">
-            <option value="">Select Make...</option>
+          <div class="vertical-sub-tabs" id="vehicle-verticals">
+            <button type="button" class="sub-tab active" data-v="cars">🚗 Cars &amp; SUVs</button>
+            <button type="button" class="sub-tab" data-v="moto">🏍️ Motorcycles</button>
+            <button type="button" class="sub-tab" data-v="marine">⛵ Marine / Boats</button>
+            <button type="button" class="sub-tab" data-v="trucks">🚛 Trucks &amp; Commercial</button>
+            <button type="button" class="sub-tab" data-v="caravans">🏕️ Caravans &amp; Trailers</button>
+            <button type="button" class="sub-tab" data-v="yellowmetal">🚜 Yellow Metal &amp; Ag</button>
+          </div>
+          <div class="form-inputs-row">
+            <select id="vehicle-make">
+              <option value="">Select Make...</option>
+            </select>
+            <select id="vehicle-model" disabled>
+              <option value="">Select Model...</option>
+            </select>
+            <select id="vehicle-variant" disabled>
+              <option value="">Select Variant...</option>
+            </select>
+            <select id="vehicle-year" disabled>
+              <option value="">Select Year...</option>
+            </select>
+            <button id="btn-search" class="btn-primary" disabled>Search Market</button>
+          </div>
+        </form>
+
+        <form class="search-form hidden" id="search-electronics">
+          <select id="electronics-category" style="flex: 1; min-width: 160px;">
+            <option value="all">All Tech &amp; Assets</option>
+            <option value="laptops">Laptops &amp; MacBooks</option>
+            <option value="phones">Smartphones &amp; iPhones</option>
+            <option value="tablets">Tablets &amp; iPads</option>
+            <option value="gaming">Gaming &amp; Consoles</option>
+            <option value="audio">Audio &amp; Cameras</option>
+            <option value="appliances">Appliances</option>
           </select>
-          <select id="vehicle-model" disabled>
-            <option value="">Select Model...</option>
-          </select>
-          <select id="vehicle-variant" disabled>
-            <option value="">Select Variant...</option>
-          </select>
-          <select id="vehicle-year" disabled>
-            <option value="">Select Year...</option>
-          </select>
-          <button id="btn-search" class="btn-primary" disabled>Search Market</button>
+          <input type="text" placeholder="e.g. MacBook Pro M2, iPhone 15 Pro 128GB, PS5 Slim..." id="electronics-query" style="flex: 2; min-width: 240px;">
+          <button class="btn-primary" id="btn-search-electronics">Get Value (1 Credit)</button>
         </form>
         
         <form class="search-form hidden" id="search-property">
@@ -186,8 +217,21 @@
           <div class="price">1 Credit per search</div>
           <button class="btn-secondary select-vertical" data-target="vehicles">Search Vehicles</button>
         </div>
+
+        <!-- Card 2: Electronics & Tech -->
+        <div class="card">
+          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          <h3>Electronics &amp; Tech Assets</h3>
+          <p>Live market values for laptops, phones, consoles &amp; appliances.</p>
+          <ul class="features">
+            <li>Real retail &amp; refurbished prices in ZAR</li>
+            <li>Sources from Takealot, iStore, Incredible, Makro</li>
+          </ul>
+          <div class="price">1 Credit per search</div>
+          <button class="btn-secondary select-vertical" data-target="electronics">Get Tech Value</button>
+        </div>
         
-        <!-- Card 2 -->
+        <!-- Card 3 -->
         <div class="card">
           <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           <h3>Property Suburb Comps</h3>
@@ -200,7 +244,7 @@
           <button class="btn-secondary select-vertical" data-target="property">Search Suburbs</button>
         </div>
         
-        <!-- Card 3 -->
+        <!-- Card 4 -->
         <div class="card">
           <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
           <h3>Business Finder</h3>
@@ -213,7 +257,7 @@
           <button class="btn-secondary select-vertical" data-target="business">Find Businesses</button>
         </div>
         
-        <!-- Card 4 -->
+        <!-- Card 5 -->
         <div class="card">
           <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
           <h3>Bureau Reports</h3>
@@ -226,7 +270,7 @@
           <button class="btn-secondary select-vertical" data-target="bureau">Run Lookup</button>
         </div>
 
-        <!-- Card 5 -->
+        <!-- Card 6 -->
         <div class="card">
           <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
           <h3>SafePay Bank Verification</h3>
@@ -345,14 +389,69 @@
       </div>
       <form id="order-form">
         <div class="form-group">
-          <label for="order-name">Name</label>
-          <input type="text" id="order-name" required>
+          <label for="order-name">Full Name</label>
+          <input type="text" id="order-name" required placeholder="e.g. Johan van der Merwe">
         </div>
         <div class="form-group">
-          <label for="order-email">Email</label>
-          <input type="email" id="order-email" required>
+          <label for="order-email">Email Address</label>
+          <input type="email" id="order-email" required placeholder="name@company.co.za">
         </div>
-        <button type="submit" class="btn-primary btn-block">Confirm Order</button>
+        <button type="submit" class="btn-primary btn-block">Confirm Order &amp; Pay via PayFast</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Credit Pack Purchase Modal -->
+  <div id="credit-modal" class="modal hidden">
+    <div class="modal-content modal-lg">
+      <button class="close-modal" id="close-credit-modal">&times;</button>
+      <h2>⚡ Get TruData Credits</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        Credits never expire. Use them across Vehicle Comps, Property FSBO, Business Dossiers, and TransUnion Bureau Checks.
+      </p>
+
+      <div class="credit-pack-selector">
+        <div class="pack-option" data-pack="paygo">
+          <div class="pack-radio"><input type="radio" name="pack-choice" value="paygo" checked></div>
+          <div class="pack-info">
+            <strong>Pay-As-You-Go</strong>
+            <span>15 Credits &middot; R13.27 / credit</span>
+          </div>
+          <div class="pack-price">R 199</div>
+        </div>
+
+        <div class="pack-option selected" data-pack="pro">
+          <div class="pack-badge">MOST POPULAR</div>
+          <div class="pack-radio"><input type="radio" name="pack-choice" value="pro"></div>
+          <div class="pack-info">
+            <strong>Pro Desk</strong>
+            <span>150 Credits &middot; R6.66 / credit (Dealers &amp; Brokers)</span>
+          </div>
+          <div class="pack-price">R 999</div>
+        </div>
+
+        <div class="pack-option" data-pack="enterprise">
+          <div class="pack-radio"><input type="radio" name="pack-choice" value="enterprise"></div>
+          <div class="pack-info">
+            <strong>Enterprise Desk</strong>
+            <span>600 Credits &middot; R5.83 / credit (Agencies &amp; Fleets)</span>
+          </div>
+          <div class="pack-price">R 3,499</div>
+        </div>
+      </div>
+
+      <form id="credit-purchase-form" style="margin-top: 1.5rem;">
+        <div class="form-group">
+          <label for="credit-buyer-name">Full Name / Business Name</label>
+          <input type="text" id="credit-buyer-name" required placeholder="e.g. Pieter Marais">
+        </div>
+        <div class="form-group">
+          <label for="credit-buyer-email">Email Address (Your Wallet ID)</label>
+          <input type="email" id="credit-buyer-email" required placeholder="pieter@dealership.co.za">
+        </div>
+        <button type="submit" class="btn-primary btn-block" id="btn-payfast-checkout">
+          Proceed to PayFast Checkout 🔒
+        </button>
       </form>
     </div>
   </div>

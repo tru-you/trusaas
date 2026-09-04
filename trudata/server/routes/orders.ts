@@ -8,6 +8,7 @@ const router = Router();
 
 const ITEM_NAMES: Record<string, string> = {
   'valuation': 'Vehicle Market Value Report',
+  'electronics_valuation': 'Electronics & Asset Valuation',
   'property': 'Suburb Property Comps Report',
   'business_audit': 'Business Website Audit',
   'business_contacts': 'Business Contact Report',
@@ -37,6 +38,51 @@ router.get('/credits/balance', (req, res) => {
   const wallet = getWallet(email);
   if (!wallet) return res.json({ balance: 0, tier: 'none', message: 'No credits yet. Purchase a credit pack to get started.' });
   res.json({ balance: wallet.balance, tier: wallet.tier, totalUsed: wallet.totalUsed });
+});
+
+// POST /api/orders — create a report order / invoice
+router.post('/', async (req, res) => {
+  try {
+    const { email, name, product, params = {}, amount } = req.body;
+    if (!email || !product) {
+      return res.status(400).json({ error: 'Missing required fields: email, product' });
+    }
+
+    const orderId = crypto.randomUUID();
+    const cost = amount ? Number(amount) : (CREDIT_COSTS[product] ? CREDIT_COSTS[product] * 13.27 : 99);
+    const itemName = ITEM_NAMES[product] || product;
+
+    const order: Order = {
+      id: orderId,
+      email,
+      name: name || 'Customer',
+      product: product as any,
+      params,
+      amount: cost,
+      currency: 'ZAR',
+      status: 'pending',
+      createdAt: new Date(),
+    };
+
+    await createOrder(order);
+
+    const paymentUrl = generatePaymentUrl({
+      orderId,
+      amount: cost,
+      itemName: `TruData: ${itemName}`,
+      email,
+      customerName: name || 'Customer',
+    });
+
+    res.json({
+      orderId,
+      paymentUrl,
+      order
+    });
+  } catch (err: any) {
+    console.error('Error creating order:', err);
+    res.status(500).json({ error: 'Failed to create order' });
+  }
 });
 
 // POST /api/orders/credits/purchase — buy a credit pack

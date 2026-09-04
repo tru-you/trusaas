@@ -19,18 +19,17 @@ TruData is a **B2B data marketplace** for South Africa. Five product verticals, 
 
 | Pillar | Endpoint | Credits | Data Source | Status |
 |--------|----------|---------|-------------|--------|
-| 🚗 **Vehicles & Marine** | `POST /api/valuation/quick` + `/api/catalogue/search` | 1 | TransUnion static catalogue (312 makes) + Bright Data scraping (AutoTrader, Cars.co.za) | ✅ Live |
+| 🚗 **Vehicles & Heavy Assets** | `POST /api/valuation/quick` + `/api/catalogue/*` | 1 | TransUnion catalogue (Cars, Moto, Marine, Commercial, Caravans, Yellow Metal/Ag) + Bright Data scraping | ✅ Live |
+| 💻 **Electronics & Tech** | `POST /api/electronics/valuation` | 1 | Serper Google Shopping ZA + Organic retail comps (Takealot, iStore, Makro, Incredible) | ✅ Live |
 | 🏠 **Property** | `POST /api/property/comps` + `/api/property/fsbo` | 1 | Bright Data scraping (Property24, Private Property) | ✅ Live |
-| 🔒 **SafePay** | `POST /api/safepay/verify` | 3 | Imagin8 TransUnion AVS (bank account verification) | ✅ Built |
+| 🔒 **SafePay** | `POST /api/safepay/verify` | 3 | Imagin8 TransUnion AVS (bank account verification) | ✅ Live |
 | 🏢 **Business Finder** | `POST /api/agency/crawl` | 2 | Serper.dev (SERP) + Cheerio crawl + site audit | ✅ Live |
 | 📋 **Bureau Reports** | `/api/imagin8/*` | 3 | Imagin8 TransUnion (valuation, reg check, accident) | ✅ Live |
 
-### Pending Vertical: B2B Dossier (CIPC Directors)
-- **What:** Business audit + CIPC company search + director lookup
-- **Credits:** 5
-- **Data source:** WinDeed or SearchWorks API (CIPC + Deeds Office)
-- **Status:** ⏳ Waiting for API credentials from WinDeed/SearchWorks
-- **Calls needed:** CIPC Company Search + CIPC Director Search only (NO credit bureau, NO Home Affairs, NO bank AVS)
+### Features Added (2026-09-04)
+- **Multi-Vertical Vehicle Catalogue:** 6 sub-verticals (`cars`, `moto`, `marine`, `trucks`, `caravans`, `yellowmetal`) wired to dynamic catalogue filtering in `/api/catalogue/makes` & `/api/catalogue/models` with SPECIALTY mapping.
+- **Electronics & Tech Valuation:** Full search engine for consumer tech (MacBooks, iPhones, gaming consoles, TVs, appliances) analyzing 40+ South African retail & refurb comps per query with price distribution metrics (median, low, high, top merchants).
+- **Credit Wallet Self-Serve Monetization:** Persistent wallet balance pill (`#wallet-pill`), credit purchase modal (`#credit-modal`) with PayFast sandbox/live checkout, and automatic credit deductions (3 credits on TransUnion bureau checks & SafePay; 1 credit on asset reports).
 
 ---
 
