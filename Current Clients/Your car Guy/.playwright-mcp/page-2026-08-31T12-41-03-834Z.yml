@@ -1,0 +1,514 @@
+- generic [active] [ref=e1]:
+  - paragraph
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#content"
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - paragraph [ref=e11]:
+          - generic [ref=e12]: 
+          - link "083 465 9921" [ref=e13] [cursor=pointer]:
+            - /url: tel:0834659921
+          - text: "|"
+          - link "041 007 0393" [ref=e14] [cursor=pointer]:
+            - /url: tel:0410070393
+        - paragraph [ref=e18]: 17 BURT DRIVE, NEWTON PARK, PE
+        - paragraph [ref=e22]: MON – FRI 07:30 – 17:30
+        - generic [ref=e27]:
+          - link "facebook" [ref=e28] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "instagram" [ref=e29] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "whatsapp" [ref=e30] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+        - paragraph [ref=e34]:
+          - generic [ref=e35]: 
+          - link "LOGIN | REGISTER" [ref=e36] [cursor=pointer]:
+            - /url: /my-account
+      - generic [ref=e42]:
+        - generic [ref=e47]:
+          - link "facebook" [ref=e48] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "instagram" [ref=e49] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "whatsapp" [ref=e50] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+        - paragraph [ref=e58]:
+          - strong [ref=e59]: 083 465 9921 | 041 007 0393
+      - navigation "Home Menu" [ref=e64]:
+        - text:  
+        - list [ref=e65]:
+          - listitem [ref=e66]:
+            - link "Home" [ref=e69] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/
+          - listitem [ref=e71]:
+            - link "About Us" [ref=e74] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/about-us/
+          - listitem [ref=e76]:
+            - link "Testimonials" [ref=e79] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/testimonials/
+          - listitem [ref=e81]:
+            - link "Pre-Owned" [ref=e84] [cursor=pointer]:
+              - /url: /vehicles/?condition%5B%5D=pre-owned-certified
+          - listitem [ref=e86]:
+            - link "Sell Your Vehicle" [ref=e89] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/sell-your-vehicle/
+          - listitem [ref=e91]:
+            - link "Contact Us" [ref=e94] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/contact-us/
+          - listitem [ref=e96]:
+            - link "Quick Menu " [ref=e99] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e100]: Quick Menu
+              - generic [ref=e101]: 
+            - text: 
+      - text:        
+    - main [ref=e102]:
+      - generic [ref=e106]:
+        - generic [ref=e114]:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic: Quick search
+                  - textbox:
+                    - /placeholder: Quick search
+                - generic:
+                  - generic: Make
+                  - listbox:
+                    - option: AUDI (1)
+                    - option: CHEVROLET (1)
+                    - option: FORD (10)
+                    - option: HARLEY DAVIDSON (1)
+                    - option: HAVAL (0)
+                    - option: HONDA (1)
+                    - option: JETOUR (1)
+                    - option: MERCEDES-BENZ (0)
+                    - option: NISSAN (1)
+                    - option: RENAULT (1)
+                    - option: SUZUKI (1)
+                    - option: TOYOTA (8)
+                    - option: VOLKSWAGEN (5)
+                  - generic:
+                    - generic:
+                      - combobox:
+                        - list:
+                          - listitem:
+                            - searchbox
+                - generic:
+                  - generic: Model
+                  - listbox:
+                    - option: A3 (0)
+                    - option: A4 (0)
+                    - option: C CLASS (0)
+                    - option: CIVIC (1)
+                    - option: COROLLA (1)
+                    - option: COROLLA CROSS (1)
+                    - option: COROLLA QUEST (1)
+                    - option: CORSA UTILITY (1)
+                    - option: DASHING (1)
+                    - option: DUSTER (1)
+                    - option: DYNA (1)
+                    - option: EVEREST (2)
+                    - option: GOLF 7 (2)
+                    - option: GOLF 8 (1)
+                    - option: H6 (0)
+                    - option: HILUX (2)
+                    - option: JIMNY (1)
+                    - option: LAND CRUISER PICK UP (1)
+                    - option: LANDCRUISER 70 SERIE (1)
+                    - option: MUSTANG (2)
+                    - option: POLO (0)
+                    - option: POLO VIVO (1)
+                    - option: RANGER (6)
+                    - option: S3 (1)
+                    - option: T-CROSS (1)
+                    - option: TRANSPORTER (0)
+                    - option: URBAN CRUISER (1)
+                    - option: X TRAIL (1)
+                  - generic:
+                    - generic:
+                      - combobox:
+                        - list:
+                          - listitem:
+                            - searchbox
+                - generic:
+                  - generic:
+                    - generic: Min price (R)
+                    - spinbutton
+                  - generic:
+                    - generic: Max price (R)
+                    - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Min year
+                    - combobox
+                  - generic:
+                    - generic: Max year
+                    - combobox
+                - generic:
+                  - button: Reset
+                - generic:
+                  - button: Find Your Car (31)
+          - generic: DRIVEN BY QUALITY.
+        - generic [ref=e118]:
+          - heading "Experience Automotive Excellence." [level=2] [ref=e122]
+          - paragraph [ref=e128]: Discover a carefully curated selection of premium vehicles, supported by professional guidance and industry-leading after-sales care. Your satisfaction is our commitment.
+        - generic [ref=e136]:
+          - heading "Latest Stock" [level=2] [ref=e137]
+          - generic [ref=e138]:
+            - heading "Pick up where you left off" [level=3] [ref=e139]
+            - tablist "Vehicle collections" [ref=e140]:
+              - tab "Sponsored cars" [ref=e141] [cursor=pointer]
+              - tab "Recently viewed" [ref=e142] [cursor=pointer]
+              - tab "Wishlisted cars" [ref=e143] [cursor=pointer]
+              - tab "Saved searches" [ref=e144] [cursor=pointer]
+          - generic [ref=e146]:
+            - article [ref=e147]:
+              - generic [ref=e149]:
+                - link [ref=e150] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2020-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                  - img "2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=e151]
+                - generic [ref=e152]: Excellent
+                - button "Save vehicle" [ref=e154] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "12"
+              - generic [ref=e160]:
+                - generic [ref=e162]:
+                  - link "2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=e163] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2020-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                  - generic [ref=e164]: FORD RANGER
+                - generic "Vehicle specifications" [ref=e165]:
+                  - generic [ref=e166]:
+                    - generic [ref=e167]:
+                      - generic [ref=e168]: ⛽
+                      - generic [ref=e169]: Fuel Type
+                    - generic [ref=e170]: Diesel
+                  - generic [ref=e171]:
+                    - generic [ref=e172]:
+                      - generic [ref=e173]: 📅
+                      - generic [ref=e174]: Year
+                    - generic [ref=e175]: "2020"
+                  - generic [ref=e176]:
+                    - generic [ref=e177]:
+                      - generic [ref=e178]: ⏱
+                      - generic [ref=e179]: Mileage
+                    - generic [ref=e180]: 83,000 km
+                  - generic [ref=e181]:
+                    - generic [ref=e182]:
+                      - generic [ref=e183]: ⚙
+                      - generic [ref=e184]: Transmission
+                    - generic [ref=e185]: Automatic
+                  - generic [ref=e186]:
+                    - generic [ref=e187]:
+                      - generic [ref=e188]: 🚗
+                      - generic [ref=e189]: Body Type
+                    - generic [ref=e190]: Bakkie Double Cab
+                - generic [ref=e191]:
+                  - generic [ref=e193]:
+                    - button "⇄ Add to Compare" [ref=e194] [cursor=pointer]
+                    - link "View Details" [ref=e195] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2020-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                  - generic [ref=e196]:
+                    - generic [ref=e197]: Our Price
+                    - generic [ref=e198]: R 489,900
+            - article [ref=e199]:
+              - generic [ref=e201]:
+                - link [ref=e202] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                  - img "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [ref=e203]
+                - generic [ref=e204]: Excellent
+                - button "Save vehicle" [ref=e206] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "9"
+              - generic [ref=e212]:
+                - generic [ref=e214]:
+                  - link "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [ref=e215] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                  - generic [ref=e216]: TOYOTA HILUX
+                - generic "Vehicle specifications" [ref=e217]:
+                  - generic [ref=e218]:
+                    - generic [ref=e219]:
+                      - generic [ref=e220]: ⛽
+                      - generic [ref=e221]: Fuel Type
+                    - generic [ref=e222]: Diesel
+                  - generic [ref=e223]:
+                    - generic [ref=e224]:
+                      - generic [ref=e225]: 📅
+                      - generic [ref=e226]: Year
+                    - generic [ref=e227]: "2023"
+                  - generic [ref=e228]:
+                    - generic [ref=e229]:
+                      - generic [ref=e230]: ⏱
+                      - generic [ref=e231]: Mileage
+                    - generic [ref=e232]: 147,000 km
+                  - generic [ref=e233]:
+                    - generic [ref=e234]:
+                      - generic [ref=e235]: ⚙
+                      - generic [ref=e236]: Transmission
+                    - generic [ref=e237]: Automatic
+                  - generic [ref=e238]:
+                    - generic [ref=e239]:
+                      - generic [ref=e240]: 🚗
+                      - generic [ref=e241]: Body Type
+                    - generic [ref=e242]: Bakkie Double Cab
+                - generic [ref=e243]:
+                  - generic [ref=e245]:
+                    - button "⇄ Add to Compare" [ref=e246] [cursor=pointer]
+                    - link "View Details" [ref=e247] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                  - generic [ref=e248]:
+                    - generic [ref=e249]: Our Price
+                    - generic [ref=e250]: R 479,000
+            - article [ref=e251]:
+              - generic [ref=e253]:
+                - link [ref=e254] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2024-suzuki-jimny-1-5-glx-a-t/
+                  - img "2024 SUZUKI JIMNY 1.5 GLX A/T" [ref=e255]
+                - generic [ref=e256]: Excellent
+                - button "Save vehicle" [ref=e258] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "10"
+              - generic [ref=e264]:
+                - generic [ref=e266]:
+                  - link "2024 SUZUKI JIMNY 1.5 GLX A/T" [ref=e267] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2024-suzuki-jimny-1-5-glx-a-t/
+                  - generic [ref=e268]: SUZUKI JIMNY
+                - generic "Vehicle specifications" [ref=e269]:
+                  - generic [ref=e270]:
+                    - generic [ref=e271]:
+                      - generic [ref=e272]: 📅
+                      - generic [ref=e273]: Year
+                    - generic [ref=e274]: "2024"
+                  - generic [ref=e275]:
+                    - generic [ref=e276]:
+                      - generic [ref=e277]: ⏱
+                      - generic [ref=e278]: Mileage
+                    - generic [ref=e279]: 17,500 km
+                  - generic [ref=e280]:
+                    - generic [ref=e281]:
+                      - generic [ref=e282]: 🚗
+                      - generic [ref=e283]: Body Type
+                    - generic [ref=e284]: 4 x 4
+                - generic [ref=e285]:
+                  - generic [ref=e287]:
+                    - button "⇄ Add to Compare" [ref=e288] [cursor=pointer]
+                    - link "View Details" [ref=e289] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2024-suzuki-jimny-1-5-glx-a-t/
+                  - generic [ref=e290]:
+                    - generic [ref=e291]: Our Price
+                    - generic [ref=e292]: R 419,900
+          - link "View All Vehicles" [ref=e294] [cursor=pointer]:
+            - /url: https://yourcarguy.co.za/vehicles/
+  - generic [ref=e295]:
+    - generic [ref=e296]:
+      - generic [ref=e297]: Software & Management by
+      - link "TruDealer" [ref=e298] [cursor=pointer]:
+        - /url: https://trudealer.tru-saas.com
+    - generic [ref=e299]:
+      - generic [ref=e300]: ★ 332 Five-Star Google Reviews ★
+      - generic [ref=e301]:
+        - link "Rudi V. “Best dealer in PE hands down. Transparent and fair.”" [ref=e302] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e319]: Rudi V.
+          - generic [ref=e320]: “Best dealer in PE hands down. Transparent and fair.”
+        - link "Sihle M. “Ray sorted me out with the perfect bakkie. Legend!”" [ref=e321] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e338]: Sihle M.
+          - generic [ref=e339]: “Ray sorted me out with the perfect bakkie. Legend!”
+        - link "Anele N. “Drove out same day. No hassles, no hidden costs.”" [ref=e340] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e357]: Anele N.
+          - generic [ref=e358]: “Drove out same day. No hassles, no hidden costs.”
+        - link "Johan B. “Trade-in value was higher than anywhere else I tried.”" [ref=e359] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e376]: Johan B.
+          - generic [ref=e377]: “Trade-in value was higher than anywhere else I tried.”
+        - link "Thando K. “Professional from start to finish. Highly recommend.”" [ref=e378] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e395]: Thando K.
+          - generic [ref=e396]: “Professional from start to finish. Highly recommend.”
+        - link "Michelle D. “Found my dream car here. Service was incredible.”" [ref=e397] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e414]: Michelle D.
+          - generic [ref=e415]: “Found my dream car here. Service was incredible.”
+        - link "Sipho Z. “Quick finance approval, great communication throughout.”" [ref=e416] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e433]: Sipho Z.
+          - generic [ref=e434]: “Quick finance approval, great communication throughout.”
+        - link "Chantel P. “Ray goes above and beyond. Will definitely be back.”" [ref=e435] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e452]: Chantel P.
+          - generic [ref=e453]: “Ray goes above and beyond. Will definitely be back.”
+        - link "Bongani L. “Honest pricing and quality vehicles. 5 stars!”" [ref=e454] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e471]: Bongani L.
+          - generic [ref=e472]: “Honest pricing and quality vehicles. 5 stars!”
+        - link "Lindiwe S. “The whole team is friendly and helpful. Love this place.”" [ref=e473] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e490]: Lindiwe S.
+          - generic [ref=e491]: “The whole team is friendly and helpful. Love this place.”
+        - link "Francois W. “Bought 3 cars from YCG now. Wouldn't go anywhere else.”" [ref=e492] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e509]: Francois W.
+          - generic [ref=e510]: “Bought 3 cars from YCG now. Wouldn't go anywhere else.”
+        - link "Noluthando G. “Best experience I've ever had buying a car.”" [ref=e511] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e528]: Noluthando G.
+          - generic [ref=e529]: “Best experience I've ever had buying a car.”
+        - link "Mark H. “No pressure sales. Just good people and great cars.”" [ref=e530] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e547]: Mark H.
+          - generic [ref=e548]: “No pressure sales. Just good people and great cars.”
+        - link "Zandile T. “Ray is the real deal. PE's number 1 for a reason.”" [ref=e549] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e566]: Zandile T.
+          - generic [ref=e567]: “Ray is the real deal. PE's number 1 for a reason.”
+        - link "Pieter J. “Excellent after-sales support too. Top class.”" [ref=e568] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e585]: Pieter J.
+          - generic [ref=e586]: “Excellent after-sales support too. Top class.”
+        - link "Ayanda F. “Smooth process from test drive to keys in hand.”" [ref=e587] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e604]: Ayanda F.
+          - generic [ref=e605]: “Smooth process from test drive to keys in hand.”
+        - link "Rudi V. “Best dealer in PE hands down. Transparent and fair.”" [ref=e606] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e623]: Rudi V.
+          - generic [ref=e624]: “Best dealer in PE hands down. Transparent and fair.”
+        - link "Sihle M. “Ray sorted me out with the perfect bakkie. Legend!”" [ref=e625] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e642]: Sihle M.
+          - generic [ref=e643]: “Ray sorted me out with the perfect bakkie. Legend!”
+        - link "Anele N. “Drove out same day. No hassles, no hidden costs.”" [ref=e644] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e661]: Anele N.
+          - generic [ref=e662]: “Drove out same day. No hassles, no hidden costs.”
+        - link "Johan B. “Trade-in value was higher than anywhere else I tried.”" [ref=e663] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e680]: Johan B.
+          - generic [ref=e681]: “Trade-in value was higher than anywhere else I tried.”
+        - link "Thando K. “Professional from start to finish. Highly recommend.”" [ref=e682] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e699]: Thando K.
+          - generic [ref=e700]: “Professional from start to finish. Highly recommend.”
+        - link "Michelle D. “Found my dream car here. Service was incredible.”" [ref=e701] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e718]: Michelle D.
+          - generic [ref=e719]: “Found my dream car here. Service was incredible.”
+        - link "Sipho Z. “Quick finance approval, great communication throughout.”" [ref=e720] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e737]: Sipho Z.
+          - generic [ref=e738]: “Quick finance approval, great communication throughout.”
+        - link "Chantel P. “Ray goes above and beyond. Will definitely be back.”" [ref=e739] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e756]: Chantel P.
+          - generic [ref=e757]: “Ray goes above and beyond. Will definitely be back.”
+        - link "Bongani L. “Honest pricing and quality vehicles. 5 stars!”" [ref=e758] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e775]: Bongani L.
+          - generic [ref=e776]: “Honest pricing and quality vehicles. 5 stars!”
+        - link "Lindiwe S. “The whole team is friendly and helpful. Love this place.”" [ref=e777] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e794]: Lindiwe S.
+          - generic [ref=e795]: “The whole team is friendly and helpful. Love this place.”
+        - link "Francois W. “Bought 3 cars from YCG now. Wouldn't go anywhere else.”" [ref=e796] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e813]: Francois W.
+          - generic [ref=e814]: “Bought 3 cars from YCG now. Wouldn't go anywhere else.”
+        - link "Noluthando G. “Best experience I've ever had buying a car.”" [ref=e815] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e832]: Noluthando G.
+          - generic [ref=e833]: “Best experience I've ever had buying a car.”
+        - link "Mark H. “No pressure sales. Just good people and great cars.”" [ref=e834] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e851]: Mark H.
+          - generic [ref=e852]: “No pressure sales. Just good people and great cars.”
+        - link "Zandile T. “Ray is the real deal. PE's number 1 for a reason.”" [ref=e853] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e870]: Zandile T.
+          - generic [ref=e871]: “Ray is the real deal. PE's number 1 for a reason.”
+        - link "Pieter J. “Excellent after-sales support too. Top class.”" [ref=e872] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e889]: Pieter J.
+          - generic [ref=e890]: “Excellent after-sales support too. Top class.”
+        - link "Ayanda F. “Smooth process from test drive to keys in hand.”" [ref=e891] [cursor=pointer]:
+          - /url: https://www.google.com/maps/place/?q=place_id:ChIJJ4jb_l_ReiYRlyglB9fe0jI
+          - generic [ref=e908]: Ayanda F.
+          - generic [ref=e909]: “Smooth process from test drive to keys in hand.”
+    - generic [ref=e910]:
+      - generic [ref=e911]:
+        - img "Your Car Guy" [ref=e912]
+        - generic [ref=e924]:
+          - emphasis [ref=e925]: "5.0"
+          - text: / 5.0
+        - paragraph [ref=e927]:
+          - strong [ref=e928]: 332 reviews
+      - generic [ref=e929]:
+        - img "2024 Ford Ranger XL" [ref=e931]
+        - img "2024 Toyota Urban Cruiser XR" [ref=e933]
+        - img "2023 Ford Ranger Wildtrak" [ref=e935]
+        - img "Ford Ranger detail" [ref=e937]
+        - img "Urban Cruiser detail" [ref=e939]
+      - generic [ref=e940]:
+        - iframe [ref=e942]:
+          - link "Open in Maps (opens in new tab)" [ref=f1e4] [cursor=pointer]:
+            - /url: about:invalid#zClosurez
+            - text: Open in Maps
+        - generic [ref=e943]:
+          - generic [ref=e949]:
+            - generic [ref=e950]: Address
+            - generic [ref=e951]: 17 Burt Drive, Newton ParkGqeberha 6045
+          - generic [ref=e956]:
+            - generic [ref=e957]: Call us
+            - generic [ref=e958]:
+              - link "083 465 9921" [ref=e959] [cursor=pointer]:
+                - /url: tel:0834659921
+              - text: ·
+              - link "041 007 0393" [ref=e960] [cursor=pointer]:
+                - /url: tel:0410070393
+          - generic [ref=e966]:
+            - generic [ref=e967]: Email
+            - link "sales@yourcarguy.co.za" [ref=e969] [cursor=pointer]:
+              - /url: mailto:sales@yourcarguy.co.za
+          - generic [ref=e975]:
+            - generic [ref=e976]: Hours
+            - generic [ref=e977]: Mon-Fri 07:30-17:30Sat 08:00-13:00
+  - region "Go to Top":
+    - link " Go to Top":
+      - /url: "#"
+      - text: 
+      - generic: Go to Top
+  - generic:
+    - generic:
+      - text: Chat with us on
+      - strong: WhatsApp
+    - button "Chat with us on WhatsApp" [ref=e978] [cursor=pointer]
+  - generic [ref=e982]:
+    - generic [ref=e983]:
+      - generic [ref=e984]: "0"
+      - text: Added to Compare
+    - generic [ref=e985]:
+      - link "Compare Now" [ref=e986] [cursor=pointer]:
+        - /url: https://yourcarguy.co.za/compare-vehicles/
+      - button "Clear" [ref=e987] [cursor=pointer]
+  - status [ref=e988]
+  - generic: BESbswyBESbswy
+  - button "Check affordability" [ref=e989] [cursor=pointer]:
+    - generic [ref=e994]:
+      - generic [ref=e995]: Check Affordability
+      - generic [ref=e996]: What you qualify for in ~60s. No hard credit check.
+      - generic [ref=e997]: TruAfford · Soft
+  - button "Open contact form" [ref=e998] [cursor=pointer]:
+    - generic [ref=e1003]:
+      - generic [ref=e1004]: Get in Touch
+      - generic [ref=e1005]: Your Car Guy

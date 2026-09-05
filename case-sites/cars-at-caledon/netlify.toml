@@ -1,0 +1,20 @@
+# Cars on Caledon — Netlify configuration
+#
+# Publishes the static site folder as-is and runs one edge function that
+# injects per-car Open Graph tags into /vehicle/, so a shared vehicle link
+# unfurls with the actual car (title, price, photo) on WhatsApp, Facebook,
+# iMessage, Slack, etc. Edge functions only ship via the Netlify CLI or a
+# Git-connected deploy — NOT browser drag-and-drop.
+
+[build]
+  publish = "."
+
+# Per-car social preview for shared vehicle links.
+# Two entries so both /vehicle and /vehicle/ (+ anything under it) are covered.
+[[edge_functions]]
+  path = "/vehicle"
+  function = "vehicle-og"
+
+[[edge_functions]]
+  path = "/vehicle/*"
+  function = "vehicle-og"

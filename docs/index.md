@@ -10,7 +10,7 @@ The dealer suite, module by module. Each page covers what the module does, who u
 ## The dealer desktop
 
 - **[TruFlow](./truflow.md)** — the DMS: stock, sales pipeline, leads, finance and recon, deal readiness.
-- **[TruFlow Light](./truflow-light.md)** — a lightweight console on the same DMS: leads, inventory, vehicle upload.
+- **[TruFlow Mobile](./truflow-mobile.md)** — the phone companion to the DMS: leads, stock, follow-ups, vehicle upload.
 
 ## Website & buyer engagement
 

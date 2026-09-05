@@ -1,0 +1,106 @@
+- generic [active] [ref=f23e1]:
+  - paragraph
+  - link "Skip to content" [ref=f23e2] [cursor=pointer]:
+    - /url: "#content"
+  - generic [ref=f23e4]:
+    - generic [ref=f23e5]:
+      - text:                
+      - generic [ref=f23e7]:
+        - paragraph [ref=f23e15]: 17 BURT DRIVE, NEWTON PARK, PE
+        - generic [ref=f23e17]:
+          - paragraph [ref=f23e19]:
+            - strong [ref=f23e20]:
+              - link "083 465 9921" [ref=f23e21] [cursor=pointer]:
+                - /url: tel:0834659921
+              - link "041 007 0393" [ref=f23e22] [cursor=pointer]:
+                - /url: tel:0410070393
+          - navigation "Home Menu" [ref=f23e23]:
+            - button "Toggle Navigation  " [ref=f23e24] [cursor=pointer]:
+              - generic [ref=f23e25]:
+                - generic: Toggle Navigation
+                - generic [ref=f23e27]:
+                  - generic [ref=f23e28]: 
+                  - generic [ref=f23e29]: 
+            - list:
+              - listitem:
+                - link "Home":
+                  - /url: https://yourcarguy.co.za/
+              - listitem:
+                - link "About Us":
+                  - /url: https://yourcarguy.co.za/about-us/
+              - listitem:
+                - link "Testimonials":
+                  - /url: https://yourcarguy.co.za/testimonials/
+              - listitem:
+                - link "Pre-Owned":
+                  - /url: /vehicles/?condition%5B%5D=pre-owned-certified
+              - listitem:
+                - link "Sell Your Vehicle":
+                  - /url: https://yourcarguy.co.za/sell-your-vehicle/
+              - listitem:
+                - link "Contact Us":
+                  - /url: https://yourcarguy.co.za/contact-us/
+              - listitem:
+                - link "Quick Menu":
+                  - /url: "#"
+                  - text: 
+                - text: 
+    - main [ref=f23e32]:
+      - generic [ref=f23e36]:
+        - generic [ref=f23e41]:
+          - heading [level=3]
+          - heading "Customer Recommendations" [level=3] [ref=f23e42]
+        - heading "Testimonials" [level=4] [ref=f23e48]
+  - generic [ref=f23e81]:
+    - generic [ref=f23e82]:
+      - generic [ref=f23e83]: Software & Management by
+      - link "TruDealer" [ref=f23e84] [cursor=pointer]:
+        - /url: https://trudealer.tru-saas.com
+    - generic [ref=f23e85]:
+      - generic [ref=f23e86]:
+        - img "Your Car Guy" [ref=f23e87]
+        - generic [ref=f23e99]:
+          - emphasis [ref=f23e100]: "5.0"
+          - text: / 5.0
+        - paragraph [ref=f23e102]:
+          - strong [ref=f23e103]: 332 reviews
+      - generic [ref=f23e104]:
+        - img "2024 Ford Ranger XL" [ref=f23e106]
+        - img "2024 Toyota Urban Cruiser XR" [ref=f23e108]
+        - img "2023 Ford Ranger Wildtrak" [ref=f23e110]
+        - img "Ford Ranger detail" [ref=f23e112]
+        - img "Urban Cruiser detail" [ref=f23e114]
+      - generic [ref=f23e115]:
+        - iframe [ref=f23e117]
+        - generic [ref=f23e118]:
+          - generic [ref=f23e124]:
+            - generic [ref=f23e125]: Address
+            - generic [ref=f23e126]: 17 Burt Drive, Newton ParkGqeberha 6045
+          - generic [ref=f23e131]:
+            - generic [ref=f23e132]: Call us
+            - generic [ref=f23e133]:
+              - link "083 465 9921" [ref=f23e134] [cursor=pointer]:
+                - /url: tel:0834659921
+              - text: ·
+              - link "041 007 0393" [ref=f23e135] [cursor=pointer]:
+                - /url: tel:0410070393
+          - generic [ref=f23e141]:
+            - generic [ref=f23e142]: Email
+            - link "sales@yourcarguy.co.za" [ref=f23e144] [cursor=pointer]:
+              - /url: mailto:sales@yourcarguy.co.za
+          - generic [ref=f23e150]:
+            - generic [ref=f23e151]: Hours
+            - generic [ref=f23e152]: Mon-Fri 07:30-17:30Sat 08:00-13:00
+  - text: 
+  - button "Chat with us on WhatsApp" [ref=f23e153] [cursor=pointer]
+  - generic [ref=f23e157]:
+    - generic [ref=f23e158]:
+      - generic [ref=f23e159]: "0"
+      - text: Added to Compare
+    - generic [ref=f23e160]:
+      - link "Compare Now" [ref=f23e161] [cursor=pointer]:
+        - /url: https://yourcarguy.co.za/compare-vehicles/
+      - button "Clear" [ref=f23e162] [cursor=pointer]
+  - status [ref=f23e163]
+  - button "Check affordability" [ref=f23e164] [cursor=pointer]
+  - button "Open contact form" [ref=f23e169] [cursor=pointer]

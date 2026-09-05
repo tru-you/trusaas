@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TruDealer — Partner Social Studio Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..800&family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- html-to-image ensures clean rendering of SVGs, web fonts, and gradients -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #03060B;
+      --panel-bg: #090E17;
+      --card-bg: #121A28;
+      --card-border: #1F2C40;
+      --cyan: #0D9488;
+      --cyan-bright: #2DD4BF;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-sans: 'Inter Tight', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: #F8F5EE;
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Studio Header */
+    header.tool-header {
+      padding: 12px 28px;
+      background: #070B12;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .brand-title .logo-mini {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+    .brand-title .logo-mini span { color: var(--cyan-bright); }
+    .tool-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #5EEAD4;
+      background: rgba(13, 148, 136, 0.15);
+      border: 1px solid rgba(45, 212, 191, 0.35);
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-weight: 700;
+    }
+
+    /* Main Workspace Split */
+    main.layout {
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      flex: 1;
+      height: calc(100vh - 57px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sidebar */
+    aside.sidebar {
+      background: var(--panel-bg);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      z-index: 10;
+    }
+    .sidebar::-webkit-scrollbar { width: 5px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cyan-bright);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label { font-size: 11.5px; font-weight: 600; color: rgba(248, 245, 238, 0.85); }
+    input[type="text"], select {
+      width: 100%;
+      padding: 9px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      color: #fff;
+      font-size: 12.5px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--cyan-bright);
+      background: #172437;
+    }
+
+    /* Ratio & Alignment Grids */
+    .btn-group-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .btn-group-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .btn-action {
+      padding: 8px 4px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      color: #94A3B8;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .btn-action.active, .btn-action:hover {
+      background: #0D9488;
+      border-color: #2DD4BF;
+      color: #fff;
+    }
+
+    /* Preset Grid */
+    .preset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .btn-preset {
+      padding: 8px 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      color: #F8F5EE;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .btn-preset strong { color: #fff; font-size: 11.5px; }
+    .btn-preset span { color: var(--cyan-bright); font-size: 10px; }
+    .btn-preset:hover {
+      background: #0D9488;
+      border-color: var(--cyan-bright);
+      color: #fff;
+    }
+
+    /* Template Pickers with Clean Color Indicators (Zero Emojis) */
+    .template-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .btn-template {
+      padding: 9px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      color: #FFF;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .btn-template .color-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    .btn-template.active, .btn-template:hover {
+      background: linear-gradient(90deg, #0D9488, #075E54);
+      border-color: var(--cyan-bright);
+    }
+
+    /* Sliders */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--cyan-bright);
+      cursor: pointer;
+    }
+    .val-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cyan-bright);
+      min-width: 44px;
+      text-align: right;
+    }
+
+    .btn-download {
+      margin-top: 6px;
+      width: 100%;
+      padding: 15px;
+      border-radius: 100px;
+      background: linear-gradient(135deg, #0D9488 0%, #064E48 100%);
+      border: 1px solid #5EEAD4;
+      color: #fff;
+      font-weight: 800;
+      font-size: 13.5px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(13, 148, 136, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-download:hover {
+      background: linear-gradient(135deg, #14B8A6 0%, #0A6B63 100%);
+      transform: translateY(-2px);
+    }
+
+    /* ----------------------------------------------------
+       VIEWPORT & SCROLL ENGINE
+       ---------------------------------------------------- */
+    section.viewport-container {
+      position: relative;
+      background: radial-gradient(circle at center, #0B111A 0%, #020407 100%);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Floating Viewport Controls */
+    .zoom-toolbar {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(9, 14, 23, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(16px);
+      padding: 6px 10px;
+      border-radius: 100px;
+      z-index: 30;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .btn-zoom {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #E2E8F0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .btn-zoom:hover {
+      background: var(--cyan);
+      color: #fff;
+      border-color: var(--cyan-bright);
+    }
+    .btn-zoom-fit {
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      color: #5EEAD4;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 100px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: all 0.2s;
+    }
+    .btn-zoom-fit:hover {
+      background: var(--cyan);
+      color: #fff;
+    }
+    .zoom-indicator {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #94A3B8;
+      min-width: 42px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* Scrollable Stage */
+    .scroll-stage {
+      flex: 1;
+      overflow: auto;
+      padding: 60px;
+      display: flex;
+      box-sizing: border-box;
+    }
+    .scroll-stage::-webkit-scrollbar { width: 8px; height: 8px; }
+    .scroll-stage::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+
+    /* Scaler Wrapper: dynamically sized to eliminate scroll clipping */
+    #banner-scaler-pod {
+      margin: auto;
+      position: relative;
+      flex-shrink: 0;
+      transition: width 0.15s ease, height 0.15s ease;
+    }
+
+    /* THE CORE 1080px BANNER */
+    #banner {
+      width: 1080px;
+      height: 1080px;
+      border-radius: 32px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 72px 80px;
+      box-shadow: 0 40px 110px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.12);
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    /* Aspect Ratio Profiles */
+    #banner.aspect-square    { width: 1080px; height: 1080px; padding: 72px 80px; }
+    #banner.aspect-portrait  { width: 1080px; height: 1350px; padding: 88px 80px; }
+    #banner.aspect-story     { width: 1080px; height: 1920px; padding: 130px 80px; }
+    #banner.aspect-landscape { width: 1200px; height: 675px;  padding: 46px 64px; }
+
+    /* Backgrounds */
+    .banner-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 52px 52px;
+      pointer-events: none;
+    }
+    .banner-glow-orb {
+      position: absolute;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 760px;
+      height: 520px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(90px);
+    }
+
+    /* ----------------------------------------------------
+       THEMES
+       ---------------------------------------------------- */
+    /* 1. Cyber Emerald */
+    #banner.tpl-cyber {
+      background: radial-gradient(circle at 50% 12%, #0A2226 0%, #050E14 65%, #020509 100%);
+      color: #FFFFFF;
+    }
+    #banner.tpl-cyber .banner-glow-orb {
+      background: radial-gradient(circle, rgba(13, 148, 136, 0.5) 0%, rgba(45, 212, 191, 0.15) 50%, transparent 80%);
+    }
+    #banner.tpl-cyber .dealer-hero-title { color: #5EEAD4; }
+    #banner.tpl-cyber .eyebrow-badge {
+      background: rgba(13, 148, 136, 0.18);
+      border: 1px solid rgba(45, 212, 191, 0.45);
+      color: #5EEAD4;
+    }
+    #banner.tpl-cyber .feat-card {
+      background: rgba(9, 21, 31, 0.65);
+      border: 1px solid rgba(45, 212, 191, 0.25);
+    }
+    #banner.tpl-cyber .partner-seal { background: #0D9488; color: #FFF; }
+
+    /* 2. Champagne Gold */
+    #banner.tpl-gold {
+      background: radial-gradient(circle at 50% 12%, #291C0B 0%, #110B04 65%, #050401 100%);
+      color: #F8F5EE;
+    }
+    #banner.tpl-gold .banner-glow-orb {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, transparent 75%);
+    }
+    #banner.tpl-gold .dealer-hero-title { color: #FCD34D; }
+    #banner.tpl-gold .eyebrow-badge {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #FCD34D;
+    }
+    #banner.tpl-gold .feat-card {
+      background: rgba(28, 19, 9, 0.65);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    #banner.tpl-gold .partner-seal { background: #D97706; color: #000; }
+
+    /* 3. British Racing Green */
+    #banner.tpl-racing {
+      background: radial-gradient(circle at 50% 12%, #08291F 0%, #03140F 65%, #010806 100%);
+      color: #FFFFFF;
+    }
+    #banner.tpl-racing .banner-glow-orb {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 75%);
+    }
+    #banner.tpl-racing .dealer-hero-title { color: #6EE7B7; }
+    #banner.tpl-racing .eyebrow-badge {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(110, 231, 183, 0.4);
+      color: #6EE7B7;
+    }
+    #banner.tpl-racing .feat-card {
+      background: rgba(4, 30, 22, 0.65);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    #banner.tpl-racing .partner-seal { background: #059669; color: #FFF; }
+
+    /* 4. Titanium Monolith */
+    #banner.tpl-titanium {
+      background: radial-gradient(circle at 50% 12%, #222C3B 0%, #0E131C 65%, #06080C 100%);
+      color: #FFFFFF;
+    }
+    #banner.tpl-titanium .banner-glow-orb {
+      background: radial-gradient(circle, rgba(148, 163, 184, 0.3) 0%, transparent 75%);
+    }
+    #banner.tpl-titanium .dealer-hero-title { color: #F8FAFC; }
+    #banner.tpl-titanium .eyebrow-badge {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #F8FAFC;
+    }
+    #banner.tpl-titanium .feat-card {
+      background: rgba(22, 31, 46, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+    #banner.tpl-titanium .partner-seal { background: #475569; color: #FFF; }
+
+    /* 5. Arctic Platinum (Daylight) */
+    #banner.tpl-light {
+      background: radial-gradient(circle at 50% 12%, #FFFFFF 0%, #F1F5F9 65%, #E2E8F0 100%);
+      color: #0F172A;
+    }
+    #banner.tpl-light .banner-bg-grid {
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    }
+    #banner.tpl-light .banner-glow-orb {
+      background: radial-gradient(circle, rgba(13, 148, 136, 0.18) 0%, transparent 70%);
+    }
+    #banner.tpl-light .dealer-hero-title { color: #0D9488; }
+    #banner.tpl-light .eyebrow-badge {
+      background: #0D9488;
+      border: 1px solid #065A53;
+      color: #FFFFFF;
+    }
+    #banner.tpl-light .feat-card {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    }
+    #banner.tpl-light .feat-card-title { color: #0F172A; }
+    #banner.tpl-light .feat-card-desc { color: #64748B; }
+    #banner.tpl-light .banner-footer { border-top-color: rgba(0,0,0,0.12); }
+    #banner.tpl-light .footer-text { color: #475569; }
+    #banner.tpl-light .partner-seal { background: #0D9488; color: #FFF; }
+
+    /* ----------------------------------------------------
+       BANNER STRUCTURE & COMPONENTS
+       ---------------------------------------------------- */
+    /* Header Row */
+    .banner-top {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      width: 100%;
+    }
+
+    .tru-brand-box {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      transform-origin: left center;
+    }
+    .tru-wordmark {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+    }
+    .tru-wordmark .part-tru { color: #FFFFFF; }
+    .tru-wordmark .part-dealer { color: var(--cyan-bright); }
+    #banner.tpl-light .tru-wordmark .part-tru { color: #0F172A; }
+    #banner.tpl-light .tru-wordmark .part-dealer { color: #0D9488; }
+    .tru-tagline {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.38em;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      padding-left: 2px;
+    }
+
+    /* Client Logo Pod */
+    .client-logo-pod {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 180px;
+      max-width: 340px;
+      height: 74px;
+      padding: 8px 24px;
+      border-radius: 16px;
+      transform-origin: right center;
+      transition: all 0.2s;
+    }
+    .pod-glass {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+    }
+    .pod-dark {
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .pod-white {
+      background: #FFFFFF;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .pod-none { background: transparent; border: none; }
+
+    .client-logo-pod img {
+      max-height: 54px;
+      max-width: 280px;
+      object-fit: contain;
+    }
+    .client-logo-placeholder {
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #CBD5E1;
+      text-transform: uppercase;
+    }
+    #banner.tpl-light .client-logo-placeholder { color: #0F172A; }
+
+    .filter-bright { filter: brightness(1.7) contrast(1.2); }
+    .filter-invert { filter: brightness(0) invert(1); }
+
+    /* Center Content Area */
+    .banner-center {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: auto 0;
+      width: 100%;
+    }
+    .align-center { text-align: center; align-items: center; }
+    .align-left   { text-align: left; align-items: flex-start; }
+
+    /* Eyebrow Badge */
+    .eyebrow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 18px;
+      border-radius: 100px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .eyebrow-badge .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    /* Announcement Text Hierarchy */
+    .announce-pretitle {
+      font-size: 34px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      opacity: 0.95;
+    }
+
+    /* Dedicated Dealer Name Display (Permanent fix for clipping) */
+    .dealer-hero-title {
+      display: block;
+      width: 100%;
+      font-family: var(--font-display);
+      font-size: 64px;
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      font-style: italic;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .dealer-tagline-sub {
+      font-size: 17px;
+      font-weight: 500;
+      opacity: 0.85;
+      margin-top: -4px;
+    }
+
+    /* Location Bar with Clean SVG Icon */
+    .location-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 600;
+      opacity: 0.92;
+      margin-top: 4px;
+    }
+    .location-bar svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+
+    /* 3-Card Capability Deck with Vector Icons (Zero Emojis) */
+    .feature-deck {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      margin-top: 14px;
+    }
+    .feat-card {
+      padding: 16px 18px;
+      border-radius: 16px;
+      backdrop-filter: blur(14px);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+    .feat-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feat-card-icon {
+      width: 18px;
+      height: 18px;
+      stroke: var(--cyan-bright);
+      fill: none;
+      flex-shrink: 0;
+    }
+    #banner.tpl-gold .feat-card-icon { stroke: #FCD34D; }
+    #banner.tpl-racing .feat-card-icon { stroke: #6EE7B7; }
+    #banner.tpl-titanium .feat-card-icon { stroke: #CBD5E1; }
+    #banner.tpl-light .feat-card-icon { stroke: #0D9488; }
+
+    .feat-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #FFFFFF;
+    }
+    .feat-card-desc {
+      font-size: 11.5px;
+      color: #94A3B8;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    /* Footer Row */
+    .banner-footer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      width: 100%;
+    }
+    .footer-text {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .footer-text strong {
+      color: var(--cyan-bright);
+      font-weight: 700;
+    }
+    #banner.tpl-light .footer-text strong { color: #0D9488; }
+
+    /* EDITABLE PARTNER SEAL (Bottom Right) */
+    .partner-seal {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+    .partner-seal svg { width: 14px; height: 14px; fill: currentColor; }
+
+    /* Landscape Adjustments */
+    #banner.aspect-landscape .announce-pretitle { font-size: 26px; }
+    #banner.aspect-landscape .dealer-hero-title { font-size: 46px; }
+    #banner.aspect-landscape .banner-center { gap: 10px; }
+    #banner.aspect-landscape .feat-card { padding: 10px 14px; }
+  </style>
+</head>
+<body>
+
+  <header class="tool-header">
+    <div class="brand-title">
+      <div class="logo-mini">Tru<span>Dealer</span></div>
+      <span>Executive Social Studio</span>
+    </div>
+    <div class="tool-badge">Clean 4K Engine</div>
+  </header>
+
+  <main class="layout">
+    
+    <!-- Controls Sidebar -->
+    <aside class="sidebar">
+      
+      <!-- 1. Quick Presets -->
+      <div class="form-group">
+        <div class="section-label">1. Quick Presets</div>
+        <div class="preset-grid">
+          <button type="button" class="btn-preset" onclick="setPreset('Your Car Guy', 'The Friendly City, Eastern Cape', '')">
+            <strong>Your Car Guy</strong>
+            <span>Eastern Cape</span>
+          </button>
+          <button type="button" class="btn-preset" onclick="setPreset('Cars at Caledon', 'Overberg, Western Cape', '')">
+            <strong>Cars at Caledon</strong>
+            <span>Western Cape</span>
+          </button>
+          <button type="button" class="btn-preset" onclick="setPreset('MKR Auto Sales', 'Johannesburg, Gauteng', '')">
+            <strong>MKR Auto Sales</strong>
+            <span>Gauteng</span>
+          </button>
+          <button type="button" class="btn-preset" onclick="setPreset('Vantage Moto Sports', 'Pretoria, Gauteng', '')">
+            <strong>Vantage Moto</strong>
+            <span>Pretoria</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Target Social Format -->
+      <div class="form-group">
+        <div class="section-label">2. Target Social Format</div>
+        <div class="btn-group-4">
+          <button type="button" class="btn-action active" onclick="setRatio('aspect-square', this)">1:1 Feed</button>
+          <button type="button" class="btn-action" onclick="setRatio('aspect-portrait', this)">4:5 Post</button>
+          <button type="button" class="btn-action" onclick="setRatio('aspect-story', this)">9:16 Story</button>
+          <button type="button" class="btn-action" onclick="setRatio('aspect-landscape', this)">16:9 Web</button>
+        </div>
+      </div>
+
+      <!-- 3. Layout Alignment -->
+      <div class="form-group">
+        <div class="section-label">3. Layout Alignment</div>
+        <div class="btn-group-2">
+          <button type="button" class="btn-action active" id="btn-align-center" onclick="setAlignment('align-center', this)">Center Aligned</button>
+          <button type="button" class="btn-action" id="btn-align-left" onclick="setAlignment('align-left', this)">Left Aligned</button>
+        </div>
+      </div>
+
+      <!-- 4. Announcement Text -->
+      <div class="form-group">
+        <div class="section-label">4. Announcement Copy</div>
+        
+        <label>Top Eyebrow Badge</label>
+        <input type="text" id="in-badge" value="WELCOME TO THE TRUDEALER FAMILY" oninput="render()">
+
+        <label>Greeting Lead-In</label>
+        <input type="text" id="in-pretitle" value="Welcome to the TruDealer Team," oninput="render()">
+
+        <label>Dealership Name (Main Showcase)</label>
+        <input type="text" id="in-name" value="Your Car Guy" oninput="render()">
+
+        <div class="slider-row">
+          <label>Dealership Font Size</label>
+          <span class="val-tag" id="val-font-size">64px</span>
+        </div>
+        <input type="range" id="in-font-size" min="36" max="92" value="64" oninput="updateFontSize()">
+
+        <label>Location & Province</label>
+        <input type="text" id="in-location" value="The Friendly City, Eastern Cape" oninput="render()">
+
+        <label>Sub-Tagline / Note (Optional)</label>
+        <input type="text" id="in-subtagline" value="Official TruDealer Ecosystem Partner" oninput="render()">
+      </div>
+
+      <!-- 5. Vertical Spacing Slider -->
+      <div class="form-group">
+        <div class="section-label">5. Vertical Spacing & Gaps</div>
+        <div class="slider-row">
+          <label>Content Element Spacing</label>
+          <span class="val-tag" id="val-gap-size">16px</span>
+        </div>
+        <input type="range" id="in-gap-size" min="10" max="36" value="16" oninput="updateGapSize()">
+      </div>
+
+      <!-- 6. Client Logo Controls -->
+      <div class="form-group">
+        <div class="section-label">6. Client Dealership Logo</div>
+        <label>Upload Logo (PNG / SVG / JPG)</label>
+        <input type="file" id="in-logo-file" accept="image/*" onchange="uploadLogo(this)">
+
+        <label>Logo Capsule Style</label>
+        <select id="in-pod-style" onchange="updatePodStyle()">
+          <option value="pod-glass">Frosted Glass Pod (Recommended)</option>
+          <option value="pod-dark">Solid Dark Pod</option>
+          <option value="pod-white">Crisp White Plate</option>
+          <option value="pod-none">Transparent (No Pod)</option>
+        </select>
+
+        <label>Logo Filter</label>
+        <select id="in-logo-filter" onchange="updateLogoFilter()">
+          <option value="none">Original Colors</option>
+          <option value="filter-bright">Brighten (For Dark Logos)</option>
+          <option value="filter-invert">Invert to Crisp White</option>
+        </select>
+
+        <div class="slider-row">
+          <label>Client Logo Size</label>
+          <span class="val-tag" id="client-scale-val">100%</span>
+        </div>
+        <input type="range" id="in-client-scale" min="60" max="150" value="100" oninput="updateClientScale()">
+
+        <div class="slider-row">
+          <label>TruDealer Logo Size</label>
+          <span class="val-tag" id="tru-scale-val">100%</span>
+        </div>
+        <input type="range" id="in-tru-scale" min="70" max="140" value="100" oninput="updateTruScale()">
+      </div>
+
+      <!-- 7. Capability Highlights -->
+      <div class="form-group">
+        <div class="section-label">7. Capability Highlights</div>
+        <label>Card 1 (Title / Subtitle)</label>
+        <input type="text" id="in-f1-title" value="TruInspect + TruRadar" oninput="render()">
+        <input type="text" id="in-f1-desc" value="AI Inspection & Live Market Pricing" oninput="render()">
+
+        <label style="margin-top:4px;">Card 2 (Title / Subtitle)</label>
+        <input type="text" id="in-f2-title" value="AI Receptionist & Chat" oninput="render()">
+        <input type="text" id="in-f2-desc" value="24/7 Automated Buyer Conversion" oninput="render()">
+
+        <label style="margin-top:4px;">Card 3 (Title / Subtitle)</label>
+        <input type="text" id="in-f3-title" value="Search Everywhere SEO" oninput="render()">
+        <input type="text" id="in-f3-desc" value="Multi-Channel Inventory Syndication" oninput="render()">
+      </div>
+
+      <!-- 8. Footer & Bottom Right Seal Field -->
+      <div class="form-group">
+        <div class="section-label">8. Footer & Verification Seal</div>
+        <label>Left Footer Text</label>
+        <input type="text" id="in-footer" value="Powered by TruDealer — For Dealers, By Dealers" oninput="render()">
+
+        <label style="margin-top:4px;">Bottom-Right Seal Text</label>
+        <input type="text" id="in-seal" value="TRUSAAS VERIFIED" oninput="render()">
+      </div>
+
+      <!-- 9. Select Luxury Theme -->
+      <div class="form-group">
+        <div class="section-label">9. Select Theme</div>
+        <div class="template-grid">
+          <button type="button" class="btn-template active" onclick="setTheme('tpl-cyber', this)">
+            <span>1. Cyber Emerald (Signature)</span>
+            <span class="color-swatch" style="background:#0D9488;"></span>
+          </button>
+          <button type="button" class="btn-template" onclick="setTheme('tpl-gold', this)">
+            <span>2. Champagne Gold</span>
+            <span class="color-swatch" style="background:#D97706;"></span>
+          </button>
+          <button type="button" class="btn-template" onclick="setTheme('tpl-racing', this)">
+            <span>3. British Racing Green</span>
+            <span class="color-swatch" style="background:#059669;"></span>
+          </button>
+          <button type="button" class="btn-template" onclick="setTheme('tpl-titanium', this)">
+            <span>4. Titanium Chrome</span>
+            <span class="color-swatch" style="background:#64748B;"></span>
+          </button>
+          <button type="button" class="btn-template" onclick="setTheme('tpl-light', this)">
+            <span>5. Arctic Platinum (Daylight)</span>
+            <span class="color-swatch" style="background:#E2E8F0;"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Clean 4K Download Button -->
+      <button type="button" class="btn-download" onclick="downloadBannerClean()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Clean 4K PNG
+      </button>
+
+    </aside>
+
+    <!-- Viewport & Scroll Area -->
+    <section class="viewport-container" id="viewport-box">
+      
+      <!-- Floating Zoom Controls -->
+      <div class="zoom-toolbar">
+        <button type="button" class="btn-zoom" onclick="adjustZoom(-0.06)" title="Zoom Out">-</button>
+        <span class="zoom-indicator" id="zoom-indicator">55%</span>
+        <button type="button" class="btn-zoom" onclick="adjustZoom(0.06)" title="Zoom In">+</button>
+        <button type="button" class="btn-zoom-fit" onclick="fitToScreen()">Fit Screen</button>
+        <button type="button" class="btn-zoom-fit" onclick="setZoom(1.0)">100%</button>
+      </div>
+
+      <!-- Fully Scrollable Stage (Prevents Negative Clipping) -->
+      <div class="scroll-stage" id="scroll-stage">
+        
+        <div id="banner-scaler-pod">
+          <div id="banner" class="tpl-cyber aspect-square">
+            
+            <div class="banner-bg-grid"></div>
+            <div class="banner-glow-orb"></div>
+
+            <!-- Top Header Row -->
+            <div class="banner-top">
+              <div class="tru-brand-box" id="wrap-tru-logo">
+                <div class="tru-wordmark">
+                  <span class="part-tru">Tru</span><span class="part-dealer">Dealer</span>
+                </div>
+                <div class="tru-tagline">FUTURE AUTOMOTIVE</div>
+              </div>
+
+              <!-- Client Logo Pod -->
+              <div class="client-logo-pod pod-glass" id="wrap-client-logo">
+                <img id="disp-dealer-logo" src="" alt="Client Logo" style="display:none;">
+                <span class="client-logo-placeholder" id="disp-logo-placeholder">YOUR CAR GUY</span>
+              </div>
+            </div>
+
+            <!-- Center Content Hub -->
+            <div class="banner-center align-center" id="hub-center">
+              
+              <div class="eyebrow-badge">
+                <div class="pulse-dot"></div>
+                <span id="disp-badge">WELCOME TO THE TRUDEALER FAMILY</span>
+              </div>
+
+              <div class="announce-pretitle" id="disp-pretitle">
+                Welcome to the TruDealer Team,
+              </div>
+
+              <!-- Unconstrained Dedicated Hero Name -->
+              <h1 class="dealer-hero-title" id="disp-name">
+                Your Car Guy
+              </h1>
+
+              <div class="dealer-tagline-sub" id="disp-subtagline">
+                Official TruDealer Ecosystem Partner
+              </div>
+
+              <!-- Location Pin (Clean Vector Icon) -->
+              <div class="location-bar">
+                <svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="disp-location">The Friendly City, Eastern Cape</span>
+              </div>
+
+              <!-- 3-Card Deck with Crisp Vector Icons (Zero Emojis) -->
+              <div class="feature-deck">
+                
+                <!-- Card 1: Diagnostic Scanner Vector -->
+                <div class="feat-card">
+                  <div class="feat-card-header">
+                    <svg class="feat-card-icon" viewBox="0 0 24 24" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+                    <div class="feat-card-title" id="disp-f1-title">TruInspect + TruRadar</div>
+                  </div>
+                  <div class="feat-card-desc" id="disp-f1-desc">AI Inspection & Live Market Pricing</div>
+                </div>
+
+                <!-- Card 2: AI Processor Vector -->
+                <div class="feat-card">
+                  <div class="feat-card-header">
+                    <svg class="feat-card-icon" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <div class="feat-card-title" id="disp-f2-title">AI Receptionist & Chat</div>
+                  </div>
+                  <div class="feat-card-desc" id="disp-f2-desc">24/7 Automated Buyer Conversion</div>
+                </div>
+
+                <!-- Card 3: SEO Radar Vector -->
+                <div class="feat-card">
+                  <div class="feat-card-header">
+                    <svg class="feat-card-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+                    <div class="feat-card-title" id="disp-f3-title">Search Everywhere SEO</div>
+                  </div>
+                  <div class="feat-card-desc" id="disp-f3-desc">Multi-Channel Inventory Syndication</div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Footer Row with Live Editable Bottom Right Seal -->
+            <div class="banner-footer">
+              <div class="footer-text" id="disp-footer">
+                Powered by <strong>TruDealer</strong> — For Dealers, By Dealers
+              </div>
+
+              <!-- Editable Bottom Right Seal -->
+              <div class="partner-seal">
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <span id="disp-seal">TRUSAAS VERIFIED</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // State management
+    let currentTheme = 'tpl-cyber';
+    let currentRatio = 'aspect-square';
+    let currentAlign = 'align-center';
+    let currentZoom = 0.55;
+
+    const bannerDim = {
+      'aspect-square':    { w: 1080, h: 1080 },
+      'aspect-portrait':  { w: 1080, h: 1350 },
+      'aspect-story':     { w: 1080, h: 1920 },
+      'aspect-landscape': { w: 1200, h: 675  }
+    };
+
+    // Zoom & Screen Fit Engine
+    function setZoom(scale) {
+      currentZoom = Math.max(0.2, Math.min(1.4, scale));
+      applyScale();
+    }
+
+    function adjustZoom(delta) {
+      setZoom(currentZoom + delta);
+    }
+
+    function applyScale() {
+      const banner = document.getElementById('banner');
+      const pod = document.getElementById('banner-scaler-pod');
+      const dims = bannerDim[currentRatio];
+
+      pod.style.width = (dims.w * currentZoom) + 'px';
+      pod.style.height = (dims.h * currentZoom) + 'px';
+      banner.style.transform = `scale(${currentZoom})`;
+
+      document.getElementById('zoom-indicator').textContent = Math.round(currentZoom * 100) + '%';
+    }
+
+    function fitToScreen() {
+      const stage = document.getElementById('scroll-stage');
+      const dims = bannerDim[currentRatio];
+      
+      const availableW = stage.clientWidth - 80;
+      const availableH = stage.clientHeight - 80;
+
+      const scale = Math.min(availableW / dims.w, availableH / dims.h, 0.95);
+      setZoom(scale);
+    }
+
+    // Ratio & Theme Handlers
+    function setRatio(ratioClass, btnEl) {
+      currentRatio = ratioClass;
+      const b = document.getElementById('banner');
+      b.className = `${currentTheme} ${currentRatio}`;
+
+      document.querySelectorAll('.btn-group-4 .btn-action').forEach(el => el.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      fitToScreen();
+    }
+
+    function setAlignment(alignClass, btnEl) {
+      currentAlign = alignClass;
+      const hub = document.getElementById('hub-center');
+      hub.className = `banner-center ${currentAlign}`;
+
+      document.getElementById('btn-align-center').classList.remove('active');
+      document.getElementById('btn-align-left').classList.remove('active');
+      if (btnEl) btnEl.classList.add('active');
+    }
+
+    function setTheme(themeClass, btnEl) {
+      currentTheme = themeClass;
+      const b = document.getElementById('banner');
+      b.className = `${currentTheme} ${currentRatio}`;
+
+      document.querySelectorAll('.btn-template').forEach(el => el.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+    }
+
+    // Presets
+    function setPreset(name, loc, logoSrc) {
+      document.getElementById('in-name').value = name;
+      document.getElementById('in-location').value = loc;
+      const logoImg = document.getElementById('disp-dealer-logo');
+      const placeholder = document.getElementById('disp-logo-placeholder');
+
+      if (logoSrc) {
+        logoImg.src = logoSrc;
+        logoImg.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        logoImg.src = '';
+        logoImg.style.display = 'none';
+        placeholder.style.display = 'block';
+        placeholder.textContent = name;
+      }
+      render();
+    }
+
+    function uploadLogo(input) {
+      if (input.files && input.files[0]) {
+        const r = new FileReader();
+        r.onload = function(e) {
+          const logoImg = document.getElementById('disp-dealer-logo');
+          const placeholder = document.getElementById('disp-logo-placeholder');
+          logoImg.src = e.target.result;
+          logoImg.style.display = 'block';
+          placeholder.style.display = 'none';
+        };
+        r.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function updatePodStyle() {
+      const style = document.getElementById('in-pod-style').value;
+      const pod = document.getElementById('wrap-client-logo');
+      pod.className = `client-logo-pod ${style}`;
+    }
+
+    function updateLogoFilter() {
+      const mode = document.getElementById('in-logo-filter').value;
+      const logoImg = document.getElementById('disp-dealer-logo');
+      logoImg.className = (mode !== 'none') ? mode : '';
+    }
+
+    function updateFontSize() {
+      const size = document.getElementById('in-font-size').value;
+      document.getElementById('val-font-size').textContent = size + 'px';
+      document.getElementById('disp-name').style.fontSize = size + 'px';
+    }
+
+    function updateGapSize() {
+      const gap = document.getElementById('in-gap-size').value;
+      document.getElementById('val-gap-size').textContent = gap + 'px';
+      document.getElementById('hub-center').style.gap = gap + 'px';
+    }
+
+    function updateClientScale() {
+      const val = document.getElementById('in-client-scale').value;
+      document.getElementById('client-scale-val').textContent = val + '%';
+      document.getElementById('wrap-client-logo').style.transform = `scale(${val / 100})`;
+    }
+
+    function updateTruScale() {
+      const val = document.getElementById('in-tru-scale').value;
+      document.getElementById('tru-scale-val').textContent = val + '%';
+      document.getElementById('wrap-tru-logo').style.transform = `scale(${val / 100})`;
+    }
+
+    function render() {
+      const name = document.getElementById('in-name').value || 'Premier Partner';
+      const loc = document.getElementById('in-location').value || 'South Africa';
+      const badge = document.getElementById('in-badge').value || 'WELCOME TO THE TRUDEALER FAMILY';
+      const pretitle = document.getElementById('in-pretitle').value || 'Welcome to the TruDealer Team,';
+      const subtagline = document.getElementById('in-subtagline').value;
+      const sealText = document.getElementById('in-seal').value || 'TRUSAAS VERIFIED';
+      const footerText = document.getElementById('in-footer').value || 'Powered by TruDealer — For Dealers, By Dealers';
+
+      document.getElementById('disp-name').textContent = name;
+      document.getElementById('disp-location').textContent = loc;
+      document.getElementById('disp-badge').textContent = badge;
+      document.getElementById('disp-pretitle').textContent = pretitle;
+      document.getElementById('disp-seal').textContent = sealText;
+      document.getElementById('disp-footer').innerHTML = footerText.replace(/TruDealer/g, '<strong>TruDealer</strong>');
+      
+      const subtaglineEl = document.getElementById('disp-subtagline');
+      if (subtagline && subtagline.trim() !== '') {
+        subtaglineEl.textContent = subtagline;
+        subtaglineEl.style.display = 'block';
+      } else {
+        subtaglineEl.style.display = 'none';
+      }
+
+      const placeholder = document.getElementById('disp-logo-placeholder');
+      if (placeholder && placeholder.style.display !== 'none') {
+        placeholder.textContent = name;
+      }
+
+      // Feature deck
+      document.getElementById('disp-f1-title').textContent = document.getElementById('in-f1-title').value;
+      document.getElementById('disp-f1-desc').textContent = document.getElementById('in-f1-desc').value;
+      document.getElementById('disp-f2-title').textContent = document.getElementById('in-f2-title').value;
+      document.getElementById('disp-f2-desc').textContent = document.getElementById('in-f2-desc').value;
+      document.getElementById('disp-f3-title').textContent = document.getElementById('in-f3-title').value;
+      document.getElementById('disp-f3-desc').textContent = document.getElementById('in-f3-desc').value;
+    }
+
+    // Clean 4K PNG Exporter
+    async function downloadBannerClean() {
+      const banner = document.getElementById('banner');
+      const name = document.getElementById('in-name').value.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+      // Temporarily remove transform for a native 1:1 capture
+      const originalTransform = banner.style.transform;
+      banner.style.transform = 'none';
+
+      try {
+        if (document.fonts) {
+          await document.fonts.ready;
+        }
+
+        const dataUrl = await htmlToImage.toPng(banner, {
+          pixelRatio: 2, // 2x gives 2160x2160 crisp 4K export
+          cacheBust: true
+        });
+
+        const link = document.createElement('a');
+        link.download = `trudealer-${name}-${currentRatio}.png`;
+        link.href = dataUrl;
+        link.click();
+
+      } catch (err) {
+        console.warn('htmlToImage encountered an error, falling back:', err);
+        html2canvas(banner, { scale: 2, useCORS: true }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = `trudealer-${name}-${currentRatio}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        });
+      } finally {
+        banner.style.transform = originalTransform;
+      }
+    }
+
+    // Auto-fit on resize and initial load
+    window.addEventListener('resize', fitToScreen);
+    window.addEventListener('load', () => {
+      render();
+      fitToScreen();
+    });
+
+    render();
+  </script>
+</body>
+</html>

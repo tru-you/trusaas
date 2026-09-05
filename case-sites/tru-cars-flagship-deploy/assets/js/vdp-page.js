@@ -425,6 +425,66 @@ function openLightbox(images, startIdx) {
     );
   }
 
+  function vehicleWaUrl(v, price) {
+    var p = price || (v.truPrice && v.truPrice < v.price ? v.truPrice : v.price);
+    var stock = v.stockNumber || v.id || "";
+    var title = TRU.title(v);
+    var canonicalUrl = "https://www.true-cars.co.za/vehicle/?stock=" + encodeURIComponent(stock);
+    var msg = "Hi True Cars! I'm interested in this " + title +
+              (stock ? " (Stock #" + stock + ")" : "") +
+              (p ? " listed at " + TRU.money(p) : "") + ".\n" +
+              "Link: " + canonicalUrl + "\n" +
+              "Is it still available?";
+    return "https://wa.me/27620502091?text=" + encodeURIComponent(msg);
+  }
+
+  function updateVdpSchema(v, price) {
+    var schemaEl = document.getElementById("vdpSchema");
+    if (!schemaEl) return;
+    try {
+      var stock = v.stockNumber || v.id || "";
+      var canonicalUrl = "https://www.true-cars.co.za/vehicle/?stock=" + encodeURIComponent(stock);
+      var heroImg = v.heroImage || (v.images && v.images[0]) || "https://www.true-cars.co.za/og-card.jpg";
+      var ld = {
+        "@context": "https://schema.org",
+        "@type": "Car",
+        "name": TRU.title(v),
+        "url": canonicalUrl,
+        "image": heroImg,
+        "itemCondition": "https://schema.org/UsedCondition",
+        "brand": { "@type": "Brand", "name": v.make },
+        "model": v.model + (v.trim ? " " + v.trim : ""),
+        "vehicleModelDate": String(v.year || ""),
+        "sku": String(stock),
+        "vehicleTransmission": v.transmission || "",
+        "fuelType": v.fuelType || v.fuel || "",
+        "bodyType": v.bodyType || v.body || "",
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "ZAR",
+          "price": price,
+          "availability": "https://schema.org/InStock",
+          "seller": {
+            "@type": "AutoDealer",
+            "name": "True Cars",
+            "telephone": "+27620502091",
+            "url": "https://www.true-cars.co.za/"
+          }
+        }
+      };
+      if (v.mileage) {
+        ld.mileageFromOdometer = {
+          "@type": "QuantitativeValue",
+          "value": Number(String(v.mileage).replace(/\D/g, "")),
+          "unitCode": "KMT"
+        };
+      }
+      schemaEl.textContent = JSON.stringify(ld, null, 2);
+    } catch (e) {
+      console.warn("[TruVDP] Schema update error:", e);
+    }
+  }
+
   function renderMobileStickyBar(v, price) {
     var bar = document.getElementById("vdpMobileBar");
     if (!bar) return;
@@ -436,9 +496,7 @@ function openLightbox(images, startIdx) {
         '</div>' +
         '<div class="vdp-mobile-actions">' +
           '<button class="vdp-mobile-btn hold" id="ctaMobileHold" style="background:#0B1220;color:#4FE3DC"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:2px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Hold</button>' +
-          '<a class="vdp-mobile-btn wa" href="https://wa.me/27620502091?text=' +
-            encodeURIComponent("Hi, I'm interested in the " + TRU.title(v) + " (" + (v.stockNumber || v.id) + ")") +
-            '"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.972.531 1.83.813 2.796.813h.005c3.18 0 5.767-2.586 5.768-5.766 0-1.54-.599-2.989-1.688-4.079-1.09-1.089-2.54-1.689-4.085-1.689z"/></svg></a>' +
+          '<a class="vdp-mobile-btn wa" href="' + vehicleWaUrl(v, price) + '" target="_blank" rel="noopener" aria-label="WhatsApp Dealership"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.972.531 1.83.813 2.796.813h.005c3.18 0 5.767-2.586 5.768-5.766 0-1.54-.599-2.989-1.688-4.079-1.09-1.089-2.54-1.689-4.085-1.689z"/></svg></a>' +
           '<button class="vdp-mobile-btn apply" id="ctaMobileApply">Apply</button>' +
         '</div>' +
       '</div>';
@@ -461,8 +519,31 @@ function openLightbox(images, startIdx) {
   function render() {
     var stockId = TRU.params().stock;
     var v = TRU.get(stockId, true);
-    if (!v && TRU.vehicles && TRU.vehicles.length > 0) {
-      v = TRU.vehicles[0];
+    if (!v) {
+      var p = TRU.params();
+      if (p.make || p.name || p.model) {
+        var numPrice = parseInt(String(p.price || "").replace(/\D/g, ""), 10) || 0;
+        var numKm = parseInt(String(p.km || "").replace(/\D/g, ""), 10) || 0;
+        v = {
+          id: p.stock || stockId || "SHARED-CAR",
+          stockNumber: p.stock || stockId || "SHARED-CAR",
+          year: parseInt(p.year, 10) || new Date().getFullYear(),
+          make: p.make || "",
+          model: p.name || p.model || "",
+          trim: p.variant || "",
+          price: numPrice,
+          truPrice: numPrice,
+          mileage: numKm,
+          transmission: p.trans || "Manual",
+          fuelType: p.fuel || "Petrol",
+          bodyType: p.body || "Vehicle",
+          heroImage: p.img || "",
+          images: p.img ? [p.img] : [],
+          vir: 92
+        };
+      } else if (TRU.vehicles && TRU.vehicles.length > 0) {
+        v = TRU.vehicles[0];
+      }
     }
     if (!v) {
       if (!TRU.vehicles || TRU.vehicles.length === 0) {
@@ -617,9 +698,7 @@ function openLightbox(images, startIdx) {
               '<button class="btn btn-outline btn-block" id="ctaBook">Book a test drive</button>' +
               '<button class="btn-deal-sheet" id="btnDealSheet"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Download Deal Summary (PDF)</button>' +
               '<button class="btn btn-outline btn-block" data-share="' + e(v.stockNumber || v.id) + '">Share this car</button>' +
-              '<a class="btn btn-jewel btn-block" href="https://wa.me/27620502091?text=' +
-                encodeURIComponent("Hi, I'm interested in the " + TRU.title(v) + " (" + (v.stockNumber || v.id) + ")") +
-                '">WhatsApp the dealer</a>' +
+              '<a class="btn btn-jewel btn-block" href="' + vehicleWaUrl(v, price) + '" target="_blank" rel="noopener">WhatsApp the dealer</a>' +
             "</div>" +
           "</div>" +
 
@@ -629,6 +708,7 @@ function openLightbox(images, startIdx) {
       renderSimilarStock(v);
 
     renderMobileStickyBar(v, price);
+    updateVdpSchema(v, price);
     wireGallery(v);
     if (hasOrbit) wireOrbit(v);
     wireMediaTabs();
@@ -684,7 +764,7 @@ function openLightbox(images, startIdx) {
       if (sTitle) sTitle.textContent = TRU.title(v);
       if (sPrice) sPrice.textContent = TRU.money(price);
       if (sMonthly) sMonthly.textContent = 'From ' + TRU.money(TRU.monthly(price)) + ' / mo';
-      if (sWa) sWa.href = 'https://wa.me/27620502091?text=' + encodeURIComponent('Hi, I\'m interested in the ' + TRU.title(v) + ' (' + TRU.money(price) + ')');
+      if (sWa) sWa.href = vehicleWaUrl(v, price);
       if (sReserve) sReserve.addEventListener('click', function() {
         var rm = document.getElementById('reserveModal');
         if (rm) rm.classList.add('is-open');

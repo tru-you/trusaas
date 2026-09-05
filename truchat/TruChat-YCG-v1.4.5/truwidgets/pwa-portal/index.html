@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0a0b10" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.json" />
+<title>Leads — TruDealer</title>
+<style>
+:root{--accent:#e30613;--bg:#0a0b10;--card:#12141c;--line:rgba(255,255,255,.1);--muted:#94a3b8;--txt:#f8fafc;--green:#34d399;--safe-b:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none;-webkit-user-select:none;user-select:none}
+input{font-family:inherit}
+
+/* Gate */
+.gate{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:20px}
+.gate-card{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px 24px;text-align:center}
+.gate-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(145deg,var(--accent),#9b0410);margin:0 auto 16px;display:grid;place-items:center;font-size:24px}
+.gate h2{margin:0 0 4px;font-size:20px;font-weight:800}
+.gate p{color:var(--muted);font-size:13px;margin:0 0 20px;line-height:1.5}
+.gate input{width:100%;padding:13px 14px;margin:6px 0;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.4);color:var(--txt);font-size:14px;outline:none;transition:border-color .2s}
+.gate input:focus{border-color:rgba(227,6,19,.55)}
+.gate .go{width:100%;margin-top:14px;background:linear-gradient(145deg,var(--accent),#9b0410);color:#fff;padding:14px;border-radius:12px;font-weight:800;font-size:15px;transition:opacity .2s}
+.gate .go:active{opacity:.85}
+.gate .err{color:#fca5a5;font-size:12px;min-height:18px;margin-top:8px}
+.gate .hint{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.5}
+.install-btn{display:none;margin-top:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt);padding:10px 16px;border-radius:10px;font-size:12px;font-weight:600}
+
+/* App header */
+.app{display:none}
+header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(10,11,16,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.hdr-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,var(--accent),#9b0410);display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0;overflow:hidden}
+.hdr-icon img{width:100%;height:100%;object-fit:cover;display:block}
+.hdr-text h1{margin:0;font-size:15px;font-weight:700}
+.hdr-text .sub{font-size:11px;color:var(--muted)}
+.hdr-grow{flex:1}
+.hdr-btn{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:7px 10px;font-size:12px;font-weight:600}
+.hdr-btn:active{background:rgba(255,255,255,.15)}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.4)}50%{box-shadow:0 0 0 8px rgba(52,211,153,0)}}
+
+/* Toolbar */
+.wrap{max-width:860px;margin:0 auto;padding:12px 16px;padding-bottom:calc(20px + var(--safe-b))}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.toolbar input[type=search]{flex:1;min-width:120px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.4);color:var(--txt);font-size:13px;outline:none}
+.toolbar input:focus{border-color:rgba(227,6,19,.4)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted);font-weight:600;transition:all .15s}
+.chip.on{background:rgba(227,6,19,.18);border-color:var(--accent);color:var(--txt)}
+.count{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* Lead cards */
+.lead{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px;transition:border-color .3s}
+.lead.new{border-left:3px solid var(--green)}
+.lead .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lead .name{font-weight:700;font-size:15px}
+.lead .badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px}
+.badge.new{background:rgba(52,211,153,.15);color:var(--green)}
+.badge.contacted{background:rgba(255,255,255,.06);color:var(--muted)}
+.badge.closed{background:rgba(148,163,184,.12);color:var(--muted)}
+.lead .when{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.lead .row{font-size:13px;margin-top:6px;color:#cbd5e1}
+.lead .row b{color:#fff;font-weight:600}
+.lead .sum{font-size:11px;color:var(--muted);margin-top:8px;white-space:pre-wrap;max-height:60px;overflow:auto;border-left:2px solid var(--line);padding-left:10px;line-height:1.4}
+.lead .source-tag{display:inline-block;font-size:10px;color:var(--accent);background:rgba(227,6,19,.1);padding:2px 6px;border-radius:4px;margin-top:6px;font-weight:600}
+.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.acts a,.acts button{font-size:11px;font-weight:700;text-decoration:none;padding:7px 11px;border-radius:8px;display:inline-flex;align-items:center;gap:4px}
+.wa{background:linear-gradient(145deg,#34d399,#059669);color:#fff}
+.wa:active{opacity:.85}
+.call{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt)}
+.mail{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt)}
+.done-btn{background:rgba(227,6,19,.12);border:1px solid rgba(227,6,19,.3);color:#fecaca}
+.done-btn:active{opacity:.7}
+.empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:14px}
+.empty .big{font-size:48px;margin-bottom:12px}
+a{color:var(--accent)}
+.new-badge{position:fixed;top:70px;right:16px;z-index:100;background:var(--green);color:#000;font-size:11px;font-weight:800;padding:6px 12px;border-radius:999px;display:none;animation:slideIn .3s ease}
+@keyframes slideIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon" id="gateIcon">T</div>
+    <h2>TruDealer Leads</h2>
+    <p>Enter your site address and portal PIN to view your leads.</p>
+    <input id="site" type="url" placeholder="https://yourdealer.co.za" autocomplete="url" />
+    <input id="pin" type="password" placeholder="Portal PIN" autocomplete="off" inputmode="numeric" />
+    <button class="go" id="enter">Open leads</button>
+    <div class="err" id="err"></div>
+    <div class="hint">Install this app on your phone for instant lead alerts.<br>You'll get a push notification when a new lead arrives.</div>
+    <button class="install-btn" id="installBtn">Add to Home Screen</button>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <header>
+    <div class="hdr-icon" id="hdrIcon">T</div>
+    <div class="hdr-text">
+      <h1 id="hdrTitle">Leads</h1>
+      <div class="sub" id="hdrSub">TruDealer</div>
+    </div>
+    <div class="hdr-grow"></div>
+    <button class="hdr-btn pulse" id="statusDot" title="Connected">●</button>
+    <button class="hdr-btn" id="refresh">↻</button>
+    <button class="hdr-btn" id="csv">CSV</button>
+    <button class="hdr-btn" id="logout">✕</button>
+  </header>
+  <div class="wrap">
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Search name, phone, car…" />
+      <div class="chips">
+        <button class="chip on" data-f="all">All</button>
+        <button class="chip" data-f="new">New</button>
+        <button class="chip" data-f="contacted">Contacted</button>
+      </div>
+      <span class="count" id="count"></span>
+    </div>
+    <div id="list"></div>
+  </div>
+  <div class="new-badge" id="newBadge">+1 new lead</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var LS = "trudealer_portal_v2";
+  var POLL_MS = 15000;
+  var state = { site: "", pin: "", leads: [], filter: "all", q: "", pollTimer: null, lastCount: 0, sw: null };
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---- Storage ---- */
+  function saved() { try { return JSON.parse(localStorage.getItem(LS) || "{}"); } catch (e) { return {}; } }
+  function save() { localStorage.setItem(LS, JSON.stringify({ site: state.site, pin: state.pin })); }
+
+  /* ---- API ---- */
+  function api(path) { return state.site.replace(/\/+$/, "") + "/wp-json/truchat/v1" + path; }
+
+  function load() {
+    return fetch(api("/leads?pin=" + encodeURIComponent(state.pin)))
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) {
+        var newLeads = j.leads || [];
+        var prevCount = state.leads.length;
+        state.leads = newLeads;
+        applyBranding(j.branding);
+        if (prevCount > 0 && newLeads.length > prevCount) {
+          var diff = newLeads.length - prevCount;
+          showNewBadge("+" + diff + " new lead" + (diff > 1 ? "s" : ""));
+          notifyNewLead(newLeads[0]);
+        }
+        state.lastCount = newLeads.length;
+      });
+  }
+
+  function setStatus(id, status) {
+    var fd = new URLSearchParams();
+    fd.set("pin", state.pin);
+    fd.set("status", status);
+    return fetch(api("/leads/" + id), { method: "POST", body: fd }).then(function () {
+      var l = state.leads.filter(function (x) { return x.id == id; })[0];
+      if (l) l.status = status;
+      render();
+    });
+  }
+
+  /* ---- Branding ---- */
+  function applyBranding(b) {
+    if (!b) return;
+    if (b.color) {
+      document.documentElement.style.setProperty("--accent", b.color);
+      var c = document.createElement("style");
+      c.textContent = ".gate-icon{background:linear-gradient(145deg," + b.color + ",#000)!important}" +
+        ".go{background:linear-gradient(145deg," + b.color + ",#000)!important}" +
+        ".hdr-icon{background:linear-gradient(145deg," + b.color + ",#000)!important}";
+      document.head.appendChild(c);
+    }
+    if (b.dealer) {
+      $("hdrTitle").textContent = b.dealer + " — Leads";
+      $("hdrSub").textContent = b.dealer;
+      document.title = "Leads — " + b.dealer;
+      var initial = (b.dealer.charAt(0) || "T").toUpperCase();
+      $("gateIcon").textContent = initial;
+      $("hdrIcon").textContent = initial;
+    }
+    if (b.logo) {
+      var img = '<img src="' + esc(b.logo) + '" alt="" />';
+      $("gateIcon").innerHTML = img;
+      $("hdrIcon").innerHTML = img;
+    }
+  }
+
+  /* ---- Helpers ---- */
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function digits(s) { return String(s || "").replace(/\D/g, ""); }
+  function when(iso) {
+    var d = new Date(String(iso).replace(" ", "T"));
+    if (isNaN(d)) return iso || "";
+    var now = new Date();
+    var diff = (now - d) / 1000;
+    if (diff < 60) return "Just now";
+    if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+    if (diff < 86400 && d.getDate() === now.getDate()) return d.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString("en-ZA", { day: "2-digit", month: "short" }) + " " + d.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  /* ---- Notifications ---- */
+  function notifyNewLead(lead) {
+    if (!lead) return;
+    var title = "New Lead!";
+    var body = (lead.name || "Unknown") + " — " + (lead.phone || "No number");
+    if (lead.interest) body += "\n" + lead.interest;
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body: body, icon: "icon-192.png", badge: "icon-192.png", tag: "lead-" + lead.id, renotify: true, vibrate: [200, 100, 200] });
+    }
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  }
+
+  function requestNotifyPermission() {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }
+
+  /* ---- New badge ---- */
+  function showNewBadge(text) {
+    var b = $("newBadge");
+    b.textContent = text;
+    b.style.display = "block";
+    setTimeout(function () { b.style.display = "none"; }, 4000);
+  }
+
+  /* ---- Render ---- */
+  function render() {
+    var q = state.q.toLowerCase();
+    var rows = state.leads.filter(function (l) {
+      if (state.filter !== "all" && l.status !== state.filter) return false;
+      if (!q) return true;
+      return (l.name + " " + l.phone + " " + l.email + " " + l.interest + " " + l.appointment + " " + l.source + " " + l.notes).toLowerCase().indexOf(q) > -1;
+    });
+    $("count").textContent = rows.length + " lead" + (rows.length === 1 ? "" : "s");
+
+    if (!rows.length) {
+      $("list").innerHTML = '<div class="empty"><div class="big">📭</div>No leads yet.<br>Leads will appear here as they come in.</div>';
+      return;
+    }
+
+    $("list").innerHTML = rows.map(function (l) {
+      var wa = digits(l.phone), st = l.status || "new";
+      var line = l.appointment || l.interest || "";
+      return '<div class="lead ' + esc(st) + '">' +
+        '<div class="top">' +
+          '<span class="name">' + esc(l.name || "Unknown") + '</span>' +
+          '<span class="badge ' + esc(st) + '">' + esc(st) + '</span>' +
+          '<span class="when">' + esc(when(l.created_at)) + '</span>' +
+        '</div>' +
+        (l.phone ? '<div class="row">📞 <b>' + esc(l.phone) + '</b></div>' : '') +
+        (l.email ? '<div class="row">✉️ ' + esc(l.email) + '</div>' : '') +
+        (line ? '<div class="row">⭐ ' + esc(line) + '</div>' : '') +
+        (l.tradein ? '<div class="row">🔄 Trade-in: ' + esc(l.tradein) + '</div>' : '') +
+        (l.finance == 1 ? '<div class="row">💰 Finance interest</div>' : '') +
+        (l.source ? '<span class="source-tag">' + esc(l.source) + '</span>' : '') +
+        (l.summary ? '<div class="sum">' + esc(l.summary) + '</div>' : '') +
+        '<div class="acts">' +
+          (wa ? '<a class="wa" href="https://wa.me/' + esc(wa) + '" target="_blank">💬 WhatsApp</a>' : '') +
+          (l.phone ? '<a class="call" href="tel:' + esc(l.phone) + '">📞 Call</a>' : '') +
+          (l.email ? '<a class="mail" href="mailto:' + esc(l.email) + '">✉️ Email</a>' : '') +
+          (st === "new" ? '<button class="done-btn" data-done="' + esc(l.id) + '">✓ Contacted</button>' : '') +
+        '</div></div>';
+    }).join("");
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-done]"), function (b) {
+      b.onclick = function () { setStatus(b.getAttribute("data-done"), "contacted"); };
+    });
+  }
+
+  /* ---- CSV export ---- */
+  function csv() {
+    var head = ["created_at", "name", "phone", "email", "interest", "appointment", "tradein", "finance", "source", "status"];
+    var lines = [head.join(",")].concat(state.leads.map(function (l) {
+      return head.map(function (k) { return '"' + String(l[k] == null ? "" : l[k]).replace(/"/g, '""') + '"'; }).join(",");
+    }));
+    var blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "leads-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+  }
+
+  /* ---- Login ---- */
+  function enter() {
+    state.site = $("site").value.trim();
+    state.pin = $("pin").value.trim();
+    if (!state.site || !state.pin) { $("err").textContent = "Site address and PIN required."; return; }
+    $("err").textContent = "Connecting…";
+    load().then(function () {
+      save();
+      $("gate").style.display = "none";
+      $("app").style.display = "block";
+      render();
+      startPoll();
+      requestNotifyPermission();
+      registerSW();
+    }).catch(function () { $("err").textContent = "Couldn't connect — check the address and PIN."; });
+  }
+
+  /* ---- Polling ---- */
+  function startPoll() {
+    if (state.pollTimer) clearInterval(state.pollTimer);
+    state.pollTimer = setInterval(function () { load().then(render).catch(function () {}); }, POLL_MS);
+  }
+
+  /* ---- PWA ---- */
+  var deferredPrompt = null;
+  function registerSW() {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").then(function (reg) { state.sw = reg; }).catch(function () {});
+    }
+  }
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    $("installBtn").style.display = "block";
+  });
+  $("installBtn").addEventListener("click", function () {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function () { deferredPrompt = null; $("installBtn").style.display = "none"; });
+  });
+
+  /* ---- Wire up ---- */
+  $("enter").onclick = enter;
+  $("pin").addEventListener("keydown", function (e) { if (e.key === "Enter") enter(); });
+  $("site").addEventListener("keydown", function (e) { if (e.key === "Enter") $("pin").focus(); });
+  $("refresh").onclick = function () { $("statusDot").classList.add("pulse"); load().then(render); };
+  $("csv").onclick = csv;
+  $("logout").onclick = function () { localStorage.removeItem(LS); clearInterval(state.pollTimer); location.reload(); };
+  $("q").addEventListener("input", function () { state.q = this.value; render(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (c) {
+    c.onclick = function () {
+      document.querySelectorAll(".chip").forEach(function (x) { x.classList.remove("on"); });
+      c.classList.add("on");
+      state.filter = c.getAttribute("data-f");
+      render();
+    };
+  });
+
+  /* ---- Auto-login ---- */
+  var s = saved();
+  if (s.site && s.pin) {
+    state.site = s.site;
+    state.pin = s.pin;
+    $("site").value = s.site;
+    $("pin").value = s.pin;
+    load().then(function () {
+      $("gate").style.display = "none";
+      $("app").style.display = "block";
+      render();
+      startPoll();
+      registerSW();
+    }).catch(function () { /* show gate */ });
+  }
+})();
+</script>
+</body>
+</html>

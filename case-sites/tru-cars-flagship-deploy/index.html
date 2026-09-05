@@ -12,9 +12,57 @@
 <meta property="og:image" content="https://www.true-cars.co.za/og-card.jpg">
 <link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">
 <link rel="stylesheet" href="/assets/css/showroom.css?v=12">
+<link rel="preload" as="image" href="https://premium.tru-saas.com/media/0f858834f28ee3787744cc660e8cf1b8ea96babbbf149ca5aa6a7086a3464e14.jpg" fetchpriority="high">
 <meta name="view-transition" content="same-origin">
 <link rel="prefetch" href="/stock.html">
 <link rel="prefetch" href="/assets/js/showroom.js?v=11">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutoDealer",
+  "name": "True Cars",
+  "alternateName": "True-Cars SA",
+  "url": "https://www.true-cars.co.za/",
+  "logo": "https://www.true-cars.co.za/assets/brand/truecars-badge.png",
+  "image": "https://www.true-cars.co.za/og-card.jpg",
+  "description": "Verified pre-owned and new vehicles in Port Elizabeth. Comprehensive 114-point TruInspect condition reports, real-time finance calculations, and instant trade-in appraisal.",
+  "telephone": "+27620502091",
+  "priceRange": "R150,000 - R1,200,000",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Port Elizabeth",
+    "addressRegion": "Eastern Cape",
+    "addressCountry": "ZA"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "-33.9608",
+    "longitude": "25.6022"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "opens": "08:00",
+      "closes": "17:30"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Saturday",
+      "opens": "08:30",
+      "closes": "13:00"
+    }
+  ],
+  "makesOffer": {
+    "@type": "Offer",
+    "priceCurrency": "ZAR",
+    "seller": {
+      "@type": "AutoDealer",
+      "name": "True Cars"
+    }
+  }
+}
+</script>
 </head>
 <body>
 
@@ -22,26 +70,26 @@
 
   <!-- ---------- hero — featured car (design 1b) ---------- -->
   <section class="hero">
-    <div class="hero-media"><img id="heroImg" class="kb-active" src="/assets/hero-showroom.jpg" alt="" fetchpriority="high"></div>
+    <div class="hero-media"><img id="heroImg" class="kb-active" src="https://premium.tru-saas.com/media/0f858834f28ee3787744cc660e8cf1b8ea96babbbf149ca5aa6a7086a3464e14.jpg" alt="Featured Vehicle" fetchpriority="high"></div>
     <div class="hero-scrim"></div>
 
     <div class="wrap hero-inner">
       <span class="hero-eyebrow reveal reveal-1">
         <span class="hero-dot" aria-hidden="true"></span>
-        <span id="heroEyebrow">Featured &middot; inspected today</span>
+        <span id="heroEyebrow">Featured &middot; VIR 90</span>
       </span>
-      <h1 class="hero-title reveal reveal-2" id="heroTitle">See it, spec it, <em>settle it.</em></h1>
+      <h1 class="hero-title reveal reveal-2" id="heroTitle">JETOUR <em>T2.</em></h1>
       <div class="hero-facts reveal reveal-3" id="heroMeta">
-        <span id="heroPrice"></span>
+        <span id="heroPrice">R&nbsp;646&nbsp;766</span>
         <span class="hero-sep">&middot;</span>
-        <span id="heroKm"></span>
+        <span id="heroKm">15&nbsp;000 km</span>
         <span id="heroDeltaWrap" hidden>
           <span class="hero-sep">&middot;</span>
           <span class="hero-delta" id="heroDelta"></span>
         </span>
       </div>
       <div class="hero-cta reveal reveal-4">
-        <a class="btn btn-primary" id="heroCta" href="/stock.html">Spin this car</a>
+        <a class="btn btn-primary" id="heroCta" href="/vehicle.html?stock=Tru8293">Spin this car</a>
         <a class="btn btn-outline" href="/stock.html">Browse the floor</a>
       </div>
     </div>
@@ -894,6 +942,141 @@
   .mod-panel { padding: 24px 18px; border-radius: 20px; }
   .mod-tabs-nav { border-radius: 18px; padding: 6px; }
   .mod-tab-btn .tab-sub { display: none; }
+}
+
+/* =========================================================
+   DARK THEME CONTRAST: TRUDEALER PLATFORM OS SHOWCASE
+   ========================================================= */
+[data-theme="dark"] .tru-expandable-details {
+  border-color: rgba(93, 233, 212, 0.35);
+  background: #0E1A26;
+  box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.6);
+}
+[data-theme="dark"] .tru-expand-body {
+  background: #0B1220;
+  color: #F8FAFC;
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .tru-block-eyebrow {
+  color: #5DE9D4;
+}
+[data-theme="dark"] .tru-block-title {
+  color: #FFFFFF !important;
+}
+[data-theme="dark"] .tru-block-title em {
+  color: #5DE9D4 !important;
+}
+[data-theme="dark"] .tru-block-desc {
+  color: #94A3B8 !important;
+}
+[data-theme="dark"] .mod-tabs-nav {
+  background: #111A28;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .mod-tab-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #94A3B8;
+}
+[data-theme="dark"] .mod-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+[data-theme="dark"] .mod-tab-btn.active {
+  background: #182638;
+  color: #FFFFFF;
+  border-color: #5DE9D4;
+  box-shadow: 0 6px 20px -4px rgba(7, 135, 154, 0.4), 0 0 12px rgba(93, 233, 212, 0.2);
+}
+[data-theme="dark"] .mod-tab-btn .tab-num {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+}
+[data-theme="dark"] .mod-tab-btn.active .tab-num {
+  background: #07879A;
+  color: #FFFFFF;
+}
+[data-theme="dark"] .mod-tab-btn .tab-name {
+  color: #F8FAFC !important;
+}
+[data-theme="dark"] .mod-tab-btn.active .tab-name {
+  color: #5DE9D4 !important;
+}
+[data-theme="dark"] .mod-tab-btn .tab-sub {
+  color: #64748B !important;
+}
+[data-theme="dark"] .mod-tab-btn.active .tab-sub {
+  color: #94A3B8 !important;
+}
+[data-theme="dark"] .mod-panel {
+  background: #131E2E !important;
+  border: 1px solid rgba(93, 233, 212, 0.22) !important;
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .mod-panel-tag {
+  background: rgba(7, 135, 154, 0.2) !important;
+  border-color: rgba(93, 233, 212, 0.35) !important;
+  color: #5DE9D4 !important;
+}
+[data-theme="dark"] .mod-panel-tag .dot {
+  background: #5DE9D4 !important;
+}
+[data-theme="dark"] .mod-panel-title {
+  color: #FFFFFF !important;
+}
+[data-theme="dark"] .mod-panel-title .accent {
+  color: #5DE9D4 !important;
+}
+[data-theme="dark"] .mod-panel-lede {
+  color: #E2E8F0 !important;
+}
+[data-theme="dark"] .mod-panel-desc {
+  color: #CBD5E1 !important;
+}
+[data-theme="dark"] .mod-features-list {
+  color: #CBD5E1 !important;
+}
+[data-theme="dark"] .mod-feature-item {
+  color: #CBD5E1 !important;
+}
+[data-theme="dark"] .mod-feature-item strong {
+  color: #FFFFFF !important;
+}
+[data-theme="dark"] .mod-feature-item span {
+  color: #CBD5E1 !important;
+}
+[data-theme="dark"] .mod-feature-icon {
+  background: rgba(7, 135, 154, 0.2) !important;
+  border-color: rgba(93, 233, 212, 0.3) !important;
+  color: #5DE9D4 !important;
+}
+[data-theme="dark"] .mod-feature-icon svg {
+  stroke: #5DE9D4 !important;
+}
+[data-theme="dark"] .mod-btn-clip {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #F8FAFC !important;
+}
+[data-theme="dark"] .mod-btn-clip:hover {
+  background: rgba(7, 135, 154, 0.25) !important;
+  border-color: #5DE9D4 !important;
+  color: #5DE9D4 !important;
+}
+[data-theme="dark"] .mod-spec-pill {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #94A3B8 !important;
+}
+[data-theme="dark"] .live-hero-wrap {
+  background: #0A101D !important;
+  border-color: rgba(93, 233, 212, 0.3) !important;
+}
+[data-theme="dark"] .live-hero-head,
+[data-theme="dark"] .live-hero-foot {
+  background: #111B2C !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 </style>
 

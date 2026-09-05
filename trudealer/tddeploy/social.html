@@ -52,7 +52,96 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#F4EFE6;--paper-2:#EDE6D8;
+  --ink:#0F1621;--ink-2:#2A3441;
+  --muted:#6B6357;--faint:#A69C8D;
+  --line:rgba(15,22,33,.12);--line-soft:rgba(15,22,33,.06);
+  --cyan:#0891A6;--amber:#B8802F;
+  --linkedin:#0A66C2;--facebook:#1877F2;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+em{font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;color:var(--cyan);font-family:var(--display);}
+h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:-.03em;color:var(--ink);}
+h1{font-size:clamp(38px,5.4vw,64px);line-height:1.02;letter-spacing:-.04em;text-wrap:balance;font-variation-settings:"opsz" 144,"SOFT" 30;}
+h2{font-size:clamp(26px,2.8vw,36px);line-height:1.1;font-variation-settings:"opsz" 144,"SOFT" 30;}
+h3{font-size:19px;letter-spacing:-.02em;font-variation-settings:"opsz" 72,"SOFT" 30;}
+a{color:inherit;text-decoration:none;}
+::selection{background:var(--cyan);color:var(--paper);}
 
+.doc{max-width:960px;margin:0 auto;padding:56px 32px 96px;}
+.hero{padding:40px 0 32px;border-bottom:2px solid var(--ink);margin-bottom:56px;position:relative;}
+.hero .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);margin-bottom:20px;}
+.hero p.lead{font-size:17px;line-height:1.5;color:var(--ink-2);max-width:640px;margin-top:16px;}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;}
+.legend span{padding:5px 11px;border-radius:100px;border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.35);}
+
+.channel-head{display:flex;align-items:baseline;gap:16px;margin:56px 0 24px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+.channel-head .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;padding:7px 12px;border-radius:100px;font-weight:600;}
+.channel-head .badge.li{background:var(--linkedin);color:#fff;}
+.channel-head .badge.fb{background:var(--facebook);color:#fff;}
+.channel-head p{font-size:14px;color:var(--muted);flex:1;}
+
+.post{
+  background:rgba(255,255,255,.5);
+  border:1px solid var(--line);border-radius:14px;
+  padding:26px 28px;margin-bottom:22px;position:relative;
+}
+.post-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
+.post-meta{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.post-meta .tag{padding:4px 9px;border-radius:100px;border:1px solid var(--line);background:var(--paper-2);}
+.post-meta .tag.hero-tag{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.post-meta .tag.amber{color:var(--amber);border-color:rgba(184,128,47,.4);background:rgba(184,128,47,.06);}
+.post-title{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:-.02em;font-variation-settings:"opsz" 72,"SOFT" 30;flex:1;min-width:250px;}
+.post-body{
+  font-family:var(--sans);font-size:15px;line-height:1.62;color:var(--ink);
+  white-space:pre-wrap;padding:20px;border-radius:10px;background:var(--paper);
+  border:1px dashed var(--line);margin-bottom:14px;font-variant-ligatures:none;
+}
+.post-hash{font-family:var(--mono);font-size:12px;color:var(--cyan);margin-top:6px;letter-spacing:.02em;word-spacing:6px;}
+.post-actions{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
+.copy-btn{
+  padding:9px 16px;border-radius:100px;border:1.5px solid var(--ink);
+  background:var(--ink);color:var(--paper);font:600 12.5px var(--sans);
+  cursor:pointer;letter-spacing:.02em;transition:all .2s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.copy-btn:hover{background:var(--cyan);border-color:var(--cyan);color:var(--paper);}
+.copy-btn.copied{background:var(--amber);border-color:var(--amber);color:var(--paper);}
+.copy-btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.char-count{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.char-count.warn{color:var(--amber);}
+
+.tips{
+  background:var(--ink);color:var(--paper);border-radius:14px;padding:28px 32px;margin-top:40px;
+  position:relative;overflow:hidden;
+}
+.tips::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 15% 20%,rgba(8,145,166,.18),transparent 55%),radial-gradient(circle at 85% 80%,rgba(184,128,47,.1),transparent 55%);
+}
+.tips > *{position:relative;z-index:1;}
+.tips h2{color:var(--paper);font-size:24px;margin-bottom:14px;}
+.tips h2 em{color:var(--cyan);font-size:24px;}
+.tips ul{list-style:none;display:grid;gap:10px;margin-top:12px;}
+.tips li{font-size:14px;line-height:1.5;color:rgba(244,239,230,.85);padding-left:20px;position:relative;}
+.tips li::before{content:'→';position:absolute;left:0;color:var(--amber);font-weight:600;}
+
+.footer-note{text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:56px;padding-top:22px;border-top:1px solid var(--line);}
+.footer-note em{color:var(--cyan);font-size:10.5px;}
+
+@media(max-width:640px){
+  .doc{padding:32px 20px 64px;}
+  .post{padding:20px;}
+  .post-body{padding:16px;font-size:14px;}
+}
+</style>
   <link rel="stylesheet" href="site.css">
 </head>
 <body>
@@ -480,7 +569,7 @@ Or WhatsApp direct: +44 7476 995694</div>
 })();
 </script>
 <!-- TruBook — files walkthrough bookings to the true-cars DMS; intercepts legacy cal.com links -->
-<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="447476995694" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
+<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
 <script>
 (function(){
   function openBook(e){ if(e){e.preventDefault();} if(window.TruBook){TruBook.open({mode:'walkthrough'});} else {window.open('https://cal.com/pgdebeer','_blank','noopener');} }
@@ -490,7 +579,6 @@ Or WhatsApp direct: +44 7476 995694</div>
   });
 })();
 </script>
-
 <div class="wa-fab" id="waFab">
   <div class="wa-fab-menu" role="menu" aria-hidden="true">
     <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom">
@@ -510,5 +598,6 @@ Or WhatsApp direct: +44 7476 995694</div>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
   </button>
 </div>
+<script src="site.js" defer></script>
 </body>
 </html>

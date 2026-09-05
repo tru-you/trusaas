@@ -1,0 +1,335 @@
+/* ============================================================
+   Cars on Caledon — Design Fixes (drop-in)
+   Load AFTER coc-site.css:
+     <link rel="stylesheet" href="coc-fixes.css?v=20260806a">
+   
+   Does NOT touch feeds, widgets, or webhooks.
+   ============================================================ */
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 01 — GREEN-ON-BLACK → BLUE ACCENT
+   Status dots, pulse rings, and "live" indicators were using
+   WhatsApp green on a near-black field. Now uses the site's
+   own blue accent (#6E9BFF). WhatsApp green stays ONLY on
+   the WhatsApp button itself (brand requirement).
+   ──────────────────────────────────────────────────────────── */
+
+/* Hero badge dot */
+.hero-badge i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  box-shadow:none!important;
+  animation:none!important;
+}
+
+/* Stock source pill — live dot */
+.stock-source.live .dot{
+  background:var(--sk-accent,#6E9BFF)!important;
+  animation:cocBluePulse 2s ease-out infinite!important;
+}
+@keyframes cocBluePulse{
+  0%{box-shadow:0 0 0 0 rgba(110,155,255,.5)}
+  70%{box-shadow:0 0 0 7px rgba(110,155,255,0)}
+  100%{box-shadow:0 0 0 0 rgba(110,155,255,0)}
+}
+
+/* Card "Inspected" badge dot */
+.card .ph .vir i{
+  background:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* Hours pill — open state: blue instead of green */
+.coc-status.open{
+  background:rgba(110,155,255,.14)!important;
+  border-color:rgba(110,155,255,.30)!important;
+  color:rgba(160,190,255,.9)!important;
+}
+.coc-status.open i{
+  background:var(--sk-accent,#6E9BFF)!important;
+}
+.coc-status.open i::after{
+  border-color:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* TruInspect badge dot */
+.coc-trade .ct-badge i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  animation:none!important;
+}
+.coc-trade .ct-badge{
+  color:rgba(160,190,255,.9)!important;
+  background:rgba(110,155,255,.12)!important;
+  border-color:rgba(110,155,255,.30)!important;
+}
+
+/* TruValue eyebrow dot */
+.ti-eyebrow i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  animation:none!important;
+}
+
+/* Trust dots in VD modal */
+.vd-trust i[style*="25D366"]{
+  background:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* Ticker icon — blue not green */
+.coc-ticker .tk-ic{
+  background:rgba(110,155,255,.14)!important;
+  color:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* Mobile nav status pill — blue not green */
+.nav-status i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  box-shadow:none!important;
+  animation:cocBluePulse 2s ease-out infinite!important;
+}
+.nav-status{
+  color:rgba(160,190,255,.9)!important;
+  background:rgba(110,155,255,.08)!important;
+  border-color:rgba(110,155,255,.20)!important;
+}
+@media(max-width:860px){
+  .nav-status.closed i{
+    background:var(--sk-muted,rgba(232,234,230,.55))!important;
+    animation:none!important;
+  }
+  .nav-status.closed{
+    color:var(--sk-muted)!important;
+    background:rgba(232,234,230,.06)!important;
+    border-color:var(--sk-line,rgba(232,234,230,.14))!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 02 — SPACING: TIGHTER SECTIONS
+   110px section padding was excessive. 72px desktop, 48px
+   mobile. Internal gaps tightened.
+   ──────────────────────────────────────────────────────────── */
+
+section{
+  padding-top:72px!important;
+  padding-bottom:72px!important;
+}
+@media(max-width:760px){
+  section{
+    padding-top:48px!important;
+    padding-bottom:48px!important;
+  }
+}
+/* Finance and sell grid gaps */
+.fin-grid{gap:40px!important;}
+.sell-grid{gap:36px!important;}
+@media(max-width:960px){
+  .fin-grid{gap:28px!important;}
+  .sell-grid{gap:24px!important;}
+}
+/* Why-us grid */
+.why-grid{margin-top:24px!important;gap:14px!important;}
+/* Testimonial grid */
+.testi-grid{margin-top:24px!important;gap:14px!important;}
+/* Body type section */
+.cat-section{padding:52px 0 40px!important;}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 03 — MOBILE CARD CTA SIMPLIFICATION
+   On mobile (≤640px), hide inline WhatsApp + Book buttons.
+   The card itself is tappable → detail modal has both actions.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .card-body .cta-row{
+    display:none!important;
+  }
+  /* Also tighten card body padding */
+  .card-body{
+    padding:12px 14px 14px!important;
+  }
+  /* Specs row — tighter */
+  .specs{
+    margin:8px 0 10px!important;
+    gap:4px!important;
+  }
+  /* Price row */
+  .price-row{
+    padding-top:10px!important;
+  }
+  /* View detail button is the only CTA on mobile */
+  .card-body .btn-vd{
+    margin-top:10px!important;
+    padding:11px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 04 — REMOVE FAKE DATA VISUALS
+   Ribbons (Just arrived / Price reduced / Reserved) are
+   derived from a price hash — not real status. Hide them.
+   The delivered ticker is hardcoded fake deliveries — hide.
+   Synthetic TruPrice tags — hide when not DMS-sourced.
+   ──────────────────────────────────────────────────────────── */
+
+/* Hide ribbons entirely */
+.coc-ribbon{
+  display:none!important;
+}
+
+/* Hide the delivered ticker */
+.coc-ticker{
+  display:none!important;
+}
+
+/* TruPrice tag: only show "win" (real DMS data),
+   hide the synthetic "fair" fallback */
+.tp-tag.fair{
+  display:none!important;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 05 — CALL BUTTON: DIRECT DIAL
+   The double-tap pattern is non-standard. Make the phone
+   number visible and tappable immediately. The .coc-call JS
+   still runs but we make the armed state instantaneous.
+   ──────────────────────────────────────────────────────────── */
+
+/* Footer + visit section: show number directly */
+.coc-call-text .cc-num{
+  border-bottom:1px dashed currentColor;
+}
+
+/* Topbar / mobile bar: arm immediately on first tap via CSS
+   (the JS still handles the actual dialing) — shorter timeout */
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 06 — SEARCH PANEL: COLLAPSIBLE ON MOBILE
+   The search panel pushes car content below the fold on
+   small screens. Collapse it behind a toggle.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .search-panel .sp-row{
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    margin-top:0;
+    transition:max-height .35s ease, opacity .25s ease, margin-top .35s ease;
+  }
+  .search-panel.sp-open .sp-row{
+    max-height:400px;
+    opacity:1;
+    margin-top:12px;
+  }
+  /* The toggle button is injected by coc-fixes.js */
+  .sp-toggle{
+    display:flex!important;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    padding:0;
+    background:none;
+    border:none;
+    color:#fff;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .sp-toggle svg{
+    transition:transform .3s ease;
+  }
+  .search-panel.sp-open .sp-toggle svg{
+    transform:rotate(180deg);
+  }
+}
+@media(min-width:641px){
+  .sp-toggle{display:none!important;}
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 07 — FAB RAIL: KILL AMBIENT ANIMATIONS
+   Float, sheen, and breathing loops run continuously.
+   Keep entrance only; kill ambient motion.
+   ──────────────────────────────────────────────────────────── */
+
+.fab-btn .fab-inner{
+  animation:none!important;
+}
+.fab-btn::after{
+  animation:none!important;
+  background:none!important;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 08 — BODY TYPE TILES: RESPONSIVE
+   6-column grid wraps awkwardly. Better breakpoints.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .cat-grid{
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:8px!important;
+  }
+  .cat-tile{
+    padding:14px 8px 12px!important;
+  }
+  .cat-tile svg{
+    width:42px!important;
+    height:22px!important;
+    margin-bottom:6px!important;
+  }
+  .cat-tile .ct-name{
+    font-size:12px!important;
+  }
+  .cat-tile .ct-count{
+    font-size:9px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 09 — STATS STRIP: RESPONSIVE
+   4-column → 2×2 on mobile with tighter padding.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .stats-row .si{
+    padding:14px 10px!important;
+  }
+  .stats-row .sn{
+    font-size:22px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 10 — VISIT CARD: RESPONSIVE
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .visit-l{
+    padding:28px 20px!important;
+  }
+  .visit-l h2{
+    font-size:24px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 11 — FOOTER: TIGHTER ON MOBILE
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:560px){
+  footer .f-grid{
+    gap:20px!important;
+  }
+  .f-about p{
+    font-size:12px!important;
+  }
+}

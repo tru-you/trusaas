@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Apex Investments · TruDealer Client Onboarding Form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#F5F1E8;
+  --paper-2:#EDE6D8;
+  --paper-card:#FBF8F1;
+  --ink:#12202B;
+  --ink-2:#3A4553;
+  --muted:#8A8172;
+  --faint:#A69C8D;
+  --line:rgba(18,32,43,.14);
+  --line-soft:rgba(18,32,43,.08);
+  --cyan:#07889B;
+  --cyan-bright:#0891A6;
+  --cyan-soft:rgba(7,136,155,.12);
+  --cyan-faint:rgba(7,136,155,.06);
+  --cyan-pale:#E6F4F5;
+  --amber:#B07A26;
+  --amber-soft:rgba(176,122,38,.12);
+  --danger:#B86A6A;
+  --ok:#10B981;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:14.5px;
+  line-height:1.55;
+  letter-spacing:-0.005em;
+  -webkit-font-smoothing:antialiased;
+  padding:0 0 80px;
+}
+
+/* ─── STICKY TOOLBAR ─────────────────────────── */
+.toolbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(245,241,232,.94);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 24px;
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand .mark{
+  width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--cyan);
+  font-family:var(--mono);font-size:12px;font-weight:700;
+}
+.brand b{font-weight:700;font-size:15px;letter-spacing:-0.02em;}
+.brand b .tru{color:var(--ink);}
+.brand b .dealer{color:var(--cyan);}
+.brand span{color:var(--muted);font-size:12px;margin-left:4px;font-family:var(--mono);}
+
+.toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.btn{
+  font:inherit;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;padding:8px 14px;
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper-card);
+  color:var(--ink-2);transition:all .15s;font-family:var(--sans);user-select:none;
+}
+.btn:hover{color:var(--ink);border-color:var(--cyan);background:#fff;}
+.btn.primary{background:var(--cyan);color:#fff;border-color:transparent;}
+.btn.primary:hover{background:var(--cyan-bright);}
+.btn.amber{background:var(--amber);color:#fff;border-color:transparent;}
+.btn.ghost-danger:hover{color:var(--danger);border-color:rgba(184,106,106,.4);}
+
+.save-status{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  display:flex;align-items:center;gap:5px;
+}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block;}
+
+/* ─── DOCUMENT CONTAINER ─────────────────────── */
+.sheet-wrap{position:relative;z-index:1;max-width:860px;margin:28px auto 0;padding:0 20px;}
+.doc{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 18px 50px -20px rgba(18,32,43,.12);
+  padding:44px 48px;
+}
+
+.form-head{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+  margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--line);
+}
+.form-head .logo{
+  font-weight:700;font-size:26px;letter-spacing:-0.03em;line-height:1;
+  font-family:var(--display);font-variation-settings:'opsz' 144,'SOFT' 30;
+}
+.form-head .logo .tru{color:var(--ink);}
+.form-head .logo .dealer{color:var(--cyan);}
+.form-head .meta{text-align:right;}
+.form-head .meta .doc-title{
+  margin:0;font-family:var(--display);font-weight:400;font-size:24px;
+  letter-spacing:-.02em;color:var(--ink);font-variation-settings:'opsz' 72,'SOFT' 30;
+}
+.form-head .meta .doc-sub{margin-top:4px;font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;}
+
+.intro{
+  background:var(--paper-card);border:1px solid var(--line-soft);
+  border-radius:12px;padding:18px 22px;margin-bottom:32px;
+}
+.intro p{margin:0 0 8px;font-size:14px;color:var(--ink-2);line-height:1.55;}
+.intro p:last-child{margin-bottom:0;}
+.intro p strong{color:var(--ink);}
+
+.section{
+  margin-bottom:32px;padding-bottom:28px;border-bottom:1px solid var(--line-soft);
+}
+.section:last-of-type{border-bottom:none;}
+.section-title{
+  display:flex;align-items:center;gap:10px;margin:0 0 18px;
+  font-family:var(--display);font-weight:400;font-size:19px;letter-spacing:-.02em;color:var(--ink);
+  font-variation-settings:'opsz' 72,'SOFT' 30;
+}
+.section-title .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;background:var(--cyan-faint);color:var(--cyan);
+  font-family:var(--mono);font-size:12px;font-weight:700;flex:none;
+}
+
+.field{margin-bottom:16px;}
+.field-label{
+  display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:500;
+}
+.field-hint{font-size:12px;color:var(--faint);margin-top:4px;}
+.inp{
+  width:100%;font:inherit;font-size:14px;color:var(--ink);
+  border:none;border-bottom:1.5px solid var(--line);background:transparent;
+  padding:7px 2px;outline:none;transition:border-color .15s;
+}
+.inp:focus{border-bottom-color:var(--cyan);}
+.inp::placeholder{color:var(--faint);}
+textarea.inp{
+  resize:vertical;min-height:70px;border:1px solid var(--line-soft);
+  border-radius:8px;padding:10px 12px;background:var(--paper-card);
+}
+textarea.inp:focus{border-color:var(--cyan);background:#fff;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 24px;}
+@media(max-width:680px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.opt{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:100px;
+  border:1px solid var(--line-soft);background:var(--paper-card);cursor:pointer;
+  font-size:13px;color:var(--ink-2);transition:all .15s;user-select:none;
+}
+.opt:hover{border-color:var(--cyan-soft);background:var(--cyan-faint);}
+.opt input{appearance:none;width:15px;height:15px;border:1.5px solid var(--line);border-radius:50%;margin:0;transition:all .15s;}
+.opt input:checked{border-color:var(--cyan);background:var(--cyan);box-shadow:inset 0 0 0 3px #fff;}
+.opt:has(input:checked){border-color:var(--cyan);background:var(--cyan-pale);color:var(--ink);font-weight:600;}
+
+.opts-check .opt{border-radius:10px;}
+.opts-check .opt input{border-radius:4px;}
+.opts-check .opt input:checked{background:var(--cyan);box-shadow:inset 0 0 0 2px #fff;}
+
+.ref-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px;}
+.ref-table th{
+  text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);padding:8px 8px;border-bottom:1px solid var(--line);
+}
+.ref-table td{padding:6px;border-bottom:1px solid var(--line-soft);}
+.ref-table td .inp{border-bottom:none;padding:6px 8px;background:var(--paper-card);border-radius:6px;border:1px solid var(--line-soft);}
+.ref-table td .inp:focus{border-color:var(--cyan);background:#fff;}
+
+.sign-area{
+  margin-top:10px;border:1.5px dashed var(--line);border-radius:10px;height:110px;
+  background:rgba(18,32,43,.02);position:relative;overflow:hidden;
+}
+.sign-area canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;}
+.sign-area .pad-ph{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;pointer-events:none;
+}
+.sign-area.inked .pad-ph{display:none;}
+.sign-tools{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;}
+
+.form-foot{
+  margin-top:36px;padding-top:20px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+.form-foot .contact{font-size:12px;color:var(--muted);line-height:1.6;}
+.form-foot .contact a{color:var(--cyan);text-decoration:none;font-weight:500;}
+
+.price-tag{
+  display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--amber);background:var(--amber-soft);padding:2px 7px;border-radius:100px;margin-left:6px;font-weight:600;
+}
+.free-tag{
+  display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--cyan);background:var(--cyan-faint);padding:2px 7px;border-radius:100px;margin-left:6px;font-weight:600;
+}
+
+/* ─── MODAL / TOAST ───────────────────────────── */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--ink);color:#fff;padding:12px 20px;border-radius:8px;
+  font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:none;align-items:center;gap:8px;
+}
+.toast.show{display:flex;animation:fadein .2s ease;}
+
+@keyframes fadein{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── PRINT OPTIMIZATIONS ─────────────────────── */
+@media print{
+  @page{margin:12mm;size:A4 portrait;}
+  html,body{background:#fff!important;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .toolbar,.sign-tools,.toast{display:none!important;}
+  .sheet-wrap{max-width:none;margin:0;padding:0;}
+  .doc{box-shadow:none!important;border:none!important;border-radius:0!important;padding:0!important;}
+  .section,.field,.opts,.ref-table,.sign-area,.form-foot,.intro{break-inside:avoid!important;page-break-inside:avoid!important;}
+  .section-title{break-after:avoid!important;page-break-after:avoid!important;}
+  tr{break-inside:avoid!important;page-break-inside:avoid!important;}
+  .inp{border-bottom:1px solid #ccc!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- STICKY HEADER ACTIONS -->
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark">TD</span>
+    <b><span class="tru">Tru</span><span class="dealer">Dealer</span></b>
+    <span>· Client Onboarding</span>
+  </div>
+
+  <div class="toolbar-actions">
+    <div class="save-status" id="saveStatus"><span class="save-dot"></span> Draft Saved</div>
+    <button class="btn primary" id="btnSubmitOnline">Submit to TruDealer</button>
+    <button class="btn" onclick="window.print()">Print / Save PDF</button>
+    <button class="btn" id="btnExportJson">Download Data (JSON)</button>
+    <button class="btn ghost-danger" id="btnReset">Clear</button>
+  </div>
+</div>
+
+<div class="sheet-wrap">
+  <form id="onboardingForm" class="doc" onsubmit="return false;">
+
+    <!-- HEADER -->
+    <div class="form-head">
+      <div>
+        <div class="logo"><span class="tru">Tru</span><span class="dealer">Dealer</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;">
+          Future Automotive · Cape Town · Gqeberha · United Kingdom
+        </div>
+      </div>
+      <div class="meta">
+        <div class="doc-title">Client Onboarding</div>
+        <div class="doc-sub">Apex Investments (Pty) Ltd · Switch Protocol</div>
+      </div>
+    </div>
+
+    <!-- INTRO -->
+    <div class="intro">
+      <p><strong>Welcome aboard Davrin &amp; Curt.</strong> This questionnaire captures everything our engineering team needs to build your custom Edge PWA storefront, recreate your social media assets, create missing business profiles across <b>Google Business Profile, LinkedIn Business, Facebook, and Instagram</b>, migrate your stock into TruFlow DMS, and configure your routing.</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:6px;">
+        💡 <em>Your responses automatically auto-save to this device. When finished, click <b>"Submit to TruDealer"</b> or <b>"Print / Save PDF"</b>. Direct hotline: <strong style="color:var(--cyan);">+27 62 050 2091</strong> · <strong style="color:var(--cyan);">trudealer@tru-saas.com</strong></em>
+      </p>
+    </div>
+
+    <!-- SECTION 1: BUSINESS DETAILS -->
+    <div class="section">
+      <div class="section-title"><span class="num">1</span>Business Details</div>
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label">Dealership Legal Name</label>
+          <input class="inp" name="dealership_name" value="Apex Investments (Pty) Ltd" placeholder="e.g. Apex Investments (Pty) Ltd" />
+        </div>
+        <div class="field">
+          <label class="field-label">Trading Name (if different)</label>
+          <input class="inp" name="trading_name" value="Apex Investments" placeholder="e.g. Apex Investments" />
+        </div>
+        <div class="field">
+          <label class="field-label">Company Registration Number</label>
+          <input class="inp" name="company_reg" placeholder="e.g. 2019/123456/07" />
+        </div>
+        <div class="field">
+          <label class="field-label">VAT Number (if applicable)</label>
+          <input class="inp" name="vat_number" placeholder="e.g. 4120245638" />
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <label class="field-label">Showroom Physical Address</label>
+          <textarea class="inp" name="address" rows="2" placeholder="17b Burt Drive, Newton Park, Gqeberha (Port Elizabeth), 6045">17b Burt Drive, Newton Park, Gqeberha (Port Elizabeth), 6045</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: CONTACT & LEAD ROUTING -->
+    <div class="section">
+      <div class="section-title"><span class="num">2</span>Contact &amp; Lead Routing</div>
+      <div class="grid-3">
+        <div class="field">
+          <label class="field-label">Primary Accounts / Admin Email</label>
+          <input class="inp" name="email_admin" placeholder="accounts@apexinvest.co.za" />
+          <div class="field-hint">Invoices, login credentials and system alerts</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Sales Leads Email</label>
+          <input class="inp" name="email_sales" placeholder="sales@apexinvest.co.za" />
+          <div class="field-hint">Lead notifications and instant enquiry copies</div>
+        </div>
+        <div class="field">
+          <label class="field-label">WhatsApp Business Number</label>
+          <input class="inp" name="whatsapp_number" placeholder="+27 72 604 7878" />
+          <div class="field-hint">Number TruChat &amp; lead alerts will connect to</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Davrin Hunter Direct Mobile</label>
+          <input class="inp" name="phone_davrin" value="+27 72 604 7878" placeholder="+27 72 604 7878" />
+        </div>
+        <div class="field">
+          <label class="field-label">Curt Harvey Direct Mobile</label>
+          <input class="inp" name="phone_curt" value="+27 76 852 2968" placeholder="+27 76 852 2968" />
+        </div>
+        <div class="field">
+          <label class="field-label">Where should new web leads go?</label>
+          <input class="inp" name="lead_dest" value="WhatsApp & Email" placeholder="WhatsApp / Email / Both" />
+          <div class="field-hint">Default channel for instant customer contact</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: SOCIAL MEDIA ASSETS & CREATION -->
+    <div class="section">
+      <div class="section-title"><span class="num">3</span>Social Media Asset Recreation &amp; Profile Setup</div>
+      <p style="font-size:13px;color:var(--ink-2);margin-bottom:12px;">We recreate all your logo files, social banners, watermarks, and graphics, and build/optimize your profiles across all 4 platforms:</p>
+      
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label">Google Business Profile (GBP)</label>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="gbp_status" value="Recreate & Optimize" checked><span>Recreate &amp; Optimize Existing</span></label>
+            <label class="opt"><input type="radio" name="gbp_status" value="Create from Scratch"><span>Create New Profile</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">LinkedIn Business Page</label>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="linkedin_status" value="Create from Scratch" checked><span>Create New Company Page</span></label>
+            <label class="opt"><input type="radio" name="linkedin_status" value="Optimize Existing"><span>Optimize Existing</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Facebook Business Page</label>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="fb_status" value="Recreate & Sync" checked><span>Recreate Brand &amp; Sync</span></label>
+            <label class="opt"><input type="radio" name="fb_status" value="Create New Page"><span>Create New Page</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Instagram Business</label>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="ig_status" value="Recreate & Sync" checked><span>Recreate Brand &amp; Sync</span></label>
+            <label class="opt"><input type="radio" name="ig_status" value="Create New Account"><span>Create New Account</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label class="field-label">Existing Social Links / Handles (if available)</label>
+        <textarea class="inp" name="social_links" rows="2" placeholder="e.g. facebook.com/apexinvestmentspe, instagram.com/apexinvestments_pe..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 4: WEBSITE & SHOWROOM PREFERENCES -->
+    <div class="section">
+      <div class="section-title"><span class="num">4</span>Website &amp; Showroom Preferences</div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label">Preferred Domain</label>
+          <input class="inp" name="domain" value="apexinvest.co.za" placeholder="apexinvest.co.za" />
+          <div class="field-hint">We handle DNS cutover seamlessly without downtime</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Current DNS / Domain Registrar</label>
+          <input class="inp" name="dns_host" placeholder="e.g. Domains.co.za, HostAfrica, Cloudflare" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;margin-bottom:18px;">
+        <label class="field-label">Showroom references — dealer websites you like the look of</label>
+        <div class="field-hint">Paste 2–3 dealer websites whose layout or vibe you want us to incorporate.</div>
+        <table class="ref-table">
+          <thead><tr><th style="width:8%">#</th><th style="width:45%">Website URL</th><th>What you like about it</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><input class="inp" name="ref_url_1" placeholder="https://..." /></td><td><input class="inp" name="ref_desc_1" placeholder="e.g. Clean dark theme, prominent finance sliders" /></td></tr>
+            <tr><td>2</td><td><input class="inp" name="ref_url_2" placeholder="https://..." /></td><td><input class="inp" name="ref_desc_2" placeholder="e.g. Big vehicle cards, clear WhatsApp CTA" /></td></tr>
+            <tr><td>3</td><td><input class="inp" name="ref_url_3" placeholder="https://..." /></td><td><input class="inp" name="ref_desc_3" placeholder="e.g. Modern search filters" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Brand Colours (Hex or Preference)</label>
+        <div class="grid-3">
+          <input class="inp" name="brand_col_1" placeholder="Primary e.g. #07889B (Teal/Cyan)" />
+          <input class="inp" name="brand_col_2" placeholder="Secondary e.g. #12202B (Navy/Dark)" />
+          <input class="inp" name="brand_col_3" placeholder="Accent e.g. #B07A26 (Gold/Amber)" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: CURRENT TOOLS & DATA MIGRATION -->
+    <div class="section">
+      <div class="section-title"><span class="num">5</span>Current Tools &amp; Initial Stock Migration <span class="free-tag">Done by Us</span></div>
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label">Current DMS / Stock Feeder</label>
+          <input class="inp" name="current_dms" value="VMG Software" placeholder="VMG Software" />
+        </div>
+        <div class="field">
+          <label class="field-label">Approximate Stock Units on Floor</label>
+          <input class="inp" name="stock_count" placeholder="e.g. 30 - 40 vehicles" />
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label class="field-label">Stock Migration Preference</label>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="stock_migration" value="100% Loaded by TruDealer" checked><span>100% Stock Loaded by TruDealer Team <span class="free-tag">Included in Setup</span></span></label>
+          <label class="opt"><input type="radio" name="stock_migration" value="Export from VMG & Import"><span>Export CSV from VMG for TruFlow import</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6: TEAM & USER ACCESS -->
+    <div class="section">
+      <div class="section-title"><span class="num">6</span>Team &amp; User Access</div>
+      <div class="field">
+        <label class="field-label">How many team members need TruFlow DMS &amp; Mobile App access?</label>
+        <input class="inp" name="user_count" value="Davrin, Curt + Sales Executives" placeholder="e.g. 4 (2 Management + 2 Sales)" />
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label class="field-label">User Roles Required</label>
+        <div class="opts opts-check">
+          <label class="opt"><input type="checkbox" name="role_mgmt" checked><span>Management / Owner (Full Control)</span></label>
+          <label class="opt"><input type="checkbox" name="role_sales" checked><span>Sales Executives (Mobile App, Leads &amp; OTP)</span></label>
+          <label class="opt"><input type="checkbox" name="role_fi" checked><span>F&amp;I / Admin (Finance Calculators &amp; Docs)</span></label>
+          <label class="opt"><input type="checkbox" name="role_inspect" checked><span>TruInspect Yard Appraiser</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: FINANCE & F&I -->
+    <div class="section">
+      <div class="section-title"><span class="num">7</span>Finance &amp; Banking Partners</div>
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label">Approved Banks / Finance Houses</label>
+          <input class="inp" name="finance_banks" value="ABSA, WesBank, Standard Bank, Nedbank MFC" placeholder="e.g. ABSA, WesBank, Standard Bank, MFC" />
+        </div>
+        <div class="field">
+          <label class="field-label">Do you offer in-house or rent-to-own finance?</label>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="inhouse_fin" value="No" checked><span>No (Bank Approved Only)</span></label>
+            <label class="opt"><input type="radio" name="inhouse_fin" value="Yes"><span>Yes</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 8: SPECIAL NOTES -->
+    <div class="section">
+      <div class="section-title"><span class="num">8</span>Special Requests &amp; Integration Notes</div>
+      <div class="field">
+        <label class="field-label">Any specific integrations, pain points or requests?</label>
+        <textarea class="inp" name="notes" rows="3" placeholder="e.g. Recreate our Apex logo with higher-resolution vector files. We want WhatsApp lead notifications delivered instantly to Davrin and Curt."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 9: AUTHORISATION & SIGN-OFF -->
+    <div class="section">
+      <div class="section-title"><span class="num">9</span>Authorisation &amp; Sign-off</div>
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label">Authorised Representative Name</label>
+          <input class="inp" name="sign_name" placeholder="Davrin Hunter / Curt Harvey" />
+        </div>
+        <div class="field">
+          <label class="field-label">Date</label>
+          <input class="inp" name="sign_date" id="signDate" placeholder="DD / MM / YYYY" />
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label class="field-label">Digital Signature</label>
+        <div class="sign-area" id="signArea">
+          <span class="pad-ph">Sign here with finger or mouse</span>
+          <canvas id="signCanvas"></canvas>
+        </div>
+        <div class="sign-tools">
+          <button type="button" class="btn" id="btnClearSig">Clear Signature</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="form-foot">
+      <div class="contact">
+        <strong>TruDealer</strong> · Future Automotive SA<br/>
+        Direct: <a href="https://wa.me/27620502091">+27 62 050 2091</a> · Email: <a href="mailto:trudealer@tru-saas.com">trudealer@tru-saas.com</a><br/>
+        Portal: <a href="https://trudealer.tru-saas.com" target="_blank">trudealer.tru-saas.com</a>
+      </div>
+      <div style="text-align:right;">
+        <button type="button" class="btn primary" id="btnSubmitBottom" style="font-size:14px;padding:10px 20px;">Submit Completed Form</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toastMsg">✓ Form submitted & saved successfully!</div>
+
+<script>
+(function(){
+  "use strict";
+  var STORAGE_KEY = "apex_onboarding_data_v1";
+
+  // Auto-fill today's date
+  var dateInp = document.getElementById("signDate");
+  if(dateInp && !dateInp.value){
+    var today = new Date();
+    dateInp.value = today.getDate() + " " + today.toLocaleString('default', { month: 'long' }) + " " + today.getFullYear();
+  }
+
+  // Signature Pad Logic
+  var wrap = document.getElementById("signArea");
+  var canvas = document.getElementById("signCanvas");
+  var ctx = canvas.getContext("2d");
+  var drawing = false;
+  var lastPos = null;
+
+  function resizeCanvas(){
+    if(!wrap || !canvas) return;
+    var rect = wrap.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var prev = wrap.classList.contains("inked") ? canvas.toDataURL() : null;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#07889B";
+    if(prev){
+      var img = new Image();
+      img.onload = function(){ ctx.drawImage(img, 0, 0, rect.width, rect.height); };
+      img.src = prev;
+    }
+  }
+
+  function getPos(e){
+    var rect = canvas.getBoundingClientRect();
+    var p = e.touches ? e.touches[0] : e;
+    return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+  }
+
+  function startDraw(e){
+    drawing = true;
+    lastPos = getPos(e);
+    wrap.classList.add("inked");
+    e.preventDefault();
+  }
+  function moveDraw(e){
+    if(!drawing) return;
+    var p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastPos.x, lastPos.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastPos = p;
+    e.preventDefault();
+  }
+  function endDraw(){
+    if(drawing){
+      drawing = false;
+      autoSave();
+    }
+  }
+
+  canvas.addEventListener("pointerdown", startDraw);
+  canvas.addEventListener("pointermove", moveDraw);
+  window.addEventListener("pointerup", endDraw);
+  window.addEventListener("resize", resizeCanvas);
+  setTimeout(resizeCanvas, 100);
+
+  document.getElementById("btnClearSig").addEventListener("click", function(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    wrap.classList.remove("inked");
+    autoSave();
+  });
+
+  // Collect All Form Data
+  function collectData(){
+    var form = document.getElementById("onboardingForm");
+    var formData = new FormData(form);
+    var obj = {};
+    formData.forEach(function(val, key){
+      if(obj[key]){
+        if(!Array.isArray(obj[key])) obj[key] = [obj[key]];
+        obj[key].push(val);
+      } else {
+        obj[key] = val;
+      }
+    });
+    // Add signature data
+    if(wrap.classList.contains("inked")){
+      obj.signature_png = canvas.toDataURL("image/png");
+    }
+    obj.saved_at = new Date().toISOString();
+    return obj;
+  }
+
+  // Auto-Save to localStorage
+  function autoSave(){
+    try{
+      var data = collectData();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      var statusEl = document.getElementById("saveStatus");
+      if(statusEl){
+        statusEl.innerHTML = '<span class="save-dot"></span> Saved at ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+      }
+    }catch(err){
+      console.warn("Auto-save error", err);
+    }
+  }
+
+  // Restore from localStorage
+  function restoreData(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      var data = JSON.parse(raw);
+      var form = document.getElementById("onboardingForm");
+      Object.keys(data).forEach(function(key){
+        if(key === "signature_png"){
+          if(data[key]){
+            var img = new Image();
+            img.onload = function(){
+              var rect = wrap.getBoundingClientRect();
+              ctx.drawImage(img, 0, 0, rect.width, rect.height);
+              wrap.classList.add("inked");
+            };
+            img.src = data[key];
+          }
+          return;
+        }
+        var el = form.querySelector('[name="' + key + '"]');
+        if(!el) return;
+        if(el.type === "radio"){
+          var r = form.querySelector('[name="' + key + '"][value="' + data[key] + '"]');
+          if(r) r.checked = true;
+        } else if(el.type === "checkbox"){
+          el.checked = !!data[key];
+        } else {
+          el.value = data[key];
+        }
+      });
+    }catch(err){
+      console.warn("Restore error", err);
+    }
+  }
+
+  // Event Listeners for Input & Changes
+  document.getElementById("onboardingForm").addEventListener("input", autoSave);
+  document.getElementById("onboardingForm").addEventListener("change", autoSave);
+
+  // Toast Function
+  function showToast(msg){
+    var t = document.getElementById("toastMsg");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(function(){ t.classList.remove("show"); }, 4000);
+  }
+
+  // Submission handler
+  function submitForm(){
+    autoSave();
+    var data = collectData();
+
+    // 1. Format a clean readable summary for Email / WhatsApp
+    var summary = "TRUDEALER CLIENT ONBOARDING — APEX INVESTMENTS\n"
+      + "================================================\n"
+      + "Dealership: " + (data.dealership_name || "Apex Investments") + "\n"
+      + "Trading Name: " + (data.trading_name || "") + "\n"
+      + "Address: " + (data.address || "") + "\n"
+      + "Admin Email: " + (data.email_admin || "") + "\n"
+      + "Sales Email: " + (data.email_sales || "") + "\n"
+      + "WhatsApp: " + (data.whatsapp_number || "") + "\n"
+      + "Davrin Mobile: " + (data.phone_davrin || "") + "\n"
+      + "Curt Mobile: " + (data.phone_curt || "") + "\n"
+      + "Domain: " + (data.domain || "") + "\n"
+      + "DNS Host: " + (data.dns_host || "") + "\n"
+      + "Current DMS: " + (data.current_dms || "") + "\n"
+      + "Stock Units: " + (data.stock_count || "") + "\n"
+      + "Social Assets: GBP (" + (data.gbp_status || "") + "), LinkedIn (" + (data.linkedin_status || "") + "), FB (" + (data.fb_status || "") + "), IG (" + (data.ig_status || "") + ")\n"
+      + "Notes: " + (data.notes || "") + "\n"
+      + "Sign-off: " + (data.sign_name || "") + " (" + (data.sign_date || "") + ")\n";
+
+    // 2. Open Email Client with full subject and body
+    var mailtoUri = "mailto:trudealer@tru-saas.com?subject=" + encodeURIComponent("Apex Investments — Completed Onboarding Questionnaire") + "&body=" + encodeURIComponent(summary);
+    
+    // Trigger mailto link
+    window.location.href = mailtoUri;
+
+    showToast("✓ Opening your email client to send to trudealer@tru-saas.com!");
+  }
+
+  document.getElementById("btnSubmitOnline").addEventListener("click", submitForm);
+  document.getElementById("btnSubmitBottom").addEventListener("click", submitForm);
+
+  // Download JSON
+  document.getElementById("btnExportJson").addEventListener("click", function(){
+    autoSave();
+    var data = collectData();
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "apex-investments-onboarding.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("✓ Downloaded apex-investments-onboarding.json");
+  });
+
+  // Clear / Reset
+  document.getElementById("btnReset").addEventListener("click", function(){
+    if(confirm("Clear this questionnaire and start over?")){
+      try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+      location.reload();
+    }
+  });
+
+  // Init
+  restoreData();
+})();
+</script>
+</body>
+</html>

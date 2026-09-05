@@ -10,7 +10,33 @@
   gtag('config', 'AW-18395587079');
 </script>
 <meta charset="utf-8">
-
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1200px;height:630px;overflow:hidden}
+  .card{position:relative;width:1200px;height:630px;overflow:hidden;
+    background:
+      radial-gradient(70% 48% at 22% 18%,#132132 0%,transparent 62%),
+      radial-gradient(58% 44% at 86% 86%,rgba(7,136,155,.22) 0%,transparent 62%),
+      linear-gradient(178deg,#0F1621 0%,#080C14 100%);
+    color:#F5F1E8;font-family:'Inter Tight',system-ui,sans-serif}
+  .grid{position:absolute;inset:0;opacity:.5;
+    background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+    background-size:52px 52px;
+    -webkit-mask-image:radial-gradient(72% 55% at 30% 30%,#000,transparent 78%);
+    mask-image:radial-gradient(72% 55% at 30% 30%,#000,transparent 78%)}
+  .inner{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:56px 64px}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:15px;letter-spacing:.28em;text-transform:uppercase;color:#E5A93E;margin-bottom:30px}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:420;font-size:76px;line-height:1.03;letter-spacing:-.03em;color:#F5F1E8;max-width:900px}
+  h1 em{font-style:italic;color:#00E0F5;font-variation-settings:"SOFT" 100,"WONK" 1}
+  .sub{margin-top:24px;font-size:24px;line-height:1.45;color:rgba(245,241,232,.7);max-width:760px}
+  .sub b{color:rgba(245,241,232,.94)}
+  .foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(245,241,232,.18);padding-top:26px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .glyph{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#22B8CC,#065F73);display:grid;place-items:center;box-shadow:0 0 26px rgba(0,224,245,.4)}
+  .word{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .word b{color:#00E0F5}
+  .urls{font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:.12em;color:#00E0F5;text-align:right;line-height:1.7}
+</style>
   <link rel="stylesheet" href="site.css">
 </head>
 <body>
@@ -64,7 +90,6 @@
     </div>
   </div>
 </div>
-
 <div class="wa-fab" id="waFab">
   <div class="wa-fab-menu" role="menu" aria-hidden="true">
     <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom">
@@ -84,5 +109,6 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
   </button>
 </div>
+<script src="site.js" defer></script>
 </body>
 </html>

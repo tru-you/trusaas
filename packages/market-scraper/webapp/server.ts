@@ -43,13 +43,20 @@ app.use((req, res, next) => {
 
 // Per-IP throttle (in-memory; resets on restart — fine for a public form).
 const hits = new Map<string, { n: number; ts: number }>();
+const THROTTLE_WINDOW = 60_000, THROTTLE_MAX = 12;
+// Prune stale entries every 5 minutes to prevent unbounded Map growth.
+setInterval(() => {
+  const cutoff = Date.now() - THROTTLE_WINDOW;
+  for (const [ip, e] of hits) {
+    if (e.ts < cutoff) hits.delete(ip);
+  }
+}, 5 * 60_000).unref();
 function throttled(ip: string): boolean {
-  const WINDOW = 60_000, MAX = 12;
   const now = Date.now();
   const e = hits.get(ip);
-  if (!e || now - e.ts > WINDOW) { hits.set(ip, { n: 1, ts: now }); return false; }
+  if (!e || now - e.ts > THROTTLE_WINDOW) { hits.set(ip, { n: 1, ts: now }); return false; }
   e.n++;
-  return e.n > MAX;
+  return e.n > THROTTLE_MAX;
 }
 
 app.get("/api/markets", (_req, res) => {

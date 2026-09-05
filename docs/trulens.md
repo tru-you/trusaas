@@ -15,8 +15,8 @@ TruLens is a phone app that walks a staff member around a vehicle, prompting the
 
 1. **Sign in and pick the vehicle.** Staff open TruLens on their phone, choose the dealership, and select or start the vehicle they're shooting.
 2. **Scan the licence disc (optional).** The disc's PDF417 barcode is scanned to pull make, model, colour, VIN and expiry, so the record isn't typed by hand.
-3. **Walk the guided capture.** The camera guide runs three phases — Front & Engine, Clockwise Exterior Walk-Around, and Interior/History/Verification — across 27 named shots. Each phase gets its own quality score card.
-4. **Tag any damage.** Marks are placed on the relevant panel so they carry through to the report and the website spin.
+3. **Walk the guided capture.** The camera guide runs three phases — Front & Engine, Clockwise Exterior Walk-Around, and Interior/History/Verification — across **28 named shots** (6 + 17 + 5). Each phase gets its own quality score card.
+4. **Tag any damage.** Marks are placed on the relevant panel so they carry through to the report and the website spin. **Tagging is manual** — there is no AI damage detection in the code (the "Scan with AI" button in the UI hits a stub endpoint and falls back to hand tagging).
 5. **Check readiness.** TruLens grades the shoot (shots taken vs. required, overall quality score) and shows whether the car can be exported to the DMS and published to the web.
 6. **Export to DMS.** With one action the photos, spin package and scores are pushed into [TruFlow](./truflow.md) against that stock number.
 
@@ -34,12 +34,12 @@ TruLens is a phone app that walks a staff member around a vehicle, prompting the
 
 ## Notes on scope
 
-- **What's built:** 27-slot guided capture across 3 scored phases, licence-disc barcode scan, damage tagging, quality/readiness scoring, 360° spin package generation, and keyed photo export to TruFlow. Installable as a PWA.
+- **What's built:** 28-slot guided capture across 3 scored phases, licence-disc barcode scan, manual damage tagging, quality/readiness scoring, 360° spin package generation, and keyed photo export to TruFlow. Installable as a PWA.
 - **Coming soon / partial:** the licence-disc scanner is functional but not yet 100% reliable across all phones (it falls back to manual entry on a miss).
 
 ## Related modules
 
 - **[TruFlow](./truflow.md)** — receives every TruLens capture; captures are only ever taken in TruLens, not in the DMS.
-- **[TruInspect](./truinspect.md)** — shares the same 27-shot template, so a car captured in TruLens doesn't need re-shooting for a condition report.
+- **[TruInspect](./truinspect.md)** — shares the same 28-slot template, so a car captured in TruLens doesn't need re-shooting for a condition report.
 - **[Showrooms → TruOrbit](./showrooms.md)** — the 360° spin TruLens builds is what TruOrbit plays back on the website.
 - **[Getting Started](./getting-started.md)** — where TruLens sits in the first Lens → Flow → publish cycle.

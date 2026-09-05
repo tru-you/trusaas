@@ -10,6 +10,13 @@
 - **NEVER run live production deploys (Netlify, Render, etc.) automatically without explicit user review and confirmation.** Always preview changes locally or present generated assets in conversation/artifacts first.
 - **NEVER place internal administrative tools, scratch pages, or utility generators in public web root directories (e.g. `tddeploy/`).** Keep internal tools in `tools/` or local workspace directories to prevent public indexing and bad SEO.
 - **ALWAYS use official brand logo assets (`assets/brand/trudealer-logo-3d.svg` / `trudealer-logo-nav.svg`)** and get user review before finalizing co-branded banner designs.
+- **MANDATORY DEALER STOREFRONT STANDARD (ALL SITES GOING FORWARD):**
+  Every dealer storefront / showroom deployment MUST implement the complete 4-part standard:
+  1. **TruShare & Netlify Edge OG Unfurler**: `tru-share.js` widget loaded on all pages; `netlify/edge-functions/vehicle-og.js` registered in `netlify.toml` (`/vehicle`, `/vehicle/*`, `/vehicle.html`) with declared `1200x630` og:image dimensions, clean `. ` description separation, and server-rendered `Car` + `Offer` JSON-LD; VDP client-side hydration fallback from URL query parameters (`stock`, `year`, `make`, `name`, `variant`, `price`, `km`, `trans`, `fuel`, `body`, `img`) so shared links always render the exact car.
+  2. **AEO & LLM Search Engine Optimization**: `robots.txt` explicitly allowing AI crawlers (`GPTBot`, `ChatGPT-User`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, `Applebot-Extended`, `CCBot`, `meta-externalagent`), `llms.txt` dealership context doc, and structured Schema.org JSON-LD (`AutoDealer` on index/stock, `Car` + `Offer` on VDP).
+  3. **WhatsApp 1-Tap Qualified Lead CTAs**: Pre-filled structured lead message containing greeting, full vehicle title, stock ID, price, canonical link, and availability check.
+  4. **Scoped Spring Motion**: `transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow ...` on `.card:hover` and `.tile:hover`. NEVER monolithic external bulk CSS.
+
 
 ---
 
@@ -127,9 +134,31 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ---
 
-## 4. Recent Changes (2026-08-21)
+## 4. Recent Changes (2026-09-05)
+
+### 🌟 Mandatory Dealer Storefront Standard (2026-09-05)
+
+**Directive:** Standardize all dealer showroom sites going forward on the 4-part conversion & discovery architecture:
+
+1. **TruShare & Netlify Edge OG Unfurler**:
+   - `tru-share.js`: Loaded on all pages, handles buyer sharing (WhatsApp, Facebook, clipboard, native sheet) and dealer posting mode (`?post=1`).
+   - `netlify/edge-functions/vehicle-og.js`: Bound in `netlify.toml` (`/vehicle`, `/vehicle/*`, `/vehicle.html`). Reads query parameters from share links (`stock`, `year`, `make`, `name`, `variant`, `price`, `km`, `trans`, `fuel`, `body`, `img`) and rewrites `<title>`, `og:title`, `og:image` (declares `1200x630`), `og:description` (with `. ` period separator), and `application/ld+json` server-side for social crawlers (WhatsApp, Facebook, iMessage, Slack, Telegram).
+   - **VDP URL Parameter Hydration**: `vdp-page.js` parses `TRU.params()` query parameters as a direct fallback when a car is opened via a share link before or outside the standard live DMS stock array, rendering the exact shared car immediately with no mismatch.
+
+2. **AEO & LLM Search Engine Optimization**:
+   - `robots.txt`: Explicitly permits all primary AI search crawlers (`GPTBot`, `ChatGPT-User`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, `Applebot-Extended`, `CCBot`, `meta-externalagent`) with `Sitemap` reference.
+   - `llms.txt`: Standard LLM discovery context document containing dealer overview, physical location, tech stack (TruInspect, TruRepay, TruAfford, TruValue, TruShare), VIR inspection scoring, and contact endpoints.
+   - **Schema.org Structured Data**: Valid `AutoDealer` schema on `index.html` & `stock.html`, and dynamic `Car` + `Offer` schema on `vehicle.html` updated on vehicle hydration.
+
+3. **WhatsApp 1-Tap Qualified Lead CTAs**:
+   - All vehicle WhatsApp triggers (sidebar CTA, sticky top deal bar, mobile bottom bar) generate rich pre-filled customer lead inquiries:
+     `Hi [Dealer]! I'm interested in this [Year Make Model Variant] (Stock #[Stock]) listed at [Price]. Link: [URL] Is it still available?`
+
+4. **Scoped Spring-Physics Motion**:
+   - `transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow ...` on `.card:hover` and `.tile:hover`. All styling strictly component-scoped within `showroom.css`. Monolithic external bulk CSS files are strictly forbidden.
 
 ### 🚀 PRODUCT ROADMAP: Multi-vertical DMS beyond cars (2026-09-03)
+
 
 **Owner directive:** TruDealer should NOT be limited to car dealerships. The TransUnion M&M catalogue (`TruLens/public/catalogue/`) already covers motorcycles (Harley Davidson, Ducati, KTM, Kawasaki, Honda, Yamaha, etc.), boats/jetski (SPECIALTY), caravans (SPECIALTY), trailers, generators, yellow metal/construction equipment, golf carts, bicycles, and tractors/agriculture (John Deere, Massey Ferguson, New Holland).
 

@@ -24,7 +24,7 @@ TruLive lets a dealer run a guided, live video walk-around of a car with a buyer
 3. **Buyer joins in-browser** and allows camera + mic; a live call connects the two phones.
 4. **Guided script drives ~10 sections** (front, sides, wheels, engine bay, interior, start-up, underbody…); when the dealer advances, the buyer's prompts and checklist advance too.
 5. **Buyer snapshots and flags concerns** live to the dealer.
-6. **On finish, a summary is generated** (AI where the key is set, otherwise a structured local summary) with the flagged points to follow up.
+6. **On finish, a summary is generated** (DeepSeek where the key is set, otherwise a structured local summary — *the render.yaml comments say "Claude"; the code calls DeepSeek `deepseek-v4-flash`*) with the flagged points to follow up.
 
 [SCREENSHOT: Dealer's TruLive screen — "Start a walkthrough", the generated single-use link, WhatsApp share]
 
@@ -48,8 +48,15 @@ TruTrade is the inverse of TruLive: the **customer** films their own car and the
 1. **Dealer opens an appraisal** for the customer's vehicle and gets a single-use, 24-hour customer link.
 2. **Customer opens the link in-browser** and starts filming their car.
 3. **Dealer guides the customer** through the car and records condition findings privately.
-4. **A condition write-up is generated** (AI where the key is set, otherwise a structured local write-up) — it never prices the car.
+4. **A condition write-up is generated** (DeepSeek where the key is set, otherwise a structured local write-up) — it never prices the car.
 5. **Dealer issues a trade price** to the customer, subject to a physical viewing.
+
+> **TruValue naming trap:** there is also a **TruValue widget** (the instant,
+> online trade-in estimate on a dealer's website). The *live video* appraisal in
+> this app is **TruTrade**. Separately, `truvalue.html` inside this app is a
+> **static design prototype** with hardcoded figures — the working online
+> estimate is the TruValue widget + TruFlow's `/api/public/trade-estimate`, not
+> that page.
 
 [SCREENSHOT: Customer's in-browser filming view with the dealer's on-screen prompt]
 

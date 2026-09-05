@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TruDealer — Demo Ads · 1080×1080</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#01050A;font-family:Inter,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:48px;padding:48px 0}
+  .label{font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.2em;color:#41586E;text-transform:uppercase}
+
+  /* ============ CARD SYSTEM — 1080×1080 ============ */
+  .ad{position:relative;width:1080px;height:1080px;flex:none;overflow:hidden;
+      background:radial-gradient(140% 110% at 82% -10%, #0A1B2A 0%, #06121E 38%, #030B13 72%, #02080F 100%)}
+  .ad .vig{position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(90% 90% at 30% 55%, transparent 55%, rgba(1,5,10,.55) 100%)}
+  .glow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none}
+  .g-teal{width:760px;height:640px;right:-180px;top:-220px;background:rgba(21,199,192,.13)}
+  .g-amber{width:680px;height:560px;left:-200px;bottom:-240px;background:rgba(229,169,62,.11)}
+  .g-teal-soft{width:700px;height:600px;right:-160px;top:-160px;background:rgba(21,199,192,.10)}
+
+  .copy{position:absolute;left:72px;top:112px;width:478px;z-index:3}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:21px;font-weight:500;letter-spacing:.28em;
+      text-transform:uppercase;color:#3ED8CC;margin-bottom:34px}
+  .eyebrow.amber{color:#E5A93E}
+  .hl{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:560;font-size:88px;
+      line-height:1.02;letter-spacing:-.015em;color:#F3F6F4;margin-bottom:34px}
+  .hl em{font-style:italic;font-weight:480;color:#35D9CE}
+  .hl em.am{color:#E5A93E}
+  .body{font-size:26.5px;line-height:1.5;color:#93A6B8;max-width:440px;margin-bottom:36px}
+  .body b{color:#C7D5DF;font-weight:600}
+  .bullets{list-style:none;margin-bottom:8px}
+  .bullets li{position:relative;padding-left:34px;font-size:26px;line-height:1.45;color:#DDE6EA;margin-bottom:16px}
+  .bullets li::before{content:"";position:absolute;left:2px;top:14px;width:9px;height:9px;border-radius:50%;background:#35D9CE}
+  .chips{display:flex;gap:16px;flex-wrap:wrap}
+  .chip{font-family:"IBM Plex Mono",monospace;font-size:17px;letter-spacing:.18em;text-transform:uppercase;
+      color:#C9D6DF;border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:13px 26px}
+
+  /* footer bar */
+  .bar{position:absolute;left:0;right:0;bottom:0;height:112px;padding:0 72px;z-index:5;
+      border-top:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:space-between;
+      background:linear-gradient(180deg,rgba(2,8,15,0),rgba(2,8,15,.6))}
+  .logo{display:flex;align-items:center;gap:13px}
+  .logo .glyph{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#15C7C0,#0E7490);
+      display:grid;place-items:center;box-shadow:0 0 22px rgba(21,199,192,.45)}
+  .logo .glyph svg{width:20px;height:20px}
+  .logo .word{font-size:29px;font-weight:800;letter-spacing:-.02em;color:#F3F6F4}
+  .logo .word b{color:#35D9CE;font-weight:800}
+  .cta-walk{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600;letter-spacing:.24em;
+      text-transform:uppercase;color:#E5A93E;text-align:right;line-height:1.5}
+
+  /* ============ PHONE FRAMES ============ */
+  .phone{position:absolute;z-index:2;background:#0C1420;border-radius:62px;padding:11px;
+      box-shadow:0 0 0 2px rgba(120,160,190,.16), 0 60px 120px -40px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.05)}
+  .screen{border-radius:52px;overflow:hidden;position:relative;background:#0A1119;height:100%}
+  .p-status{display:flex;align-items:center;justify-content:space-between;padding:16px 26px 8px;
+      font-size:15px;font-weight:600;color:#EAF1F5}
+  .p-island{width:96px;height:28px;border-radius:16px;background:#000}
+  .p-status .right{display:flex;align-items:center;gap:6px}
+  .fadeout{position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(180deg,transparent,#0A1119);z-index:4}
+
+  /* --- app UI: TrueCars VDP --- */
+  .tc-head{background:linear-gradient(180deg,#0D2036,#0A1826);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between}
+  .tc-logo{font-size:22px;font-weight:800;letter-spacing:-.02em;color:#fff}
+  .tc-logo b{background:linear-gradient(90deg,#4FE3DC,#8AB4FF,#E8B23A);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tc-live{font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:.14em;color:#BFE9E4;border:1px solid rgba(191,233,228,.4);border-radius:999px;padding:5px 9px;line-height:1.35;text-align:left}
+  .tc-sub{display:flex;align-items:center;justify-content:space-between;background:#0D2236;padding:10px 20px;font-size:12.5px;color:#9FB4C8}
+  .tc-sub .book{background:#fff;color:#0A1826;font-weight:700;font-size:12px;border-radius:999px;padding:7px 13px}
+  .tc-body{padding:20px}
+  .tc-crumb{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;color:#7E93A8;text-transform:uppercase;margin-bottom:10px}
+  .tc-name{font-family:"Fraunces",serif;font-size:29px;font-weight:600;color:#F3F6F4;letter-spacing:-.01em}
+  .tc-trim{font-size:15px;color:#8FA3B8;margin-top:4px}
+  .tc-price{font-size:34px;font-weight:800;color:#fff;margin-top:16px;letter-spacing:-.01em}
+  .tc-truprice{display:inline-flex;align-items:center;gap:7px;margin-top:12px;background:rgba(52,211,153,.12);
+      border:1px solid rgba(52,211,153,.35);color:#4ADE9D;font-size:13.5px;font-weight:600;border-radius:999px;padding:8px 14px}
+  .tc-cta{margin-top:22px;background:linear-gradient(115deg,#2F7CF6,#1E5FD6);color:#fff;font-weight:700;
+      font-size:16px;border-radius:14px;padding:16px;text-align:center}
+
+  /* --- app UI: TruLens capture --- */
+  .tl-top{padding:12px 20px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)}
+  .tl-slot{font-size:16.5px;font-weight:700;color:#4FE3DC;text-align:center}
+  .tl-shot{font-size:12px;color:#8FA3B8;text-align:center;margin-top:2px}
+  .tl-photo{margin:14px 18px;border-radius:14px;overflow:hidden;position:relative;height:300px;
+      background:linear-gradient(160deg,#B9C4CE 0%,#8E9BA8 34%,#5E6B79 68%,#39434E 100%)}
+  .tl-photo .focus{position:absolute;inset:34px 44px;border:1.5px dashed rgba(79,227,220,.85);border-radius:8px}
+  .tl-photo .corner{position:absolute;width:22px;height:22px;border:2.5px solid #4FE3DC}
+  .tl-photo .c1{left:36px;top:26px;border-right:0;border-bottom:0}
+  .tl-photo .c2{right:36px;top:26px;border-left:0;border-bottom:0}
+  .tl-photo .c3{left:36px;bottom:26px;border-right:0;border-top:0}
+  .tl-photo .c4{right:36px;bottom:26px;border-left:0;border-top:0}
+  .tl-cond{padding:6px 20px;font-size:13px;color:#8FA3B8}
+  .tl-pills{display:flex;gap:10px;padding:4px 20px}
+  .tl-pill{flex:1;text-align:center;font-size:14.5px;font-weight:600;color:#C7D5DF;border:1px solid rgba(255,255,255,.14);
+      border-radius:11px;padding:13px 0;background:rgba(255,255,255,.03)}
+  .tl-pill.on{border-color:rgba(79,227,220,.6);color:#4FE3DC;background:rgba(79,227,220,.08)}
+  .tl-prog{padding:18px 22px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:#7E93A8}
+  .tl-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.09);margin-top:10px;overflow:hidden}
+  .tl-bar i{display:block;height:100%;width:44%;background:#4FE3DC;border-radius:3px}
+
+  /* --- app UI: TruFlow stack menu --- */
+  .tf-head{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)}
+  .tf-logo{font-size:23px;font-weight:800;letter-spacing:-.02em;color:#EAF1F5}
+  .tf-logo b{color:#4FE3DC}
+  .tf-sec{padding:14px 20px 6px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7E93A8}
+  .tf-row{display:flex;align-items:center;gap:13px;margin:0 16px 10px;padding:15px 16px;border-radius:14px;
+      background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);font-size:16px;font-weight:600;color:#DDE6EA}
+  .tf-row .ic{width:30px;height:30px;border-radius:9px;background:rgba(79,227,220,.12);display:grid;place-items:center;color:#4FE3DC;font-size:15px}
+  .tf-cta{margin:14px 16px;background:#4FE3DC;color:#062A28;font-weight:800;font-size:16.5px;border-radius:14px;padding:16px;text-align:center}
+
+  /* --- app UI: TruForm inline widget --- */
+  .wform{margin:16px 18px;background:#FBF8F3;border-radius:18px;padding:20px;color:#0E1A26}
+  .wform h4{font-size:19px;font-weight:800;margin-bottom:3px}
+  .wform .sub{font-size:12.5px;color:#5E7286;margin-bottom:16px}
+  .wf-row{display:flex;gap:10px}
+  .wf-field{flex:1;margin-bottom:11px}
+  .wf-field label{display:block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#5E7286;margin-bottom:6px}
+  .wf-field .inp{background:rgba(14,26,38,.05);border:1px solid rgba(14,26,38,.14);border-radius:10px;padding:12px 12px;font-size:14px;color:#9FB0BE}
+  .wf-btn{background:#0D9488;color:#fff;font-weight:700;font-size:15.5px;border-radius:12px;padding:15px;text-align:center;margin-top:4px}
+  .wf-powered{text-align:center;font-size:11.5px;color:#7E93A8;margin-top:12px}
+  .wf-powered b{color:#0D9488}
+
+  /* --- app UI: TruBook sheet --- */
+  .tb-head{padding:16px 20px 10px;text-align:left}
+  .tb-head h4{font-size:19px;font-weight:800;color:#F3F6F4}
+  .tb-head .sub{font-size:13px;color:#8FA3B8;margin-top:2px}
+  .tb-sec{padding:10px 20px 6px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7E93A8}
+  .tb-days{display:flex;gap:9px;padding:4px 20px}
+  .tb-day{flex:1;text-align:center;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 0;font-size:12.5px;color:#C7D5DF}
+  .tb-day.on{border-color:#4FE3DC;color:#4FE3DC;background:rgba(79,227,220,.08)}
+  .tb-times{display:flex;gap:9px;padding:6px 20px}
+  .tb-time{flex:1;text-align:center;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px 0;font-size:13px;color:#C7D5DF}
+  .tb-time.on{border-color:#4FE3DC;color:#4FE3DC;background:rgba(79,227,220,.08)}
+  .tb-cta{margin:16px 20px;background:#4FE3DC;color:#062A28;font-weight:800;font-size:16px;border-radius:13px;padding:15px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="label">demo-01 · the live showroom</div>
+<section class="ad" id="ad1">
+  <div class="glow g-teal"></div><div class="glow g-amber"></div><div class="vig"></div>
+  <div class="copy">
+    <div class="eyebrow">The demo &middot; a live showroom</div>
+    <h1 class="hl">This isn't a pitch deck. <em>It's a dealership.</em></h1>
+    <p class="body">true-cars.co.za runs on TruDealer right now — graded stock, 360&deg; orbits, finance on every card, AI on the night shift. Open it and touch everything.</p>
+    <div class="chips"><span class="chip">Live stock</span><span class="chip">No sign-up</span></div>
+  </div>
+  <div class="phone" style="right:-118px;top:168px;width:472px;height:960px;transform:rotate(0deg)">
+    <div class="screen">
+      <div class="p-status"><span>15:23</span><span class="p-island"></span><span class="right"><svg width="46" height="13" viewBox="0 0 46 13" fill="#EAF1F5"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/><path d="M25 5.5a7 7 0 0 1 9 0l-1.6 1.9a4.5 4.5 0 0 0-5.8 0z"/><rect x="27.6" y="8" width="3.4" height="4" rx="1"/><rect x="36" y="2" width="9" height="9" rx="2.5" fill="none" stroke="#EAF1F5" stroke-width="1.2"/><rect x="37.4" y="3.4" width="5" height="6" rx="1"/></svg></span></div>
+      <div class="tc-head"><span class="tc-logo">True<b>Cars</b></span><span class="tc-live">Live<br>Cape<br>Town</span></div>
+      <div class="tc-sub"><span>Photos by TruLens</span><span class="book">Book a walkthrough &rarr;</span></div>
+      <div class="tc-body">
+        <div class="tc-crumb">Home / Stock / Toyota</div>
+        <div class="tc-name">2023 Toyota Corolla Cross</div>
+        <div class="tc-trim">1.8 GR-Sport &middot; Stock TC-2214</div>
+        <div class="tc-price">R399 900</div>
+        <span class="tc-truprice">&#10003; R19 100 below TruPrice</span>
+        <div class="tc-cta">Check Affordability</div>
+      </div>
+      <div class="fadeout"></div>
+    </div>
+  </div>
+  <footer class="bar">
+    <div class="logo"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></span><span class="word">Tru<b>Dealer</b></span></div>
+    <div class="cta-walk">Book a<br>walkthrough</div>
+  </footer>
+</section>
+
+<div class="label">demo-02 · the loop</div>
+<section class="ad" id="ad2">
+  <div class="glow g-teal-soft"></div><div class="vig"></div>
+  <div class="copy">
+    <div class="eyebrow">Demo mode &middot; your phone</div>
+    <h1 class="hl">Shoot it in the demo. <em>Watch it go live.</em></h1>
+    <p class="body">The free demo isn't a slideshow. Capture a car on your phone, tap export, and it lands on the live showroom — photos, 360&deg; orbit and VIR included. <b>The loop is the pitch.</b></p>
+  </div>
+  <div class="phone" style="right:-96px;top:210px;width:440px;height:900px">
+    <div class="screen">
+      <div class="p-status"><span>14:46</span><span class="p-island"></span><span class="right"><svg width="46" height="13" viewBox="0 0 46 13" fill="#EAF1F5"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/><path d="M25 5.5a7 7 0 0 1 9 0l-1.6 1.9a4.5 4.5 0 0 0-5.8 0z"/><rect x="27.6" y="8" width="3.4" height="4" rx="1"/><rect x="36" y="2" width="9" height="9" rx="2.5" fill="none" stroke="#EAF1F5" stroke-width="1.2"/><rect x="37.4" y="3.4" width="5" height="6" rx="1"/></svg></span></div>
+      <div class="tl-top"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C7D5DF" stroke-width="2.4" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg><span><span class="tl-slot">Front Bumper (Exterior)</span><div class="tl-shot">Shot 3 of 27</div></span><span style="width:18px"></span></div>
+      <div class="tl-photo"><div class="focus"></div><span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span></div>
+      <div class="tl-cond">Condition</div>
+      <div class="tl-pills"><span class="tl-pill on">&#10003; OK</span><span class="tl-pill">&#8226; Note</span><span class="tl-pill">&#9888; Damage</span></div>
+      <div class="tl-prog">12 / 27 &middot; 15 to go<div class="tl-bar"><i></i></div></div>
+      <div class="fadeout"></div>
+    </div>
+  </div>
+  <footer class="bar">
+    <div class="logo"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></span><span class="word">Tru<b>Dealer</b></span></div>
+    <div class="cta-walk">Book a<br>walkthrough</div>
+  </footer>
+</section>
+
+<div class="label">demo-03 · free 24h</div>
+<section class="ad" id="ad3">
+  <div class="glow g-amber"></div><div class="glow g-teal-soft"></div><div class="vig"></div>
+  <div class="copy">
+    <div class="eyebrow amber">Free &middot; 24 hours &middot; no card</div>
+    <h1 class="hl">The whole stack. <em class="am">Free for a day.</em></h1>
+    <p class="body">TruLens, TruInspect, TruFlow and the showroom — one tap, isolated to you. Simulated TransUnion checks included. Nothing to cancel.</p>
+    <div class="chips"><span class="chip">Full stack</span><span class="chip">24h</span><span class="chip">Your data only</span></div>
+  </div>
+  <div class="phone" style="right:-110px;top:190px;width:456px;height:930px">
+    <div class="screen">
+      <div class="p-status"><span>18:39</span><span class="p-island"></span><span class="right"><svg width="46" height="13" viewBox="0 0 46 13" fill="#EAF1F5"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/><path d="M25 5.5a7 7 0 0 1 9 0l-1.6 1.9a4.5 4.5 0 0 0-5.8 0z"/><rect x="27.6" y="8" width="3.4" height="4" rx="1"/><rect x="36" y="2" width="9" height="9" rx="2.5" fill="none" stroke="#EAF1F5" stroke-width="1.2"/><rect x="37.4" y="3.4" width="5" height="6" rx="1"/></svg></span></div>
+      <div class="tf-head"><span class="tf-logo">Tru<b>Flow</b></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C7D5DF" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+      <div class="tf-sec">Showroom floor</div>
+      <div class="tf-row"><span class="ic">&#9662;</span>Sales pipeline</div>
+      <div class="tf-row"><span class="ic">+</span>Add vehicle</div>
+      <div class="tf-sec">Operations</div>
+      <div class="tf-row"><span class="ic">&#9878;</span>Stock health</div>
+      <div class="tf-row"><span class="ic">&#8381;</span>Finance</div>
+      <div class="tf-cta">Enter demo</div>
+      <div class="fadeout"></div>
+    </div>
+  </div>
+  <footer class="bar">
+    <div class="logo"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></span><span class="word">Tru<b>Dealer</b></span></div>
+    <div class="cta-walk">Book a<br>walkthrough</div>
+  </footer>
+</section>
+
+<div class="label">demo-04 · widgets</div>
+<section class="ad" id="ad4">
+  <div class="glow g-teal"></div><div class="vig"></div>
+  <div class="copy">
+    <div class="eyebrow">Widgets &middot; play before you buy</div>
+    <h1 class="hl">Six widgets. <em>Go break them.</em></h1>
+    <p class="body">Affordability, repayments, bookings, sharing, chat — live on the showcase, wired to the same webhook that fills the DMS. Every click a buyer makes, a lead you keep.</p>
+    <div class="chips"><span class="chip">Live demo</span><span class="chip">One-line embed</span></div>
+  </div>
+  <div class="phone" style="right:-84px;top:230px;width:428px;height:880px">
+    <div class="screen">
+      <div class="p-status"><span>15:23</span><span class="p-island"></span><span class="right"><svg width="46" height="13" viewBox="0 0 46 13" fill="#EAF1F5"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/><path d="M25 5.5a7 7 0 0 1 9 0l-1.6 1.9a4.5 4.5 0 0 0-5.8 0z"/><rect x="27.6" y="8" width="3.4" height="4" rx="1"/><rect x="36" y="2" width="9" height="9" rx="2.5" fill="none" stroke="#EAF1F5" stroke-width="1.2"/><rect x="37.4" y="3.4" width="5" height="6" rx="1"/></svg></span></div>
+      <div class="wform">
+        <h4>Get in Touch</h4>
+        <div class="sub">We'll get back to you shortly</div>
+        <div class="wf-row">
+          <div class="wf-field"><label>First name *</label><div class="inp">Thabo</div></div>
+          <div class="wf-field"><label>Last name</label><div class="inp">Mokoena</div></div>
+        </div>
+        <div class="wf-field"><label>Phone *</label><div class="inp">082 456 7890</div></div>
+        <div class="wf-field"><label>Interested in</label><div class="inp">Test drive</div></div>
+        <div class="wf-btn">Send Enquiry</div>
+        <div class="wf-powered">Powered by <b>TruDealer</b></div>
+      </div>
+      <div class="fadeout"></div>
+    </div>
+  </div>
+  <footer class="bar">
+    <div class="logo"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></span><span class="word">Tru<b>Dealer</b></span></div>
+    <div class="cta-walk">Book a<br>walkthrough</div>
+  </footer>
+</section>
+
+<div class="label">demo-05 · book the walkthrough</div>
+<section class="ad" id="ad5">
+  <div class="glow g-amber"></div><div class="glow g-teal-soft"></div><div class="vig"></div>
+  <div class="copy">
+    <div class="eyebrow amber">25 minutes &middot; your stock</div>
+    <h1 class="hl">See it run on <em class="am">your yard.</em></h1>
+    <p class="body">A walkthrough on your currency, your integrations, your actual inventory. If it's not live in ten working days, we don't invoice you.</p>
+    <div class="chips"><span class="chip">cal.com/pgdebeer</span></div>
+  </div>
+  <div class="phone" style="right:-100px;top:240px;width:444px;height:890px">
+    <div class="screen">
+      <div class="p-status"><span>15:02</span><span class="p-island"></span><span class="right"><svg width="46" height="13" viewBox="0 0 46 13" fill="#EAF1F5"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/><path d="M25 5.5a7 7 0 0 1 9 0l-1.6 1.9a4.5 4.5 0 0 0-5.8 0z"/><rect x="27.6" y="8" width="3.4" height="4" rx="1"/><rect x="36" y="2" width="9" height="9" rx="2.5" fill="none" stroke="#EAF1F5" stroke-width="1.2"/><rect x="37.4" y="3.4" width="5" height="6" rx="1"/></svg></span></div>
+      <div class="tb-head"><h4>Book a Test Drive</h4><div class="sub">Pick a date and time</div></div>
+      <div class="tb-sec">This week</div>
+      <div class="tb-days"><span class="tb-day">Thu 27</span><span class="tb-day on">Fri 28</span><span class="tb-day">Sat 29</span></div>
+      <div class="tb-sec">Morning</div>
+      <div class="tb-times"><span class="tb-time">09:00</span><span class="tb-time on">09:30</span><span class="tb-time">11:00</span></div>
+      <div class="tb-cta">Confirm booking</div>
+      <div class="fadeout"></div>
+    </div>
+  </div>
+  <footer class="bar">
+    <div class="logo"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></span><span class="word">Tru<b>Dealer</b></span></div>
+    <div class="cta-walk">Book a<br>walkthrough</div>
+  </footer>
+</section>
+
+</body>
+</html>

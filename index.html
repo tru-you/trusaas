@@ -2,1997 +2,923 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>TruSaaS — Vertical Operating Systems</title>
-<meta name="description" content="TruSaaS architects and deploys focused vertical operating systems and market scraper engines. Built in Cape Town. Deployed anywhere."/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TruSaaS — Vertical Operating Systems & Custom Software</title>
+<meta name="description" content="TruDealer: OS for Dealers by Dealers. TruProperty: Every Corner Covered. TruCustom: Software you needed, but couldn't find."/>
 <link rel="canonical" href="https://tru-saas.com/"/>
-<meta property="og:title" content="TruSaaS — Vertical Operating Systems"/>
-<meta property="og:description" content="Vertical operating systems and proprietary market scraper engines built for real-world operations."/>
-<meta property="og:url" content="https://tru-saas.com/"/>
-<meta property="og:type" content="website"/>
-<meta property="og:image" content="/assets/brand/ts-mark.jpg"/>
-<link rel="icon" type="image/jpeg" href="/assets/brand/ts-mark.jpg"/>
-<link rel="apple-touch-icon" href="/assets/brand/ts-mark.jpg"/>
-<meta name="theme-color" content="#F3F0E7"/>
 
-<!-- Typography: Fraunces (Display), Inter Tight (Body), JetBrains Mono (Technical) -->
+<!-- Luxury Typography -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
-<!-- Three.js & GSAP -->
+<!-- Three.js + GSAP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
 <style>
-/* ─── DESIGN TOKENS & WARM LINEN PALETTE ──────────── */
+/* ─── LUXURY DESIGN SYSTEM ──────────────────────── */
 :root {
-  --ink: #F3F0E7;
-  --ink-subtle: #EBE7DC;
-  --ink-2: #EAE6DA;
-  --ink-3: #DFDAD0;
-  --white: #14141F;
-  --white-dim: rgba(20, 20, 31, 0.78);
-  --muted: rgba(64, 78, 100, 0.92);
-  --faint: rgba(64, 78, 100, 0.58);
-  --surface-card: #FFFFFF;
-  --surface-dark: #0E1620;
-  --surface-dark-card: #152232;
-  --cyan: #0B7C72;
-  --cyan-hover: #09685F;
-  --cyan-soft: rgba(11, 124, 114, 0.12);
-  --cyan-glow: rgba(11, 124, 114, 0.24);
-  --amber: #D4942A;
-  --amber-hover: #B87C1D;
-  --amber-soft: rgba(212, 148, 42, 0.15);
-  --amber-glow: rgba(212, 148, 42, 0.22);
-  --border: rgba(0, 0, 0, 0.08);
-  --border-subtle: rgba(0, 0, 0, 0.05);
-  --border-glow: rgba(11, 124, 114, 0.25);
-  --glass: rgba(255, 255, 255, 0.75);
-  --glass-line: rgba(0, 0, 0, 0.08);
-  --glass-bg: rgba(255, 255, 255, 0.84);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-shadow: 0 14px 38px -4px rgba(0, 0, 0, 0.06), 0 4px 14px -2px rgba(0, 0, 0, 0.04);
-  --glass-shadow-hover: 0 24px 56px -8px rgba(0, 0, 0, 0.11), 0 8px 22px -4px rgba(0, 0, 0, 0.06);
-  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  --sans: 'Inter Tight', 'Inter Tight Fallback', 'Inter', system-ui, -apple-system, sans-serif;
-  --display: 'Fraunces', 'Fraunces Fallback', Georgia, serif;
-  --nav-h: 68px;
+  --bg-ink: #F3F0E7;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #EAE5D9;
+  --text-main: #0F172A;
+  --text-dim: #334155;
+  --text-muted: #64748B;
+  --text-faint: #94A3B8;
+  --border-line: rgba(0, 0, 0, 0.09);
+  --border-card: rgba(0, 0, 0, 0.08);
+
+  /* Dynamic Theme Tokens */
+  --accent-primary: #0B7C72;
+  --accent-secondary: #D4942A;
+  --accent-glow: rgba(11, 124, 114, 0.28);
+  --accent-surface: #E6F3F2;
+
+  --font-sans: 'Inter Tight', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* Fallback metrics for stable layout paint */
-@font-face {
-  font-family: 'Fraunces Fallback';
-  src: local('Georgia');
-  size-adjust: 105%;
-  ascent-override: 92%;
-  descent-override: 22%;
-  line-gap-override: 0%;
-}
-@font-face {
-  font-family: 'Inter Tight Fallback';
-  src: local('Arial');
-  size-adjust: 107%;
-  ascent-override: 90%;
-  descent-override: 22%;
-  line-gap-override: 0%;
+[data-product="dealer"] {
+  --accent-primary: #0B7C72;
+  --accent-secondary: #D4942A;
+  --accent-glow: rgba(11, 124, 114, 0.28);
+  --accent-surface: #E6F3F2;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+[data-product="property"] {
+  --accent-primary: #B8860B;
+  --accent-secondary: #0B7C72;
+  --accent-glow: rgba(184, 134, 11, 0.28);
+  --accent-surface: #FAF4E5;
 }
 
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 96px;
-  scrollbar-gutter: stable;
+[data-product="custom"] {
+  --accent-primary: #6D28D9;
+  --accent-secondary: #0284C7;
+  --accent-glow: rgba(109, 40, 217, 0.28);
+  --accent-surface: #F3E8FF;
 }
 
-html, body {
-  background: var(--ink);
-  color: var(--white);
-  font-family: var(--sans);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-ink);
+  color: var(--text-main);
+  font-family: var(--font-sans);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  cursor: default;
 }
 
-::selection {
-  background: var(--cyan);
-  color: #FFFFFF;
+::selection { background: var(--accent-primary); color: #FFF; }
+a { color: inherit; text-decoration: none; }
+
+/* ─── CUSTOM MAGNETIC CURSOR ────────────────────── */
+.custom-cursor-dot {
+  position: fixed; top: 0; left: 0;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-primary);
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.04s ease, background-color 0.3s ease;
+}
+.custom-cursor-ring {
+  position: fixed; top: 0; left: 0;
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--accent-primary);
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.2s ease, opacity 0.2s;
+  opacity: 0.65;
+}
+body.cursor-hover .custom-cursor-ring {
+  width: 44px; height: 44px;
+  background: var(--accent-glow);
+  opacity: 0.35;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* ─── TOP NAVBAR ────────────────────────────────── */
+.nav-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 52px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-line);
+}
+.brand-mark {
+  display: inline-flex; align-items: baseline;
+  font-size: 24px; font-weight: 800; letter-spacing: -0.03em;
+}
+.brand-mark .tru { color: #0F172A; }
+.brand-mark .saas {
+  color: var(--accent-primary);
+  transition: color 0.3s ease;
 }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-  background: none;
-  border: 0;
-  color: inherit;
+.nav-links {
+  display: flex; align-items: center; gap: 24px;
 }
-
-img, video {
-  max-width: 100%;
-  display: block;
-}
-
-/* ─── BOOT OVERLAY ───────────────────────────────── */
-#bootOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: var(--ink);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.6s ease;
-}
-#bootOverlay.loaded {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-.boot-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 36px 48px;
-  border-radius: 24px;
-  border: 1px solid var(--border);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(16px);
-  text-align: center;
-}
-.boot-logo {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  font-family: var(--sans);
-}
-.boot-logo .tru { color: var(--white); }
-.boot-logo .saas { color: var(--cyan); }
-.boot-status {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.boot-bar-track {
-  width: 220px;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 99px;
-  overflow: hidden;
-  position: relative;
-}
-.boot-bar-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--cyan), #5EEAD4);
-  border-radius: 99px;
-}
-
-/* ─── 3D BACKGROUND CANVAS ───────────────────────── */
-#webgl-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* ─── AMBIENT ORBS & ATMOSPHERE ─────────────────── */
-.ambient-scene {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  overflow: hidden;
-}
-.ambient-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.55;
-  will-change: transform;
-}
-.orb-1 {
-  top: 8%;
-  left: 15%;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(11, 124, 114, 0.18) 0%, rgba(11, 124, 114, 0) 70%);
-  animation: orbFloat1 22s ease-in-out infinite alternate;
-}
-.orb-2 {
-  top: 45%;
-  right: 10%;
-  width: 540px;
-  height: 540px;
-  background: radial-gradient(circle, rgba(212, 148, 42, 0.14) 0%, rgba(212, 148, 42, 0) 70%);
-  animation: orbFloat2 28s ease-in-out infinite alternate;
-}
-.orb-3 {
-  bottom: 10%;
-  left: 25%;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, rgba(13, 148, 136, 0) 70%);
-  animation: orbFloat3 20s ease-in-out infinite alternate;
-}
-@keyframes orbFloat1 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(60px, 40px) scale(1.15); }
-}
-@keyframes orbFloat2 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(-50px, -60px) scale(1.1); }
-}
-@keyframes orbFloat3 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(40px, -30px) scale(1.2); }
-}
-
-.grid-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(20, 20, 31, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 20, 31, 0.025) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(circle at 50% 40%, black 40%, transparent 85%);
-}
-
-/* ─── HUD CORNER FRAME ────────────────────────────── */
-.hud-frame {
-  position: fixed;
-  inset: 18px;
-  z-index: 20;
-  pointer-events: none;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--cyan);
-  text-transform: uppercase;
-}
-.hud-frame .corner {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid var(--cyan-glow);
-}
-.hud-frame .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
-.hud-frame .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
-.hud-frame .bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
-.hud-frame .br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
-
-.hud-tag {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  backdrop-filter: blur(10px);
-  color: var(--white);
-  font-weight: 500;
-}
-.hud-tl { top: 0; left: 20px; }
-.hud-tr { top: 0; right: 20px; color: var(--muted); }
-.hud-bl { bottom: 0; left: 20px; color: var(--cyan); font-weight: 600; }
-.hud-br { bottom: 0; right: 20px; color: var(--muted); }
-
-.pulse-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan);
-  animation: livePing 1.8s ease-out infinite;
-}
-@keyframes livePing {
-  0% { box-shadow: 0 0 0 0 rgba(11, 124, 114, 0.6); }
-  70% { box-shadow: 0 0 0 8px rgba(11, 124, 114, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(11, 124, 114, 0); }
-}
-
-/* ─── 3D LOGO STYLING ────────────────────────────── */
-.logo-3d {
-  display: inline-flex;
-  align-items: center;
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1;
-  user-select: none;
-  font-family: var(--sans);
-}
-.logo-3d .tru {
-  color: var(--white);
-}
-.logo-3d .saas {
-  color: var(--cyan);
-  background: linear-gradient(135deg, var(--cyan) 0%, #0D9488 40%, #5EEAD4 75%, var(--cyan) 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shineSaas 4s linear infinite;
-}
-@keyframes shineSaas {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-
-/* ─── NAVBAR ─────────────────────────────────────── */
-.navbar {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 8px 18px 8px 22px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  max-width: 1120px;
-  width: calc(100% - 48px);
-  transition: all 0.3s ease;
-}
-.navbar.scrolled {
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.09);
-  border-color: rgba(0, 0, 0, 0.12);
-}
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.navbar-logo {
-  font-size: 22px;
-}
-.navbar-nav {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--white-dim);
-}
-.navbar-nav a {
+.nav-link-item {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 13.5px; font-weight: 600; color: var(--text-dim);
   transition: color 0.2s ease;
-  position: relative;
-  padding: 4px 0;
 }
-.navbar-nav a:hover {
-  color: var(--cyan);
-}
-.navbar-nav a.active {
-  color: var(--cyan);
-  font-weight: 600;
-}
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.location-pill {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  padding: 5px 12px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 99px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  white-space: nowrap;
-}
-.nav-cta {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 99px;
-  background: var(--cyan);
-  color: #FFFFFF;
-  border: 1px solid var(--cyan);
-  box-shadow: 0 4px 14px -3px var(--cyan-glow);
-  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  white-space: nowrap;
-}
-.nav-cta:hover {
-  background: var(--cyan-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px -3px var(--cyan-glow);
-}
+.nav-link-item:hover { color: var(--accent-primary); }
 
-/* ─── MAIN CONTAINER & LAYOUT ────────────────────── */
-.main-wrapper {
-  position: relative;
-  z-index: 5;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 120px 24px 60px;
-}
-
-/* ─── BUTTONS ────────────────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 13px 22px;
-  border-radius: 99px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-}
+/* ─── TACTILE DOMED BUTTONS & LUXURY SHIMMER ────── */
 .btn-primary {
-  background: var(--cyan);
-  color: #FFFFFF;
-  box-shadow: 0 6px 20px -6px var(--cyan-glow);
-  border: 1px solid var(--cyan);
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 28px; border-radius: 10px;
+  background: linear-gradient(180deg, var(--accent-primary) 0%, rgba(0,0,0,0.14) 100%), var(--accent-primary);
+  color: #FFF; font-size: 13.5px; font-weight: 700;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.28),
+    0 4px 14px var(--accent-glow),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .btn-primary:hover {
-  background: var(--cyan-hover);
-  color: #FFFFFF;
   transform: translateY(-2px);
-  box-shadow: 0 10px 26px -6px var(--cyan-glow);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.65),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.28),
+    0 8px 22px var(--accent-glow),
+    0 3px 6px rgba(0, 0, 0, 0.12);
 }
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute; top: -50%; left: -100%;
+  width: 60%; height: 200%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.45) 50%, transparent 80%);
+  transform: skewX(-22deg);
+  animation: shimmerSweep 4.2s infinite ease-in-out;
+  pointer-events: none;
+}
+@keyframes shimmerSweep {
+  0% { left: -100%; }
+  28%, 100% { left: 200%; }
+}
+
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--white);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 24px; border-radius: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  color: var(--text-main); font-size: 13.5px; font-weight: 600;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 .btn-secondary:hover {
-  background: #FFFFFF;
-  border-color: var(--cyan);
-  color: var(--cyan);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-}
-.btn-amber {
-  background: var(--amber);
-  color: #FFFFFF;
-  border: 1px solid var(--amber);
-  box-shadow: 0 6px 20px -6px var(--amber-glow);
-}
-.btn-amber:hover {
-  background: var(--amber-hover);
-  color: #FFFFFF;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 26px -6px var(--amber-glow);
-}
-.btn-ghost {
-  background: transparent;
-  color: var(--cyan);
-  border: 1px solid rgba(11, 124, 114, 0.25);
-}
-.btn-ghost:hover {
-  background: var(--cyan-soft);
-  border-color: var(--cyan);
-  transform: translateY(-2px);
-}
-.btn-icon {
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* ─── HERO SECTION ───────────────────────────────── */
-.hero-section {
-  text-align: center;
-  max-width: 920px;
-  margin: 0 auto 64px;
-  padding: 40px 0 20px;
-  position: relative;
+/* ─── HERO MAIN ─────────────────────────────────── */
+.hero-stage-section {
+  position: relative; z-index: 10;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 124px 24px 80px;
+  max-width: 1220px;
+  margin: 0 auto;
 }
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: 99px;
-  background: var(--cyan-soft);
-  border: 1px solid rgba(11, 124, 114, 0.2);
-  color: var(--cyan);
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 600;
-  margin-bottom: 24px;
-  opacity: 0;
-  transform: translateY(16px);
-}
+
 .hero-title {
-  font-family: var(--display);
-  font-size: clamp(40px, 6.2vw, 76px);
-  line-height: 1.04;
-  letter-spacing: -0.035em;
-  font-weight: 400;
-  font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 0;
-  color: var(--white);
-  margin-bottom: 22px;
-  text-wrap: balance;
-  opacity: 0;
-  transform: translateY(24px);
+  font-family: var(--font-display);
+  font-size: clamp(42px, 5.6vw, 76px);
+  font-weight: 500; letter-spacing: -0.038em;
+  text-align: center; line-height: 1.04;
+  max-width: 960px; margin-bottom: 18px;
 }
-.hero-title .accent {
-  color: var(--cyan);
+.hero-title .accent-word {
   font-style: italic;
   font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  color: var(--accent-primary);
+  transition: color 0.3s ease;
 }
+
 .hero-subtitle {
-  font-size: clamp(16px, 1.8vw, 20px);
-  line-height: 1.6;
-  color: var(--white-dim);
-  max-width: 680px;
-  margin: 0 auto 36px;
-  text-wrap: pretty;
-  opacity: 0;
-  transform: translateY(24px);
-}
-.hero-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 56px;
-  opacity: 0;
-  transform: translateY(20px);
+  font-size: clamp(16px, 1.8vw, 19.5px);
+  color: var(--text-dim); text-align: center;
+  max-width: 740px; line-height: 1.55;
+  margin-bottom: 24px;
 }
 
-/* ─── STATS ROW (REQUIREMENT 4) ──────────────────── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  width: 100%;
-  max-width: 1060px;
-  margin: 0 auto 84px;
-  opacity: 0;
-  transform: translateY(24px);
-}
-.stat-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 24px 20px;
-  text-align: center;
-  box-shadow: var(--glass-shadow);
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-.stat-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(11, 124, 114, 0.28);
-  box-shadow: var(--glass-shadow-hover);
-}
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan-soft), transparent);
-}
-.stat-value {
-  font-family: var(--display);
-  font-size: clamp(32px, 3.6vw, 44px);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  color: var(--white);
-  line-height: 1.1;
-  margin-bottom: 6px;
-}
-.stat-value .stat-unit {
-  color: var(--cyan);
-}
-.stat-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* ─── TICKER WRAPPER (REQUIREMENT 6) ─────────────── */
-.ticker-container {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-bottom: 96px;
-  overflow: hidden;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 0;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-}
-.ticker-track {
-  display: flex;
-  gap: 40px;
-  white-space: nowrap;
-  animation: marqueeTicker 32s linear infinite;
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.16em;
-  color: var(--muted);
-}
-.ticker-track:hover {
-  animation-play-state: paused;
-}
-.ticker-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.ticker-item .t-code {
-  color: var(--white);
-  font-weight: 600;
-}
-.ticker-item .t-sub {
-  color: var(--cyan);
-  font-weight: 500;
-}
-.ticker-item .t-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--cyan);
-  opacity: 0.6;
-}
-@keyframes marqueeTicker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* ─── VERTICALS / PRODUCT SHOWCASE SECTION ───────── */
-.section-verticals {
-  position: relative;
-  z-index: 5;
-  margin-bottom: 110px;
-}
-.section-header {
-  text-align: center;
-  max-width: 760px;
-  margin: 0 auto 56px;
-}
-.section-eyebrow {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  font-weight: 700;
-  margin-bottom: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.section-title {
-  font-family: var(--display);
-  font-size: clamp(32px, 4.4vw, 54px);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-  font-weight: 400;
-  font-variation-settings: "opsz" 144, "SOFT" 30;
-  color: var(--white);
+/* ─── 3-PRODUCT SWITCHER & DIRECT LAUNCH BANNER ─── */
+.product-segmented-nav {
+  display: inline-flex; align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  padding: 5px; border-radius: 12px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.03);
   margin-bottom: 16px;
-  text-wrap: balance;
-}
-.section-title .accent {
-  color: var(--cyan);
-  font-style: italic;
-  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
-}
-.section-desc {
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--white-dim);
 }
 
-/* ─── THE 3 GATES PRODUCT CARDS GRID ─────────────── */
-.gates-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  align-items: stretch;
-}
-.gate-card {
-  position: relative;
-  background: var(--surface-card);
-  border: 1px solid var(--border);
-  border-radius: 26px;
-  padding: 30px 28px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--glass-shadow);
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s ease;
-  overflow: hidden;
-}
-.gate-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--glass-shadow-hover);
-  border-color: rgba(11, 124, 114, 0.32);
-}
-.gate-card.featured-gate {
-  border-color: rgba(11, 124, 114, 0.22);
-  background: linear-gradient(180deg, rgba(11, 124, 114, 0.03) 0%, #FFFFFF 22%);
-}
-.gate-card.featured-gate:hover {
-  border-color: var(--cyan);
-}
-.gate-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-.gate-card:hover::before {
-  opacity: 1;
-}
-
-/* Header & Badges inside Gate Card */
-.gate-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.gate-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  font-weight: 700;
-  background: var(--cyan-soft);
-  border: 1px solid rgba(11, 124, 114, 0.18);
-  padding: 4px 10px;
-  border-radius: 99px;
-}
-.gate-tag.amber-tag {
-  color: var(--amber);
-  background: var(--amber-soft);
-  border-color: rgba(212, 148, 42, 0.2);
-}
-.gate-tag.amber-tag .pulse-dot {
-  background: var(--amber);
-  box-shadow: 0 0 8px var(--amber);
-}
-.gate-num {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--faint);
-  letter-spacing: 0.1em;
-}
-
-.gate-title-wrap {
-  margin-bottom: 14px;
-}
-.gate-title {
-  font-family: var(--display);
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: -0.025em;
-  color: var(--white);
-  line-height: 1.15;
-}
-.gate-subtitle {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.08em;
-  color: var(--cyan);
-  text-transform: uppercase;
-  margin-top: 4px;
-  font-weight: 600;
-}
-.gate-card.gate-3 .gate-subtitle {
-  color: var(--amber);
-}
-
-.gate-desc {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--white-dim);
-  margin-bottom: 22px;
-}
-
-/* Gate Visual & Video Lightbox Trigger */
-.product-visual {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16/10;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #0E1620;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.18);
-  margin-bottom: 22px;
-  cursor: pointer;
-  display: block;
-  flex-shrink: 0;
-}
-.product-visual img, .product-visual video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.product-visual:hover img, .product-visual:hover video {
-  transform: scale(1.04);
-}
-.product-visual-shade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(14, 22, 32, 0.15) 0%, rgba(14, 22, 32, 0.65) 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 12px 14px;
-  pointer-events: none;
-  transition: background 0.3s ease;
-}
-.product-visual:hover .product-visual-shade {
-  background: linear-gradient(180deg, rgba(14, 22, 32, 0.05) 0%, rgba(14, 22, 32, 0.55) 100%);
-}
-.product-visual-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.pv-badge {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #5EEAD4;
-  background: rgba(14, 22, 32, 0.75);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(94, 234, 212, 0.3);
-  padding: 3px 8px;
-  border-radius: 99px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.pv-badge .dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #5EEAD4;
-}
-.product-visual-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--cyan);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease;
-}
-.product-visual:hover .product-visual-center {
-  transform: translate(-50%, -50%) scale(1.12);
-  background: #FFFFFF;
-}
-.product-visual-center svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-  margin-left: 2px;
-}
-.product-visual-bottom {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-/* Feature Bullets inside Gate */
-.gate-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 26px;
-  display: grid;
-  gap: 10px;
-  flex: 1;
-}
-.gate-feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--white-dim);
-}
-.gate-feature-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--cyan-soft);
-  border: 1px solid rgba(11, 124, 114, 0.2);
-  color: var(--cyan);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.gate-card.gate-3 .gate-feature-icon {
-  background: var(--amber-soft);
-  border-color: rgba(212, 148, 42, 0.25);
-  color: var(--amber);
-}
-.gate-feature-icon svg {
-  width: 10px;
-  height: 10px;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  fill: none;
-}
-
-/* Gate Actions Row */
-.gate-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-.gate-actions .btn {
-  font-size: 13px;
-  padding: 10px 16px;
-  flex: 1;
-  text-align: center;
-}
-.gate-actions .btn-wide {
-  flex: 1 1 100%;
-}
-
-/* ─── ARCHITECTURAL PHILOSOPHY ────────────────────── */
-.section-philosophy {
-  padding: 72px 32px;
-  border-radius: 28px;
-  background: var(--ink-2);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  margin-bottom: 96px;
-  position: relative;
-  overflow: hidden;
-}
-.phil-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  margin-top: 40px;
-}
-.phil-card {
-  background: rgba(255, 255, 255, 0.7);
-  padding: 28px;
-  border-radius: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-}
-.phil-num {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--cyan);
-  letter-spacing: 0.18em;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-.phil-card h3 {
-  font-family: var(--display);
-  font-size: 22px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  margin-bottom: 10px;
-  color: var(--white);
-}
-.phil-card p {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--white-dim);
-}
-
-/* ─── VIDEO LIGHTBOX MODAL (REQUIREMENT 3) ───────── */
-.video-lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.3s ease;
-}
-.video-lightbox.active {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
-.vl-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(14, 22, 32, 0.84);
-  backdrop-filter: blur(18px) saturate(180%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-}
-.vl-dialog {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 960px;
-  max-height: calc(100vh - 40px);
-  background: #0E1620;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 22px;
-  overflow: hidden;
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.85);
-  display: flex;
-  flex-direction: column;
-  transform: scale(0.95) translateY(12px);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.video-lightbox.active .vl-dialog {
-  transform: scale(1) translateY(0);
-}
-.vl-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px 20px;
-  background: #152232;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: #F1F5F9;
-}
-.vl-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #5EEAD4;
-  font-weight: 700;
-}
-.vl-badge .dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #5EEAD4;
-  animation: livePing 2s ease-in-out infinite;
-}
-.vl-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #FFFFFF;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.vl-close {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #F1F5F9;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
+.product-tab {
+  display: inline-flex; align-items: center;
+  padding: 10px 24px; border-radius: 8px;
+  font-size: 14px; font-weight: 600; color: var(--text-muted);
+  border: 1px solid transparent; background: transparent; cursor: pointer;
   transition: all 0.2s ease;
-  flex-shrink: 0;
+  font-family: var(--font-sans);
 }
-.vl-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
-  transform: scale(1.08);
+.product-tab:hover { color: var(--text-main); }
+.product-tab.active {
+  color: #FFF;
+  background: linear-gradient(180deg, var(--accent-primary) 0%, rgba(0,0,0,0.12) 100%), var(--accent-primary);
+  border: 1px solid rgba(0,0,0,0.15);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.25),
+    0 2px 8px var(--accent-glow);
 }
-.vl-content {
+
+/* Direct Hero Site Launcher */
+.hero-direct-site-pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  padding: 6px 8px 6px 14px; border-radius: 10px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.hero-direct-site-text {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  color: var(--text-main);
+}
+.hero-direct-site-url {
+  color: var(--text-muted); font-weight: 500;
+}
+.hero-direct-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-primary); color: #FFF;
+  font-size: 12px; font-weight: 700;
+  padding: 6px 14px; border-radius: 6px;
+  transition: opacity 0.2s ease;
+}
+.hero-direct-btn:hover { opacity: 0.92; }
+
+/* ─── 3D ARENA MASTER STAGE ─────────────────────── */
+.stage-container {
   position: relative;
-  width: 100%;
-  max-height: calc(85vh - 60px);
-  background: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%; height: 480px;
+  max-width: 1120px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,1) 0%, rgba(243, 240, 232, 0.6) 100%);
+  border: 1px solid var(--border-line);
+  border-radius: 20px;
   overflow: hidden;
-}
-.vl-content video {
-  width: 100%;
-  max-height: calc(85vh - 60px);
-  object-fit: contain;
-  display: block;
+  box-shadow: 0 12px 36px -10px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1);
+  display: flex; align-items: center; justify-content: center;
 }
 
-/* ─── FOOTER ─────────────────────────────────────── */
-.footer {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 32px 0 16px;
-  border-top: 1px solid var(--border);
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--muted);
-}
-.footer-links {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.footer-links a {
-  transition: color 0.2s ease;
-}
-.footer-links a:hover {
-  color: var(--cyan);
+#webgl3dCanvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
 }
 
-/* ─── RESPONSIVE BREAKPOINTS ─────────────────────── */
-@media (max-width: 1080px) {
-  .gates-grid {
-    grid-template-columns: 1fr;
-    max-width: 680px;
-    margin: 0 auto;
-  }
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .phil-grid {
-    grid-template-columns: 1fr;
-  }
+/* Stats */
+.game-stats-pill {
+  position: absolute; top: 18px; left: 20px;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-surface);
+  padding: 7px 14px; border-radius: 8px;
+  border: 1px solid var(--border-line);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,1), 0 2px 6px rgba(0,0,0,0.03);
+  z-index: 20;
+}
+.stat-tag {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  color: var(--text-muted);
+}
+.stat-hits {
+  font-family: var(--font-mono); font-size: 12.5px; font-weight: 800;
+  color: var(--accent-primary);
 }
 
-@media (max-width: 768px) {
-  .hud-frame { display: none; }
-  .navbar-nav { display: none; }
-  .navbar { width: calc(100% - 32px); padding: 8px 14px; }
-  .main-wrapper { padding-top: 100px; padding-left: 16px; padding-right: 16px; }
-  .stats-row { grid-template-columns: 1fr; }
-  .footer { flex-direction: column; text-align: center; justify-content: center; }
-  .footer-links { justify-content: center; }
-  .hero-actions { flex-direction: column; }
-  .hero-actions .btn { width: 100%; }
+.spawn-ball-btn {
+  position: absolute; top: 18px; right: 20px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  padding: 7px 16px; border-radius: 8px;
+  border: 1px solid var(--border-line);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.08),
+    0 2px 6px rgba(0,0,0,0.04);
+  z-index: 20;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  color: var(--text-main); cursor: pointer;
+  transition: all 0.2s ease;
+}
+.spawn-ball-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+.spawn-ball-btn:active {
+  transform: translateY(1px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ticker-track { animation: none; }
-  #webgl-canvas { display: none; }
-  .ambient-orb { animation: none; }
+.stage-hud-controls {
+  position: absolute; bottom: 18px; left: 20px; right: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none; z-index: 15;
+}
+.hud-meta-desc {
+  pointer-events: auto;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  color: var(--text-main); background: var(--bg-surface);
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border-line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.hud-interaction-hint {
+  pointer-events: auto;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-muted); background: var(--bg-surface);
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border-line);
+}
+
+/* ─── 4 CLEAN ACTION CARDS ───────────────────────── */
+.product-features-showcase {
+  width: 100%; max-width: 1120px;
+  margin-top: 36px;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 14px;
+  padding: 26px 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.feature-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.feature-heading {
+  font-size: 16.5px; font-weight: 700; color: var(--text-main);
+  margin-bottom: 10px; letter-spacing: -0.015em;
+}
+.feature-body {
+  font-size: 13.5px; line-height: 1.6; color: var(--text-dim);
+}
+
+/* ─── BOTTOM ROW ────────────────────────────────── */
+.bottom-cta-bar {
+  margin-top: 48px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+  .product-features-showcase { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .hero-stage-section { padding-top: 100px; }
+  .stage-container { height: 360px; }
+  .product-features-showcase { grid-template-columns: 1fr; }
+  .nav-header { padding: 14px 20px; }
+  .nav-links { display: none; }
+  .custom-cursor-dot, .custom-cursor-ring { display: none; }
 }
 </style>
 </head>
-<body>
+<body data-product="dealer">
 
-<!-- ─── BOOT OVERLAY ──────────────────────────────── -->
-<div id="bootOverlay">
-  <div class="boot-card">
-    <div class="boot-logo logo-3d">
-      <span class="tru">Tru</span><span class="saas">SaaS</span>
-    </div>
-    <div class="boot-status">
-      <span class="pulse-dot"></span>
-      <span id="bootText">TRUSAAS // INITIALIZING ARCHITECTURE</span>
-    </div>
-    <div class="boot-bar-track">
-      <div class="boot-bar-fill" id="bootBarFill"></div>
-    </div>
-  </div>
-</div>
+<!-- Custom Cursor Elements -->
+<div class="custom-cursor-dot" id="cursorDot"></div>
+<div class="custom-cursor-ring" id="cursorRing"></div>
 
-<!-- ─── 3D BACKGROUND CANVAS ───────────────────────── -->
-<canvas id="webgl-canvas"></canvas>
-
-<!-- ─── ATMOSPHERE & AMBIENT ORBS ─────────────────── -->
-<div class="ambient-scene">
-  <div class="ambient-orb orb-1"></div>
-  <div class="ambient-orb orb-2"></div>
-  <div class="ambient-orb orb-3"></div>
-</div>
-<div class="grid-overlay"></div>
-
-<!-- ─── HUD CORNER FRAME (REQUIREMENT 5) ───────────── -->
-<div class="hud-frame" aria-hidden="true">
-  <div class="corner tl"></div><div class="corner tr"></div>
-  <div class="corner bl"></div><div class="corner br"></div>
-  <div class="hud-tag hud-tl"><span class="pulse-dot"></span> TRUSAAS // SYSTEM ACTIVE</div>
-  <div class="hud-tag hud-tr">CPT · ZA</div>
-  <div class="hud-tag hud-bl">3 VERTICALS · 12+ MODULES</div>
-  <div class="hud-tag hud-br">DEPLOY // ANY MARKET</div>
-</div>
-
-<!-- ─── NAVBAR ─────────────────────────────────────── -->
-<nav class="navbar" id="mainNav">
-  <div class="navbar-brand">
-    <a href="#" class="logo-3d navbar-logo" aria-label="TruSaaS Home">
-      <span class="tru">Tru</span><span class="saas">SaaS</span>
+<!-- Navigation -->
+<header class="nav-header">
+  <a href="#" class="brand-mark">
+    <span class="tru">Tru</span><span class="saas">SaaS</span>
+  </a>
+  <nav class="nav-links">
+    <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener noreferrer" class="nav-link-item hover-target">
+      TruDealer <span style="font-size: 11px; opacity: 0.6;">↗</span>
+    </a>
+    <a href="https://truproperty.tru-saas.com" target="_blank" rel="noopener noreferrer" class="nav-link-item hover-target">
+      TruProperty <span style="font-size: 11px; opacity: 0.6;">↗</span>
+    </a>
+    <a href="https://trucustom.tru-saas.com" target="_blank" rel="noopener noreferrer" class="nav-link-item hover-target">
+      TruCustom <span style="font-size: 11px; opacity: 0.6;">↗</span>
+    </a>
+  </nav>
+  <div>
+    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener noreferrer" class="btn-primary hover-target" id="headerCtaBtn">
+      Book Walkthrough &rarr;
     </a>
   </div>
-  <div class="navbar-nav">
-    <a href="#verticals" class="active">Verticals</a>
-    <a href="#philosophy">Architecture</a>
-    <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener">TruDealer ↗</a>
-    <a href="https://truproperty.tru-saas.com" target="_blank" rel="noopener">TruProperty ↗</a>
+</header>
+
+<!-- Main Stage -->
+<main class="hero-stage-section">
+
+  <h1 class="hero-title" id="mainHeroTitle">
+    OS for Dealers <span class="accent-word">by Dealers.</span>
+  </h1>
+
+  <p class="hero-subtitle" id="productDesc">
+    Floor operations, 360° photo capture, vehicle inspection reports, and trade-in valuations.
+  </p>
+
+  <!-- 3 Products Switcher -->
+  <div class="product-segmented-nav">
+    <button class="product-tab active hover-target" data-target="dealer" onclick="switchProduct('dealer')">
+      TruDealer
+    </button>
+    <button class="product-tab hover-target" data-target="property" onclick="switchProduct('property')">
+      TruProperty
+    </button>
+    <button class="product-tab hover-target" data-target="custom" onclick="switchProduct('custom')">
+      TruCustom
+    </button>
   </div>
-  <div class="navbar-right">
-    <div class="location-pill">Cape Town · ZA</div>
-    <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20interested%20in%20TruSaas" class="nav-cta" target="_blank" rel="noopener">
-      Talk to Founder ↗
+
+  <!-- Obvious Direct Site Launch Link -->
+  <div class="hero-direct-site-pill">
+    <span class="hero-direct-site-text" id="heroDirectTitle">TruDealer:</span>
+    <span class="hero-direct-site-url" id="heroDirectUrl">trudealer.tru-saas.com</span>
+    <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener noreferrer" class="hero-direct-btn hover-target" id="heroDirectBtn">
+      Open Site ↗
     </a>
   </div>
-</nav>
 
-<!-- ─── MAIN CONTENT ───────────────────────────────── -->
-<main class="main-wrapper">
+  <!-- 3D Physics Arena (Auto-Plays on Load & Idle) -->
+  <div class="stage-container hover-target" id="stageContainer">
+    <canvas id="webgl3dCanvas"></canvas>
 
-  <!-- ─── HERO SECTION ─────────────────────────────── -->
-  <section class="hero-section" id="hero">
-    <div class="hero-badge" id="heroBadge">
-      <span class="pulse-dot"></span> Vertical Operating Systems
+    <div class="game-stats-pill">
+      <span class="stat-tag">Bounces:</span>
+      <span class="stat-hits" id="statHitsCount">0</span>
     </div>
-    
-    <h1 class="hero-title" id="heroTitle">
-      High-performance software for <span class="accent">real-world</span> operations.
-    </h1>
-    
-    <p class="hero-subtitle" id="heroSubtitle">
-      We design and deploy focused vertical operating systems and live data engines for industries running on legacy tech, spreadsheets, and fragmented workflows.
-    </p>
 
-    <div class="hero-actions" id="heroActions">
-      <a href="#verticals" class="btn btn-primary">
-        Explore 3 Verticals ↓
-      </a>
-      <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20interested%20in%20TruSaas" target="_blank" rel="noopener" class="btn btn-secondary">
-        Discuss a Custom Build →
-      </a>
-    </div>
-  </section>
+    <button class="spawn-ball-btn hover-target" onclick="spawnNewBall()">
+      + Launch Ball
+    </button>
 
-  <!-- ─── STATS ROW (REQUIREMENT 4) ────────────────── -->
-  <div class="stats-row" id="statsRow">
-    <div class="stat-card">
-      <div class="stat-value"><span class="counter" data-target="3">0</span><span class="stat-unit"></span></div>
-      <div class="stat-label">3 Live Verticals</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><span class="counter" data-target="12">0</span><span class="stat-unit">+</span></div>
-      <div class="stat-label">12+ Modules Shipping</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><span>99.97</span><span class="stat-unit">%</span></div>
-      <div class="stat-label">99.97% DMS Uptime</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><span class="counter" data-target="10">0</span><span class="stat-unit">d</span></div>
-      <div class="stat-label">10d To Go Live</div>
+    <div class="stage-hud-controls">
+      <div class="hud-meta-desc" id="hudMetaTitle">Floor Operations Synced</div>
+      <div class="hud-interaction-hint">Interactive 3D Stage</div>
     </div>
   </div>
 
-  <!-- ─── HUD MATRIX TICKER (REQUIREMENT 6) ────────── -->
-  <div class="ticker-container" aria-hidden="true">
-    <div class="ticker-track">
-      <div class="ticker-item"><span class="t-code">TRUSCRAPER</span><span class="t-sub">::MARKET</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUCMS</span><span class="t-sub">::CORE</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUDEALER</span><span class="t-sub">::AUTO</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUPROPERTY</span><span class="t-sub">::ESTATE</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRULENS</span><span class="t-sub">::CAPTURE</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUINSPECT</span><span class="t-sub">::CONDITION</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUFLOW</span><span class="t-sub">::DMS</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUCHAT</span><span class="t-sub">::AI</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRULIVE</span><span class="t-sub">::STREAM</span><span class="t-dot"></span></div>
-      <!-- Duplicate sequence for infinite seamless loop -->
-      <div class="ticker-item"><span class="t-code">TRUSCRAPER</span><span class="t-sub">::MARKET</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUCMS</span><span class="t-sub">::CORE</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUDEALER</span><span class="t-sub">::AUTO</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUPROPERTY</span><span class="t-sub">::ESTATE</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRULENS</span><span class="t-sub">::CAPTURE</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUINSPECT</span><span class="t-sub">::CONDITION</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUFLOW</span><span class="t-sub">::DMS</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRUCHAT</span><span class="t-sub">::AI</span><span class="t-dot"></span></div>
-      <div class="ticker-item"><span class="t-code">TRULIVE</span><span class="t-sub">::STREAM</span><span class="t-dot"></span></div>
-    </div>
+  <!-- 4 Action Cards -->
+  <div class="product-features-showcase" id="featuresShowcase"></div>
+
+  <!-- Bottom Actions -->
+  <div class="bottom-cta-bar">
+    <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener noreferrer" class="btn-primary hover-target" id="mainCtaBtn">
+      Launch TruDealer (trudealer.tru-saas.com) &rarr;
+    </a>
+    <a href="https://wa.me/27620502091" target="_blank" rel="noopener noreferrer" class="btn-secondary hover-target">
+      WhatsApp Founder
+    </a>
   </div>
-
-  <!-- ─── VERTICALS / 3 GATES SHOWCASE (REQUIREMENT 2) -->
-  <section class="section-verticals" id="verticals">
-    <div class="section-header">
-      <div class="section-eyebrow">
-        <span>●</span> VERTICAL STACKS &amp; ENGINES
-      </div>
-      <h2 class="section-title">
-        Three verticals. <span class="accent">One philosophy.</span>
-      </h2>
-      <p class="section-desc">
-        Purpose-built vertical operating systems engineered for high-integrity evidence proof, speed, and automated synchronization across complex operations.
-      </p>
-    </div>
-
-    <!-- The 3 Gates Cards Grid -->
-    <div class="gates-grid" id="gatesGrid">
-
-      <!-- ── GATE 1: TruDealer ── -->
-      <article class="gate-card featured-gate gate-1" id="gateTruDealer">
-        <div class="gate-head">
-          <span class="gate-tag"><span class="pulse-dot"></span> Live · 8+ Modules</span>
-          <span class="gate-num">01 // AUTO</span>
-        </div>
-        
-        <div class="gate-title-wrap">
-          <h3 class="gate-title">TruDealer</h3>
-          <div class="gate-subtitle">The dealer operating system</div>
-        </div>
-
-        <p class="gate-desc">
-          The complete floor-to-cloud operating system for independent dealerships. Capture to close, stock portal sync, and instant valuation.
-        </p>
-
-        <!-- Video Visual Trigger -->
-        <div class="product-visual" 
-             data-video-src="trudealer/tddeploy/EDIT DMS.mp4" 
-             data-video-title="TruDealer — The Dealer Operating System"
-             title="Click to play TruDealer walkthrough"
-             role="button"
-             tabindex="0"
-             aria-label="Play TruDealer demo video">
-          <img src="trudealer/tddeploy/dealer-assist-poster.jpg" alt="TruDealer Operating System Preview" loading="lazy" />
-          <div class="product-visual-shade">
-            <div class="product-visual-top">
-              <span class="pv-badge"><span class="dot"></span> 8+ MODULES</span>
-            </div>
-            <div class="product-visual-center">
-              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-            <div class="product-visual-bottom">
-              TruDealer Core DMS Walkthrough
-            </div>
-          </div>
-        </div>
-
-        <!-- Features List -->
-        <ul class="gate-features">
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Capture to close:</strong> seamless vehicle workflow engine</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>360° Spins &amp; Studio:</strong> guided vehicle photography</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Condition Reports:</strong> digital inspections &amp; damage tagger</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>24/7 AI Chat:</strong> autonomous sales agent with WhatsApp lead routing</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>TransUnion eValue8:</strong> live trade-in valuations &amp; DMS feeds</span>
-          </li>
-        </ul>
-
-        <!-- Gate Actions -->
-        <div class="gate-actions">
-          <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener" class="btn btn-primary">
-            Enter TruDealer →
-          </a>
-          <a href="https://true-cars.co.za" target="_blank" rel="noopener" class="btn btn-secondary">
-            See it live ↗
-          </a>
-        </div>
-      </article>
-
-      <!-- ── GATE 2: TruProperty ── -->
-      <article class="gate-card gate-2" id="gateTruProperty">
-        <div class="gate-head">
-          <span class="gate-tag"><span class="pulse-dot"></span> Live · 6+ Modules</span>
-          <span class="gate-num">02 // ESTATE</span>
-        </div>
-        
-        <div class="gate-title-wrap">
-          <h3 class="gate-title">TruProperty</h3>
-          <div class="gate-subtitle">The estate agent operating system</div>
-        </div>
-
-        <p class="gate-desc">
-          End-to-end property listing capture, room-by-room condition verification, live video walkthroughs, and mandate lifecycle tracking.
-        </p>
-
-        <!-- Video Visual Trigger -->
-        <div class="product-visual" 
-             data-video-src="trudealer/tddeploy/trulive-demo.mp4" 
-             data-video-title="TruProperty — The Estate Agent Operating System"
-             title="Click to play TruProperty walkthrough"
-             role="button"
-             tabindex="0"
-             aria-label="Play TruProperty demo video">
-          <img src="trudealer/tddeploy/trushowroom-buyer-poster.jpg" alt="TruProperty Walkaround Preview" loading="lazy" />
-          <div class="product-visual-shade">
-            <div class="product-visual-top">
-              <span class="pv-badge"><span class="dot"></span> 6+ MODULES</span>
-            </div>
-            <div class="product-visual-center">
-              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-            <div class="product-visual-bottom">
-              TruLive Virtual Walkaround
-            </div>
-          </div>
-        </div>
-
-        <!-- Features List -->
-        <ul class="gate-features">
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Property Capture:</strong> guided room-by-room flow &amp; asset tagging</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Condition Reports:</strong> digital ingoing/outgoing inspection jackets</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Virtual Tours:</strong> high-def 360° panos &amp; live video streaming</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Mandate Tracking:</strong> OTP deal management &amp; compliance proof</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Multi-Portal Push:</strong> automated syndication to property portals</span>
-          </li>
-        </ul>
-
-        <!-- Gate Actions -->
-        <div class="gate-actions">
-          <a href="https://truproperty.tru-saas.com" target="_blank" rel="noopener" class="btn btn-primary">
-            Enter TruProperty →
-          </a>
-          <button type="button" 
-                  class="btn btn-secondary" 
-                  data-video-src="trudealer/tddeploy/trulive-demo.mp4" 
-                  data-video-title="TruProperty — Virtual Walkaround Demo">
-            Watch Walkaround ▷
-          </button>
-        </div>
-      </article>
-
-      <!-- ── GATE 3: TruCustom ── -->
-      <article class="gate-card gate-3" id="gateTruCustom">
-        <div class="gate-head">
-          <span class="gate-tag amber-tag"><span class="pulse-dot"></span> Live · Bespoke Engineering</span>
-          <span class="gate-num">03 // SCRAPER &amp; CMS</span>
-        </div>
-        
-        <div class="gate-title-wrap">
-          <h3 class="gate-title">TruCustom</h3>
-          <div class="gate-subtitle">Custom CMS &amp; Live Scraper Engine</div>
-        </div>
-
-        <p class="gate-desc">
-          High-performance custom CMS architectures paired with our proprietary market scraper engine. Pull live vehicle, property, and classifieds market data with automated syndication.
-        </p>
-
-        <!-- Video Visual Trigger -->
-        <div class="product-visual" 
-             data-video-src="trudealer/tddeploy/inpect market price.mp4" 
-             data-video-title="TruCustom — Scraper Engine &amp; CMS Demo"
-             title="Click to play Scraper Engine demo"
-             role="button"
-             tabindex="0"
-             aria-label="Play TruCustom demo video">
-          <img src="trudealer/tddeploy/market-loading-poster.jpg" alt="Market Scraper Engine Preview" loading="lazy" />
-          <div class="product-visual-shade">
-            <div class="product-visual-top">
-              <span class="pv-badge" style="color: #FCD34D; border-color: rgba(252, 211, 77, 0.4);"><span class="dot" style="background: #FCD34D;"></span> LIVE ENGINE</span>
-            </div>
-            <div class="product-visual-center" style="color: var(--amber);">
-              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-            <div class="product-visual-bottom">
-              Live Classifieds Price Fetcher
-            </div>
-          </div>
-        </div>
-
-        <!-- Features List -->
-        <ul class="gate-features">
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Real-time Scraper:</strong> Bright Data unlocker + classifieds price engine</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Custom Back-Office:</strong> tailored CMS pipelines &amp; permission tiers</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>High-Throughput API:</strong> multi-portal syndication &amp; custom webhooks</span>
-          </li>
-          <li class="gate-feature-item">
-            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-            <span><strong>Rapid Delivery:</strong> 2-week turnaround from scoping to production</span>
-          </li>
-        </ul>
-
-        <!-- Gate Actions -->
-        <div class="gate-actions">
-          <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20interested%20in%20TruCustom%20software" target="_blank" rel="noopener" class="btn btn-amber">
-            Discuss a Build →
-          </a>
-          <button type="button" 
-                  class="btn btn-secondary" 
-                  data-video-src="trudealer/tddeploy/inpect market price.mp4" 
-                  data-video-title="TruCustom — Market Scraper Engine Demo">
-            Watch Scraper Demo ▷
-          </button>
-        </div>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- ─── ARCHITECTURAL PHILOSOPHY SECTION ─────────── -->
-  <section class="section-philosophy" id="philosophy">
-    <div class="section-header" style="margin-bottom: 0;">
-      <div class="section-eyebrow">
-        <span>●</span> CORE ARCHITECTURE
-      </div>
-      <h2 class="section-title">
-        Engineered for zero friction &amp; <span class="accent">evidence truth</span>.
-      </h2>
-      <p class="section-desc">
-        Every TruSaaS vertical shares the same robust foundations: zero spreadsheet sprawl, verifiable proof logs, and instant edge-deployed web architectures.
-      </p>
-    </div>
-
-    <div class="phil-grid">
-      <div class="phil-card">
-        <div class="phil-num">01 // SINGLE SOURCE OF TRUTH</div>
-        <h3>Zero Spreadsheet Sprawl</h3>
-        <p>Eliminate double data entry. From initial phone capture to live portal syndication and invoicing, all inventory lives in a single synchronized state.</p>
-      </div>
-
-      <div class="phil-card">
-        <div class="phil-num">02 // VERIFIABLE PROOF</div>
-        <h3>Evidence-First Integrity</h3>
-        <p>High-resolution 360° orbits, pinpoint damage tagging, and timestamped condition reports guarantee transparency for buyers and sellers alike.</p>
-      </div>
-
-      <div class="phil-card">
-        <div class="phil-num">03 // SPEED &amp; DEPLOYMENT</div>
-        <h3>Micro-Service Agility</h3>
-        <p>Lightweight, resilient, and blazing fast. Deployed on modern cloud primitives with zero legacy bloat and 99.97% operational uptime.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── FOOTER ─────────────────────────────────────── -->
-  <footer class="footer" id="footer">
-    <div>© 2026 TruSaaS Inc. Built with precision in Cape Town.</div>
-    <div class="footer-links">
-      <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener">TruDealer ↗</a>
-      <a href="https://truproperty.tru-saas.com" target="_blank" rel="noopener">TruProperty ↗</a>
-      <a href="mailto:paul@trusaas.com">paul@trusaas.com</a>
-      <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20saw%20TruSaas" target="_blank" rel="noopener">WhatsApp ↗</a>
-    </div>
-  </footer>
 
 </main>
 
-<!-- ─── VIDEO LIGHTBOX MODAL (REQUIREMENT 3) ───────── -->
-<div class="video-lightbox" id="videoLightbox" aria-modal="true" role="dialog" aria-labelledby="vlTitle">
-  <div class="vl-backdrop" id="vlBackdrop"></div>
-  <div class="vl-dialog">
-    <div class="vl-header">
-      <div class="vl-badge"><span class="dot"></span> LIVE DEMO</div>
-      <h3 class="vl-title" id="vlTitle">Product Walkthrough</h3>
-      <button type="button" class="vl-close" id="vlClose" aria-label="Close demo modal">✕</button>
-    </div>
-    <div class="vl-content">
-      <video id="vlVideo" controls playsinline preload="metadata">
-        Your browser does not support HTML5 video playback.
-      </video>
-    </div>
-  </div>
-</div>
-
-<!-- ─── INTERACTIVE SCRIPTS & GSAP TIMELINES ───────── -->
 <script>
-/* ── 1. BOOT SEQUENCE & TIMELINE ──────────────────── */
-(function setupBootSequence() {
-  const bootOverlay = document.getElementById('bootOverlay');
-  const bootBarFill = document.getElementById('bootBarFill');
-  const bootText = document.getElementById('bootText');
+/* ─── CUSTOM CURSOR LOGIC ───────────────────────── */
+const cursorDot = document.getElementById('cursorDot');
+const cursorRing = document.getElementById('cursorRing');
+let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+let ringX = mouseX, ringY = mouseY;
 
-  if (!bootOverlay) return;
+window.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursorDot.style.left = mouseX + 'px';
+  cursorDot.style.top = mouseY + 'px';
+});
 
-  const bootTl = gsap.timeline({
-    onComplete: () => {
-      bootOverlay.classList.add('loaded');
-      runEntranceAnimations();
-    }
-  });
+function updateCursor() {
+  ringX += (mouseX - ringX) * 0.18;
+  ringY += (mouseY - ringY) * 0.18;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top = ringY + 'px';
+  requestAnimationFrame(updateCursor);
+}
+updateCursor();
 
-  bootTl.to(bootBarFill, { width: '40%', duration: 0.3, ease: 'power2.out' })
-        .call(() => { if (bootText) bootText.textContent = 'TRUSAAS // CONNECTING VERTICAL ENGINES...'; })
-        .to(bootBarFill, { width: '100%', duration: 0.4, ease: 'power3.inOut' })
-        .call(() => { if (bootText) bootText.textContent = 'TRUSAAS // SYSTEM READY'; })
-        .to(bootOverlay, { opacity: 0, duration: 0.4, delay: 0.1 });
-})();
+document.querySelectorAll('.hover-target, button, a, canvas').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+});
 
-/* ── 2. THREE.JS SUBTLE 3D AMBIENT STAGE ──────────── */
-(function setup3DScene() {
-  const canvas = document.getElementById('webgl-canvas');
-  if (!canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+/* ─── 3 PRODUCTS MATRIX ─────────────────────────── */
+const PRODUCT_DATA = {
+  dealer: {
+    name: "TruDealer",
+    url: "https://trudealer.tru-saas.com",
+    urlDisplay: "trudealer.tru-saas.com",
+    title: 'OS for Dealers <span class="accent-word">by Dealers.</span>',
+    description: "Floor operations, 360° photo capture, vehicle inspection reports, and trade-in valuations.",
+    hudTitle: "OS for Dealers by Dealers",
+    ctaText: "Launch TruDealer (trudealer.tru-saas.com) →",
+    colorHex: 0x0B7C72,
+    secColorHex: 0xD4942A,
+    hitTriggers: [
+      "Floor Operations Synced",
+      "360 Studio Orbit Captured",
+      "Inspection Report Verified",
+      "Trade-in Valuation Live"
+    ],
+    features: [
+      { title: "Floor Management", desc: "Manage inventory, pricing, buyers, sales workflows, and portal listings in one central dashboard." },
+      { title: "360° Studio Photography", desc: "Capture showroom photos, interactive 360 spin orbits, and automatic background replacement." },
+      { title: "Vehicle Inspections", desc: "Generate digital vehicle condition reports with paint-depth logging and grading for buyers." },
+      { title: "Trade-in Valuations", desc: "Provide real-time vehicle valuations, finance calculators, and instant customer bookings." }
+    ]
+  },
+  property: {
+    name: "TruProperty",
+    url: "https://truproperty.tru-saas.com",
+    urlDisplay: "truproperty.tru-saas.com",
+    title: 'Every Corner <span class="accent-word">Covered.</span>',
+    description: "Agency workflows, 3D property tours, structural condition inspection, and live video showings.",
+    hudTitle: "Every Corner Covered",
+    ctaText: "Launch TruProperty (truproperty.tru-saas.com) →",
+    colorHex: 0xB8860B,
+    secColorHex: 0x0B7C72,
+    hitTriggers: [
+      "3D Virtual Tour Loaded",
+      "Structural Inspection Verified",
+      "Seller Mandate Logged",
+      "Live Video Showing Active"
+    ],
+    features: [
+      { title: "Agency Workflows", desc: "Track seller mandates, buyer pipelines, verified identity checks, and automated contracts." },
+      { title: "3D Virtual Tours", desc: "Capture room-by-room cinematic listing tours with automatic perspective correction." },
+      { title: "Property Inspections", desc: "Record structural condition grades, moisture testing, and verified buyer disclosure packs." },
+      { title: "Live Video Showings", desc: "Conduct real-time virtual walkthroughs with live high-definition client video showings." }
+    ]
+  },
+  custom: {
+    name: "TruCustom",
+    url: "https://trucustom.tru-saas.com",
+    urlDisplay: "trucustom.tru-saas.com",
+    title: 'Software you needed, <span class="accent-word">but couldn\'t find.</span>',
+    description: "Custom software, live market scrapers with unlocker proxies, and 24/7 AI chat reception.",
+    hudTitle: "Software you needed, but couldn't find",
+    ctaText: "Launch TruCustom (trucustom.tru-saas.com) →",
+    colorHex: 0x6D28D9,
+    secColorHex: 0x0284C7,
+    hitTriggers: [
+      "Market Scraper Updated",
+      "AI Chatbot Responded",
+      "Business Workflow Executed",
+      "WhatsApp Lead Qualified"
+    ],
+    features: [
+      { title: "Custom Software", desc: "Built-to-order internal tools, operational dashboards, and automated business workflows." },
+      { title: "Live Market Scrapers", desc: "Autonomous competitor pricing monitors, inventory catalogs, and real-time data feeds." },
+      { title: "24/7 AI Reception", desc: "Intelligent conversational chatbots and automated WhatsApp customer qualification." },
+      { title: "Tailored Tools", desc: "Custom camera workflows, digital e-signature contracts, and direct hardware integrations." }
+    ]
+  }
+};
 
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
+/* ─── THREE.JS MASTER ENGINE ────────────────────── */
+let scene, camera, renderer;
+let balls = [];
+let shockwaves = [];
+let bounceCount = 0;
+let currentProductKey = 'dealer';
+let arenaBounds = { minX: -3.8, maxX: 3.8, minY: -1.8, maxY: 1.8, minZ: -2.2, maxZ: 2.2 };
+let wallGroup, fillLight;
+let lastUserInteraction = Date.now();
+
+function initThreeJS() {
+  const container = document.getElementById('stageContainer');
+  const canvas = document.getElementById('webgl3dCanvas');
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+  camera.position.set(0, 0, 7.2);
+
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 15;
-
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
   scene.add(ambientLight);
 
-  const pointCyan = new THREE.PointLight(0x0b7c72, 3.5, 50);
-  pointCyan.position.set(6, 6, 6);
-  scene.add(pointCyan);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+  dirLight.position.set(6, 10, 8);
+  scene.add(dirLight);
 
-  const pointAmber = new THREE.PointLight(0xd4942a, 2.8, 50);
-  pointAmber.position.set(-6, -6, -4);
-  scene.add(pointAmber);
+  fillLight = new THREE.PointLight(0x0B7C72, 4, 30);
+  fillLight.position.set(0, 0, 2);
+  scene.add(fillLight);
 
-  const group = new THREE.Group();
-  scene.add(group);
-
-  // Outer Torus Orbit Ring 1 (Teal)
-  const ring1Geo = new THREE.TorusGeometry(3.6, 0.02, 16, 120);
-  const ring1Mat = new THREE.MeshStandardMaterial({
-    color: 0x0b7c72,
-    emissive: 0x0b7c72,
-    emissiveIntensity: 0.6,
-    roughness: 0.2
+  // Ground Grid Pedestal
+  const groundGeo = new THREE.PlaneGeometry(9, 6);
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: 0xEAE5D9,
+    roughness: 0.5,
+    metalness: 0.2
   });
-  const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
-  ring1.rotation.x = Math.PI / 3;
-  group.add(ring1);
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.position.z = arenaBounds.minZ;
+  scene.add(ground);
 
-  // Outer Torus Orbit Ring 2 (Amber Soft)
-  const ring2Geo = new THREE.TorusGeometry(4.4, 0.015, 16, 120);
-  const ring2Mat = new THREE.MeshStandardMaterial({
-    color: 0xd4942a,
-    emissive: 0xd4942a,
-    emissiveIntensity: 0.4,
-    roughness: 0.3
-  });
-  const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-  ring2.rotation.y = Math.PI / 4;
-  group.add(ring2);
+  buildArena();
+  spawnNewBall(0, 0, 0, 0.08, 0.055);
 
-  // Core Polyhedron (Warm Slate)
-  const coreGeo = new THREE.IcosahedronGeometry(1.6, 0);
-  const coreMat = new THREE.MeshStandardMaterial({
-    color: 0xeae6da,
-    roughness: 0.25,
-    metalness: 0.4,
-    flatShading: true
-  });
-  const core = new THREE.Mesh(coreGeo, coreMat);
-  group.add(core);
-
-  // Wireframe Cage Overlay
-  const wireGeo = new THREE.IcosahedronGeometry(1.68, 0);
-  const wireMat = new THREE.MeshBasicMaterial({
-    color: 0x0b7c72,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.28
-  });
-  const wire = new THREE.Mesh(wireGeo, wireMat);
-  group.add(wire);
-
-  // Floating Micro Particles
-  const particleCount = 120;
-  const particleGeo = new THREE.BufferGeometry();
-  const positions = new Float32Array(particleCount * 3);
-  for (let i = 0; i < particleCount * 3; i += 3) {
-    positions[i] = (Math.random() - 0.5) * 32;
-    positions[i + 1] = (Math.random() - 0.5) * 32;
-    positions[i + 2] = (Math.random() - 0.5) * 32;
-  }
-  particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const particleMat = new THREE.PointsMaterial({
-    size: 0.04,
-    color: 0x0b7c72,
-    transparent: true,
-    opacity: 0.45
-  });
-  const particles = new THREE.Points(particleGeo, particleMat);
-  scene.add(particles);
-
-  // Subtle Mouse Tracking
-  let mouseX = 0, mouseY = 0;
-  let targetX = 0, targetY = 0;
-
-  window.addEventListener('mousemove', (e) => {
-    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  const clock = new THREE.Clock();
-
-  function animate() {
-    requestAnimationFrame(animate);
-    const elapsed = clock.getElapsedTime();
-
-    targetX += (mouseX - targetX) * 0.035;
-    targetY += (mouseY - targetY) * 0.035;
-
-    group.rotation.y = elapsed * 0.18 + (targetX * 0.35);
-    group.rotation.x = Math.sin(elapsed * 0.15) * 0.12 + (-targetY * 0.35);
-    ring1.rotation.z = elapsed * 0.12;
-    ring2.rotation.z = -elapsed * 0.08;
-
-    group.position.y = Math.sin(elapsed * 0.6) * 0.18;
-    particles.rotation.y = elapsed * 0.012;
-
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-})();
-
-/* ── 3. GSAP ENTRANCE & COUNTER ANIMATIONS ────────── */
-function runEntranceAnimations() {
-  if (typeof gsap === 'undefined') return;
-
-  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-  tl.to('#heroBadge', { opacity: 1, y: 0, duration: 0.7 })
-    .to('#heroTitle', { opacity: 1, y: 0, duration: 0.8 }, '-=0.4')
-    .to('#heroSubtitle', { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
-    .to('#heroActions', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
-    .to('#statsRow', { opacity: 1, y: 0, duration: 0.8 }, '-=0.3');
-
-  // Stats number counters
-  const counters = document.querySelectorAll('.counter');
-  counters.forEach(counter => {
-    const target = +counter.getAttribute('data-target') || 0;
-    gsap.fromTo(counter, 
-      { textContent: 0 }, 
-      {
-        textContent: target,
-        duration: 1.6,
-        ease: 'power2.out',
-        snap: { textContent: 1 },
-        scrollTrigger: {
-          trigger: '#statsRow',
-          start: 'top 85%',
-          once: true
-        }
+  setInterval(() => {
+    const idleTime = Date.now() - lastUserInteraction;
+    if (idleTime > 2400) {
+      if (balls.length === 0) {
+        spawnNewBall(0, 0, 0, 0.08, 0.05);
+      } else {
+        const b = balls[Math.floor(Math.random() * balls.length)];
+        b.vx += (Math.random() - 0.5) * 0.09;
+        b.vy += (Math.random() - 0.5) * 0.09;
+        b.vz += (Math.random() - 0.5) * 0.05;
       }
-    );
+    }
+  }, 2200);
+
+  let isPointerDown = false, startX = 0, startY = 0;
+  canvas.addEventListener('pointerdown', (e) => {
+    lastUserInteraction = Date.now();
+    isPointerDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
   });
 
-  // Gates entrance stagger
-  if (typeof ScrollTrigger !== 'undefined') {
-    gsap.from('.gate-card', {
-      scrollTrigger: {
-        trigger: '#gatesGrid',
-        start: 'top 80%',
-        once: true
-      },
-      y: 40,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.18,
-      ease: 'power3.out'
-    });
-  }
+  canvas.addEventListener('pointerup', (e) => {
+    if (!isPointerDown) return;
+    lastUserInteraction = Date.now();
+    isPointerDown = false;
+    const dx = (e.clientX - startX) * 0.0014;
+    const dy = -(e.clientY - startY) * 0.0014;
+    
+    if (balls.length > 0) {
+      const b = balls[0];
+      b.vx += (Math.abs(dx) > 0.01 ? dx : (Math.random() - 0.5) * 0.14);
+      b.vy += (Math.abs(dy) > 0.01 ? dy : (Math.random() - 0.5) * 0.14);
+      b.vz += (Math.random() - 0.5) * 0.06;
+      triggerImpactEffect(b.mesh.position.x, b.mesh.position.y, b.mesh.position.z);
+    }
+  });
+
+  window.addEventListener('resize', onWindowResize);
+  animate();
 }
 
-/* ── 4. VIDEO LIGHTBOX MODAL CONTROLLER (REQ 3) ──── */
-(function setupVideoLightbox() {
-  const lightbox = document.getElementById('videoLightbox');
-  const backdrop = document.getElementById('vlBackdrop');
-  const closeBtn = document.getElementById('vlClose');
-  const titleEl = document.getElementById('vlTitle');
-  const videoEl = document.getElementById('vlVideo');
-  let previousActiveElement = null;
+function onWindowResize() {
+  const container = document.getElementById('stageContainer');
+  if (!container || !renderer || !camera) return;
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+}
 
-  if (!lightbox || !videoEl) return;
+function buildArena() {
+  if (wallGroup) scene.remove(wallGroup);
+  wallGroup = new THREE.Group();
 
-  function openLightbox(src, title) {
-    if (!src) return;
-    previousActiveElement = document.activeElement;
+  const pInfo = PRODUCT_DATA[currentProductKey];
 
-    if (titleEl) {
-      titleEl.textContent = title || 'Product Demo Walkthrough';
-    }
+  const boxGeo = new THREE.BoxGeometry(
+    arenaBounds.maxX - arenaBounds.minX,
+    arenaBounds.maxY - arenaBounds.minY,
+    arenaBounds.maxZ - arenaBounds.minZ
+  );
+  const edges = new THREE.EdgesGeometry(boxGeo);
+  const lineMat = new THREE.LineBasicMaterial({
+    color: pInfo.colorHex,
+    transparent: true,
+    opacity: 0.4,
+    linewidth: 1.8
+  });
+  const wireframe = new THREE.LineSegments(edges, lineMat);
+  wallGroup.add(wireframe);
 
-    // Set video src and load
-    videoEl.src = src;
-    videoEl.load();
+  const gridHelper = new THREE.GridHelper(8, 16, pInfo.colorHex, 0xCBD5E1);
+  gridHelper.rotation.x = Math.PI / 2;
+  gridHelper.position.z = arenaBounds.minZ + 0.02;
+  wallGroup.add(gridHelper);
 
-    lightbox.classList.add('active');
-    document.body.style.overflow = 'hidden';
+  scene.add(wallGroup);
+}
 
-    // Focus close button for accessibility
-    setTimeout(() => {
-      if (closeBtn) closeBtn.focus();
-    }, 100);
-
-    // Auto-play video after modal animation
-    videoEl.play().catch(() => {
-      // Autoplay with audio was blocked; muted fallback
-      videoEl.muted = true;
-      videoEl.play().catch(e => console.log('Video play prompt:', e));
-    });
+function spawnNewBall(x = 0, y = 0, z = 0, vx = null, vy = null) {
+  lastUserInteraction = Date.now();
+  if (balls.length >= 6) {
+    const old = balls.shift();
+    scene.remove(old.mesh);
   }
 
-  function closeLightbox() {
-    if (!lightbox.classList.contains('active')) return;
+  const pInfo = PRODUCT_DATA[currentProductKey];
+  const radius = 0.42;
+  const ballGeo = new THREE.SphereGeometry(radius, 36, 36);
+  const ballMat = new THREE.MeshPhysicalMaterial({
+    color: pInfo.colorHex,
+    metalness: 0.85,
+    roughness: 0.15,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1
+  });
 
-    lightbox.classList.remove('active');
-    document.body.style.overflow = '';
+  const mesh = new THREE.Mesh(ballGeo, ballMat);
+  mesh.position.set(x, y, z);
+  scene.add(mesh);
 
-    // Proper cleanup required by spec
-    videoEl.pause();
-    videoEl.removeAttribute('src');
-    videoEl.load();
+  balls.push({
+    mesh,
+    radius,
+    vx: vx !== null ? vx : (Math.random() - 0.5) * 0.12,
+    vy: vy !== null ? vy : (Math.random() - 0.5) * 0.12,
+    vz: (Math.random() - 0.5) * 0.06,
+    spinX: Math.random() * 0.05,
+    spinY: Math.random() * 0.05
+  });
+}
 
-    // Restore focus
-    if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
-      previousActiveElement.focus();
+function triggerImpactEffect(x, y, z) {
+  bounceCount++;
+  document.getElementById('statHitsCount').textContent = bounceCount;
+
+  // Luminous Shockwave Ripple
+  const pInfo = PRODUCT_DATA[currentProductKey];
+  const ringGeo = new THREE.RingGeometry(0.05, 0.1, 32);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: pInfo.colorHex,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.9
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.set(x, y, z);
+  scene.add(ring);
+  shockwaves.push({ mesh: ring, scale: 1, opacity: 0.9 });
+
+  if (fillLight) {
+    fillLight.position.set(x, y, z + 1);
+    fillLight.intensity = 7;
+    gsap.to(fillLight, { intensity: 3.5, duration: 0.3 });
+  }
+
+  const triggerText = pInfo.hitTriggers[Math.floor(Math.random() * pInfo.hitTriggers.length)];
+  document.getElementById('hudMetaTitle').textContent = triggerText;
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  for (let i = shockwaves.length - 1; i >= 0; i--) {
+    const sw = shockwaves[i];
+    sw.scale += 0.12;
+    sw.opacity -= 0.04;
+    sw.mesh.scale.set(sw.scale, sw.scale, 1);
+    sw.mesh.material.opacity = sw.opacity;
+
+    if (sw.opacity <= 0) {
+      scene.remove(sw.mesh);
+      shockwaves.splice(i, 1);
     }
   }
 
-  // Global event delegation for all [data-video-src] and .product-visual triggers
-  document.addEventListener('click', (e) => {
-    const trigger = e.target.closest('[data-video-src]');
-    if (trigger) {
-      e.preventDefault();
-      const src = trigger.getAttribute('data-video-src');
-      const title = trigger.getAttribute('data-video-title');
-      openLightbox(src, title);
-      return;
+  balls.forEach(b => {
+    b.mesh.position.x += b.vx;
+    b.mesh.position.y += b.vy;
+    b.mesh.position.z += b.vz;
+
+    b.mesh.rotation.x += b.spinX;
+    b.mesh.rotation.y += b.spinY;
+
+    if (b.mesh.position.x - b.radius < arenaBounds.minX) {
+      b.mesh.position.x = arenaBounds.minX + b.radius;
+      b.vx = -b.vx * 0.98;
+      triggerImpactEffect(b.mesh.position.x, b.mesh.position.y, b.mesh.position.z);
+    } else if (b.mesh.position.x + b.radius > arenaBounds.maxX) {
+      b.mesh.position.x = arenaBounds.maxX - b.radius;
+      b.vx = -b.vx * 0.98;
+      triggerImpactEffect(b.mesh.position.x, b.mesh.position.y, b.mesh.position.z);
     }
 
-    const visualTrigger = e.target.closest('.product-visual');
-    if (visualTrigger && visualTrigger.hasAttribute('data-video-src')) {
-      e.preventDefault();
-      const src = visualTrigger.getAttribute('data-video-src');
-      const title = visualTrigger.getAttribute('data-video-title');
-      openLightbox(src, title);
+    if (b.mesh.position.y - b.radius < arenaBounds.minY) {
+      b.mesh.position.y = arenaBounds.minY + b.radius;
+      b.vy = -b.vy * 0.98;
+      triggerImpactEffect(b.mesh.position.x, b.mesh.position.y, b.mesh.position.z);
+    } else if (b.mesh.position.y + b.radius > arenaBounds.maxY) {
+      b.mesh.position.y = arenaBounds.maxY - b.radius;
+      b.vy = -b.vy * 0.98;
+      triggerImpactEffect(b.mesh.position.x, b.mesh.position.y, b.mesh.position.z);
+    }
+
+    if (b.mesh.position.z - b.radius < arenaBounds.minZ) {
+      b.mesh.position.z = arenaBounds.minZ + b.radius;
+      b.vz = -b.vz * 0.98;
+      triggerImpactEffect(b.mesh.position.x, b.mesh.position.y, b.mesh.position.z);
+    } else if (b.mesh.position.z + b.radius > arenaBounds.maxZ) {
+      b.mesh.position.z = arenaBounds.maxZ - b.radius;
+      b.vz = -b.vz * 0.98;
+      triggerImpactEffect(b.mesh.position.x, b.mesh.position.y, b.mesh.position.z);
     }
   });
 
-  // Keyboard accessibility for product-visual divs
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      const activeEl = document.activeElement;
-      if (activeEl && activeEl.classList.contains('product-visual') && activeEl.hasAttribute('data-video-src')) {
-        e.preventDefault();
-        const src = activeEl.getAttribute('data-video-src');
-        const title = activeEl.getAttribute('data-video-title');
-        openLightbox(src, title);
-      }
-    }
-  });
-
-  // Close triggers
-  if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-  if (backdrop) backdrop.addEventListener('click', closeLightbox);
-
-  // ESC key listener
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && lightbox.classList.contains('active')) {
-      closeLightbox();
-    }
-  });
-})();
-
-/* ── 5. NAVBAR SCROLL EFFECT ──────────────────────── */
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('mainNav');
-  if (!nav) return;
-  if (window.scrollY > 40) {
-    nav.classList.add('scrolled');
-  } else {
-    nav.classList.remove('scrolled');
+  if (wallGroup) {
+    wallGroup.rotation.y = Math.sin(Date.now() * 0.0008) * 0.06;
+    wallGroup.rotation.x = Math.cos(Date.now() * 0.0008) * 0.04;
   }
-}, { passive: true });
+
+  renderer.render(scene, camera);
+}
+
+function switchProduct(key) {
+  if (currentProductKey === key) return;
+  lastUserInteraction = Date.now();
+  currentProductKey = key;
+  const data = PRODUCT_DATA[key];
+
+  document.body.setAttribute('data-product', key);
+  document.querySelectorAll('.product-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.target === key);
+  });
+
+  gsap.to(['#mainHeroTitle', '#productDesc', '#hudMetaTitle'], {
+    opacity: 0,
+    duration: 0.18,
+    onComplete: () => {
+      document.getElementById('mainHeroTitle').innerHTML = data.title;
+      document.getElementById('productDesc').textContent = data.description;
+      document.getElementById('hudMetaTitle').textContent = data.hudTitle;
+      
+      // Update Direct Hero Link
+      document.getElementById('heroDirectTitle').textContent = data.name + ':';
+      document.getElementById('heroDirectUrl').textContent = data.urlDisplay;
+      document.getElementById('heroDirectBtn').href = data.url;
+      document.getElementById('heroDirectBtn').style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--accent-primary');
+
+      // Update Bottom Action CTA
+      const ctaBtn = document.getElementById('mainCtaBtn');
+      ctaBtn.textContent = data.ctaText;
+      ctaBtn.href = data.url;
+
+      gsap.to(['#mainHeroTitle', '#productDesc', '#hudMetaTitle'], {
+        opacity: 1,
+        duration: 0.28
+      });
+    }
+  });
+
+  renderFeatures(data.features);
+  buildArena();
+
+  balls.forEach(b => {
+    b.mesh.material.color.setHex(data.colorHex);
+  });
+  if (fillLight) fillLight.color.setHex(data.colorHex);
+}
+
+function renderFeatures(features) {
+  const container = document.getElementById('featuresShowcase');
+  container.innerHTML = features.map(f => `
+    <div class="feature-card hover-target">
+      <h3 class="feature-heading">${f.title}</h3>
+      <p class="feature-body">${f.desc}</p>
+    </div>
+  `).join('');
+  gsap.from('.feature-card', { y: 14, opacity: 0, stagger: 0.04, duration: 0.35, ease: "power2.out" });
+
+  document.querySelectorAll('.hover-target, button, a, canvas').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initThreeJS();
+  renderFeatures(PRODUCT_DATA.dealer.features);
+});
 </script>
 </body>
 </html>

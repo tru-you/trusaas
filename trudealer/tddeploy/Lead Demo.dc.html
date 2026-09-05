@@ -19,7 +19,30 @@
 <template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#F3F0E7"/><rect x="30" y="30" width="60" height="60" rx="12" fill="#0B7C72"/><text x="60" y="68" text-anchor="middle" font-family="sans-serif" font-size="28" font-weight="700" fill="#fff">TD</text></svg></template>
 <helmet>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
+<style>
+body{background:#F3F0E7;color:#14141F;font-family:'Inter Tight',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6;margin:0;overflow-x:hidden;}
+a{color:#0B7C72;text-decoration:none;}a:hover{color:#065A53;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;scroll-padding-top:72px;}
+::selection{background:#0B7C72;color:#fff;}
+button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit;}
+input:focus,select:focus,textarea:focus{outline:none;}
+@keyframes shine{0%,100%{transform:translateX(-120%)}50%{transform:translateX(120%)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes panelIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rowGlow{0%{background:rgba(13,148,136,.12)}100%{background:transparent}}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:100px;background:linear-gradient(90deg,#0B7C72,#3BBFB2);margin:6px 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#0B7C72;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer;}
+@media(max-width:960px){[data-demo-grid]{grid-template-columns:1fr!important;}[data-widgets-grid]{grid-template-columns:1fr 1fr!important;}}
+@media(max-width:640px){[data-widgets-grid]{grid-template-columns:1fr!important;}[data-crm-hide]{display:none!important;}}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+@keyframes fabPulse{0%{box-shadow:0 0 0 0 rgba(59,191,178,.5)}70%{box-shadow:0 0 0 14px rgba(59,191,178,0)}100%{box-shadow:0 0 0 0 rgba(59,191,178,0)}}
+@keyframes fabFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes labelSlide{0%,20%{opacity:0;transform:translateX(8px)}30%,90%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(8px)}}
+@keyframes drawLine{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important;}}
+</style>
 </helmet>
 
 <!-- ═══ PILL NAV (matches main site) ═══ -->
@@ -269,13 +292,13 @@
         <h5 style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(84,98,120,.55);margin-bottom:16px;">Live proof</h5>
         <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:rgba(20,20,31,.78);">
           <a href="https://true-cars.co.za" target="_blank" rel="noopener" style-hover="color:#0B7C72;">Tru-Cars demo</a>
-          <a href="https://wa.me/447476995694?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruDealer" target="_blank" rel="noopener" style-hover="color:#0B7C72;">Request a demo</a>
+          <a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruDealer" target="_blank" rel="noopener" style-hover="color:#0B7C72;">Request a demo</a>
         </div>
       </div>
       <div>
         <h5 style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(84,98,120,.55);margin-bottom:16px;">Talk</h5>
         <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:rgba(20,20,31,.78);">
-          <a href="https://wa.me/447476995694" style-hover="color:#0B7C72;">WhatsApp</a>
+          <a href="https://wa.me/27620502091" style-hover="color:#0B7C72;">WhatsApp</a>
           <a href="mailto:trudealer@tru-saas.com" style-hover="color:#0B7C72;">trudealer@tru-saas.com</a>
         </div>
       </div>
@@ -825,9 +848,9 @@ class Component extends DCLogic {
 }
 </script>
 <!-- TruBook — files walkthrough bookings to the true-cars DMS; intercepts legacy cal.com links -->
-<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="447476995694" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
-<script src="truvalue.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="447476995694" data-accent="#0D9488" data-mount="#truvalue-mount" data-font="'Inter Tight', Inter, system-ui, sans-serif"></script>
-<script src="tru-form.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="447476995694" data-accent="#0D9488"></script>
+<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
+<script src="truvalue.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-mount="#truvalue-mount" data-font="'Inter Tight', Inter, system-ui, sans-serif"></script>
+<script src="tru-form.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488"></script>
 <script>
 (function(){
   function openBook(e){ if(e){e.preventDefault();} if(window.TruBook){TruBook.open({mode:'walkthrough'});} else {window.open('https://cal.com/pgdebeer','_blank','noopener');} }
@@ -837,7 +860,6 @@ class Component extends DCLogic {
   });
 })();
 </script>
-
 <div class="wa-fab" id="waFab">
   <div class="wa-fab-menu" role="menu" aria-hidden="true">
     <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom">
@@ -857,5 +879,6 @@ class Component extends DCLogic {
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
   </button>
 </div>
+<script src="site.js" defer></script>
 </body>
 </html>

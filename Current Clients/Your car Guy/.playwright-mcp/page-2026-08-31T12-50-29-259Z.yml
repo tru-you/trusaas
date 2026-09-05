@@ -1,0 +1,148 @@
+- generic [active] [ref=f11e1]:
+  - paragraph
+  - link "Skip to content" [ref=f11e2] [cursor=pointer]:
+    - /url: "#content"
+  - generic [ref=f11e4]:
+    - generic [ref=f11e5]:
+      - generic [ref=f11e7]:
+        - paragraph [ref=f11e11]:
+          - generic [ref=f11e12]: 
+          - link "083 465 9921" [ref=f11e13] [cursor=pointer]:
+            - /url: tel:0834659921
+          - text: "|"
+          - link "041 007 0393" [ref=f11e14] [cursor=pointer]:
+            - /url: tel:0410070393
+        - paragraph [ref=f11e18]: 17 BURT DRIVE, NEWTON PARK, PE
+        - paragraph [ref=f11e22]: MON – FRI 07:30 – 17:30
+        - generic [ref=f11e27]:
+          - link "facebook" [ref=f11e28] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "instagram" [ref=f11e29] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "whatsapp" [ref=f11e30] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+        - paragraph [ref=f11e34]:
+          - generic [ref=f11e35]: 
+          - link "LOGIN | REGISTER" [ref=f11e36] [cursor=pointer]:
+            - /url: /my-account
+      - generic [ref=f11e42]:
+        - generic [ref=f11e47]:
+          - link "facebook" [ref=f11e48] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "instagram" [ref=f11e49] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "whatsapp" [ref=f11e50] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+        - paragraph [ref=f11e58]:
+          - strong [ref=f11e59]: 083 465 9921 | 041 007 0393
+      - navigation "Home Menu" [ref=f11e64]:
+        - text:  
+        - list [ref=f11e65]:
+          - listitem [ref=f11e66]:
+            - link "Home" [ref=f11e69] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/
+          - listitem [ref=f11e71]:
+            - link "About Us" [ref=f11e74] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/about-us/
+          - listitem [ref=f11e76]:
+            - link "Testimonials" [ref=f11e79] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/testimonials/
+          - listitem [ref=f11e81]:
+            - link "Pre-Owned" [ref=f11e84] [cursor=pointer]:
+              - /url: /vehicles/?condition%5B%5D=pre-owned-certified
+          - listitem [ref=f11e86]:
+            - link "Sell Your Vehicle" [ref=f11e89] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/sell-your-vehicle/
+          - listitem [ref=f11e91]:
+            - link "Contact Us" [ref=f11e94] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/contact-us/
+          - listitem [ref=f11e96]:
+            - link "Quick Menu " [ref=f11e99] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=f11e100]: Quick Menu
+              - generic [ref=f11e101]: 
+            - text: 
+      - text:        
+    - main [ref=f11e102]:
+      - generic [ref=f11e106]:
+        - heading "Customer Recommendations" [level=2] [ref=f11e112]
+        - generic [ref=f11e116]:
+          - heading "Testimonials" [level=4] [ref=f11e118]
+          - paragraph [ref=f11e126]:
+            - text: “
+            - strong [ref=f11e127]: The pinnacle of service!!
+            - text: Ray really goes the extra mile to ensure his customers are taken care of and always happy. Won’t find a more honest man!”
+  - generic [ref=f11e156]:
+    - generic [ref=f11e157]:
+      - generic [ref=f11e158]: Software & Management by
+      - link "TruDealer" [ref=f11e159] [cursor=pointer]:
+        - /url: https://trudealer.tru-saas.com
+    - generic [ref=f11e160]:
+      - generic [ref=f11e161]:
+        - img "Your Car Guy" [ref=f11e162]
+        - generic [ref=f11e174]:
+          - emphasis [ref=f11e175]: "5.0"
+          - text: / 5.0
+        - paragraph [ref=f11e177]:
+          - strong [ref=f11e178]: 332 reviews
+      - generic [ref=f11e179]:
+        - img "2024 Ford Ranger XL" [ref=f11e181]
+        - img "2024 Toyota Urban Cruiser XR" [ref=f11e183]
+        - img "2023 Ford Ranger Wildtrak" [ref=f11e185]
+        - img "Ford Ranger detail" [ref=f11e187]
+        - img "Urban Cruiser detail" [ref=f11e189]
+      - generic [ref=f11e190]:
+        - iframe [ref=f11e192]
+        - generic [ref=f11e193]:
+          - generic [ref=f11e199]:
+            - generic [ref=f11e200]: Address
+            - generic [ref=f11e201]: 17 Burt Drive, Newton ParkGqeberha 6045
+          - generic [ref=f11e206]:
+            - generic [ref=f11e207]: Call us
+            - generic [ref=f11e208]:
+              - link "083 465 9921" [ref=f11e209] [cursor=pointer]:
+                - /url: tel:0834659921
+              - text: ·
+              - link "041 007 0393" [ref=f11e210] [cursor=pointer]:
+                - /url: tel:0410070393
+          - generic [ref=f11e216]:
+            - generic [ref=f11e217]: Email
+            - link "sales@yourcarguy.co.za" [ref=f11e219] [cursor=pointer]:
+              - /url: mailto:sales@yourcarguy.co.za
+          - generic [ref=f11e225]:
+            - generic [ref=f11e226]: Hours
+            - generic [ref=f11e227]: Mon-Fri 07:30-17:30Sat 08:00-13:00
+  - region "Go to Top":
+    - link " Go to Top":
+      - /url: "#"
+      - text: 
+      - generic: Go to Top
+  - generic:
+    - generic:
+      - text: Chat with us on
+      - strong: WhatsApp
+    - button "Chat with us on WhatsApp" [ref=f11e228] [cursor=pointer]
+  - generic [ref=f11e232]:
+    - generic [ref=f11e233]:
+      - generic [ref=f11e234]: "0"
+      - text: Added to Compare
+    - generic [ref=f11e235]:
+      - link "Compare Now" [ref=f11e236] [cursor=pointer]:
+        - /url: https://yourcarguy.co.za/compare-vehicles/
+      - button "Clear" [ref=f11e237] [cursor=pointer]
+  - status [ref=f11e238]
+  - button "Open contact form" [ref=f11e239] [cursor=pointer]:
+    - generic [ref=f11e244]:
+      - generic [ref=f11e245]: Get in Touch
+      - generic [ref=f11e246]: Your Car Guy
+  - button "Check affordability" [ref=f11e247] [cursor=pointer]:
+    - generic [ref=f11e252]:
+      - generic [ref=f11e253]: Check Affordability
+      - generic [ref=f11e254]: What you qualify for in ~60s. No hard credit check.
+      - generic [ref=f11e255]: TruAfford · Soft

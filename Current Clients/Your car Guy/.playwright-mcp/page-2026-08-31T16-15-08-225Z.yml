@@ -1,0 +1,274 @@
+- generic [active] [ref=f16e1]:
+  - generic [ref=f16e3]:
+    - generic [ref=f16e4]:
+      - link "083 465 9921" [ref=f16e5] [cursor=pointer]:
+        - /url: tel:0834659921
+      - text: "|"
+      - link "041 007 0393" [ref=f16e6] [cursor=pointer]:
+        - /url: tel:0410070393
+    - paragraph [ref=f16e7]: 17 Burt Drive, Newton Park, PE · Mon–Fri 07:30–17:30
+    - generic [ref=f16e8]:
+      - button "f" [ref=f16e9]
+      - button "✦" [ref=f16e10]
+  - banner [ref=f16e11]:
+    - generic [ref=f16e12]:
+      - link "Y Your Car Guy Backed by Trust" [ref=f16e13] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f16e14]: "Y"
+        - generic [ref=f16e16]:
+          - generic [ref=f16e17]: Your Car Guy
+          - generic [ref=f16e18]: Backed by Trust
+      - navigation [ref=f16e19]:
+        - link "Home" [ref=f16e20] [cursor=pointer]:
+          - /url: /
+        - link "Stock" [ref=f16e21] [cursor=pointer]:
+          - /url: /vehicles
+        - link "Sell Your Vehicle" [ref=f16e22] [cursor=pointer]:
+          - /url: /sell-your-vehicle
+        - link "About Us" [ref=f16e23] [cursor=pointer]:
+          - /url: /about-us
+        - link "Testimonials" [ref=f16e24] [cursor=pointer]:
+          - /url: /testimonials
+      - generic [ref=f16e25]:
+        - button "Switch to dark mode" [ref=f16e26]
+        - link [ref=f16e29] [cursor=pointer]:
+          - /url: /vehicles
+          - button "Browse Stock" [ref=f16e30]
+        - button [ref=f16e31]
+  - main [ref=f16e33]:
+    - generic [ref=f16e34]:
+      - img "Your Car Guy showroom" [ref=f16e35]
+      - generic [ref=f16e37]:
+        - text: Newton Park, Port Elizabeth
+        - heading "Backed by Trust. Driven by Quality." [level=1] [ref=f16e38]: Backed by Trust.Driven by Quality.
+        - paragraph [ref=f16e39]: Discover a carefully curated selection of premium vehicles, supported by professional guidance and industry-leading after-sales care.
+        - generic [ref=f16e40]:
+          - link [ref=f16e41] [cursor=pointer]:
+            - /url: /vehicles
+            - button "Browse Stock (8)" [ref=f16e42]
+          - link [ref=f16e45] [cursor=pointer]:
+            - /url: /sell-your-vehicle
+            - button "Sell Your Car" [ref=f16e46]
+    - generic [ref=f16e48]:
+      - generic [ref=f16e49]:
+        - generic [ref=f16e52]: "332"
+        - generic [ref=f16e53]: Five-Star Reviews
+      - generic [ref=f16e54]:
+        - generic [ref=f16e57]: 10+
+        - generic [ref=f16e58]: Years in PE
+      - generic [ref=f16e59]:
+        - generic [ref=f16e63]: 8+
+        - generic [ref=f16e64]: Vehicles Supplied
+    - generic [ref=f16e66]:
+      - generic [ref=f16e69]:
+        - generic [ref=f16e70]:
+          - heading "Latest Stock" [level=1] [ref=f16e71]
+          - paragraph [ref=f16e72]: Handpicked quality used vehicles
+        - generic [ref=f16e73]: 8vehicles
+      - generic [ref=f16e75]:
+        - article [ref=f16e76]:
+          - link "2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C Featured77d in stock 6" [ref=f16e77] [cursor=pointer]:
+            - /url: /vehicle/YC-RNG-001
+            - img "2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=f16e78]
+            - generic [ref=f16e79]:
+              - text: Featured
+              - generic [ref=f16e80]: 77d in stock
+            - generic [ref=f16e81]: "6"
+          - generic [ref=f16e85]:
+            - link [ref=f16e86] [cursor=pointer]:
+              - /url: /vehicle/YC-RNG-001
+              - heading "2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [level=3] [ref=f16e87]
+            - generic [ref=f16e88]:
+              - generic [ref=f16e89]: FuelDiesel
+              - generic [ref=f16e90]: Year2020
+              - generic [ref=f16e91]: Mileage83 000 km
+              - generic [ref=f16e92]: GearboxAutomatic
+            - generic [ref=f16e94]:
+              - generic [ref=f16e95]: Our Price
+              - generic [ref=f16e96]: R 489 900
+        - article [ref=f16e97]:
+          - link "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C Featured61d in stock 6" [ref=f16e98] [cursor=pointer]:
+            - /url: /vehicle/YC-HTL-002
+            - img "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [ref=f16e99]
+            - generic [ref=f16e100]:
+              - text: Featured
+              - generic [ref=f16e101]: 61d in stock
+            - generic [ref=f16e102]: "6"
+          - generic [ref=f16e106]:
+            - link [ref=f16e107] [cursor=pointer]:
+              - /url: /vehicle/YC-HTL-002
+              - heading "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [level=3] [ref=f16e108]
+            - generic [ref=f16e109]:
+              - generic [ref=f16e110]: FuelDiesel
+              - generic [ref=f16e111]: Year2023
+              - generic [ref=f16e112]: Mileage147 000 km
+              - generic [ref=f16e113]: GearboxAutomatic
+            - generic [ref=f16e115]:
+              - generic [ref=f16e116]: Our Price
+              - generic [ref=f16e117]: R 479 000
+        - article [ref=f16e118]:
+          - link "2024 SUZUKI JIMNY 1.5 GLX A/T Featured42d in stock 4" [ref=f16e119] [cursor=pointer]:
+            - /url: /vehicle/YC-SMJ-003
+            - img "2024 SUZUKI JIMNY 1.5 GLX A/T" [ref=f16e120]
+            - generic [ref=f16e121]:
+              - text: Featured
+              - generic [ref=f16e122]: 42d in stock
+            - generic [ref=f16e123]: "4"
+          - generic [ref=f16e127]:
+            - link [ref=f16e128] [cursor=pointer]:
+              - /url: /vehicle/YC-SMJ-003
+              - heading "2024 SUZUKI JIMNY 1.5 GLX A/T" [level=3] [ref=f16e129]
+            - generic [ref=f16e130]:
+              - generic [ref=f16e131]: FuelPetrol
+              - generic [ref=f16e132]: Year2024
+              - generic [ref=f16e133]: Mileage17 500 km
+              - generic [ref=f16e134]: GearboxAutomatic
+            - generic [ref=f16e136]:
+              - generic [ref=f16e137]: Our Price
+              - generic [ref=f16e138]: R 419 900
+        - article [ref=f16e139]:
+          - link "2023 FORD EVEREST 2.0 BITURBO 4X4 XLT A/T New In 4" [ref=f16e140] [cursor=pointer]:
+            - /url: /vehicle/YC-FDE-007
+            - img "2023 FORD EVEREST 2.0 BITURBO 4X4 XLT A/T" [ref=f16e141]
+            - generic [ref=f16e142]: New In
+            - generic [ref=f16e143]: "4"
+          - generic [ref=f16e147]:
+            - link [ref=f16e148] [cursor=pointer]:
+              - /url: /vehicle/YC-FDE-007
+              - heading "2023 FORD EVEREST 2.0 BITURBO 4X4 XLT A/T" [level=3] [ref=f16e149]
+            - generic [ref=f16e150]:
+              - generic [ref=f16e151]: FuelDiesel
+              - generic [ref=f16e152]: Year2023
+              - generic [ref=f16e153]: Mileage22 000 km
+              - generic [ref=f16e154]: GearboxAutomatic
+            - generic [ref=f16e156]:
+              - generic [ref=f16e157]: Our Price
+              - generic [ref=f16e158]: R 499 900
+      - link [ref=f16e160] [cursor=pointer]:
+        - /url: /vehicles
+        - button "View All Vehicles" [ref=f16e161]
+    - generic [ref=f16e165]:
+      - generic [ref=f16e166]:
+        - generic [ref=f16e178]: "\"Best dealer in PE hands down. Transparent and fair.\""
+        - generic [ref=f16e179]: — Rudi V.
+      - generic [ref=f16e180]:
+        - generic [ref=f16e192]: "\"Ray sorted me out with the perfect bakkie. Legend!\""
+        - generic [ref=f16e193]: — Sihle M.
+      - generic [ref=f16e194]:
+        - generic [ref=f16e206]: "\"Drove out same day. No hassles, no hidden costs.\""
+        - generic [ref=f16e207]: — Anele N.
+      - generic [ref=f16e208]:
+        - generic [ref=f16e220]: "\"Trade-in value was higher than anywhere else I tried.\""
+        - generic [ref=f16e221]: — Johan B.
+      - generic [ref=f16e222]:
+        - generic [ref=f16e234]: "\"Professional from start to finish. Highly recommend.\""
+        - generic [ref=f16e235]: — Thando K.
+      - generic [ref=f16e236]:
+        - generic [ref=f16e248]: "\"Found my dream car here. Service was incredible.\""
+        - generic [ref=f16e249]: — Michelle D.
+      - generic [ref=f16e250]:
+        - generic [ref=f16e262]: "\"Quick finance approval, great communication throughout.\""
+        - generic [ref=f16e263]: — Sipho Z.
+      - generic [ref=f16e264]:
+        - generic [ref=f16e276]: "\"Ray goes above and beyond. Will definitely be back.\""
+        - generic [ref=f16e277]: — Chantel P.
+      - generic [ref=f16e278]:
+        - generic [ref=f16e290]: "\"Best dealer in PE hands down. Transparent and fair.\""
+        - generic [ref=f16e291]: — Rudi V.
+      - generic [ref=f16e292]:
+        - generic [ref=f16e304]: "\"Ray sorted me out with the perfect bakkie. Legend!\""
+        - generic [ref=f16e305]: — Sihle M.
+      - generic [ref=f16e306]:
+        - generic [ref=f16e318]: "\"Drove out same day. No hassles, no hidden costs.\""
+        - generic [ref=f16e319]: — Anele N.
+      - generic [ref=f16e320]:
+        - generic [ref=f16e332]: "\"Trade-in value was higher than anywhere else I tried.\""
+        - generic [ref=f16e333]: — Johan B.
+      - generic [ref=f16e334]:
+        - generic [ref=f16e346]: "\"Professional from start to finish. Highly recommend.\""
+        - generic [ref=f16e347]: — Thando K.
+      - generic [ref=f16e348]:
+        - generic [ref=f16e360]: "\"Found my dream car here. Service was incredible.\""
+        - generic [ref=f16e361]: — Michelle D.
+      - generic [ref=f16e362]:
+        - generic [ref=f16e374]: "\"Quick finance approval, great communication throughout.\""
+        - generic [ref=f16e375]: — Sipho Z.
+      - generic [ref=f16e376]:
+        - generic [ref=f16e388]: "\"Ray goes above and beyond. Will definitely be back.\""
+        - generic [ref=f16e389]: — Chantel P.
+    - generic [ref=f16e391]:
+      - heading "Why Buyers Choose YCG" [level=2] [ref=f16e393]
+      - generic [ref=f16e394]:
+        - generic [ref=f16e395]:
+          - heading "Quality Assured" [level=3] [ref=f16e399]
+          - paragraph [ref=f16e400]: Every vehicle goes through our multi-point quality check before it reaches our yard.
+        - generic [ref=f16e401]:
+          - heading "Fair Pricing" [level=3] [ref=f16e406]
+          - paragraph [ref=f16e407]: We price against the real market — not inflated ask prices that never move.
+        - generic [ref=f16e408]:
+          - heading "No Pressure" [level=3] [ref=f16e412]
+          - paragraph [ref=f16e413]: Walk in at your pace. No salesperson circling you. Real people, real deals.
+        - generic [ref=f16e414]:
+          - heading "After-Sales Care" [level=3] [ref=f16e418]
+          - paragraph [ref=f16e419]: The relationship doesn't end when you drive away. We stand behind every sale.
+    - generic [ref=f16e422]:
+      - heading "Got a car to trade in?" [level=2] [ref=f16e423]
+      - paragraph [ref=f16e424]: Instant market-based range, no call required.
+    - generic [ref=f16e426]:
+      - generic [ref=f16e427]:
+        - heading "Ready to find your next car?" [level=2] [ref=f16e428]
+        - paragraph [ref=f16e429]: Visit us at 17 Burt Drive, Newton Park — or browse our full stock online. Every vehicle tells a story. Let's find yours.
+      - generic [ref=f16e430]:
+        - link [ref=f16e431] [cursor=pointer]:
+          - /url: /vehicles
+          - button "Browse Full Stock" [ref=f16e432]
+        - link [ref=f16e433] [cursor=pointer]:
+          - /url: tel:0834659921
+          - button "Call Now" [ref=f16e434]
+  - contentinfo [ref=f16e435]:
+    - generic [ref=f16e436]:
+      - generic [ref=f16e437]:
+        - generic [ref=f16e438]: Your Car Guy
+        - paragraph [ref=f16e439]: Backed by Trust. Driven by Quality. Port Elizabeth's trusted destination for quality pre-owned vehicles.
+        - generic [ref=f16e440]: Ray's Number 1 Dealer
+      - generic [ref=f16e441]:
+        - generic [ref=f16e442]: Quick Links
+        - list [ref=f16e443]:
+          - listitem [ref=f16e444]:
+            - link "Home" [ref=f16e445] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f16e446]:
+            - link "Browse Stock" [ref=f16e447] [cursor=pointer]:
+              - /url: /vehicles
+          - listitem [ref=f16e448]:
+            - link "Sell Your Car" [ref=f16e449] [cursor=pointer]:
+              - /url: /sell-your-vehicle
+          - listitem [ref=f16e450]:
+            - link "About Us" [ref=f16e451] [cursor=pointer]:
+              - /url: /about-us
+          - listitem [ref=f16e452]:
+            - link "Testimonials" [ref=f16e453] [cursor=pointer]:
+              - /url: /testimonials
+      - generic [ref=f16e454]:
+        - generic [ref=f16e455]: Get in Touch
+        - generic [ref=f16e456]:
+          - link "083 465 9921" [ref=f16e457] [cursor=pointer]:
+            - /url: tel:0834659921
+          - link "041 007 0393" [ref=f16e460] [cursor=pointer]:
+            - /url: tel:0410070393
+          - paragraph [ref=f16e463]: 17 Burt Drive, Newton Park, PE
+          - paragraph [ref=f16e467]: Mon–Fri 07:30–17:30 · Sat 08:00–13:00
+          - link "sales@yourcarguy.co.za" [ref=f16e471] [cursor=pointer]:
+            - /url: mailto:sales@yourcarguy.co.za
+    - generic [ref=f16e476]:
+      - paragraph [ref=f16e477]: Software & Management by TruDealer
+      - paragraph [ref=f16e478]: ★ 332 Five-Star Google Reviews
+  - navigation [ref=f16e479]:
+    - generic [ref=f16e480]:
+      - link "Stock" [ref=f16e481] [cursor=pointer]:
+        - /url: /vehicles
+      - link "Sell" [ref=f16e486] [cursor=pointer]:
+        - /url: /sell-your-vehicle
+      - button "Chat" [ref=f16e490]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f16e498] [cursor=pointer]

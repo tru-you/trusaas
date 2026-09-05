@@ -742,6 +742,7 @@ p { margin: 0 0 1em; color: var(--ink-quiet); }
   outline: none;
 }
 .search-rail select { appearance: none; cursor: pointer; }
+.search-rail select option { background: #FFFFFF; color: #0E1A26; }
 .search-rail .marker {
   display: flex; align-items: center; padding: 0 26px;
   font-family: var(--mono); font-size: 10.5px;
@@ -773,10 +774,17 @@ p { margin: 0 0 1em; color: var(--ink-quiet); }
   background: var(--bg);
   padding: 32px 24px;
   display: flex; flex-direction: column; gap: 4px;
-  transition: background 0.4s var(--ease);
+  transition: background 0.4s var(--ease),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
-.tile:hover { background: var(--bg-raised); }
+.tile:hover {
+  background: var(--bg-raised);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -8px rgba(14, 26, 38, 0.08);
+  z-index: 2;
+}
 .tile svg {
   width: 52px; height: 30px;
   color: var(--ink-mute); margin-bottom: 16px;
@@ -4173,6 +4181,8 @@ a.chip:hover, button.chip:hover { color: var(--ink); border-color: var(--ink-qui
 [data-theme="dark"] .search-rail { background: #12202E; }
 [data-theme="dark"] .search-rail select,
 [data-theme="dark"] .search-rail .go { border-color: rgba(255,255,255,0.15); color: #F4F0E8; background: rgba(255,255,255,0.06); }
+[data-theme="dark"] select option,
+[data-theme="dark"] .search-rail select option { background: #12202E !important; color: #F8FAFC !important; }
 [data-theme="dark"] .panel,
 [data-theme="dark"] .vir-full-card { background: #16283A; border-color: rgba(255,255,255,0.1); }
 [data-theme="dark"] .sticky-deal-bar { background: rgba(14,26,38,0.9); }

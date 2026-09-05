@@ -103,7 +103,7 @@ export default async function (request, context) {
     (kmFmt ? `, ${kmFmt}` : "") +
     (trans ? `, ${trans}` : "") +
     (fuel ? `, ${fuel}` : "") +
-    TAGLINE;
+    (TAGLINE ? `. ${TAGLINE}` : "");
 
   // ---- schema.org Car + Offer ----
   const ld = {

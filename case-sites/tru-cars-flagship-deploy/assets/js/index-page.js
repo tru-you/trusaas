@@ -11,8 +11,18 @@
     var hero = all[0];
     if (hero) {
       var heroPrice = hero.truPrice && hero.truPrice < hero.price ? hero.truPrice : hero.price;
-      document.getElementById("heroImg").src =
-        hero.heroImage || (hero.images && hero.images[0]) || "/assets/hero-showroom.jpg";
+      var heroImgEl = document.getElementById("heroImg");
+      var targetSrc = hero.heroImage || (hero.images && hero.images[0]);
+      if (heroImgEl && targetSrc) {
+        var curSrc = heroImgEl.getAttribute("src") || heroImgEl.src || "";
+        if (curSrc !== targetSrc && !curSrc.endsWith(targetSrc)) {
+          var imgLoader = new Image();
+          imgLoader.onload = function () {
+            if (heroImgEl) heroImgEl.src = targetSrc;
+          };
+          imgLoader.src = targetSrc;
+        }
+      }
       document.getElementById("heroTitle").innerHTML =
         TRU.esc(hero.make) + " <em>" + TRU.esc(hero.model) + ".</em>";
       document.getElementById("heroPrice").textContent = TRU.money(heroPrice);

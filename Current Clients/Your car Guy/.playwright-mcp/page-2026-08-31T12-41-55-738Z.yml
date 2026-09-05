@@ -1,0 +1,826 @@
+- generic [active] [ref=f3e1]:
+  - paragraph
+  - link "Skip to content" [ref=f3e2] [cursor=pointer]:
+    - /url: "#content"
+  - generic [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - generic [ref=f3e7]:
+        - paragraph [ref=f3e11]:
+          - generic [ref=f3e12]: 
+          - link "083 465 9921" [ref=f3e13] [cursor=pointer]:
+            - /url: tel:0834659921
+          - text: "|"
+          - link "041 007 0393" [ref=f3e14] [cursor=pointer]:
+            - /url: tel:0410070393
+        - paragraph [ref=f3e18]: 17 BURT DRIVE, NEWTON PARK, PE
+        - paragraph [ref=f3e22]: MON – FRI 07:30 – 17:30
+        - generic [ref=f3e27]:
+          - link "facebook" [ref=f3e28] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "instagram" [ref=f3e29] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "whatsapp" [ref=f3e30] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+        - paragraph [ref=f3e34]:
+          - generic [ref=f3e35]: 
+          - link "LOGIN | REGISTER" [ref=f3e36] [cursor=pointer]:
+            - /url: /my-account
+      - generic [ref=f3e42]:
+        - generic [ref=f3e47]:
+          - link "facebook" [ref=f3e48] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "instagram" [ref=f3e49] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+          - link "whatsapp" [ref=f3e50] [cursor=pointer]:
+            - /url: "#"
+            - text: 
+        - paragraph [ref=f3e58]:
+          - strong [ref=f3e59]: 083 465 9921 | 041 007 0393
+      - navigation "Home Menu" [ref=f3e64]:
+        - text:  
+        - list [ref=f3e65]:
+          - listitem [ref=f3e66]:
+            - link "Home" [ref=f3e69] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/
+          - listitem [ref=f3e71]:
+            - link "About Us" [ref=f3e74] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/about-us/
+          - listitem [ref=f3e76]:
+            - link "Testimonials" [ref=f3e79] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/testimonials/
+          - listitem [ref=f3e81]:
+            - link "Pre-Owned" [ref=f3e84] [cursor=pointer]:
+              - /url: /vehicles/?condition%5B%5D=pre-owned-certified
+          - listitem [ref=f3e86]:
+            - link "Sell Your Vehicle" [ref=f3e89] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/sell-your-vehicle/
+          - listitem [ref=f3e91]:
+            - link "Contact Us" [ref=f3e94] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/contact-us/
+          - listitem [ref=f3e96]:
+            - link "Quick Menu " [ref=f3e99] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=f3e100]: Quick Menu
+              - generic [ref=f3e101]: 
+            - text: 
+      - text:        
+    - main [ref=f3e102]:
+      - generic [ref=f3e105]:
+        - complementary [ref=f3e106]:
+          - generic [ref=f3e107]:
+            - heading "Filters" [level=2] [ref=f3e109]
+            - generic [ref=f3e110]:
+              - generic [ref=f3e111]:
+                - heading "Quick search" [level=3] [ref=f3e112]
+                - generic [ref=f3e113]:
+                  - generic [ref=f3e114]: Keyword
+                  - textbox "Keyword" [ref=f3e115]:
+                    - /placeholder: e.g. Fortuner 2.8 GD-6
+              - generic [ref=f3e116]:
+                - heading "Makes & Models" [level=3] [ref=f3e117]
+                - generic [ref=f3e118]:
+                  - generic [ref=f3e119]: Make
+                  - listbox [ref=f3e120] [cursor=pointer]:
+                    - option [ref=f3e121]: AUDI (1)
+                    - option [ref=f3e122]: CHEVROLET (1)
+                    - option [ref=f3e123]: FORD (10)
+                    - option [ref=f3e124]: HARLEY DAVIDSON (1)
+                    - option [ref=f3e125]: HAVAL (0)
+                    - option [ref=f3e126]: HONDA (1)
+                    - option [ref=f3e127]: JETOUR (1)
+                    - option [ref=f3e128]: MERCEDES-BENZ (0)
+                    - option [ref=f3e129]: NISSAN (1)
+                    - option [ref=f3e130]: RENAULT (1)
+                    - option [ref=f3e131]: SUZUKI (1)
+                    - option [ref=f3e132]: TOYOTA (8)
+                    - option [ref=f3e133]: VOLKSWAGEN (5)
+                  - combobox [ref=f3e136]:
+                    - list [ref=f3e137]:
+                      - listitem [ref=f3e138]:
+                        - searchbox "Select makes" [ref=f3e139]
+                - generic [ref=f3e140]:
+                  - generic [ref=f3e141]: Model
+                  - listbox [ref=f3e142] [cursor=pointer]:
+                    - option [ref=f3e143]: A3 (0)
+                    - option [ref=f3e144]: A4 (0)
+                    - option [ref=f3e145]: C CLASS (0)
+                    - option [ref=f3e146]: CIVIC (1)
+                    - option [ref=f3e147]: COROLLA (1)
+                    - option [ref=f3e148]: COROLLA CROSS (1)
+                    - option [ref=f3e149]: COROLLA QUEST (1)
+                    - option [ref=f3e150]: CORSA UTILITY (1)
+                    - option [ref=f3e151]: DASHING (1)
+                    - option [ref=f3e152]: DUSTER (1)
+                    - option [ref=f3e153]: DYNA (1)
+                    - option [ref=f3e154]: EVEREST (2)
+                    - option [ref=f3e155]: GOLF 7 (2)
+                    - option [ref=f3e156]: GOLF 8 (1)
+                    - option [ref=f3e157]: H6 (0)
+                    - option [ref=f3e158]: HILUX (2)
+                    - option [ref=f3e159]: JIMNY (1)
+                    - option [ref=f3e160]: LAND CRUISER PICK UP (1)
+                    - option [ref=f3e161]: LANDCRUISER 70 SERIE (1)
+                    - option [ref=f3e162]: MUSTANG (2)
+                    - option [ref=f3e163]: POLO (0)
+                    - option [ref=f3e164]: POLO VIVO (1)
+                    - option [ref=f3e165]: RANGER (6)
+                    - option [ref=f3e166]: S3 (1)
+                    - option [ref=f3e167]: T-CROSS (1)
+                    - option [ref=f3e168]: TRANSPORTER (0)
+                    - option [ref=f3e169]: URBAN CRUISER (1)
+                    - option [ref=f3e170]: X TRAIL (1)
+                  - combobox [ref=f3e173]:
+                    - list [ref=f3e174]:
+                      - listitem [ref=f3e175]:
+                        - searchbox "Select models" [ref=f3e176]
+            - generic [ref=f3e177]:
+              - button "Price" [ref=f3e179] [cursor=pointer]
+              - button "Year" [ref=f3e183] [cursor=pointer]
+              - button "Mileage" [ref=f3e187] [cursor=pointer]
+              - button "Body Type" [ref=f3e191] [cursor=pointer]
+              - button "Manual / Automatic" [ref=f3e195] [cursor=pointer]
+              - button "Fuel Type" [ref=f3e199] [cursor=pointer]
+              - button "4x2 / 4x4" [ref=f3e203] [cursor=pointer]
+            - button "Search 31 Vehicles" [ref=f3e207] [cursor=pointer]
+        - generic [ref=f3e208]:
+          - generic [ref=f3e209]:
+            - generic [ref=f3e210]:
+              - heading "Cars For Sale" [level=1] [ref=f3e211]
+              - paragraph [ref=f3e212]: 1 - 12 of 31
+            - generic [ref=f3e213]:
+              - generic [ref=f3e214]:
+                - button "Grid" [ref=f3e215] [cursor=pointer]
+                - button "List" [ref=f3e216] [cursor=pointer]
+              - generic [ref=f3e217]:
+                - generic [ref=f3e218]: "Sort by:"
+                - combobox "Sort by:" [ref=f3e219]:
+                  - option "Newest First" [selected]
+                  - option "Oldest First"
+                  - 'option "Price: Low to High"'
+                  - 'option "Price: High to Low"'
+                  - 'option "Year: Newest"'
+                  - 'option "Year: Oldest"'
+                  - option "Lowest Mileage"
+          - generic [ref=f3e220]:
+            - article [ref=f3e221]:
+              - generic [ref=f3e223]:
+                - link [ref=f3e224] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2024-suzuki-jimny-1-5-glx-a-t/
+                  - img "2024 SUZUKI JIMNY 1.5 GLX A/T" [ref=f3e225]
+                - generic [ref=f3e226]: Excellent
+                - button "Save vehicle" [ref=f3e228] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "10"
+              - generic [ref=f3e234]:
+                - generic [ref=f3e236]:
+                  - link "2024 SUZUKI JIMNY 1.5 GLX A/T" [ref=f3e237] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2024-suzuki-jimny-1-5-glx-a-t/
+                  - generic [ref=f3e238]: SUZUKI JIMNY
+                - generic "Vehicle specifications" [ref=f3e239]:
+                  - generic [ref=f3e240]:
+                    - generic [ref=f3e241]:
+                      - generic [ref=f3e242]: 📅
+                      - generic [ref=f3e243]: Year
+                    - generic [ref=f3e244]: "2024"
+                  - generic [ref=f3e245]:
+                    - generic [ref=f3e246]:
+                      - generic [ref=f3e247]: ⏱
+                      - generic [ref=f3e248]: Mileage
+                    - generic [ref=f3e249]: 17,500 km
+                  - generic [ref=f3e250]:
+                    - generic [ref=f3e251]:
+                      - generic [ref=f3e252]: 🚗
+                      - generic [ref=f3e253]: Body Type
+                    - generic [ref=f3e254]: 4 x 4
+                - generic [ref=f3e255]:
+                  - generic [ref=f3e257]:
+                    - button "⇄ Add to Compare" [ref=f3e258] [cursor=pointer]
+                    - link "View Details" [ref=f3e259] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2024-suzuki-jimny-1-5-glx-a-t/
+                  - generic [ref=f3e260]:
+                    - generic [ref=f3e261]: Our Price
+                    - generic [ref=f3e262]: R 419,900
+            - article [ref=f3e263]:
+              - generic [ref=f3e265]:
+                - link [ref=f3e266] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2018-volkswagen-golf-vii-gti-2-0-tsi-dsg/
+                  - img "2018 VOLKSWAGEN GOLF VII GTi 2.0 TSI DSG" [ref=f3e267]
+                - generic [ref=f3e268]: Excellent
+                - button "Save vehicle" [ref=f3e270] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "9"
+              - generic [ref=f3e276]:
+                - generic [ref=f3e278]:
+                  - link "2018 VOLKSWAGEN GOLF VII GTi 2.0 TSI DSG" [ref=f3e279] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2018-volkswagen-golf-vii-gti-2-0-tsi-dsg/
+                  - generic [ref=f3e280]: VOLKSWAGEN GOLF 7
+                - generic "Vehicle specifications" [ref=f3e281]:
+                  - generic [ref=f3e282]:
+                    - generic [ref=f3e283]:
+                      - generic [ref=f3e284]: ⛽
+                      - generic [ref=f3e285]: Fuel Type
+                    - generic [ref=f3e286]: Petrol
+                  - generic [ref=f3e287]:
+                    - generic [ref=f3e288]:
+                      - generic [ref=f3e289]: 📅
+                      - generic [ref=f3e290]: Year
+                    - generic [ref=f3e291]: "2018"
+                  - generic [ref=f3e292]:
+                    - generic [ref=f3e293]:
+                      - generic [ref=f3e294]: ⏱
+                      - generic [ref=f3e295]: Mileage
+                    - generic [ref=f3e296]: 76,000 km
+                  - generic [ref=f3e297]:
+                    - generic [ref=f3e298]:
+                      - generic [ref=f3e299]: ⚙
+                      - generic [ref=f3e300]: Transmission
+                    - generic [ref=f3e301]: Automatic
+                  - generic [ref=f3e302]:
+                    - generic [ref=f3e303]:
+                      - generic [ref=f3e304]: 🚗
+                      - generic [ref=f3e305]: Body Type
+                    - generic [ref=f3e306]: Hatchback
+                - generic [ref=f3e307]:
+                  - generic [ref=f3e309]:
+                    - button "⇄ Add to Compare" [ref=f3e310] [cursor=pointer]
+                    - link "View Details" [ref=f3e311] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2018-volkswagen-golf-vii-gti-2-0-tsi-dsg/
+                  - generic [ref=f3e312]:
+                    - generic [ref=f3e313]: Our Price
+                    - generic [ref=f3e314]: R 479,900
+            - article [ref=f3e315]:
+              - generic [ref=f3e317]:
+                - link [ref=f3e318] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c-2/
+                  - img "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f3e319]
+                - generic [ref=f3e320]: Excellent
+                - button "Save vehicle" [ref=f3e322] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "9"
+              - generic [ref=f3e328]:
+                - generic [ref=f3e330]:
+                  - link "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f3e331] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c-2/
+                  - generic [ref=f3e332]: FORD RANGER
+                - generic "Vehicle specifications" [ref=f3e333]:
+                  - generic [ref=f3e334]:
+                    - generic [ref=f3e335]:
+                      - generic [ref=f3e336]: ⛽
+                      - generic [ref=f3e337]: Fuel Type
+                    - generic [ref=f3e338]: Diesel
+                  - generic [ref=f3e339]:
+                    - generic [ref=f3e340]:
+                      - generic [ref=f3e341]: 📅
+                      - generic [ref=f3e342]: Year
+                    - generic [ref=f3e343]: "2023"
+                  - generic [ref=f3e344]:
+                    - generic [ref=f3e345]:
+                      - generic [ref=f3e346]: ⏱
+                      - generic [ref=f3e347]: Mileage
+                    - generic [ref=f3e348]: 88,500 km
+                  - generic [ref=f3e349]:
+                    - generic [ref=f3e350]:
+                      - generic [ref=f3e351]: ⚙
+                      - generic [ref=f3e352]: Transmission
+                    - generic [ref=f3e353]: Automatic
+                  - generic [ref=f3e354]:
+                    - generic [ref=f3e355]:
+                      - generic [ref=f3e356]: 🚗
+                      - generic [ref=f3e357]: Body Type
+                    - generic [ref=f3e358]: Bakkie Double Cab
+                - generic [ref=f3e359]:
+                  - generic [ref=f3e361]:
+                    - button "⇄ Add to Compare" [ref=f3e362] [cursor=pointer]
+                    - link "View Details" [ref=f3e363] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c-2/
+                  - generic [ref=f3e364]:
+                    - generic [ref=f3e365]: Our Price
+                    - generic [ref=f3e366]: R 645,000
+            - article [ref=f3e367]:
+              - generic [ref=f3e369]:
+                - link [ref=f3e370] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                  - img "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [ref=f3e371]
+                - generic [ref=f3e372]: Excellent
+                - button "Save vehicle" [ref=f3e374] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "9"
+              - generic [ref=f3e380]:
+                - generic [ref=f3e382]:
+                  - link "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [ref=f3e383] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                  - generic [ref=f3e384]: TOYOTA HILUX
+                - generic "Vehicle specifications" [ref=f3e385]:
+                  - generic [ref=f3e386]:
+                    - generic [ref=f3e387]:
+                      - generic [ref=f3e388]: ⛽
+                      - generic [ref=f3e389]: Fuel Type
+                    - generic [ref=f3e390]: Diesel
+                  - generic [ref=f3e391]:
+                    - generic [ref=f3e392]:
+                      - generic [ref=f3e393]: 📅
+                      - generic [ref=f3e394]: Year
+                    - generic [ref=f3e395]: "2023"
+                  - generic [ref=f3e396]:
+                    - generic [ref=f3e397]:
+                      - generic [ref=f3e398]: ⏱
+                      - generic [ref=f3e399]: Mileage
+                    - generic [ref=f3e400]: 147,000 km
+                  - generic [ref=f3e401]:
+                    - generic [ref=f3e402]:
+                      - generic [ref=f3e403]: ⚙
+                      - generic [ref=f3e404]: Transmission
+                    - generic [ref=f3e405]: Automatic
+                  - generic [ref=f3e406]:
+                    - generic [ref=f3e407]:
+                      - generic [ref=f3e408]: 🚗
+                      - generic [ref=f3e409]: Body Type
+                    - generic [ref=f3e410]: Bakkie Double Cab
+                - generic [ref=f3e411]:
+                  - generic [ref=f3e413]:
+                    - button "⇄ Add to Compare" [ref=f3e414] [cursor=pointer]
+                    - link "View Details" [ref=f3e415] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                  - generic [ref=f3e416]:
+                    - generic [ref=f3e417]: Our Price
+                    - generic [ref=f3e418]: R 479,000
+            - article [ref=f3e419]:
+              - generic [ref=f3e421]:
+                - link [ref=f3e422] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2024-jetour-dashing-1-5t-deluxe/
+                  - img "2024 JETOUR DASHING 1.5T DELUXE" [ref=f3e423]
+                - generic [ref=f3e424]: Excellent
+                - button "Save vehicle" [ref=f3e426] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "9"
+              - generic [ref=f3e432]:
+                - generic [ref=f3e434]:
+                  - link "2024 JETOUR DASHING 1.5T DELUXE" [ref=f3e435] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2024-jetour-dashing-1-5t-deluxe/
+                  - generic [ref=f3e436]: JETOUR DASHING
+                - generic "Vehicle specifications" [ref=f3e437]:
+                  - generic [ref=f3e438]:
+                    - generic [ref=f3e439]:
+                      - generic [ref=f3e440]: ⛽
+                      - generic [ref=f3e441]: Fuel Type
+                    - generic [ref=f3e442]: Petrol
+                  - generic [ref=f3e443]:
+                    - generic [ref=f3e444]:
+                      - generic [ref=f3e445]: 📅
+                      - generic [ref=f3e446]: Year
+                    - generic [ref=f3e447]: "2024"
+                  - generic [ref=f3e448]:
+                    - generic [ref=f3e449]:
+                      - generic [ref=f3e450]: ⏱
+                      - generic [ref=f3e451]: Mileage
+                    - generic [ref=f3e452]: 23,000 km
+                  - generic [ref=f3e453]:
+                    - generic [ref=f3e454]:
+                      - generic [ref=f3e455]: ⚙
+                      - generic [ref=f3e456]: Transmission
+                    - generic [ref=f3e457]: Automatic
+                  - generic [ref=f3e458]:
+                    - generic [ref=f3e459]:
+                      - generic [ref=f3e460]: 🚗
+                      - generic [ref=f3e461]: Body Type
+                    - generic [ref=f3e462]: SUV
+                - generic [ref=f3e463]:
+                  - generic [ref=f3e465]:
+                    - button "⇄ Add to Compare" [ref=f3e466] [cursor=pointer]
+                    - link "View Details" [ref=f3e467] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2024-jetour-dashing-1-5t-deluxe/
+                  - generic [ref=f3e468]:
+                    - generic [ref=f3e469]: Our Price
+                    - generic [ref=f3e470]: R 349,900
+            - article [ref=f3e471]:
+              - generic [ref=f3e473]:
+                - link [ref=f3e474] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-toyota-landcruiser-76-4-5d-v8-s-w/
+                  - img "2023 TOYOTA LANDCRUISER 76 4.5D V8 S/W" [ref=f3e475]
+                - generic [ref=f3e476]: Excellent
+                - button "Save vehicle" [ref=f3e478] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "11"
+              - generic [ref=f3e484]:
+                - generic [ref=f3e486]:
+                  - link "2023 TOYOTA LANDCRUISER 76 4.5D V8 S/W" [ref=f3e487] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2023-toyota-landcruiser-76-4-5d-v8-s-w/
+                  - generic [ref=f3e488]: TOYOTA LANDCRUISER 70 SERIE
+                - generic "Vehicle specifications" [ref=f3e489]:
+                  - generic [ref=f3e490]:
+                    - generic [ref=f3e491]:
+                      - generic [ref=f3e492]: ⛽
+                      - generic [ref=f3e493]: Fuel Type
+                    - generic [ref=f3e494]: Diesel
+                  - generic [ref=f3e495]:
+                    - generic [ref=f3e496]:
+                      - generic [ref=f3e497]: 📅
+                      - generic [ref=f3e498]: Year
+                    - generic [ref=f3e499]: "2023"
+                  - generic [ref=f3e500]:
+                    - generic [ref=f3e501]:
+                      - generic [ref=f3e502]: ⏱
+                      - generic [ref=f3e503]: Mileage
+                    - generic [ref=f3e504]: 66,500 km
+                  - generic [ref=f3e505]:
+                    - generic [ref=f3e506]:
+                      - generic [ref=f3e507]: ⚙
+                      - generic [ref=f3e508]: Transmission
+                    - generic [ref=f3e509]: Manual
+                  - generic [ref=f3e510]:
+                    - generic [ref=f3e511]:
+                      - generic [ref=f3e512]: 🚗
+                      - generic [ref=f3e513]: Body Type
+                    - generic [ref=f3e514]: Station Wagon
+                - generic [ref=f3e515]:
+                  - generic [ref=f3e517]:
+                    - button "⇄ Add to Compare" [ref=f3e518] [cursor=pointer]
+                    - link "View Details" [ref=f3e519] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2023-toyota-landcruiser-76-4-5d-v8-s-w/
+                  - generic [ref=f3e520]:
+                    - generic [ref=f3e521]: Our Price
+                    - generic [ref=f3e522]: R 1,069,900
+            - article [ref=f3e523]:
+              - generic [ref=f3e525]:
+                - link [ref=f3e526] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2022-volkswagen-golf-8-gti-2-0-tsi-dsg/
+                  - img "2022 VOLKSWAGEN GOLF 8 GTi 2.0 TSI DSG" [ref=f3e527]
+                - generic [ref=f3e528]: Excellent
+                - button "Save vehicle" [ref=f3e530] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "9"
+              - generic [ref=f3e536]:
+                - generic [ref=f3e538]:
+                  - link "2022 VOLKSWAGEN GOLF 8 GTi 2.0 TSI DSG" [ref=f3e539] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2022-volkswagen-golf-8-gti-2-0-tsi-dsg/
+                  - generic [ref=f3e540]: VOLKSWAGEN GOLF 8
+                - generic "Vehicle specifications" [ref=f3e541]:
+                  - generic [ref=f3e542]:
+                    - generic [ref=f3e543]:
+                      - generic [ref=f3e544]: ⛽
+                      - generic [ref=f3e545]: Fuel Type
+                    - generic [ref=f3e546]: Petrol
+                  - generic [ref=f3e547]:
+                    - generic [ref=f3e548]:
+                      - generic [ref=f3e549]: 📅
+                      - generic [ref=f3e550]: Year
+                    - generic [ref=f3e551]: "2022"
+                  - generic [ref=f3e552]:
+                    - generic [ref=f3e553]:
+                      - generic [ref=f3e554]: ⏱
+                      - generic [ref=f3e555]: Mileage
+                    - generic [ref=f3e556]: 39,500 km
+                  - generic [ref=f3e557]:
+                    - generic [ref=f3e558]:
+                      - generic [ref=f3e559]: ⚙
+                      - generic [ref=f3e560]: Transmission
+                    - generic [ref=f3e561]: Automatic
+                  - generic [ref=f3e562]:
+                    - generic [ref=f3e563]:
+                      - generic [ref=f3e564]: 🚗
+                      - generic [ref=f3e565]: Body Type
+                    - generic [ref=f3e566]: Hatchback
+                - generic [ref=f3e567]:
+                  - generic [ref=f3e569]:
+                    - button "⇄ Add to Compare" [ref=f3e570] [cursor=pointer]
+                    - link "View Details" [ref=f3e571] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2022-volkswagen-golf-8-gti-2-0-tsi-dsg/
+                  - generic [ref=f3e572]:
+                    - generic [ref=f3e573]: Our Price
+                    - generic [ref=f3e574]: R 669,900
+            - article [ref=f3e575]:
+              - generic [ref=f3e577]:
+                - link [ref=f3e578] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2025-toyota-land-cruiser-79-4-5d-p-u-d-c/
+                  - img "2025 TOYOTA LAND CRUISER 79 4.5D P/U D/C" [ref=f3e579]
+                - generic [ref=f3e580]: Excellent
+                - button "Save vehicle" [ref=f3e582] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "12"
+              - generic [ref=f3e588]:
+                - generic [ref=f3e590]:
+                  - link "2025 TOYOTA LAND CRUISER 79 4.5D P/U D/C" [ref=f3e591] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2025-toyota-land-cruiser-79-4-5d-p-u-d-c/
+                  - generic [ref=f3e592]: TOYOTA LAND CRUISER PICK UP
+                - generic "Vehicle specifications" [ref=f3e593]:
+                  - generic [ref=f3e594]:
+                    - generic [ref=f3e595]:
+                      - generic [ref=f3e596]: ⛽
+                      - generic [ref=f3e597]: Fuel Type
+                    - generic [ref=f3e598]: Diesel
+                  - generic [ref=f3e599]:
+                    - generic [ref=f3e600]:
+                      - generic [ref=f3e601]: 📅
+                      - generic [ref=f3e602]: Year
+                    - generic [ref=f3e603]: "2025"
+                  - generic [ref=f3e604]:
+                    - generic [ref=f3e605]:
+                      - generic [ref=f3e606]: ⏱
+                      - generic [ref=f3e607]: Mileage
+                    - generic [ref=f3e608]: 3,500 km
+                  - generic [ref=f3e609]:
+                    - generic [ref=f3e610]:
+                      - generic [ref=f3e611]: ⚙
+                      - generic [ref=f3e612]: Transmission
+                    - generic [ref=f3e613]: Manual
+                  - generic [ref=f3e614]:
+                    - generic [ref=f3e615]:
+                      - generic [ref=f3e616]: 🚗
+                      - generic [ref=f3e617]: Body Type
+                    - generic [ref=f3e618]: Bakkie Double Cab
+                - generic [ref=f3e619]:
+                  - generic [ref=f3e621]:
+                    - button "⇄ Add to Compare" [ref=f3e622] [cursor=pointer]
+                    - link "View Details" [ref=f3e623] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2025-toyota-land-cruiser-79-4-5d-p-u-d-c/
+                  - generic [ref=f3e624]:
+                    - generic [ref=f3e625]: Our Price
+                    - generic [ref=f3e626]: R 2,799,900
+            - article [ref=f3e627]:
+              - generic [ref=f3e629]:
+                - link [ref=f3e630] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2022-toyota-corolla-cross-1-8-xr/
+                  - img "2022 TOYOTA COROLLA CROSS 1.8 XR" [ref=f3e631]
+                - generic [ref=f3e632]: Excellent
+                - button "Save vehicle" [ref=f3e634] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "10"
+              - generic [ref=f3e640]:
+                - generic [ref=f3e642]:
+                  - link "2022 TOYOTA COROLLA CROSS 1.8 XR" [ref=f3e643] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2022-toyota-corolla-cross-1-8-xr/
+                  - generic [ref=f3e644]: TOYOTA COROLLA CROSS
+                - generic "Vehicle specifications" [ref=f3e645]:
+                  - generic [ref=f3e646]:
+                    - generic [ref=f3e647]:
+                      - generic [ref=f3e648]: ⛽
+                      - generic [ref=f3e649]: Fuel Type
+                    - generic [ref=f3e650]: Petrol
+                  - generic [ref=f3e651]:
+                    - generic [ref=f3e652]:
+                      - generic [ref=f3e653]: 📅
+                      - generic [ref=f3e654]: Year
+                    - generic [ref=f3e655]: "2022"
+                  - generic [ref=f3e656]:
+                    - generic [ref=f3e657]:
+                      - generic [ref=f3e658]: ⏱
+                      - generic [ref=f3e659]: Mileage
+                    - generic [ref=f3e660]: 96,000 km
+                  - generic [ref=f3e661]:
+                    - generic [ref=f3e662]:
+                      - generic [ref=f3e663]: ⚙
+                      - generic [ref=f3e664]: Transmission
+                    - generic [ref=f3e665]: Automatic
+                  - generic [ref=f3e666]:
+                    - generic [ref=f3e667]:
+                      - generic [ref=f3e668]: 🚗
+                      - generic [ref=f3e669]: Body Type
+                    - generic [ref=f3e670]: SUV
+                - generic [ref=f3e671]:
+                  - generic [ref=f3e673]:
+                    - button "⇄ Add to Compare" [ref=f3e674] [cursor=pointer]
+                    - link "View Details" [ref=f3e675] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2022-toyota-corolla-cross-1-8-xr/
+                  - generic [ref=f3e676]:
+                    - generic [ref=f3e677]: Our Price
+                    - generic [ref=f3e678]: R 339,000
+            - article [ref=f3e679]:
+              - generic [ref=f3e681]:
+                - link [ref=f3e682] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2018-honda-civic-2-0t-type-r/
+                  - img "2018 HONDA CIVIC 2.0T TYPE R" [ref=f3e683]
+                - generic [ref=f3e684]: Excellent
+                - button "Save vehicle" [ref=f3e686] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "10"
+              - generic [ref=f3e692]:
+                - generic [ref=f3e694]:
+                  - link "2018 HONDA CIVIC 2.0T TYPE R" [ref=f3e695] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2018-honda-civic-2-0t-type-r/
+                  - generic [ref=f3e696]: HONDA CIVIC
+                - generic "Vehicle specifications" [ref=f3e697]:
+                  - generic [ref=f3e698]:
+                    - generic [ref=f3e699]:
+                      - generic [ref=f3e700]: ⛽
+                      - generic [ref=f3e701]: Fuel Type
+                    - generic [ref=f3e702]: Petrol
+                  - generic [ref=f3e703]:
+                    - generic [ref=f3e704]:
+                      - generic [ref=f3e705]: 📅
+                      - generic [ref=f3e706]: Year
+                    - generic [ref=f3e707]: "2018"
+                  - generic [ref=f3e708]:
+                    - generic [ref=f3e709]:
+                      - generic [ref=f3e710]: ⏱
+                      - generic [ref=f3e711]: Mileage
+                    - generic [ref=f3e712]: 85,500 km
+                  - generic [ref=f3e713]:
+                    - generic [ref=f3e714]:
+                      - generic [ref=f3e715]: ⚙
+                      - generic [ref=f3e716]: Transmission
+                    - generic [ref=f3e717]: Manual
+                  - generic [ref=f3e718]:
+                    - generic [ref=f3e719]:
+                      - generic [ref=f3e720]: 🚗
+                      - generic [ref=f3e721]: Body Type
+                    - generic [ref=f3e722]: Hatchback
+                - generic [ref=f3e723]:
+                  - generic [ref=f3e725]:
+                    - button "⇄ Add to Compare" [ref=f3e726] [cursor=pointer]
+                    - link "View Details" [ref=f3e727] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2018-honda-civic-2-0t-type-r/
+                  - generic [ref=f3e728]:
+                    - generic [ref=f3e729]: Our Price
+                    - generic [ref=f3e730]: R 495,000
+            - article [ref=f3e731]:
+              - generic [ref=f3e733]:
+                - link [ref=f3e734] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2020-volkswagen-golf-vii-2-0-tsi-r-dsg-228kw/
+                  - img "2020 VOLKSWAGEN GOLF VII 2.0 TSI R DSG (228KW)" [ref=f3e735]
+                - generic [ref=f3e736]: Excellent
+                - button "Save vehicle" [ref=f3e738] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "9"
+              - generic [ref=f3e744]:
+                - generic [ref=f3e746]:
+                  - link "2020 VOLKSWAGEN GOLF VII 2.0 TSI R DSG (228KW)" [ref=f3e747] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2020-volkswagen-golf-vii-2-0-tsi-r-dsg-228kw/
+                  - generic [ref=f3e748]: VOLKSWAGEN GOLF 7
+                - generic "Vehicle specifications" [ref=f3e749]:
+                  - generic [ref=f3e750]:
+                    - generic [ref=f3e751]:
+                      - generic [ref=f3e752]: ⛽
+                      - generic [ref=f3e753]: Fuel Type
+                    - generic [ref=f3e754]: Petrol
+                  - generic [ref=f3e755]:
+                    - generic [ref=f3e756]:
+                      - generic [ref=f3e757]: 📅
+                      - generic [ref=f3e758]: Year
+                    - generic [ref=f3e759]: "2020"
+                  - generic [ref=f3e760]:
+                    - generic [ref=f3e761]:
+                      - generic [ref=f3e762]: ⏱
+                      - generic [ref=f3e763]: Mileage
+                    - generic [ref=f3e764]: 164,000 km
+                  - generic [ref=f3e765]:
+                    - generic [ref=f3e766]:
+                      - generic [ref=f3e767]: ⚙
+                      - generic [ref=f3e768]: Transmission
+                    - generic [ref=f3e769]: Automatic
+                  - generic [ref=f3e770]:
+                    - generic [ref=f3e771]:
+                      - generic [ref=f3e772]: 🚗
+                      - generic [ref=f3e773]: Body Type
+                    - generic [ref=f3e774]: Hatchback
+                - generic [ref=f3e775]:
+                  - generic [ref=f3e777]:
+                    - button "⇄ Add to Compare" [ref=f3e778] [cursor=pointer]
+                    - link "View Details" [ref=f3e779] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2020-volkswagen-golf-vii-2-0-tsi-r-dsg-228kw/
+                  - generic [ref=f3e780]:
+                    - generic [ref=f3e781]: Our Price
+                    - generic [ref=f3e782]: R 559,900
+            - article [ref=f3e783]:
+              - generic [ref=f3e785]:
+                - link [ref=f3e786] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2024-ford-mustang-california-special-5-0-gt-a-t/
+                  - img "2024 FORD MUSTANG CALIFORNIA SPECIAL 5.0 GT A/T" [ref=f3e787]
+                - generic [ref=f3e788]: Excellent
+                - button "Save vehicle" [ref=f3e790] [cursor=pointer]: ♡
+                - generic:
+                  - generic: 📷
+                  - text: "11"
+              - generic [ref=f3e796]:
+                - generic [ref=f3e798]:
+                  - link "2024 FORD MUSTANG CALIFORNIA SPECIAL 5.0 GT A/T" [ref=f3e799] [cursor=pointer]:
+                    - /url: https://yourcarguy.co.za/vehicle/2024-ford-mustang-california-special-5-0-gt-a-t/
+                  - generic [ref=f3e800]: FORD MUSTANG
+                - generic "Vehicle specifications" [ref=f3e801]:
+                  - generic [ref=f3e802]:
+                    - generic [ref=f3e803]:
+                      - generic [ref=f3e804]: ⛽
+                      - generic [ref=f3e805]: Fuel Type
+                    - generic [ref=f3e806]: Petrol
+                  - generic [ref=f3e807]:
+                    - generic [ref=f3e808]:
+                      - generic [ref=f3e809]: 📅
+                      - generic [ref=f3e810]: Year
+                    - generic [ref=f3e811]: "2024"
+                  - generic [ref=f3e812]:
+                    - generic [ref=f3e813]:
+                      - generic [ref=f3e814]: ⏱
+                      - generic [ref=f3e815]: Mileage
+                    - generic [ref=f3e816]: 9,000 km
+                  - generic [ref=f3e817]:
+                    - generic [ref=f3e818]:
+                      - generic [ref=f3e819]: ⚙
+                      - generic [ref=f3e820]: Transmission
+                    - generic [ref=f3e821]: Automatic
+                  - generic [ref=f3e822]:
+                    - generic [ref=f3e823]:
+                      - generic [ref=f3e824]: 🚗
+                      - generic [ref=f3e825]: Body Type
+                    - generic [ref=f3e826]: Coupe
+                - generic [ref=f3e827]:
+                  - generic [ref=f3e829]:
+                    - button "⇄ Add to Compare" [ref=f3e830] [cursor=pointer]
+                    - link "View Details" [ref=f3e831] [cursor=pointer]:
+                      - /url: https://yourcarguy.co.za/vehicle/2024-ford-mustang-california-special-5-0-gt-a-t/
+                  - generic [ref=f3e832]:
+                    - generic [ref=f3e833]: Our Price
+                    - generic [ref=f3e834]: R 969,000
+          - generic [ref=f3e835]:
+            - generic "Page 1" [ref=f3e836]: "1"
+            - link "Page 2" [ref=f3e837] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/vehicles/page/2/
+              - text: "2"
+            - link "Page 3" [ref=f3e838] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/vehicles/page/3/
+              - text: "3"
+            - link "Next »" [ref=f3e839] [cursor=pointer]:
+              - /url: https://yourcarguy.co.za/vehicles/page/2/
+  - generic [ref=f3e840]:
+    - generic [ref=f3e841]:
+      - generic [ref=f3e842]: Software & Management by
+      - link "TruDealer" [ref=f3e843] [cursor=pointer]:
+        - /url: https://trudealer.tru-saas.com
+    - generic [ref=f3e844]:
+      - generic [ref=f3e845]:
+        - img "Your Car Guy" [ref=f3e846]
+        - generic [ref=f3e858]:
+          - emphasis [ref=f3e859]: "5.0"
+          - text: / 5.0
+        - paragraph [ref=f3e861]:
+          - strong [ref=f3e862]: 332 reviews
+      - generic [ref=f3e863]:
+        - img "2024 Ford Ranger XL" [ref=f3e865]
+        - img "2024 Toyota Urban Cruiser XR" [ref=f3e867]
+        - img "2023 Ford Ranger Wildtrak" [ref=f3e869]
+        - img "Ford Ranger detail" [ref=f3e871]
+        - img "Urban Cruiser detail" [ref=f3e873]
+      - generic [ref=f3e874]:
+        - iframe [ref=f3e876]:
+          
+        - generic [ref=f3e877]:
+          - generic [ref=f3e883]:
+            - generic [ref=f3e884]: Address
+            - generic [ref=f3e885]: 17 Burt Drive, Newton ParkGqeberha 6045
+          - generic [ref=f3e890]:
+            - generic [ref=f3e891]: Call us
+            - generic [ref=f3e892]:
+              - link "083 465 9921" [ref=f3e893] [cursor=pointer]:
+                - /url: tel:0834659921
+              - text: ·
+              - link "041 007 0393" [ref=f3e894] [cursor=pointer]:
+                - /url: tel:0410070393
+          - generic [ref=f3e900]:
+            - generic [ref=f3e901]: Email
+            - link "sales@yourcarguy.co.za" [ref=f3e903] [cursor=pointer]:
+              - /url: mailto:sales@yourcarguy.co.za
+          - generic [ref=f3e909]:
+            - generic [ref=f3e910]: Hours
+            - generic [ref=f3e911]: Mon-Fri 07:30-17:30Sat 08:00-13:00
+  - region "Go to Top":
+    - link " Go to Top":
+      - /url: "#"
+      - text: 
+      - generic: Go to Top
+  - generic:
+    - generic:
+      - text: Chat with us on
+      - strong: WhatsApp
+    - button "Chat with us on WhatsApp" [ref=f3e912] [cursor=pointer]
+  - generic [ref=f3e916]:
+    - generic [ref=f3e917]:
+      - generic [ref=f3e918]: "0"
+      - text: Added to Compare
+    - generic [ref=f3e919]:
+      - link "Compare Now" [ref=f3e920] [cursor=pointer]:
+        - /url: https://yourcarguy.co.za/compare-vehicles/
+      - button "Clear" [ref=f3e921] [cursor=pointer]
+  - status [ref=f3e922]
+  - button "Open contact form" [ref=f3e923] [cursor=pointer]:
+    - generic [ref=f3e928]:
+      - generic [ref=f3e929]: Get in Touch
+      - generic [ref=f3e930]: Your Car Guy
+  - button "Check affordability" [ref=f3e931] [cursor=pointer]:
+    - generic [ref=f3e936]:
+      - generic [ref=f3e937]: Check Affordability
+      - generic [ref=f3e938]: What you qualify for in ~60s. No hard credit check.
+      - generic [ref=f3e939]: TruAfford · Soft

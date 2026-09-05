@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TruDealer Guides</title>
+<meta name="description" content="Dealer how-to guides for the TruDealer apps — TruLens, TruInspect, TruFlow Premium and TruFlow Mobile.">
+<meta name="theme-color" content="#F3F0E7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#F3F0E7; --ink-2:#EAE6DA; --card:#FBF9F3; --card-2:#EFEBE0;
+  --white:#14141F; --white-dim:rgba(20,20,31,.78);
+  --muted:rgba(64,78,100,.92); --faint:rgba(64,78,100,.58);
+  --cyan:#0B7C72; --cyan-2:#0D9488; --cyan-hi:#5EEAD4;
+  --cyan-soft:rgba(13,148,136,.18); --cyan-glow:rgba(13,148,136,.2); --cyan-faint:rgba(13,148,136,.06);
+  --amber:#D4942A; --amber-soft:rgba(212,148,42,.2); --amber-glow:rgba(212,148,42,.18); --amber-faint:rgba(212,148,42,.08);
+  --border-warm:rgba(60,50,30,.1); --glass-line:rgba(0,0,0,.08);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --wrap:960px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:16px;line-height:1.6;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan-2)}
+::selection{background:var(--cyan);color:#fff}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+.accent{color:var(--cyan-2);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
+
+main{max-width:var(--wrap);margin:0 auto;padding:0 28px 96px}
+
+/* hero */
+.hero{position:relative;padding:96px 0 40px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 90% 80% at 15% 0%,#F6F4EE 0%,transparent 60%)}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 11px;border:1px solid var(--cyan-soft);border-radius:100px;background:var(--cyan-faint);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:24px}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(13,148,136,.5);animation:ping 1.9s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(13,148,136,.5)}70%{box-shadow:0 0 0 11px rgba(13,148,136,0)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
+h1{font-family:var(--display);font-size:clamp(38px,7vw,60px);line-height:1.02;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:20px;text-wrap:balance}
+.lede{font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:var(--white-dim);max-width:60ch}
+
+/* group headings */
+.grp{padding:52px 0 4px;display:flex;align-items:baseline;gap:14px}
+.grp .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
+.grp .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border-warm),transparent)}
+
+/* card grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+@media(max-width:680px){.grid{grid-template-columns:1fr}}
+.g{position:relative;display:flex;flex-direction:column;padding:26px 26px 22px;border-radius:20px;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 14px rgba(60,50,30,.06);overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .3s}
+.g::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.g:hover{transform:translateY(-4px);border-color:var(--cyan-soft);box-shadow:0 22px 48px -22px var(--cyan-glow)}
+.g.amber::before{background:var(--amber)}
+.g.amber:hover{border-color:var(--amber-soft);box-shadow:0 22px 48px -22px var(--amber-glow)}
+.grid.one{grid-template-columns:1fr}
+.g .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.g h2{font-family:var(--display);font-size:25px;font-weight:500;letter-spacing:-.02em;font-variation-settings:"opsz" 72,"SOFT" 30;margin:0}
+.g h2 .i{color:var(--cyan)}
+.g.amber h2 .i{color:var(--amber)}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border-warm);background:rgba(0,0,0,.02);border-radius:100px;padding:3px 9px;white-space:nowrap}
+.g .desc{font-size:14.5px;color:var(--white-dim);line-height:1.55;margin:0 0 14px}
+.g .covers{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.g .covers li{font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border-warm);border-radius:100px;padding:4px 9px;white-space:nowrap}
+.g .cta{margin-top:auto;display:flex;align-items:center;gap:16px;padding-top:14px;border-top:1px solid var(--glass-line)}
+.g .cta .read{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:600;display:inline-flex;align-items:center;gap:7px}
+.g.amber .cta .read{color:#B07B1E}
+.g .cta .pdf{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted)}
+.g .cta .pdf:hover{color:var(--white)}
+.g .stretched{position:absolute;inset:0;z-index:1}
+.g .cta .pdf{position:relative;z-index:2}
+
+/* note */
+.note{border-radius:16px;padding:18px 22px;margin:40px 0 0;background:var(--card);border:1px solid var(--border-warm);border-left:3px solid var(--cyan);box-shadow:0 2px 12px rgba(60,50,30,.05);font-size:14.5px;color:var(--white-dim)}
+.note .lab{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:7px}
+.note p{margin:0}
+.note strong{color:var(--white);font-weight:600}
+
+footer{max-width:var(--wrap);margin:0 auto;padding:40px 28px 60px}
+.foot-mark{font-family:var(--display);font-size:24px;letter-spacing:-.02em;color:var(--white)}
+.foot-mark .i{color:var(--cyan)}
+footer p{color:var(--muted);font-size:13.5px;margin-top:8px;max-width:64ch}
+footer .bottom{margin-top:22px;padding-top:18px;border-top:1px solid var(--glass-line);font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+</style>
+</head>
+<body>
+<main>
+
+  <section class="hero">
+    <span class="badge"><span class="dot"></span>TruDealer · dealer guides</span>
+    <h1>Every app, <span class="accent">explained</span>.</h1>
+    <p class="lede">The how-to guides for the TruDealer apps — pick the one you use. Each is a full walkthrough of that app, from getting it on your device to the everyday jobs, in plain language. Every app also carries its own <strong>“How do I…?”</strong> helper inside it for the quick version.</p>
+  </section>
+
+  <!-- FIELD APPS -->
+  <div class="grp"><span class="eyebrow">On your phone · the field apps</span><span class="line"></span></div>
+  <div class="grid">
+
+    <div class="g">
+      <a class="stretched" href="../TruLens/docs/field-guide.html" aria-label="Read the TruLens guide"></a>
+      <div class="top"><h2>Tru<span class="i">Lens</span></h2><span class="chip">Phone</span></div>
+      <p class="desc">The dealer photo studio. Shoot a car through the guided angles, declare its condition, and publish it to your website, DMS and a 3D Orbit spin.</p>
+      <ul class="covers"><li>Install</li><li>Capture</li><li>Review &amp; tag</li><li>Price</li><li>Publish</li></ul>
+      <div class="cta"><span class="read">Read the guide →</span><a class="pdf" href="../TruLens/docs/TruLens-Field-Guide.pdf">PDF ↓</a></div>
+    </div>
+
+    <div class="g">
+      <a class="stretched" href="../Truinspect/docs/field-guide.html" aria-label="Read the TruInspect guide"></a>
+      <div class="top"><h2>Tru<span class="i">Inspect</span></h2><span class="chip">Phone</span></div>
+      <p class="desc">Vehicle inspection reports and trade-in appraisals. Run a graded VIR walk-around, or value a trade-in against the live market and print a signed offer.</p>
+      <ul class="covers"><li>Install</li><li>Inspect (VIR)</li><li>Trade-in</li><li>Reports</li></ul>
+      <div class="cta"><span class="read">Read the guide →</span><a class="pdf" href="../Truinspect/docs/TruInspect-Field-Guide.pdf">PDF ↓</a></div>
+    </div>
+
+  </div>
+
+  <!-- THE DMS -->
+  <div class="grp"><span class="eyebrow">The dealership system · TruFlow</span><span class="line"></span></div>
+  <div class="grid">
+
+    <div class="g">
+      <a class="stretched" href="../Truflow-premium/docs/field-guide.html" aria-label="Read the TruFlow Premium guide"></a>
+      <div class="top"><h2>Tru<span class="i">Flow</span> Premium</h2><span class="chip">Desktop &amp; tablet</span></div>
+      <p class="desc">The full DMS. Stock, leads, deals, documents, finance and your website — the whole dealership from one screen, front to back.</p>
+      <ul class="covers"><li>Stock</li><li>Leads &amp; CRM</li><li>Deals &amp; DocHub</li><li>Finance</li><li>Web</li><li>Team</li></ul>
+      <div class="cta"><span class="read">Read the guide →</span><a class="pdf" href="../Truflow-premium/docs/TruFlow-Premium-Guide.pdf">PDF ↓</a></div>
+    </div>
+
+    <div class="g amber">
+      <a class="stretched" href="../truflow-mobile/docs/field-guide.html" aria-label="Read the TruFlow Mobile guide"></a>
+      <div class="top"><h2>Tru<span class="i">Flow</span> Mobile</h2><span class="chip">Phone</span></div>
+      <p class="desc">The floor companion to Premium — and a standalone system for smaller dealers. Leads, stock and deals in your pocket, syncing both ways.</p>
+      <ul class="covers"><li>Install</li><li>Leads</li><li>Stock</li><li>Add a car</li><li>Activity</li></ul>
+      <div class="cta"><span class="read">Read the guide →</span><a class="pdf" href="../truflow-mobile/docs/TruFlow-Mobile-Guide.pdf">PDF ↓</a></div>
+    </div>
+
+  </div>
+
+  <!-- WEBSITE WIDGETS -->
+  <div class="grp"><span class="eyebrow">On your website · the widgets</span><span class="line"></span></div>
+  <div class="grid one">
+
+    <div class="g">
+      <a class="stretched" href="../trudealer/tddeploy/lead-demo.html" aria-label="Open the dealer widgets demo"></a>
+      <div class="top"><h2>Website <span class="i">widgets</span></h2><span class="chip">Live demo</span></div>
+      <p class="desc">Drop-in widgets that turn a website visitor into a lead — pasted onto any dealer site with one tag. Seven ways in, one destination: every widget files the same lead into TruFlow. The demo shows each one live, then walks how a lead flows from click to the dealer.</p>
+      <ul class="covers"><li>TruForm</li><li>TruBook</li><li>TruChat</li><li>TruConcierge</li><li>TruRepay</li><li>TruAfford</li><li>TruShare</li></ul>
+      <div class="cta"><span class="read">Open the demo →</span><a class="pdf" href="../packages/standalone/configurator.html">Configurator ↗</a></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <span class="lab">One code, one dealership</span>
+    <p>You sign into every TruDealer app with the <strong>same dealer access code</strong>, issued for your dealership in TruFlow. TruLens and TruInspect can each be used on their own; TruFlow Mobile is both the Premium companion and a standalone app for smaller dealers. Whatever you use, the guide for it is above.</p>
+  </div>
+
+</main>
+
+<footer>
+  <div class="foot-mark">Tru<span class="i">Dealer</span></div>
+  <p>Dealer how-to guides — TruLens · TruInspect · TruFlow Premium · TruFlow Mobile — plus the website-widgets demo. Each guide is a self-contained page (and a matching PDF) in that app's <code>docs/</code> folder.</p>
+  <div class="bottom">TruDealer · Future Automotive · Built in Cape Town</div>
+</footer>
+
+</body>
+</html>

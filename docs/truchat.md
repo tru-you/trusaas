@@ -4,7 +4,7 @@
 
 ## What it does
 
-TruChat is a chat assistant that sits on the dealer's website and handles the after-hours and first-touch conversations a yard can't always staff. It answers the common questions (hours, location, finance, trade-in, warranty) instantly with no AI cost, searches live stock, books walkthrough slots, captures the lead, and hands off to a real person on WhatsApp when the customer is ready. Every lead and booking is stored for the dealer and emailed to both the customer and the yard.
+TruChat is a chat assistant that sits on the dealer's website and handles the after-hours and first-touch conversations a yard can't always staff. It answers the common questions (hours, location, finance, trade-in, warranty) instantly with no AI cost, searches live stock, captures the lead, and hands off to a real person on WhatsApp when the customer is ready. Every lead and booking is stored for the dealer and emailed to both the customer and the yard.
 
 ## Who uses it
 
@@ -23,7 +23,7 @@ TruChat ships in two forms, and **where the leads go differs between them** — 
 
 1. **Visitor opens the chat** on the dealer site.
 2. **Knowledge-first answers.** Common questions are answered instantly from the dealer's own settings — no API call, no cost.
-3. **AI for the rest.** Novel or transactional messages go to Claude (Haiku), which drives the tools: **search stock**, **book a slot**, **capture a lead**, **WhatsApp handoff**. If the AI key is missing or errors, the bot degrades to knowledge answers plus WhatsApp — it never breaks.
+3. **AI for the rest.** Novel or transactional messages go to **DeepSeek** (`deepseek-chat`, hosted brain at `chat.tru-saas.com`), which drives the tools: **search stock**, **capture a lead**, **WhatsApp handoff**. If the AI key is missing or errors, the bot degrades to knowledge answers plus WhatsApp — it never breaks. *(The standalone WordPress plugin's own in-plugin AI uses Claude, and the "booking" tool exists only in the plugin — the hosted brain does stock search, lead capture and handoff, not bookings.)*
 4. **Live stock in the chat.** Stock search reads the dealer's live feed (from [TruFlow](./truflow.md)) and shows matching vehicles as cards.
 5. **Qualify and hand off.** Once the visitor is qualified (or asks for a person), TruChat opens WhatsApp to the yard with a full ticket and emails both the customer and the yard (the "dual" email). Where the lead is stored depends on the form: the WordPress plugin keeps it in its own portal; the DMS-connected version for TruDealer dealers posts it into the [TruFlow](./truflow.md) CRM (see *How it's delivered* above).
 
@@ -43,7 +43,8 @@ Alongside the chat, TruChat has a **Voice** capability — an AI receptionist th
 
 ## Notes on scope
 
-- **What's built:** knowledge-first answering, Claude (Haiku) tool-use for stock search / booking / lead capture / WhatsApp handoff, live stock from the TruFlow feed, dual customer + yard emails, and two delivery forms — the **standalone WordPress plugin + PIN leads portal** (for a WordPress client, leads stay local) and the **DMS-connected embed widget for TruDealer dealers** (leads post into the TruFlow CRM). Market/locale/currency are configurable (SA is the launch market).
+- **What's built:** knowledge-first answering, DeepSeek tool-use for stock search / lead capture / WhatsApp handoff, live stock from the TruFlow feed, dual customer + yard emails, and two delivery forms — the **standalone WordPress plugin + PIN leads portal** (for a WordPress client, leads stay local) and the **DMS-connected embed widget for TruDealer dealers** (leads post into the TruFlow CRM). Market/locale/currency are configurable (SA is the launch market).
+- **Deploy note:** the chat stack is **not** on the widget CDN (`cdn.tru-saas.com/truchat/…` 404s — verified). The DMS-connected build is served per-site from the dealer's own host (the `truchat/` folder in the repo, or a per-site copy under `case-sites/`). The hosted brain itself is `chat.tru-saas.com`; the in-app Dealer Assist UIs (TruFlow, TruLens, TruInspect, TruFlow Mobile) call it directly.
 - **Legacy:** older standalone/demo pages and a script-tag install predate the plugin and are superseded — use the plugin or the current widget package.
 
 ## Related modules

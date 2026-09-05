@@ -1,0 +1,147 @@
+/* Caledon Media — 3D orbit spin in the detail modal.
+   Sits on top of vd-upgrade.css; the existing stage stays as the Photos view. */
+
+/* ===== TAB BAR ===== */
+.vd-media-tabs{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:9;
+  display:flex;gap:3px;padding:3px;border-radius:100px;
+  background:rgba(9,18,32,.72);border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.vd-media-tab{
+  padding:7px 14px;border:0;border-radius:100px;cursor:pointer;
+  background:transparent;color:rgba(255,255,255,.6);
+  font-family:var(--mono,"IBM Plex Mono"),monospace;
+  font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  transition:background .25s,color .25s;
+}
+.vd-media-tab:hover{color:#fff;}
+.vd-media-tab.on{background:var(--blue,#0B5BD7);color:#fff;}
+.vd-media-tab i{
+  display:inline-block;width:5px;height:5px;margin-left:6px;border-radius:50%;
+  background:#22C55E;vertical-align:middle;
+}
+
+/* ===== PANELS ===== */
+.vd-media-panel{position:absolute;inset:0;z-index:6;display:none;}
+.vd-media-panel.on{display:block;}
+.vd-stage.media-alt .vd-stage-car,
+.vd-stage.media-alt .vd-tag-pin,
+.vd-stage.media-alt .vd-grade-pin,
+.vd-stage.media-alt .vd-tag-toggle,
+.vd-stage.media-alt .vd-badge-360,
+.vd-stage.media-alt .vd-spin-hint,
+.vd-stage.media-alt .vd-deg,
+.vd-stage.media-alt .vd-tt-disc,
+.vd-stage.media-alt .vd-tt-ring{display:none!important;}
+
+/* ===== 360 SPIN ===== */
+.vd-spin{position:absolute;inset:0;cursor:grab;touch-action:pan-y;overflow:hidden;}
+.vd-spin.grabbing{cursor:grabbing;}
+.vd-spin img{
+  position:absolute;inset:0;margin:auto;
+  max-width:88%;max-height:88%;width:auto;height:auto;
+  display:none;user-select:none;-webkit-user-drag:none;pointer-events:none;
+}
+.vd-spin img.on{display:block;}
+.vd-spin-load{
+  position:absolute;inset:0;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:rgba(9,18,32,.55);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.vd-spin-load .bar{width:150px;height:3px;border-radius:100px;background:rgba(255,255,255,.15);overflow:hidden;}
+.vd-spin-load .bar i{display:block;height:100%;width:0;border-radius:100px;background:linear-gradient(90deg,var(--gold-light,#E2C46F),var(--blue,#0B5BD7));transition:width .2s;}
+.vd-spin-load span{font-family:var(--mono,"IBM Plex Mono"),monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6);}
+.vd-spin-scrub{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:3;
+  display:flex;align-items:center;gap:9px;padding:7px 13px;border-radius:100px;
+  background:rgba(9,18,32,.72);border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  font-family:var(--mono,"IBM Plex Mono"),monospace;font-size:10px;color:rgba(255,255,255,.75);
+  white-space:nowrap;
+}
+.vd-spin-scrub svg{width:12px;height:12px;fill:none;stroke:var(--blue-bright,#4D8DFF);stroke-width:2;}
+
+/* ===== VIDEO ===== */
+.vd-video{position:absolute;inset:0;background:#04101F;}
+.vd-video video,.vd-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain;background:#04101F;}
+.vd-video-play{
+  position:absolute;inset:0;z-index:2;cursor:pointer;border:0;padding:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background-size:cover;background-position:center;
+  font-family:inherit;color:#fff;
+}
+.vd-video-play::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,17,35,.35),rgba(6,17,35,.72));}
+.vd-video-play .ring{
+  position:relative;width:66px;height:66px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.5);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:transform .3s cubic-bezier(.34,1.4,.64,1),background .3s;
+}
+.vd-video-play:hover .ring{transform:scale(1.09);background:rgba(11,91,215,.75);}
+.vd-video-play .ring svg{width:22px;height:22px;fill:#fff;margin-left:3px;}
+.vd-video-play .cap{
+  position:relative;font-family:var(--mono,"IBM Plex Mono"),monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.85);
+}
+
+.vd-media-empty{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:24px;text-align:center;font-size:12.5px;color:rgba(255,255,255,.45);
+}
+
+@media (prefers-reduced-motion:reduce){
+  .vd-video-play .ring,.vd-spin-load .bar i{transition:none!important;}
+}
+
+/* ===== INSPECTION TAGS ON THE 360 ===== */
+.vd-spin-tags{position:absolute;inset:0;z-index:4;pointer-events:none;}
+.vd-spin-pin{
+  position:absolute;transform:translate(-50%,-50%);
+  width:24px;height:24px;padding:0;border:0;background:none;cursor:pointer;
+  opacity:0;transition:opacity .22s;
+}
+.vd-spin-pin .dot{
+  display:block;width:100%;height:100%;border-radius:50%;
+  border:2.5px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.5);
+}
+.vd-spin-pin.major .dot{background:#EF4444;}
+.vd-spin-pin.minor .dot{background:var(--gold,#C8A24B);}
+.vd-spin-pin.note  .dot{background:var(--blue,#0B5BD7);}
+.vd-spin-pin .dot::after{
+  content:"";position:absolute;inset:-7px;border-radius:50%;
+  border:1.5px solid currentColor;opacity:.45;
+  animation:vdPinPulse 2s ease-out infinite;
+}
+.vd-spin-pin.major{color:#EF4444;}
+.vd-spin-pin.minor{color:var(--gold,#C8A24B);}
+.vd-spin-pin.note{color:var(--blue-bright,#4D8DFF);}
+@keyframes vdPinPulse{0%{transform:scale(.7);opacity:.5;}100%{transform:scale(1.5);opacity:0;}}
+.vd-spin-pin .card{
+  position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(4px);
+  width:206px;padding:11px 13px;border-radius:13px;text-align:left;
+  background:rgba(10,22,38,.96);border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 20px 44px -20px rgba(0,0,0,.85);
+  opacity:0;visibility:hidden;transition:opacity .22s,transform .22s,visibility .22s;
+}
+.vd-spin-pin.open .card{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+.vd-spin-pin .card b{display:block;font-size:12.5px;font-weight:800;color:#fff;}
+.vd-spin-pin .card span{display:block;margin-top:4px;font-size:11.5px;line-height:1.55;color:rgba(255,255,255,.6);}
+.vd-spin-pin .card img{width:100%;margin-top:9px;border-radius:8px;display:block;}
+.vd-spin-tagbtn{
+  position:absolute;top:12px;left:14px;z-index:5;
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  padding:7px 12px;border-radius:100px;
+  background:rgba(9,18,32,.72);border:1px solid rgba(255,255,255,.15);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  font-family:var(--mono,"IBM Plex Mono"),monospace;
+  font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);transition:background .25s,color .25s;
+}
+.vd-spin-tagbtn svg{width:12px;height:12px;}
+.vd-spin-tagbtn.on{background:var(--blue,#0B5BD7);color:#fff;border-color:var(--blue,#0B5BD7);}
+@media (prefers-reduced-motion:reduce){.vd-spin-pin .dot::after{animation:none;}}

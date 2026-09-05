@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Details — Cars on Caledon</title>
+<meta name="description" content="View vehicle specifications, photos, repayment estimates and book a test drive at Cars on Caledon.">
+<meta name="theme-color" content="#23419A">
+<link rel="icon" type="image/svg+xml" href="../coc-mark.svg">
+
+<!-- Open Graph Social Share Tags (Dynamically updated via URL params) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cars on Caledon">
+<meta property="og:title" id="ogTitle" content="Quality Pre-Owned Vehicle — Cars on Caledon">
+<meta property="og:description" id="ogDesc" content="Check specs, finance repayments, trade-in options and book a viewing.">
+<meta property="og:image" id="ogImage" content="../og-card.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../coc-site.css">
+<link rel="stylesheet" href="../coc-widgets.css">
+<link rel="stylesheet" href="../coc-fixes.css?v=20260807f">
+
+<style>
+  :root {
+    --blue: #23419A;
+    --blue-bright: #2E54BE;
+    --ink: #07090e;
+    --card-bg: rgba(18, 22, 33, 0.85);
+    --border: rgba(255, 255, 255, 0.1);
+  }
+  body {
+    margin: 0;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--ink);
+    color: #f1f5f9;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  .v-nav {
+    border-bottom: 1px solid var(--border);
+    background: rgba(10, 13, 20, 0.9);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 14px 24px;
+  }
+  .v-nav-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .v-nav a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .v-nav a:hover { color: #fff; }
+  .v-container {
+    max-width: 1000px;
+    margin: 32px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+  }
+  @media (max-width: 840px) {
+    .v-container { grid-template-columns: 1fr; }
+  }
+  .v-gallery {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    position: relative;
+  }
+  .v-gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .v-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+  }
+  .v-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    line-height: 1.2;
+  }
+  .v-subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+  }
+  .v-price {
+    font-size: 32px;
+    font-weight: 800;
+    color: #60a5fa;
+    margin-bottom: 24px;
+  }
+  .v-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .btn-action {
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--blue-bright);
+    color: #fff;
+    box-shadow: 0 8px 24px -6px rgba(46, 84, 190, 0.6);
+  }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-wa {
+    background: #25D366;
+    color: #fff;
+  }
+  .v-spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .v-spec-item {
+    background: rgba(255,255,255,0.03);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .v-spec-item .lbl { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .v-spec-item .val { font-size: 14px; font-weight: 700; color: #f8fafc; }
+</style>
+</head>
+<body>
+  <div class="v-nav">
+    <div class="v-nav-inner">
+      <a href="../index.html">← Back to Showroom</a>
+      <div style="font-weight: 700;">Cars on Caledon</div>
+    </div>
+  </div>
+
+  <div class="v-container">
+    <div>
+      <div class="v-gallery">
+        <img id="vImg" src="../coc-splash-v2.jpg" alt="Vehicle Photo">
+      </div>
+      <div style="margin-top: 32px;">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Finance Repayment Calculator</h2>
+        <div id="finance-calc"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="v-card">
+        <h1 class="v-title" id="vTitle">2023 Toyota Fortuner 2.8 GD-6</h1>
+        <div class="v-subtitle" id="vSub">Automatic · Diesel · 45,000 km</div>
+        <div class="v-price" id="vPrice">R 459,900</div>
+
+        <div class="v-actions">
+          <button class="btn-action btn-primary" onclick="TruDealer.open('book', { car: getCarData() })">📅 Book Test Drive / Viewing</button>
+          <button class="btn-action btn-primary" style="background:#06B6D4;" onclick="TruDealer.open('afford')">💳 Check Affordability</button>
+          <a class="btn-action btn-wa" id="vWa" href="#" target="_blank" rel="noopener">💬 WhatsApp Sales Team</a>
+        </div>
+
+        <div class="v-spec-grid">
+          <div class="v-spec-item">
+            <div class="lbl">Year</div>
+            <div class="val" id="specYear">2023</div>
+          </div>
+          <div class="v-spec-item">
+            <div class="lbl">Mileage</div>
+            <div class="val" id="specKm">45,000 km</div>
+          </div>
+          <div class="v-spec-item">
+            <div class="lbl">Transmission</div>
+            <div class="val" id="specTrans">Automatic</div>
+          </div>
+          <div class="v-spec-item">
+            <div class="lbl">Fuel</div>
+            <div class="val" id="specFuel">Diesel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    var SITE = "https://www.carsoncaledon.co.za";
+    var params = new URLSearchParams(window.location.search);
+    function p(k, d) { var v = params.get(k); return (v == null || v === "") ? d : v; }
+
+    // ---- Shared car data (falls back to a demo car if opened bare) ----
+    var stock   = p('stock', '');
+    var name    = p('name', '2023 Toyota Fortuner 2.8 GD-6');
+    var make    = p('make', '');
+    var variant = p('variant', '');
+    var year    = p('year', '2023');
+    var priceRaw= p('price', '459900');
+    var kmRaw   = p('km', '45000');
+    var trans   = p('trans', '');
+    var fuel    = p('fuel', '');
+    var body    = p('body', '');
+    var img     = p('img', '../coc-splash-v2.jpg');
+
+    var priceNum = parseInt(String(priceRaw).replace(/\D/g, ''), 10) || 0;
+    var priceFmt = 'R ' + priceNum.toLocaleString('en-ZA');
+    var kmDigits = String(kmRaw).replace(/\D/g, '');
+    var kmFmt    = kmDigits ? (parseInt(kmDigits, 10).toLocaleString('en-ZA') + ' km') : String(kmRaw);
+
+    // Build a clean title without duplicating the make if it's already in the name
+    var titleParts = (make && name && name.toLowerCase().indexOf(make.toLowerCase()) === 0)
+      ? [year, name] : [year, make, name];
+    var fullTitle = titleParts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+
+    // ---- Paint the page ----
+    document.getElementById('vTitle').textContent = fullTitle;
+    document.getElementById('vPrice').textContent = priceFmt;
+    document.getElementById('vSub').textContent   = [year, trans, fuel, kmFmt].filter(Boolean).join(' · ');
+    var vImg = document.getElementById('vImg');
+    vImg.src = img; vImg.alt = fullTitle;
+    document.getElementById('specYear').textContent  = year || '—';
+    document.getElementById('specKm').textContent    = kmFmt || '—';
+    document.getElementById('specTrans').textContent = trans || '—';
+    document.getElementById('specFuel').textContent  = fuel || '—';
+
+    // ---- SEO: per-car title, description, canonical, OG ----
+    document.title = fullTitle + ' — ' + priceFmt + ' | Cars on Caledon';
+    var desc = fullTitle + ' for sale at Cars on Caledon, Kariega — ' + priceFmt +
+               (kmFmt ? (', ' + kmFmt) : '') + (trans ? (', ' + trans) : '') + (fuel ? (', ' + fuel) : '') +
+               '. Inspected stock, bank finance and trade-ins welcome.';
+    var mDesc = document.querySelector('meta[name="description"]');
+    if (mDesc) mDesc.setAttribute('content', desc);
+
+    var absImg = /^https?:/i.test(img) ? img : (SITE + '/' + img.replace(/^(\.\.\/)+/, ''));
+    function setMeta(id, val) { var m = document.getElementById(id); if (m) m.setAttribute('content', val); }
+    setMeta('ogTitle', fullTitle + ' — ' + priceFmt);
+    setMeta('ogDesc', desc);
+    setMeta('ogImage', absImg);
+
+    var canonHref = stock ? (SITE + '/vehicle/?stock=' + encodeURIComponent(stock)) : (SITE + '/vehicle/');
+    // Only add these if the server/edge layer hasn't already — avoids a duplicate
+    // canonical / og:url once the vehicle-og edge function is live.
+    if (!document.querySelector('link[rel="canonical"]')) {
+      var canon = document.createElement('link');
+      canon.rel = 'canonical'; canon.href = canonHref;
+      document.head.appendChild(canon);
+    }
+    if (!document.querySelector('meta[property="og:url"]')) {
+      var ogUrl = document.createElement('meta');
+      ogUrl.setAttribute('property', 'og:url'); ogUrl.setAttribute('content', canonHref);
+      document.head.appendChild(ogUrl);
+    }
+
+    // ---- Structured data: schema.org Car + Offer (rich results) ----
+    var ld = {
+      "@context": "https://schema.org", "@type": "Car",
+      "name": fullTitle, "url": canonHref, "image": absImg,
+      "brand": make ? { "@type": "Brand", "name": make } : undefined,
+      "model": variant || undefined,
+      "vehicleModelDate": year || undefined,
+      "sku": stock || undefined,
+      "fuelType": fuel || undefined,
+      "vehicleTransmission": trans || undefined,
+      "bodyType": body || undefined,
+      "mileageFromOdometer": kmDigits ? { "@type": "QuantitativeValue", "value": parseInt(kmDigits, 10), "unitCode": "KMT" } : undefined,
+      "offers": {
+        "@type": "Offer", "priceCurrency": "ZAR", "price": priceNum || undefined,
+        "availability": "https://schema.org/InStock", "itemCondition": "https://schema.org/UsedCondition",
+        "seller": { "@type": "AutoDealer", "name": "Cars on Caledon", "areaServed": "Kariega, Eastern Cape" }
+      }
+    };
+    (function clean(o) { Object.keys(o).forEach(function (k) { if (o[k] === undefined) delete o[k]; else if (o[k] && typeof o[k] === 'object') clean(o[k]); }); })(ld);
+    // Skip if the edge function already emitted a JSON-LD block in the raw HTML.
+    if (!document.querySelector('script[type="application/ld+json"]')) {
+      var ldEl = document.createElement('script');
+      ldEl.type = 'application/ld+json'; ldEl.textContent = JSON.stringify(ld);
+      document.head.appendChild(ldEl);
+    }
+
+    // ---- WhatsApp CTA ----
+    var waMsg = "Hi Cars on Caledon — I'm interested in the " + fullTitle + " (" + priceFmt + ")" +
+                (stock ? (" [stock " + stock + "]") : "") + ". Is it still available?";
+    document.getElementById('vWa').href = "https://wa.me/27618759389?text=" + encodeURIComponent(waMsg);
+
+    // Exposed for the booking widget's inline onclick
+    window.getCarData = function () {
+      return { y: year, make: make, name: name, priceLabel: priceFmt, img: img, stock: stock };
+    };
+
+    // ---- Load TruLoader with THIS car's finance config ----
+    var loader = document.createElement('script');
+    loader.src = "../tru-loader.js";
+    loader.setAttribute("data-dealer", "Cars on Caledon");
+    loader.setAttribute("data-slug", "true-cars");
+    loader.setAttribute("data-flow", "https://premium.tru-saas.com");
+    loader.setAttribute("data-wa", "27618759389");
+    loader.setAttribute("data-accent", "#23419A");
+    loader.setAttribute("data-widgets", "afford,repay,form,chat,book");
+    loader.setAttribute("data-repay-mode", "inline");
+    loader.setAttribute("data-repay-target", "#finance-calc");
+    loader.setAttribute("data-repay-price", String(priceNum || 459900));
+    loader.setAttribute("data-repay-vehicle", fullTitle);
+    document.body.appendChild(loader);
+  })();
+  </script>
+</body>
+</html>

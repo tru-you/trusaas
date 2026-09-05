@@ -37,7 +37,7 @@ There are two publish paths, both live:
 
 ### Hosted AI brain
 
-- **TruChat API.** A zero-dependency hosted service (`trusaas-chat`) holds the Claude key server-side and drives the chat tools; its `STOCK_API` points at the TruFlow public stock feed. Degrades to knowledge + WhatsApp if the key is missing.
+- **TruChat API.** A zero-dependency hosted service (`trusaas-chat`) holds the **DeepSeek** key server-side and drives the chat tools; its `STOCK_API` points at the TruFlow public stock feed. Degrades to knowledge + WhatsApp if the key is missing. *(The older prose said "Claude" — the code calls DeepSeek.)*
 
 ## Not wired up (stub)
 
@@ -45,11 +45,12 @@ These were asked about or would be expected, but are **not present in the codeba
 
 | Integration | Status | Notes |
 |---|---|---|
-| CloudTalk | ⚙️ Platform-hosted (no repo code) | Hosts **TruChat Voice** — the AI after-hours receptionist — configured in the CloudTalk platform, not in this codebase. That's why there's no CloudTalk code here; it's not a gap. Its "demo" is a phone number, not a URL. *(Confirm still current — platform-side, can't be verified from code.)* |
+| CloudTalk | 🟢 Live in TruCRM / ⚙️ Platform-hosted for Voice | **TruChat Voice** (AI after-hours receptionist) is configured in the CloudTalk platform, not in this codebase. TruCRM uses the CloudTalk API for click-to-call and SMS. *(Confirm Voice is still live — platform-side, can't be verified from code.)* |
+| WhatsApp Business API (send) | 🟠 Built in chat stack, not wired · 🟢 Live in TruCRM | **TruCRM** sends real messages via Meta Cloud API (`graph.facebook.com/v21.0`). The **dealer product** (TruFlow/Lens/Inspect/widgets) sends leads via webhooks + `wa.me` tap-to-chat; the chat stack has a WhatsApp Business **bot bridge** (`truchat/shared/wa-business.js`) but nothing wires it to a live webhook server yet — do not claim it's live. |
 | Third-party CRM (HubSpot, Salesforce, Pipedrive) | ❌ Not wired | No connectors found. TruFlow's own Lead CRM is the system of record; external CRMs can only reach it via the generic `/api/integration/webhook-lead` endpoint. |
 | VIN decoder | ❌ Not wired | TruFlow explicitly returns "not available — enter manually." A decode provider would need to be added. |
-| WhatsApp Business API (send) | ⚠️ Tap-to-chat only | All "WhatsApp" handoffs are free `wa.me` tap-to-chat links that open the app pre-filled. No programmatic WhatsApp Business API send is integrated. |
-| Email delivery (provider) | ⚠️ Present in TruChat | TruChat emails customer + yard on a lead/booking; no shared, documented transactional-email provider config across the other modules. |
+| Online payments | ❌ Not wired | No payment gateway; deals close on invoice + deposit offline. |
+| Email delivery (provider) | ✅ Present | TruFlow send engine (SMTP) + TruChat dual emails. |
 | Outbound WordPress plugin auto-publish | ❌ Not wired | Stock reaches WordPress via the feed/webhook; there is no DMS pipeline that generates and publishes a plugin automatically. |
 
 ## Screenshots

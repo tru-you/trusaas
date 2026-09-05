@@ -47,9 +47,9 @@ Staff logins are managed as **seats** with three roles — **principal**, **mana
 
 The app still carries **"TruFlow Premium"** branding in places, but there is **one product**. TruFlow Lite was retired in July 2026 and its codebase removed; the nav has **no tier gating** — every dealer on TruFlow sees the full desktop. `flow.tru-saas.com` is the canonical address; `premium.tru-saas.com` is kept as an alias so older dealer embeds keep working. The only place "tier" still means something is per-vehicle **showroom category** (e.g. Premium Used / Select / Performance), which decides where a car lands on the dealer's website — not what the dealer can access.
 
-## TruFlow Light
+## TruFlow Mobile
 
-Alongside the full desktop there's a lightweight console — **[TruFlow Light](./truflow-light.md)** — served by TruFlow at **`flow.tru-saas.com/light`**, covering the essentials: leads, inventory, and vehicle upload. It's a smaller door into the one real DMS (not the retired "TruFlow Lite" service, which had its own separate codebase). See its [own page](./truflow-light.md) for detail.
+The phone companion is **[TruFlow Mobile](./truflow-mobile.md)** — a PWA at **`app.tru-saas.com`** that proxies to this same DMS backend: home KPIs, leads, stock, add-vehicle, follow-up tasks, and "share this car" deep links. Entry-level dealers can run entirely on it; full-desktop dealers use it on the floor. TruFlow Light (the old `/light` console) was **retired 2026-08-14** and replaced by Mobile — `flow.tru-saas.com/light` now 301-redirects to `app.tru-saas.com`. See its [own page](./truflow-mobile.md) for detail.
 
 ## Screenshots
 

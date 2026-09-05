@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TruDealer — Social launch pack</title>
+<meta name="description" content="LinkedIn and Facebook posts for the TruDealer launch. Copy, tweak, ship."/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#F4EFE6;--paper-2:#EDE6D8;
+  --ink:#0F1621;--ink-2:#2A3441;
+  --muted:#6B6357;--faint:#A69C8D;
+  --line:rgba(15,22,33,.12);--line-soft:rgba(15,22,33,.06);
+  --cyan:#0891A6;--amber:#B8802F;
+  --linkedin:#0A66C2;--facebook:#1877F2;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+em{font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;color:var(--cyan);font-family:var(--display);}
+h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:-.03em;color:var(--ink);}
+h1{font-size:clamp(38px,5.4vw,64px);line-height:1.02;letter-spacing:-.04em;text-wrap:balance;font-variation-settings:"opsz" 144,"SOFT" 30;}
+h2{font-size:clamp(26px,2.8vw,36px);line-height:1.1;font-variation-settings:"opsz" 144,"SOFT" 30;}
+h3{font-size:19px;letter-spacing:-.02em;font-variation-settings:"opsz" 72,"SOFT" 30;}
+a{color:inherit;text-decoration:none;}
+::selection{background:var(--cyan);color:var(--paper);}
+
+.doc{max-width:960px;margin:0 auto;padding:56px 32px 96px;}
+.hero{padding:40px 0 32px;border-bottom:2px solid var(--ink);margin-bottom:56px;position:relative;}
+.hero .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);margin-bottom:20px;}
+.hero p.lead{font-size:17px;line-height:1.5;color:var(--ink-2);max-width:640px;margin-top:16px;}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;}
+.legend span{padding:5px 11px;border-radius:100px;border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.35);}
+
+.channel-head{display:flex;align-items:baseline;gap:16px;margin:56px 0 24px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+.channel-head .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;padding:7px 12px;border-radius:100px;font-weight:600;}
+.channel-head .badge.li{background:var(--linkedin);color:#fff;}
+.channel-head .badge.fb{background:var(--facebook);color:#fff;}
+.channel-head p{font-size:14px;color:var(--muted);flex:1;}
+
+.post{
+  background:rgba(255,255,255,.5);
+  border:1px solid var(--line);border-radius:14px;
+  padding:26px 28px;margin-bottom:22px;position:relative;
+}
+.post-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
+.post-meta{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.post-meta .tag{padding:4px 9px;border-radius:100px;border:1px solid var(--line);background:var(--paper-2);}
+.post-meta .tag.hero-tag{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.post-meta .tag.amber{color:var(--amber);border-color:rgba(184,128,47,.4);background:rgba(184,128,47,.06);}
+.post-title{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:-.02em;font-variation-settings:"opsz" 72,"SOFT" 30;flex:1;min-width:250px;}
+.post-body{
+  font-family:var(--sans);font-size:15px;line-height:1.62;color:var(--ink);
+  white-space:pre-wrap;padding:20px;border-radius:10px;background:var(--paper);
+  border:1px dashed var(--line);margin-bottom:14px;font-variant-ligatures:none;
+}
+.post-hash{font-family:var(--mono);font-size:12px;color:var(--cyan);margin-top:6px;letter-spacing:.02em;word-spacing:6px;}
+.post-actions{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;}
+.copy-btn{
+  padding:9px 16px;border-radius:100px;border:1.5px solid var(--ink);
+  background:var(--ink);color:var(--paper);font:600 12.5px var(--sans);
+  cursor:pointer;letter-spacing:.02em;transition:all .2s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.copy-btn:hover{background:var(--cyan);border-color:var(--cyan);color:var(--paper);}
+.copy-btn.copied{background:var(--amber);border-color:var(--amber);color:var(--paper);}
+.copy-btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.char-count{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.char-count.warn{color:var(--amber);}
+
+.tips{
+  background:var(--ink);color:var(--paper);border-radius:14px;padding:28px 32px;margin-top:40px;
+  position:relative;overflow:hidden;
+}
+.tips::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 15% 20%,rgba(8,145,166,.18),transparent 55%),radial-gradient(circle at 85% 80%,rgba(184,128,47,.1),transparent 55%);
+}
+.tips > *{position:relative;z-index:1;}
+.tips h2{color:var(--paper);font-size:24px;margin-bottom:14px;}
+.tips h2 em{color:var(--cyan);font-size:24px;}
+.tips ul{list-style:none;display:grid;gap:10px;margin-top:12px;}
+.tips li{font-size:14px;line-height:1.5;color:rgba(244,239,230,.85);padding-left:20px;position:relative;}
+.tips li::before{content:'→';position:absolute;left:0;color:var(--amber);font-weight:600;}
+
+.footer-note{text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:56px;padding-top:22px;border-top:1px solid var(--line);}
+.footer-note em{color:var(--cyan);font-size:10.5px;}
+
+@media(max-width:640px){
+  .doc{padding:32px 20px 64px;}
+  .post{padding:20px;}
+  .post-body{padding:16px;font-size:14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+<header class="hero">
+  <div class="eyebrow">TruDealer · Social launch pack</div>
+  <h1>Copy. Tweak. <em>Ship.</em></h1>
+  <p class="lead">Ready-to-post launch copy for LinkedIn and Facebook. Every post has its own angle so you can space them out over launch week instead of firing the same message three times. Hit copy, paste, add an image (or use the OG image the site already has), post.</p>
+  <div class="legend">
+    <span>🇿🇦 SA-audience aware</span>
+    <span>🇬🇧 UK-audience aware</span>
+    <span>+ hashtag pack per post</span>
+    <span>char counts included</span>
+  </div>
+</header>
+
+<!-- ─── LINKEDIN ────────────────────────────── -->
+<div class="channel-head">
+  <span class="badge li">LinkedIn</span>
+  <p>Longer-form, professional tone. Founder voice works well here. Post 1 is your launch anchor — put it out first and pin it to your profile.</p>
+</div>
+
+<!-- LI Post 1: Launch anchor -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Launch anchor · founder story</div>
+    <div class="post-meta">
+      <span class="tag hero-tag">Pin this</span>
+      <span class="tag">Launch day</span>
+      <span class="tag amber">Founder voice</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>Ten years selling into dealers taught me one thing.
+
+They get sold half-finished enterprise software at enterprise prices — five-figure setup, six-month rollouts, per-seat pricing, and roadmaps full of "coming soon."
+
+So I built the opposite bet.
+
+TruDealer is a dealer operating system for independents.
+
+Eight modules. Three layers. One monthly price. Cancel anytime.
+
+→ TruShowroom — your dealer website, live in 5 days
+→ TruLens — 90-second guided vehicle capture + 3D Orbit
+→ TruInspect — condition reports buyers actually trust
+→ TruValue — market-correct trade-in pricing
+→ TruFlow — stock portal on TruStart, full DMS on Pro
+→ TruChat — the 2am salesperson who never misses a lead
+→ TruLive — a salesperson with a phone becomes a showroom
+→ TruAfford — buyers pre-qualify themselves before they message you
+
+Buy the whole stack. Or start with one module and bolt on the rest when you're ready.
+
+Setup fee waived if you sign within 48 hours of the demo — that's how we filter out time-wasters.
+
+Everything you see is running for a paying dealership right now. No vaporware. No roadmap slides. Live floor on the call.
+
+Built in Cape Town. Deployed anywhere.
+
+If you're an independent doing 5 to 500 units a month and you're tired of enterprise pricing theatre, book a walkthrough:
+
+→ cal.com/pgdebeer</div>
+  <div class="post-hash">#IndependentDealers #AutomotiveTech #UsedCars #DealerSoftware #DMS #CapeTown #SaaS #FoundersJourney</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- LI Post 2: Product spotlight (TruChat) -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Product spotlight · TruChat</div>
+    <div class="post-meta">
+      <span class="tag">Day 2–3</span>
+      <span class="tag amber">Feature deep-dive</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>The average independent dealer loses more leads after 6pm than they capture during the day.
+
+Buyer scrolls TikTok at 11pm. Sees a car. Messages your Facebook page. Waits until Monday morning for a reply. Books a viewing with your competitor by then.
+
+We built TruChat because "sorry, we were closed" is not a strategy.
+
+It's stock-aware. It answers in your dealership's voice. It qualifies the lead on WhatsApp — asks about budget, trade-in, timeline, finance. Books the test drive straight into TruFlow. Hands the hot ones to your sales team the second they log in Monday morning.
+
+It also answers the showroom phone when nobody can.
+
+The AI doesn't answer generic questions. It answers YOUR inventory. If you don't have a 2020 Ranger in stock, it won't invent one — it suggests the closest three units you actually have.
+
+Runs on WhatsApp. Runs on your website. Runs on the phone line. Same brain, three surfaces.
+
+Included on every TruPro package. Included on TruStart too — no add-on fee.
+
+Book a walkthrough and I'll show you the actual live conversation log from Tru-Cars:
+→ cal.com/pgdebeer</div>
+  <div class="post-hash">#WhatsAppBusiness #AutomotiveAI #LeadCapture #UsedCarDealers #ConversationalAI #DealerTech</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- LI Post 3: Pricing / positioning -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Positioning · why R 850 not R 8,500</div>
+    <div class="post-meta">
+      <span class="tag">Day 3–5</span>
+      <span class="tag amber">Pricing angle</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>Here's the pricing conversation nobody in dealer software wants to have:
+
+Enterprise DMS platforms quote independent dealers R 8,000+ a month. R 60,000 setup. Twelve-month lock-in. Per-seat fees.
+
+For what? A DMS that was built for a franchise group in 2007 and re-skinned three times since.
+
+TruDealer, month one, single-rooftop independent:
+
+R 2,500 setup (waived if you sign within 48 hours of the demo)
+R 850 / month for TruStart — website, stock portal, WhatsApp AI, guided capture, 3D Orbit
+No car limit. No per-seat fee. No annual lock-in. Cancel anytime.
+
+Need the full DMS? TruPro is R 1,650 / month. That gets you deal jackets, F&I, trade-in appraisal, video handover, and priority support.
+
+Available in USD and GBP too — same product, local currency, no FX surprises.
+
+The math isn't the point. The point is: independent dealers deserve tooling that assumes they're smart and busy, not tooling that assumes they'll pay a premium for someone to hold their hand while they read a manual.
+
+Book a walkthrough on real inventory:
+→ cal.com/pgdebeer</div>
+  <div class="post-hash">#SaaSPricing #IndependentDealers #DealerSoftware #UsedCarBusiness #NoLockIn</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- LI Post 4: 3D Orbit / TruLens -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Feature spotlight · 3D Orbit</div>
+    <div class="post-meta">
+      <span class="tag">Week 2</span>
+      <span class="tag amber">Visual demo</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>A picture used to be worth a thousand words.
+
+Now a 3D spin is worth about ten test drives.
+
+TruLens is the guided vehicle-capture app for dealers. Point your phone at a car, walk around it once, and TruLens does the rest — auto-crops, dealer-brands, exports to your website AND generates a full 360° 3D Orbit that buyers can pinch and rotate on your listing page.
+
+No expensive turntable rig. No hired photographer. No editing.
+
+The salesperson who took the photos in the morning has the car listed by lunch — every angle, every panel, spinning smoothly on a mobile browser.
+
+3D Orbit is included on every TruDealer package. Also available standalone: TruLens + 3D Orbit at R 399/mo + R 2,000 once-off. USD and GBP pricing on the live site.
+
+If you're still uploading 8 rushed photos taken in a corner of your lot, this is the upgrade.
+
+→ trudealer.tru-saas.com/packages.html</div>
+  <div class="post-hash">#3DPhotography #AutomotiveSales #VehicleListings #DealerMarketing #UsedCars</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- LI Post 5: Short punchy -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Short + punchy · reshare-friendly</div>
+    <div class="post-meta">
+      <span class="tag">Anytime</span>
+      <span class="tag amber">Under 500 chars</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>Independent dealers don't need enterprise pricing theatre.
+
+They need:
+→ A website that converts
+→ A DMS that fits in a day
+→ AI that qualifies leads at 2am
+→ Cancel-anytime terms
+
+TruDealer ships all four. Cape Town-built. Deployed anywhere.
+
+R 850/mo to start. Setup waived within 48h.
+
+Book a walkthrough on real stock: cal.com/pgdebeer</div>
+  <div class="post-hash">#IndependentDealers #DealerTech #AutomotiveSaaS</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- ─── FACEBOOK ────────────────────────────── -->
+<div class="channel-head">
+  <span class="badge fb">Facebook</span>
+  <p>Shorter, friendlier, community-first. Great for local dealer groups and your business page. Emoji help visibility here — don't strip them.</p>
+</div>
+
+<!-- FB Post 1: Launch announcement -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Launch announcement · business page</div>
+    <div class="post-meta">
+      <span class="tag hero-tag">Pin this</span>
+      <span class="tag">Launch day</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>🚗 We've been quietly building something for the past two years.
+
+Today it goes live.
+
+TruDealer — the operating system built specifically for independent used-car dealers. Website, DMS, condition reports, WhatsApp AI, video walkarounds, finance — one stack, one monthly price, cancel anytime.
+
+No enterprise contracts. No per-seat fees. No "call us for pricing."
+
+✅ TruStart from R 850/month — website, stock portal, WhatsApp AI, 3D Orbit
+✅ TruPro from R 1,650/month — full DMS, trade-in appraisals, everything
+✅ Setup fee waived if you sign within 48 hours of your demo
+
+Available in ZAR 🇿🇦, USD 🇺🇸, and GBP 🇬🇧 — same product, local currency.
+
+Book a 25-minute walkthrough on your own inventory:
+👉 cal.com/pgdebeer
+
+Or WhatsApp us direct:
+🇿🇦 +27 62 050 2091
+🇬🇧 +44 7476 995694
+
+#TruDealer #UsedCars #DealerTech</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- FB Post 2: Community / dealer group -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Local dealer group · community angle</div>
+    <div class="post-meta">
+      <span class="tag">Post in groups</span>
+      <span class="tag amber">Warm intro</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>Hey team 👋
+
+Quick one for any independents in the group.
+
+We built a full dealer stack — website, DMS, WhatsApp AI, condition reports, 3D vehicle spins — for the same price a lot of you are already paying just for a website.
+
+Not a pitch, an offer: if you want a 25-minute walkthrough on YOUR stock (not a slide deck), I'll show you the exact same system that runs Tru-Cars right now. Live floor, real leads, real deals.
+
+If it's not for you, no worries. If it is, we get you live in 10 days.
+
+📱 WhatsApp me: +27 62 050 2091 (SA) / +44 7476 995694 (UK)
+📅 Or book direct: cal.com/pgdebeer
+
+Cheers 🙏
+— Paul, TruSaaS</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- FB Post 3: Short / share bait -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">Short post · high shareability</div>
+    <div class="post-meta">
+      <span class="tag">Anytime</span>
+      <span class="tag amber">Under 300 chars</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>The 2am salesperson who never misses a lead is finally real.
+
+TruChat — WhatsApp AI that qualifies leads, books test drives, and hands the hot ones to your team.
+
+Included on every TruDealer package. Now live.
+
+📅 cal.com/pgdebeer</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- FB Post 4: UK-focused -->
+<article class="post">
+  <div class="post-head">
+    <div class="post-title">UK dealer angle · localised</div>
+    <div class="post-meta">
+      <span class="tag">UK groups</span>
+      <span class="tag amber">🇬🇧 Localised</span>
+    </div>
+  </div>
+  <div class="post-body" data-post>🇬🇧 Independent UK dealers — this one's for you.
+
+TruDealer just went live in the UK. Full dealer OS — website, DMS, WhatsApp AI, condition reports, 3D vehicle spins — priced in GBP.
+
+TruStart from £119/mo. TruPro (full DMS) from £229/mo. Setup fee waived if you sign within 48h of the demo.
+
+We're the same team that runs a real dealership in Cape Town on this stack — so nothing you see is a mockup.
+
+Book a walkthrough on your own stock:
+📅 cal.com/pgdebeer
+
+Or WhatsApp direct: +44 7476 995694</div>
+  <div class="post-actions">
+    <button type="button" class="copy-btn" data-copy><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy post</button>
+    <span class="char-count">— chars</span>
+  </div>
+</article>
+
+<!-- ─── TIPS ────────────────────────────────── -->
+<section class="tips">
+  <h2>Posting tips <em>(read once, keep in mind)</em></h2>
+  <ul>
+    <li><strong>LinkedIn</strong> favours posts that keep readers on-platform. Put the cal.com link in the first comment if reach drops on posts with links in the body.</li>
+    <li><strong>Facebook</strong> loves images. Attach the TruDealer logo or a live-floor screenshot to every post — dry text posts get suppressed hard.</li>
+    <li><strong>Spacing</strong>: LinkedIn once every 2–3 days. Facebook can go daily on the business page but rotate angles so it doesn't feel spammy.</li>
+    <li><strong>Reply fast</strong>: the first comment on a launch post determines the reach for the next 6 hours. Have a friend queued up to comment within 5 min of you posting.</li>
+    <li><strong>Repurpose</strong>: LinkedIn Post 2 (TruChat spotlight) also works as a TikTok or Reels script — same words, just record yourself saying them over B-roll of the WhatsApp UI.</li>
+    <li><strong>Tag intent</strong>: on the UK-localised post, tag 2–3 UK dealer accounts you follow. Don't tag people who don't know you.</li>
+  </ul>
+</section>
+
+<div class="footer-note">
+  <em>trudealer.tru-saas.com</em> · Cape Town · Deployed anywhere · © TruSaaS
+</div>
+
+</div><!-- /doc -->
+
+<script>
+// Copy-to-clipboard + char count for each post
+(function(){
+  document.querySelectorAll('.post').forEach(function(post){
+    var body=post.querySelector('[data-post]');
+    var hash=post.querySelector('.post-hash');
+    var counter=post.querySelector('.char-count');
+    var btn=post.querySelector('[data-copy]');
+    if(!body||!btn)return;
+
+    function fullText(){
+      var t=body.textContent.trim();
+      if(hash&&hash.textContent.trim())t+='\n\n'+hash.textContent.trim();
+      return t;
+    }
+    // Live char count
+    var n=fullText().length;
+    if(counter){
+      counter.textContent=n.toLocaleString()+' chars';
+      // LinkedIn hard limit 3000; Facebook effectively unlimited but 63k. Warn if >2800.
+      if(n>2800)counter.classList.add('warn');
+    }
+
+    btn.addEventListener('click',function(){
+      var text=fullText();
+      var done=function(){
+        var original=btn.innerHTML;
+        btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-11"/></svg>Copied';
+        btn.classList.add('copied');
+        setTimeout(function(){btn.innerHTML=original;btn.classList.remove('copied');},1800);
+      };
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(fallback);
+      }else{fallback();}
+      function fallback(){
+        var ta=document.createElement('textarea');
+        ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+        document.body.appendChild(ta);ta.focus();ta.select();
+        try{document.execCommand('copy');done();}catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

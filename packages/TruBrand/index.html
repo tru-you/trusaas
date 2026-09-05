@@ -1,0 +1,4248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TruBrand Studio Pro — Automotive Social & Vehicle Creative Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..800&family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- High fidelity HTML-to-Image and Canvas Exporter -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #03060B;
+      --panel-bg: #090E17;
+      --panel-border: rgba(255, 255, 255, 0.09);
+      --card-bg: #121A28;
+      --card-border: #1F2C40;
+      --primary: #0D9488;
+      --primary-bright: #2DD4BF;
+      --primary-glow: rgba(45, 212, 191, 0.35);
+      --accent: #F59E0B;
+      --card-box-bg: rgba(9, 14, 23, 0.92);
+      --badge-bg-custom: rgba(13, 148, 136, 0.95);
+      --badge-text-custom: #FFFFFF;
+      --badge-border-custom: #2DD4BF;
+      --pill-bg-custom: rgba(13, 148, 136, 0.25);
+      --pill-text-custom: #2DD4BF;
+      --pill-border-custom: #2DD4BF;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-sans: 'Inter Tight', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background: var(--bg-dark);
+      color: #F8F5EE;
+      font-family: var(--font-sans);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Studio Header — Space-Saving Nav Bar */
+    header.tool-header {
+      padding: 7px 18px;
+      background: #070B12;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      flex-shrink: 0;
+      gap: 12px;
+      height: 52px;
+    }
+    .brand-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-sidebar-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94A3B8;
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-sidebar-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+    .btn-sidebar-toggle:hover { background: rgba(255, 255, 255, 0.1); color: #FFF; border-color: rgba(255,255,255,0.25); }
+    .btn-sidebar-toggle.active { color: var(--primary-bright); border-color: var(--primary-bright); background: rgba(13, 148, 136, 0.15); }
+
+    .brand-logo-text {
+      font-size: 16.5px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+    .brand-logo-text span { color: var(--primary-bright); }
+    .brand-logo-badge {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 800;
+      background: rgba(45, 212, 191, 0.15);
+      border: 1px solid var(--primary-bright);
+      color: var(--primary-bright);
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-left: 3px;
+    }
+
+    /* Center Segmented Toggles Bar */
+    .header-center-toggles {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle-segmented-group {
+      display: inline-flex;
+      align-items: center;
+      background: #05080E;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .toggle-group-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 800;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0 6px;
+      user-select: none;
+    }
+    .btn-seg {
+      padding: 5px 9px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-seg:hover { color: #FFF; }
+    .btn-seg.active {
+      background: var(--primary);
+      color: #FFF;
+      box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+    }
+
+    /* Export Actions */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-action-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #F8F5EE;
+      padding: 6px 11px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .btn-action-ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn-export-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, #064E48 100%);
+      border: 1px solid var(--primary-bright);
+      color: #FFF;
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-export-primary:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+
+    /* Main Split Layout — Collapsible */
+    main.studio-layout {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      flex: 1;
+      height: calc(100vh - 52px);
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      transition: grid-template-columns 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    main.studio-layout.sidebar-collapsed {
+      grid-template-columns: 0px 1fr;
+    }
+
+    /* Left Control Sidebar */
+    aside.sidebar {
+      background: var(--panel-bg);
+      border-right: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      z-index: 10;
+      transition: opacity 0.2s ease;
+    }
+    main.studio-layout.sidebar-collapsed aside.sidebar {
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Tab Header Navigation (Compact Horizontal Segmented Pill Bar) */
+    .tab-bar {
+      display: flex;
+      background: #060A10;
+      border-bottom: 1px solid var(--panel-border);
+      padding: 5px;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 7px 4px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: #94A3B8;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .tab-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
+    .tab-btn:hover { color: #FFF; background: rgba(255,255,255,0.04); }
+    .tab-btn.active {
+      background: #121A28;
+      color: var(--primary-bright);
+      border-color: rgba(45, 212, 191, 0.3);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Tab Content Area — Guaranteed Smooth Scrolling */
+    .tab-content {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      padding: 16px 18px;
+      display: block;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-content::-webkit-scrollbar { width: 6px; }
+    .tab-content::-webkit-scrollbar-track { background: #070B12; }
+    .tab-content::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    .tab-content::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+    .tab-pane { display: none; flex-direction: column; gap: 14px; padding-bottom: 30px; }
+    .tab-pane.active { display: flex; }
+
+    /* Section Labels & Controls */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--primary-bright);
+      margin-bottom: 4px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    label { font-size: 11px; font-weight: 600; color: rgba(248, 245, 238, 0.85); }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 8px 11px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+      transition: all 0.2s;
+      font-family: var(--font-sans);
+    }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+      border-color: var(--primary-bright);
+      background: #172437;
+    }
+
+    /* Template Cards Grid */
+    .template-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+    }
+    .tpl-card {
+      padding: 10px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .tpl-card-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tpl-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #94A3B8;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .tpl-info h4 { font-size: 12px; font-weight: 700; color: #FFF; margin-bottom: 2px; }
+    .tpl-info p { font-size: 10px; color: #94A3B8; line-height: 1.25; }
+    .tpl-card:hover {
+      background: #172437;
+      border-color: rgba(45, 212, 191, 0.4);
+    }
+    .tpl-card.active {
+      background: linear-gradient(90deg, rgba(13, 148, 136, 0.3) 0%, rgba(9, 21, 31, 0.8) 100%);
+      border-color: var(--primary-bright);
+      box-shadow: 0 0 16px rgba(13, 148, 136, 0.2);
+    }
+    .tpl-card.active .tpl-num {
+      background: var(--primary);
+      color: #FFF;
+    }
+
+    /* Sliders */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary-bright);
+      cursor: pointer;
+    }
+    .val-tag {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--primary-bright);
+      min-width: 40px;
+      text-align: right;
+    }
+
+    /* Color Swatch Controls */
+    .color-picker-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .color-picker-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 5px 9px;
+      border-radius: 7px;
+    }
+    .color-picker-item input[type="color"] {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .color-picker-item span { font-size: 10.5px; font-weight: 700; color: #CBD5E1; }
+
+    /* Segmented Switches Inside Sidebar */
+    .segmented-switch {
+      display: flex;
+      background: #05080E;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 7px;
+      padding: 2px;
+      gap: 2px;
+      width: 100%;
+    }
+    .segmented-switch .btn-toggle {
+      flex: 1;
+      padding: 6px 4px;
+      background: transparent;
+      border: none;
+      border-radius: 5px;
+      color: #94A3B8;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .segmented-switch .btn-toggle:hover { color: #FFF; }
+    .segmented-switch .btn-toggle.active {
+      background: var(--primary);
+      color: #FFF;
+      box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
+    }
+
+    .btn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .btn-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+    /* Sticker / Badge Tray Grid */
+    .badge-tray-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .badge-tray-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      padding: 7px 9px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .badge-tray-item svg { width: 14px; height: 14px; stroke: #94A3B8; flex-shrink: 0; fill: none; }
+    .badge-tray-item span { font-size: 10.5px; font-weight: 700; color: #CBD5E1; line-height: 1.2; }
+    .badge-tray-item:hover { border-color: rgba(45, 212, 191, 0.4); background: #172437; }
+    .badge-tray-item.active {
+      background: rgba(13, 148, 136, 0.22);
+      border-color: var(--primary-bright);
+    }
+    .badge-tray-item.active svg { stroke: var(--primary-bright); }
+    .badge-tray-item.active span { color: #FFF; }
+
+    /* Photo Filter Cards */
+    .filter-preset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+    .filter-preset-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 7px;
+      padding: 7px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-preset-card strong { display: block; font-size: 10.5px; color: #E2E8F0; margin-bottom: 2px; }
+    .filter-preset-card span { font-size: 9px; color: #94A3B8; font-family: var(--font-mono); }
+    .filter-preset-card:hover { border-color: rgba(255,255,255,0.25); background: #172437; }
+    .filter-preset-card.active {
+      background: var(--primary);
+      border-color: var(--primary-bright);
+    }
+    .filter-preset-card.active strong { color: #FFF; }
+    .filter-preset-card.active span { color: #E6FFFA; }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 9px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover {
+      border-color: var(--primary-bright);
+      background: rgba(13, 148, 136, 0.05);
+    }
+    .upload-zone svg { width: 22px; height: 22px; stroke: #94A3B8; margin-bottom: 4px; }
+    .upload-zone span { font-size: 11px; color: #CBD5E1; font-weight: 600; display: block; }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* AI Copywriter Tab Specifics */
+    .copy-output-box {
+      background: #060910;
+      border: 1px solid var(--card-border);
+      border-radius: 9px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: #E2E8F0;
+      min-height: 200px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      user-select: text;
+      position: relative;
+    }
+    .copy-actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      gap: 8px;
+    }
+    .btn-copy-big {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary) 0%, #064E48 100%);
+      border: 1px solid var(--primary-bright);
+      color: #FFF;
+      padding: 9px 14px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.2s;
+    }
+    .btn-copy-big:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+    /* ----------------------------------------------------
+       VIEWPORT & CANVAS ENGINE
+       ---------------------------------------------------- */
+    section.viewport-container {
+      position: relative;
+      background: radial-gradient(circle at center, #0B111A 0%, #020407 100%);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Floating Viewport Controls */
+    .zoom-toolbar {
+      position: absolute;
+      top: 14px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(9, 14, 23, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(16px);
+      padding: 5px 8px;
+      border-radius: 100px;
+      z-index: 40;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .btn-zoom {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #E2E8F0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .btn-zoom:hover { background: var(--primary); color: #fff; }
+    .btn-zoom-fit {
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      color: #5EEAD4;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 100px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: all 0.2s;
+    }
+    .btn-zoom-fit:hover { background: var(--primary); color: #fff; }
+    .zoom-indicator {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: #94A3B8;
+      min-width: 38px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* Scrollable Stage */
+    .scroll-stage {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 50px;
+      display: flex;
+      box-sizing: border-box;
+    }
+    .scroll-stage::-webkit-scrollbar { width: 8px; height: 8px; }
+    .scroll-stage::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+
+    /* Scaler Wrapper */
+    #banner-scaler-pod {
+      margin: auto;
+      position: relative;
+      flex-shrink: 0;
+      transition: width 0.1s ease, height 0.1s ease;
+    }
+
+    /* ----------------------------------------------------
+       THE CORE BANNER CANVAS (1080px Master Base)
+       ---------------------------------------------------- */
+    #banner {
+      width: 1080px;
+      height: 1080px;
+      border-radius: 28px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      overflow: hidden;
+      box-shadow: 0 40px 110px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.12);
+      box-sizing: border-box;
+      user-select: none;
+      background-color: #03060B;
+    }
+
+    /* Aspect Ratio Profiles */
+    #banner.aspect-square    { width: 1080px; height: 1080px; }
+    #banner.aspect-portrait  { width: 1080px; height: 1350px; }
+    #banner.aspect-story     { width: 1080px; height: 1920px; }
+    #banner.aspect-landscape { width: 1200px; height: 675px;  }
+
+    /* Vehicle Staging Background Layer */
+    .banner-vehicle-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.05s linear;
+    }
+
+    /* Dynamic Vignette / Scrim Overlays */
+    .banner-scrim-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(3,6,11,0.6) 0%, rgba(3,6,11,0.05) 35%, rgba(3,6,11,0.2) 65%, rgba(3,6,11,0.92) 100%);
+    }
+    .banner-ambient-glow {
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 480px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(100px);
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 75%);
+      z-index: 2;
+    }
+
+    /* Top Brand Strip */
+    .banner-header-row {
+      position: absolute;
+      top: 48px;
+      left: 54px;
+      right: 54px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      pointer-events: none;
+    }
+
+    /* Client Logo Pod */
+    .client-logo-pod {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 160px;
+      max-width: 340px;
+      height: 68px;
+      padding: 6px 22px;
+      border-radius: 14px;
+      transform-origin: left center;
+      transition: all 0.2s;
+    }
+    .pod-glass {
+      background: rgba(18, 26, 40, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .pod-dark {
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .pod-white {
+      background: #FFFFFF;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .pod-none { background: transparent; border: none; }
+
+    .client-logo-pod img {
+      max-height: 52px;
+      max-width: 280px;
+      object-fit: contain;
+    }
+    .client-logo-placeholder {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #FFF;
+      text-transform: uppercase;
+    }
+    .filter-bright { filter: brightness(1.7) contrast(1.2); }
+    .filter-invert { filter: brightness(0) invert(1); }
+
+    /* Optional Dealership Top Badge */
+    .dealer-top-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 800;
+      padding: 7px 18px;
+      border-radius: 100px;
+      background: rgba(18, 26, 40, 0.88);
+      border: 1px solid var(--primary-bright);
+      color: var(--primary-bright);
+    }
+
+    /* Floating Canvas Corner Badge */
+    .canvas-corner-badge {
+      position: absolute;
+      top: 130px;
+      right: 54px;
+      z-index: 15;
+      background: var(--badge-bg-custom, rgba(13, 148, 136, 0.95));
+      border: 1px solid var(--badge-border-custom, var(--primary-bright));
+      color: var(--badge-text-custom, #FFF);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+    .canvas-corner-badge svg { width: 14px; height: 14px; stroke: var(--badge-border-custom, currentColor); fill: none; }
+
+    /* ----------------------------------------------------
+       MOVABLE DRAGGABLE OVERLAY CARD
+       ---------------------------------------------------- */
+    .movable-overlay-card {
+      position: absolute;
+      z-index: 20;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      box-sizing: border-box;
+      max-width: 92%;
+    }
+    .movable-overlay-card:active {
+      cursor: grabbing;
+    }
+    .drag-hint-handle {
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background: var(--primary);
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+    .drag-hint-handle svg { width: 10px; height: 10px; stroke: currentColor; fill: none; }
+
+    /* Common Badge & Pill Styles */
+    .card-header-badge {
+      margin-bottom: 12px;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 18px;
+      border-radius: 100px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 800;
+      background: var(--pill-bg-custom, rgba(13, 148, 136, 0.25));
+      border: 1px solid var(--pill-border-custom, var(--primary-bright));
+      color: var(--pill-text-custom, var(--primary-bright));
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--pill-border-custom, currentColor);
+      box-shadow: 0 0 8px var(--pill-border-custom, currentColor);
+    }
+
+    /* Floating Card Container — Solid RGBA for clean render & adjustable opacity */
+    .styled-card-box {
+      background: var(--card-box-bg, rgba(9, 14, 23, 0.92));
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 22px;
+      padding: 26px 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+      width: 100%;
+      box-sizing: border-box;
+      display: block;
+      transition: background 0.15s ease;
+    }
+
+    /* Vehicle Title & Subtitle Hierarchy — Explicit Line Margins */
+    .vehicle-title-wrap {
+      margin-bottom: 12px;
+      display: block;
+    }
+    .vehicle-hero-title {
+      font-family: var(--font-sans);
+      font-size: 46px;
+      font-weight: 900;
+      line-height: 1.18;
+      letter-spacing: -0.025em;
+      color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      word-break: break-word;
+    }
+    .vehicle-variant-subtitle {
+      font-family: var(--font-sans);
+      font-size: 19px;
+      font-weight: 600;
+      color: #CBD5E1;
+      line-height: 1.35;
+      margin-top: 6px;
+      word-break: break-word;
+    }
+
+    /* Price & Installment Row — Guaranteed Horizontal Clearance */
+    .vehicle-price-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      margin-bottom: 14px;
+    }
+    .vehicle-price-main {
+      font-family: var(--font-sans);
+      font-size: 44px;
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--primary-bright);
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+    }
+    .vehicle-install-pill {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 800;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #F59E0B;
+      color: #FCD34D;
+      padding: 6px 16px;
+      border-radius: 100px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    /* Spec Pill Deck — Margin Spacing to prevent Canvas SVG collapse */
+    .spec-pill-deck {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .spec-pill-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      padding: 8px 16px;
+      background: rgba(18, 26, 40, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #E2E8F0;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .spec-pill-item svg { width: 14px; height: 14px; stroke: var(--primary-bright); fill: none; }
+
+    /* Price Drop Template */
+    .price-old-strike {
+      font-family: var(--font-sans);
+      font-size: 28px;
+      font-weight: 700;
+      color: #94A3B8;
+      text-decoration: line-through;
+      margin-right: 12px;
+    }
+    .price-new-glow {
+      font-family: var(--font-sans);
+      font-size: 48px;
+      font-weight: 900;
+      color: #EF4444;
+      text-shadow: 0 0 24px rgba(239, 68, 68, 0.4);
+      white-space: nowrap;
+    }
+    .save-badge {
+      background: #DC2626;
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 8px;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .save-badge svg { width: 14px; height: 14px; stroke: #FFF; fill: none; }
+
+    /* Finance Template */
+    .finance-rate-highlight {
+      font-size: 15px;
+      color: #E2E8F0;
+      font-weight: 600;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .finance-rate-amount {
+      font-size: 38px;
+      color: var(--primary-bright);
+      font-family: var(--font-sans);
+      font-weight: 900;
+    }
+    .finance-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .finance-stat-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .finance-stat-card label { font-size: 10px; color: #94A3B8; text-transform: uppercase; font-family: var(--font-mono); }
+    .finance-stat-card strong { font-size: 15px; color: #FFF; display: block; margin-top: 2px; }
+    .finance-disclaimer {
+      font-size: 11px;
+      color: #94A3B8;
+      font-family: var(--font-mono);
+      margin-top: 8px;
+    }
+
+    /* Just Sold Template */
+    .sold-ribbon-banner {
+      background: linear-gradient(135deg, #D97706 0%, #78350F 100%);
+      border: 1px solid #FCD34D;
+      color: #FFF;
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-family: var(--font-sans);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 10px 30px rgba(217, 119, 6, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .sold-congrats-text {
+      font-size: 16px;
+      color: #CBD5E1;
+      line-height: 1.45;
+      margin: 10px 0;
+    }
+    .sold-sourcing-tag {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #FCD34D;
+      font-weight: 700;
+      background: rgba(245, 158, 11, 0.15);
+      padding: 8px 18px;
+      border-radius: 100px;
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    /* Specs Grid */
+    .spec-matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .spec-matrix-cell {
+      background: rgba(18, 26, 40, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .spec-matrix-cell svg { width: 22px; height: 22px; stroke: var(--primary-bright); flex-shrink: 0; fill: none; }
+    .spec-matrix-cell strong { font-size: 14.5px; color: #FFF; display: block; }
+    .spec-matrix-cell span { font-size: 11px; color: #94A3B8; font-weight: 600; }
+
+    /* Classifieds Watermark */
+    .watermark-minimal-bar {
+      background: rgba(3, 6, 11, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 16px;
+      width: 100%;
+    }
+
+    /* Reviews */
+    .stars-row { display: flex; gap: 4px; color: #F59E0B; margin-bottom: 8px; }
+    .stars-row svg { width: 20px; height: 20px; fill: currentColor; }
+    .review-quote-text {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-style: italic;
+      color: #FFF;
+      line-height: 1.4;
+      margin: 10px 0;
+    }
+
+    /* Bottom Contact Footer Row */
+    .banner-footer-row {
+      position: absolute;
+      bottom: 40px;
+      left: 54px;
+      right: 54px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      pointer-events: none;
+    }
+    .footer-contact-info {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #CBD5E1;
+    }
+    .footer-contact-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-contact-item svg { width: 15px; height: 15px; stroke: var(--primary-bright); fill: none; }
+    .footer-contact-item strong { color: #FFF; }
+
+    .trust-seal-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--primary);
+      color: #FFF;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .trust-seal-badge svg { width: 13px; height: 13px; fill: currentColor; }
+
+    /* ----------------------------------------------------
+       TEMPLATE 11: SLANTED SPEED SLASHES (MOTORSPORT)
+       ---------------------------------------------------- */
+    .slant-banner-container {
+      position: relative;
+      width: 100%;
+      display: block;
+    }
+    .slant-cutout-panel {
+      background: var(--card-box-bg, rgba(9, 14, 23, 0.94));
+      border-top: 3px solid var(--primary-bright);
+      border-bottom: 3px solid var(--primary-bright);
+      padding: 24px 34px;
+      clip-path: polygon(0 14px, 100% 0, 100% calc(100% - 14px), 0 100%);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.85);
+      position: relative;
+      overflow: hidden;
+      display: block;
+    }
+    .slant-badge-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: var(--primary);
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transform: skewX(-12deg);
+      border-radius: 4px;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+      margin-bottom: 10px;
+    }
+    .slant-badge-flag span {
+      transform: skewX(12deg);
+      display: inline-block;
+    }
+    .slant-price-tag {
+      display: inline-block;
+      background: #FFF;
+      color: #03060B;
+      padding: 6px 20px;
+      font-family: var(--font-sans);
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      transform: skewX(-12deg);
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(255,255,255,0.25);
+    }
+    .slant-price-tag span {
+      display: inline-block;
+      transform: skewX(12deg);
+    }
+
+    /* ----------------------------------------------------
+       TEMPLATE 12: EDITORIAL MAGAZINE FLOATING TYPOGRAPHY
+       ---------------------------------------------------- */
+    .editorial-floating-container {
+      width: 100%;
+      position: relative;
+      display: block;
+    }
+    .editorial-hero-title {
+      font-family: var(--font-display);
+      font-size: 58px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #FFFFFF;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.8);
+      margin: 0;
+      padding: 0;
+    }
+    .editorial-sub-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .editorial-price-clean {
+      font-family: var(--font-sans);
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--primary-bright);
+      text-shadow: 0 2px 16px rgba(0,0,0,0.8);
+      letter-spacing: -0.02em;
+    }
+    .editorial-pill-tag {
+      background: rgba(9, 14, 23, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 7px 16px;
+      border-radius: 100px;
+    }
+
+    /* ----------------------------------------------------
+       TEMPLATE 13: ASYMMETRIC SPLIT PANEL & SPEC HUD
+       ---------------------------------------------------- */
+    .split-hud-container {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 16px;
+      background: var(--card-box-bg, rgba(7, 11, 18, 0.94));
+      border-left: 4px solid var(--primary-bright);
+      border-radius: 16px;
+      padding: 24px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      align-items: center;
+    }
+    .split-hud-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .split-hud-right {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-left: 1px solid rgba(255,255,255,0.12);
+      padding-left: 18px;
+    }
+    .split-spec-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #CBD5E1;
+      border-bottom: 1px dashed rgba(255,255,255,0.08);
+      padding-bottom: 4px;
+    }
+    .split-spec-row strong {
+      color: #FFF;
+      font-family: var(--font-mono);
+    }
+
+    /* ----------------------------------------------------
+       TEMPLATE 14: VIEWFINDER CAMERA FRAME & HUD
+       ---------------------------------------------------- */
+    .viewfinder-hud-overlay {
+      width: 100%;
+      display: block;
+      position: relative;
+    }
+    .viewfinder-bracket-tl {
+      position: absolute;
+      top: -24px;
+      left: -16px;
+      width: 28px;
+      height: 28px;
+      border-top: 2.5px solid var(--primary-bright);
+      border-left: 2.5px solid var(--primary-bright);
+      pointer-events: none;
+    }
+    .viewfinder-bracket-tr {
+      position: absolute;
+      top: -24px;
+      right: -16px;
+      width: 28px;
+      height: 28px;
+      border-top: 2.5px solid var(--primary-bright);
+      border-right: 2.5px solid var(--primary-bright);
+      pointer-events: none;
+    }
+    .viewfinder-bracket-bl {
+      position: absolute;
+      bottom: -24px;
+      left: -16px;
+      width: 28px;
+      height: 28px;
+      border-bottom: 2.5px solid var(--primary-bright);
+      border-left: 2.5px solid var(--primary-bright);
+      pointer-events: none;
+    }
+    .viewfinder-bracket-br {
+      position: absolute;
+      bottom: -24px;
+      right: -16px;
+      width: 28px;
+      height: 28px;
+      border-bottom: 2.5px solid var(--primary-bright);
+      border-right: 2.5px solid var(--primary-bright);
+      pointer-events: none;
+    }
+    .viewfinder-status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid var(--primary-bright);
+      color: var(--primary-bright);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .viewfinder-rec-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EF4444;
+      box-shadow: 0 0 10px #EF4444;
+    }
+    .viewfinder-float-bar {
+      background: var(--card-box-bg, rgba(7, 11, 18, 0.88));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 14px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.7);
+      margin-top: 10px;
+    }
+
+    /* ----------------------------------------------------
+       LIVE ANIMATION & MOTION KEYFRAMES
+       ---------------------------------------------------- */
+    @keyframes kenBurnsMotion {
+      0%   { transform: scale(1.0) translate(0, 0); }
+      50%  { transform: scale(var(--motion-scale, 1.10)) translate(-1.5%, -1%); }
+      100% { transform: scale(1.0) translate(0, 0); }
+    }
+    @keyframes driftMotion {
+      0%   { transform: scale(1.06) translateX(-2.5%); }
+      50%  { transform: scale(1.06) translateX(2.5%); }
+      100% { transform: scale(1.06) translateX(-2.5%); }
+    }
+    @keyframes riseMotion {
+      0%   { transform: scale(1.06) translateY(2.5%); }
+      50%  { transform: scale(1.06) translateY(-2.5%); }
+      100% { transform: scale(1.06) translateY(2.5%); }
+    }
+    @keyframes slideFadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes badgeBreathing {
+      0%, 100% {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 0 rgba(45, 212, 191, 0);
+      }
+      50% {
+        box-shadow: 0 6px 24px rgba(0,0,0,0.4), 0 0 16px var(--primary-glow);
+      }
+    }
+    @keyframes pricePulseGlow {
+      0%, 100% {
+        filter: brightness(1.0);
+      }
+      50% {
+        filter: brightness(1.22);
+      }
+    }
+
+    #banner.animated-mode.motion-kenburns #banner-img-layer {
+      animation: kenBurnsMotion var(--motion-duration, 8s) ease-in-out infinite alternate !important;
+    }
+    #banner.animated-mode.motion-drift #banner-img-layer {
+      animation: driftMotion var(--motion-duration, 8s) ease-in-out infinite alternate !important;
+    }
+    #banner.animated-mode.motion-rise #banner-img-layer {
+      animation: riseMotion var(--motion-duration, 8s) ease-in-out infinite alternate !important;
+    }
+    #banner.animated-mode.motion-pulse #banner-img-layer {
+      animation: none !important;
+    }
+
+    #banner.animated-mode .vehicle-hero-title,
+    #banner.animated-mode .editorial-hero-title {
+      animation: slideFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    #banner.animated-mode .vehicle-variant-subtitle {
+      animation: slideFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+    }
+    #banner.animated-mode .vehicle-price-row,
+    #banner.animated-mode .vehicle-price-main,
+    #banner.animated-mode .price-new-glow,
+    #banner.animated-mode .slant-price-tag,
+    #banner.animated-mode .editorial-price-clean {
+      animation: pricePulseGlow 3s ease-in-out infinite, slideFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
+    }
+    #banner.animated-mode .badge-pill,
+    #banner.animated-mode .canvas-corner-badge,
+    #banner.animated-mode .slant-badge-flag,
+    #banner.animated-mode .viewfinder-status-tag {
+      animation: badgeBreathing 2.5s ease-in-out infinite, slideFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+    }
+    #banner.animated-mode .spec-pill-item {
+      animation: slideFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    /* Video Render Modal */
+    .video-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(3, 6, 11, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-modal-card {
+      background: #090E17;
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      max-width: 440px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+    }
+    .video-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #121A28;
+      border-radius: 100px;
+      overflow: hidden;
+      margin: 18px 0;
+    }
+    .video-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-bright) 100%);
+      border-radius: 100px;
+      transition: width 0.15s ease;
+    }
+
+    /* Ratio Adaptations */
+    #banner.aspect-landscape .vehicle-hero-title { font-size: 34px; }
+    #banner.aspect-landscape .vehicle-price-main { font-size: 32px; }
+    #banner.aspect-landscape .styled-card-box { padding: 18px 22px; }
+    #banner.aspect-landscape .spec-matrix-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    #banner.aspect-landscape .spec-matrix-cell { padding: 8px 12px; }
+    #banner.aspect-landscape .split-hud-container { grid-template-columns: 1.2fr 1fr; padding: 16px 20px; }
+    #banner.aspect-landscape .banner-header-row { top: 28px; left: 45px; right: 45px; }
+    #banner.aspect-landscape .banner-footer-row { bottom: 22px; left: 45px; right: 45px; }
+
+    #banner.aspect-story .vehicle-hero-title { font-size: 52px; }
+    #banner.aspect-story .editorial-hero-title { font-size: 64px; }
+    #banner.aspect-story .split-hud-container { grid-template-columns: 1fr; }
+    #banner.aspect-story .split-hud-right { border-left: none; border-top: 1px solid rgba(255,255,255,0.12); padding-left: 0; padding-top: 12px; }
+    #banner.aspect-story .banner-header-row { top: 90px; }
+    #banner.aspect-story .banner-footer-row { bottom: 70px; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Studio Header (Space-Saving Compact Nav Bar) -->
+  <header class="tool-header">
+    <div class="brand-title-wrap">
+      <button type="button" class="btn-sidebar-toggle" onclick="toggleSidebar()" title="Toggle Control Panel (Collapse / Expand Workspace)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <div class="brand-logo-text" title="TruBrand Studio Pro">
+        <img src="assets/trubrand-logo-nav.svg" alt="TruBrand" style="height: 28px; width: auto; max-width: 150px; display: block; object-fit: contain;">
+        <span class="brand-logo-badge">PRO</span>
+      </div>
+    </div>
+
+    <!-- Center Segmented Toggles -->
+    <div class="header-center-toggles">
+      <!-- Carousel Slide Segmented Toggle -->
+      <div class="toggle-segmented-group" title="Carousel Slide Switcher">
+        <span class="toggle-group-label">Slide</span>
+        <button type="button" class="btn-seg active" id="btn-slide-1" onclick="switchSlide(0)" title="Slide 1: Hero & Price">1</button>
+        <button type="button" class="btn-seg" id="btn-slide-2" onclick="switchSlide(1)" title="Slide 2: Spec Matrix">2</button>
+        <button type="button" class="btn-seg" id="btn-slide-3" onclick="switchSlide(2)" title="Slide 3: Finance & CTA">3</button>
+      </div>
+
+      <!-- Aspect Ratio Segmented Toggle -->
+      <div class="toggle-segmented-group" title="Aspect Ratio Switcher">
+        <button type="button" class="btn-seg active" onclick="setRatio('aspect-square', this)" title="1:1 Square (Instagram Feed, Facebook Post)">1:1</button>
+        <button type="button" class="btn-seg" onclick="setRatio('aspect-portrait', this)" title="4:5 Portrait (Instagram Post)">4:5</button>
+        <button type="button" class="btn-seg" onclick="setRatio('aspect-story', this)" title="9:16 Story (Stories, Reels, TikTok, WhatsApp Status)">9:16</button>
+        <button type="button" class="btn-seg" onclick="setRatio('aspect-landscape', this)" title="16:9 Landscape (Web, Banners, Displays)">16:9</button>
+      </div>
+
+      <!-- Live Motion Toggle -->
+      <div class="toggle-segmented-group" title="Live Motion Animation Mode">
+        <button type="button" class="btn-seg" id="btn-motion-toggle-nav" onclick="toggleMotionMode()" title="Toggle Live Ken Burns Animation & Motion Mode">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:inline-block; vertical-align:middle; margin-right:3px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Motion</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button type="button" class="btn-action-ghost" onclick="copyImageToClipboard()" title="Copy High-Res PNG to Clipboard">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span>Copy</span>
+      </button>
+      <button type="button" class="btn-action-ghost" onclick="batchExportCarouselSlides()" title="Export 3-Slide Carousel Set">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
+        <span>3x Carousel</span>
+      </button>
+      <button type="button" class="btn-action-ghost" onclick="exportMotionVideo()" title="Export 60FPS Video Reel (MP4 / WebM for Reels, TikTok)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <span>Video Reel</span>
+      </button>
+      <button type="button" class="btn-export-primary" onclick="downloadBannerClean('png')" title="Export 4K PNG">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Export 4K</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Studio Split Layout -->
+  <main class="studio-layout">
+    
+    <!-- Sidebar Controls -->
+    <aside class="sidebar">
+      
+      <!-- Tab Bar Navigation (Compact Horizontal Segmented Pill Bar) -->
+      <nav class="tab-bar">
+        <button type="button" class="tab-btn active" onclick="switchTab('tab-templates', this)" title="Templates">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Templates</span>
+        </button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab-brand', this)" title="Brand Kit">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Brand</span>
+        </button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab-vehicle', this)" title="Vehicle Info">
+          <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+          <span>Vehicle</span>
+        </button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab-badges-filters', this)" title="Badges & Filters">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+          <span>Badges</span>
+        </button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab-captions', this)" title="AI Social Captions">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>AI Copy</span>
+        </button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab-motion', this)" title="Motion & Video Studio">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Motion</span>
+        </button>
+      </nav>
+
+      <!-- Tab Content Area (Fully Scrollable) -->
+      <div class="tab-content">
+        
+        <!-- ============================================== -->
+        <!-- TAB 1: 10 AUTOMOTIVE TEMPLATES GALLERY -->
+        <!-- ============================================== -->
+        <div id="tab-templates" class="tab-pane active">
+          <div class="section-label">Select Purpose-Built Template</div>
+          
+          <div class="template-grid">
+            
+            <!-- 1. Just Arrived -->
+            <div class="tpl-card active" onclick="setTemplate('tpl-arrival', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">01</div>
+                <div class="tpl-info">
+                  <h4>Just Arrived / New Stock</h4>
+                  <p>Hero showcase with specs pill deck & WhatsApp CTA</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Price Drop -->
+            <div class="tpl-card" onclick="setTemplate('tpl-pricedrop', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">02</div>
+                <div class="tpl-info">
+                  <h4>Price Drop / Special Deal</h4>
+                  <p>Strikethrough original price & bold savings badge</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Finance -->
+            <div class="tpl-card" onclick="setTemplate('tpl-finance', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">03</div>
+                <div class="tpl-info">
+                  <h4>Finance & Monthly Breakdown</h4>
+                  <p>Prominent monthly installment + loan parameters</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Just Sold -->
+            <div class="tpl-card" onclick="setTemplate('tpl-sold', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">04</div>
+                <div class="tpl-info">
+                  <h4>Just Sold / Delivery Handover</h4>
+                  <p>Celebration ribbon stamp & customer congratulations</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Specs -->
+            <div class="tpl-card" onclick="setTemplate('tpl-specs', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">05</div>
+                <div class="tpl-info">
+                  <h4>Spec & Performance Matrix</h4>
+                  <p>Swiss frosted glass grid with power, torque & options</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Watermark -->
+            <div class="tpl-card" onclick="setTemplate('tpl-watermark', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">06</div>
+                <div class="tpl-info">
+                  <h4>Classifieds Watermark Bar</h4>
+                  <p>Clean photo protection for AutoTrader & portals</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. Trade-In -->
+            <div class="tpl-card" onclick="setTemplate('tpl-tradein', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">07</div>
+                <div class="tpl-info">
+                  <h4>We Buy Cars / Trade-In Hook</h4>
+                  <p>Vehicle sourcing headline with instant valuation CTA</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. Event -->
+            <div class="tpl-card" onclick="setTemplate('tpl-event', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">08</div>
+                <div class="tpl-info">
+                  <h4>Showroom Event & Sale</h4>
+                  <p>Clearance banner with date pin & promo fuel perk</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 9. Review -->
+            <div class="tpl-card" onclick="setTemplate('tpl-review', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">09</div>
+                <div class="tpl-info">
+                  <h4>5-Star Review & Testimonial</h4>
+                  <p>Google rating quote card over customer handover</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 10. Story -->
+            <div class="tpl-card" onclick="setTemplate('tpl-story', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">10</div>
+                <div class="tpl-info">
+                  <h4>Story & Reels Cover (9:16)</h4>
+                  <p>Safe-zone vertical layout with interactive sticker look</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 11. Slanted Speed Slash -->
+            <div class="tpl-card" onclick="setTemplate('tpl-slant', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">11</div>
+                <div class="tpl-info">
+                  <h4>Slanted Speed Slashes</h4>
+                  <p>Angled motorsport chevron overlay & dynamic price cutout</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 12. Minimal Editorial -->
+            <div class="tpl-card" onclick="setTemplate('tpl-editorial', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">12</div>
+                <div class="tpl-info">
+                  <h4>Editorial Magazine Typography</h4>
+                  <p>Clean floating headline with 90%+ image visibility</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 13. Asymmetric Split Mask -->
+            <div class="tpl-card" onclick="setTemplate('tpl-split', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">13</div>
+                <div class="tpl-info">
+                  <h4>Asymmetric Split Panel</h4>
+                  <p>Vertical contrast spec HUD with clean vehicle showcase</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 14. Viewfinder Frame -->
+            <div class="tpl-card" onclick="setTemplate('tpl-viewfinder', this)">
+              <div class="tpl-card-left">
+                <div class="tpl-num">14</div>
+                <div class="tpl-info">
+                  <h4>Camera HUD Viewfinder</h4>
+                  <p>Cinematic focus brackets, minimal HUD tags & floating pills</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: DEALER BRAND KIT -->
+        <!-- ============================================== -->
+        <div id="tab-brand" class="tab-pane">
+          
+          <div class="form-group">
+            <div class="section-label">Dealership Identity</div>
+            <label>Dealership Display Name</label>
+            <input type="text" id="in-dealer-name" value="Apex Prestige Auto" oninput="saveAndRender()">
+
+            <label>City & Province / Region</label>
+            <input type="text" id="in-dealer-loc" value="Cape Town, Western Cape" oninput="saveAndRender()">
+
+            <label>Top Slogan / Badge</label>
+            <input type="text" id="in-dealer-tagline" value="PREMIER PRE-OWNED VEHICLES" oninput="saveAndRender()">
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Brand & Badge Color Palette</div>
+            <div class="color-picker-row">
+              <div class="color-picker-item">
+                <input type="color" id="in-color-primary" value="#0D9488" onchange="updateBrandColors()">
+                <span>Primary Color</span>
+              </div>
+              <div class="color-picker-item">
+                <input type="color" id="in-color-accent" value="#2DD4BF" onchange="updateBrandColors()">
+                <span>Accent Color</span>
+              </div>
+            </div>
+            <div class="color-picker-row" style="margin-top: 8px;">
+              <div class="color-picker-item">
+                <input type="color" id="in-badge-bg" value="#0D9488" onchange="updateBadgeColors()">
+                <span>Badge Fill</span>
+              </div>
+              <div class="color-picker-item">
+                <input type="color" id="in-badge-text" value="#2DD4BF" onchange="updateBadgeColors()">
+                <span>Badge Text / Border</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Contact Details & Web</div>
+            <label>Phone Number</label>
+            <input type="text" id="in-dealer-phone" value="+27 21 555 0199" oninput="saveAndRender()">
+
+            <label>WhatsApp Direct Number</label>
+            <input type="text" id="in-dealer-whatsapp" value="+27 82 555 0199" oninput="saveAndRender()">
+
+            <label>Website URL</label>
+            <input type="text" id="in-dealer-web" value="www.apexprestige.co.za" oninput="saveAndRender()">
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Dealership Logo</div>
+            <div class="upload-zone">
+              <input type="file" accept="image/*" onchange="uploadDealerLogo(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Click or Drop Dealership Logo (PNG/SVG)</span>
+            </div>
+
+            <label>Logo Capsule Style</label>
+            <select id="in-pod-style" onchange="updatePodStyle()">
+              <option value="pod-glass">Frosted Dark Capsule</option>
+              <option value="pod-dark">Solid Black Plate</option>
+              <option value="pod-white">Crisp White Plate</option>
+              <option value="pod-none">Transparent (No Background)</option>
+            </select>
+
+            <label>Logo Color Mode</label>
+            <select id="in-logo-filter" onchange="updateLogoFilter()">
+              <option value="none">Original Colors</option>
+              <option value="filter-bright">Brighten (For Dark Logos)</option>
+              <option value="filter-invert">Invert to Pure White</option>
+            </select>
+
+            <div class="slider-row">
+              <label>Logo Scale</label>
+              <span class="val-tag" id="val-logo-scale">100%</span>
+            </div>
+            <input type="range" id="in-logo-scale" min="50" max="160" value="100" oninput="updateLogoScale()">
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Verification Badge / Trust Seal</div>
+            <label>Custom Seal Text</label>
+            <input type="text" id="in-trust-seal" value="CERTIFIED PRE-OWNED" oninput="saveAndRender()">
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: VEHICLE & SPECS -->
+        <!-- ============================================== -->
+        <div id="tab-vehicle" class="tab-pane">
+          
+          <div class="form-group">
+            <div class="section-label">Multi-Vertical Selector</div>
+            <div class="segmented-switch">
+              <button type="button" class="btn-toggle active" id="vert-cars" onclick="setVertical('cars', this)">Cars</button>
+              <button type="button" class="btn-toggle" id="vert-moto" onclick="setVertical('moto', this)">Moto</button>
+              <button type="button" class="btn-toggle" id="vert-comm" onclick="setVertical('commercial', this)">Commercial</button>
+              <button type="button" class="btn-toggle" id="vert-marine" onclick="setVertical('marine', this)">Marine</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Vehicle Photo</div>
+            <div class="upload-zone">
+              <input type="file" accept="image/*" onchange="uploadVehicleImage(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+              <span>Click or Drop Vehicle Photo</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Photo Framing & Adjustments</div>
+            <div class="slider-row">
+              <label>Image Zoom</label>
+              <span class="val-tag" id="val-img-zoom">100%</span>
+            </div>
+            <input type="range" id="in-img-zoom" min="100" max="250" value="100" oninput="updateImageTransform()">
+
+            <div class="slider-row">
+              <label>Horizontal Pan (X)</label>
+              <span class="val-tag" id="val-img-panx">0px</span>
+            </div>
+            <input type="range" id="in-img-panx" min="-400" max="400" value="0" oninput="updateImageTransform()">
+
+            <div class="slider-row">
+              <label>Vertical Pan (Y)</label>
+              <span class="val-tag" id="val-img-pany">0px</span>
+            </div>
+            <input type="range" id="in-img-pany" min="-400" max="400" value="0" oninput="updateImageTransform()">
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Vehicle Information</div>
+            <div class="btn-grid-2">
+              <div>
+                <label>Year</label>
+                <input type="text" id="in-veh-year" value="2023" oninput="renderState()">
+              </div>
+              <div>
+                <label>Make / Brand</label>
+                <input type="text" id="in-veh-make" value="Toyota" oninput="renderState()">
+              </div>
+            </div>
+
+            <label id="lbl-veh-model">Model</label>
+            <input type="text" id="in-veh-model" value="Hilux" oninput="renderState()">
+
+            <label id="lbl-veh-variant">Variant / Trim / Spec</label>
+            <input type="text" id="in-veh-variant" value="2.8 GD-6 4x4 Legend RS Auto" oninput="renderState()">
+
+            <div class="btn-grid-2">
+              <div>
+                <label>Selling Price</label>
+                <input type="text" id="in-veh-price" value="R 789,990" oninput="renderState()">
+              </div>
+              <div>
+                <label>Old Price (For Price Drop)</label>
+                <input type="text" id="in-veh-oldprice" value="R 829,990" oninput="renderState()">
+              </div>
+            </div>
+
+            <label>Monthly Installment</label>
+            <input type="text" id="in-veh-install" value="From R 11,850 /pm" oninput="renderState()">
+
+            <div class="btn-grid-3">
+              <div>
+                <label id="lbl-spec-1">Mileage</label>
+                <input type="text" id="in-veh-mileage" value="24,000 km" oninput="renderState()">
+              </div>
+              <div>
+                <label id="lbl-spec-2">Transmission</label>
+                <input type="text" id="in-veh-trans" value="Automatic" oninput="renderState()">
+              </div>
+              <div>
+                <label id="lbl-spec-3">Fuel Type</label>
+                <input type="text" id="in-veh-fuel" value="Diesel" oninput="renderState()">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Custom Feature Chips</div>
+            <label>Feature 1</label>
+            <input type="text" id="in-pill-1" value="Full Service History" oninput="renderState()">
+            <label>Feature 2</label>
+            <input type="text" id="in-pill-2" value="Balance of Factory Warranty" oninput="renderState()">
+            <label>Feature 3</label>
+            <input type="text" id="in-pill-3" value="Spare Keys Included" oninput="renderState()">
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Custom Announcement / Quote</div>
+            <label>Headline Override</label>
+            <input type="text" id="in-custom-head" value="JUST ARRIVED IN SHOWROOM" oninput="renderState()">
+
+            <label>Subtext / Testimonial Text</label>
+            <textarea id="in-custom-sub" rows="2" oninput="renderState()">Incredible service and immaculate vehicle handover! Highly recommend buying from this dealership.</textarea>
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 4: BADGES, FILTERS & POSITION -->
+        <!-- ============================================== -->
+        <div id="tab-badges-filters" class="tab-pane">
+          
+          <div class="form-group">
+            <div class="section-label">
+              <span>Automotive Badge Tray</span>
+              <span style="font-size: 10px; color: #94A3B8;">(Click to Toggle on Canvas)</span>
+            </div>
+            
+            <div class="badge-tray-grid" id="badge-tray-container">
+              <!-- Rendered dynamically based on active vertical -->
+            </div>
+
+            <div class="form-group" style="margin-top: 6px;">
+              <label>Custom Badge Text</label>
+              <input type="text" id="in-custom-badge" placeholder="e.g. 1 Owner / Low Km" oninput="updateCustomBadge(this.value)">
+            </div>
+
+            <!-- Badge Color Customization -->
+            <div class="section-label" style="margin-top: 10px;">Badge Color Customization</div>
+            <div class="color-picker-row">
+              <div class="color-picker-item">
+                <input type="color" id="in-badge-bg-tab4" value="#0D9488" onchange="updateBadgeColors('tab4')">
+                <span>Badge Fill</span>
+              </div>
+              <div class="color-picker-item">
+                <input type="color" id="in-badge-text-tab4" value="#2DD4BF" onchange="updateBadgeColors('tab4')">
+                <span>Text / Border</span>
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 8px; font-size: 11px;">Quick Badge Color Presets</div>
+            <div class="filter-preset-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="filter-preset-card" onclick="applyBadgeColorPreset('#0D9488', '#2DD4BF')">
+                <strong>Brand Teal</strong>
+                <span>#0D9488</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyBadgeColorPreset('#1E40AF', '#60A5FA')">
+                <strong>Electric Blue</strong>
+                <span>#1E40AF</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyBadgeColorPreset('#065F46', '#34D399')">
+                <strong>Emerald Pro</strong>
+                <span>#065F46</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyBadgeColorPreset('#B45309', '#FBBF24')">
+                <strong>Gold / Amber</strong>
+                <span>#B45309</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyBadgeColorPreset('#991B1B', '#F87171')">
+                <strong>Racing Red</strong>
+                <span>#991B1B</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyBadgeColorPreset('#0F172A', '#E2E8F0')">
+                <strong>Dark Titanium</strong>
+                <span>#0F172A</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Pro Studio Photo Grading Filters</div>
+            <div class="filter-preset-grid">
+              <div class="filter-preset-card active" onclick="applyPhotoFilter('natural', this)">
+                <strong>Natural</strong>
+                <span>Daylight</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyPhotoFilter('golden', this)">
+                <strong>Golden</strong>
+                <span>Sunset</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyPhotoFilter('cyber', this)">
+                <strong>Midnight</strong>
+                <span>Teal</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyPhotoFilter('hdr', this)">
+                <strong>HDR</strong>
+                <span>Crisp</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyPhotoFilter('contrast', this)">
+                <strong>Contrast</strong>
+                <span>Dark</span>
+              </div>
+              <div class="filter-preset-card" onclick="applyPhotoFilter('mono', this)">
+                <strong>Mono</strong>
+                <span>Silver</span>
+              </div>
+            </div>
+
+            <div class="slider-row" style="margin-top: 8px;">
+              <label>Brightness</label>
+              <span class="val-tag" id="val-filter-bright">100%</span>
+            </div>
+            <input type="range" id="in-filter-bright" min="70" max="140" value="100" oninput="updateCustomFilter()">
+
+            <div class="slider-row">
+              <label>Contrast</label>
+              <span class="val-tag" id="val-filter-contrast">100%</span>
+            </div>
+            <input type="range" id="in-filter-contrast" min="70" max="140" value="100" oninput="updateCustomFilter()">
+
+            <div class="slider-row">
+              <label>Saturation</label>
+              <span class="val-tag" id="val-filter-sat">100%</span>
+            </div>
+            <input type="range" id="in-filter-sat" min="30" max="160" value="100" oninput="updateCustomFilter()">
+
+            <div class="slider-row">
+              <label>Scrim Darkness</label>
+              <span class="val-tag" id="val-scrim-opacity">80%</span>
+            </div>
+            <input type="range" id="in-scrim-opacity" min="0" max="100" value="80" oninput="updateStyleOverrides()">
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">
+              <span>Text Block Position & Style</span>
+              <span style="font-size: 10px; color: #94A3B8;">(Or Drag on Canvas)</span>
+            </div>
+            
+            <div class="slider-row">
+              <label>Card Box Transparency / Opacity</label>
+              <span class="val-tag" id="val-box-opacity">92%</span>
+            </div>
+            <input type="range" id="in-box-opacity" min="0" max="100" value="92" oninput="updateStyleOverrides()">
+
+            <div class="slider-row">
+              <label>Vertical Position (Y)</label>
+              <span class="val-tag" id="val-pos-y">58%</span>
+            </div>
+            <input type="range" id="in-pos-y" min="5" max="85" value="58" oninput="updateCardPositionFromSlider()">
+
+            <div class="slider-row">
+              <label>Horizontal Position (X)</label>
+              <span class="val-tag" id="val-pos-x">50%</span>
+            </div>
+            <input type="range" id="in-pos-x" min="10" max="90" value="50" oninput="updateCardPositionFromSlider()">
+
+            <div class="slider-row">
+              <label>Block Width</label>
+              <span class="val-tag" id="val-card-width">88%</span>
+            </div>
+            <input type="range" id="in-card-width" min="40" max="96" value="88" oninput="updateCardWidth()">
+
+            <div class="section-label" style="margin-top: 8px;">Quick Snap Anchors</div>
+            <div class="segmented-switch">
+              <button type="button" class="btn-toggle" onclick="snapCard('top-center')">Top</button>
+              <button type="button" class="btn-toggle" onclick="snapCard('center')">Center</button>
+              <button type="button" class="btn-toggle active" id="btn-snap-bottom" onclick="snapCard('bottom-center')">Bottom</button>
+            </div>
+
+            <div class="slider-row" style="margin-top: 8px;">
+              <label>Title Font Size</label>
+              <span class="val-tag" id="val-font-title">46px</span>
+            </div>
+            <input type="range" id="in-font-title" min="28" max="72" value="46" oninput="updateStyleOverrides()">
+
+            <div class="section-label" style="margin-top: 8px;">Text Alignment</div>
+            <div class="segmented-switch">
+              <button type="button" class="btn-toggle active" id="btn-align-left" onclick="setTextAlign('left', this)">Left Aligned</button>
+              <button type="button" class="btn-toggle" id="btn-align-center" onclick="setTextAlign('center', this)">Center Aligned</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 5: AI SOCIAL CAPTION & HASHTAG COPYWRITER -->
+        <!-- ============================================== -->
+        <div id="tab-captions" class="tab-pane">
+          
+          <div class="form-group">
+            <div class="section-label">Select Social Channel & Format</div>
+            <div class="segmented-switch">
+              <button type="button" class="btn-toggle active" id="btn-cap-ig" onclick="setCaptionFormat('instagram', this)">Instagram / FB</button>
+              <button type="button" class="btn-toggle" id="btn-cap-wa" onclick="setCaptionFormat('whatsapp', this)">WhatsApp</button>
+              <button type="button" class="btn-toggle" id="btn-cap-fb" onclick="setCaptionFormat('classifieds', this)">Marketplace</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Copy Tone</div>
+            <div class="segmented-switch">
+              <button type="button" class="btn-toggle active" id="tone-prem" onclick="setCaptionTone('premium', this)">Luxury</button>
+              <button type="button" class="btn-toggle" id="tone-urg" onclick="setCaptionTone('urgent', this)">Urgent Deal</button>
+              <button type="button" class="btn-toggle" id="tone-dir" onclick="setCaptionTone('direct', this)">Direct Specs</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">
+              <span>Generated Social Copy</span>
+              <button type="button" onclick="generateSocialCaption()" style="background:transparent; border:none; color:var(--primary-bright); font-family:var(--font-mono); font-size:10px; cursor:pointer; font-weight:700;">[ Refresh Copy ]</button>
+            </div>
+            <div class="copy-output-box" id="caption-output" contenteditable="true" oninput="handleCaptionManualEdit()">
+              <!-- Generated dynamically -->
+            </div>
+
+            <div class="copy-actions-bar">
+              <button type="button" class="btn-copy-big" id="btn-copy-caption-act" onclick="copyCaptionToClipboard()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy Caption to Clipboard
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 6: MOTION STUDIO & REELS VIDEO CREATOR -->
+        <!-- ============================================== -->
+        <div id="tab-motion" class="tab-pane">
+          
+          <div class="form-group">
+            <div class="section-label">Live Canvas Animation</div>
+            <div class="segmented-switch">
+              <button type="button" class="btn-toggle" id="btn-motion-off" onclick="setMotionMode(false)">Static Mode</button>
+              <button type="button" class="btn-toggle active" id="btn-motion-on" onclick="setMotionMode(true)">Live Motion Active</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Motion Style Preset</div>
+            <div class="filter-preset-grid" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="filter-preset-card active" id="mp-kenburns" onclick="setMotionPreset('kenburns', this)">
+                <strong>Ken Burns Zoom</strong>
+                <span>Smooth Scale In</span>
+              </div>
+              <div class="filter-preset-card" id="mp-drift" onclick="setMotionPreset('drift', this)">
+                <strong>Lateral Drift</strong>
+                <span>Horizontal Pan</span>
+              </div>
+              <div class="filter-preset-card" id="mp-rise" onclick="setMotionPreset('rise', this)">
+                <strong>Cinematic Rise</strong>
+                <span>Vertical Push</span>
+              </div>
+              <div class="filter-preset-card" id="mp-pulse" onclick="setMotionPreset('pulse', this)">
+                <strong>Badge Glow Only</strong>
+                <span>Still Vehicle Photo</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="section-label">Video Export Duration & Framing</div>
+            <div class="slider-row">
+              <label>Reel / Video Duration</label>
+              <span class="val-tag" id="val-motion-dur">6 Seconds</span>
+            </div>
+            <div class="segmented-switch">
+              <button type="button" class="btn-toggle" id="btn-dur-4" onclick="setMotionDuration(4, this)">4s (Story)</button>
+              <button type="button" class="btn-toggle active" id="btn-dur-6" onclick="setMotionDuration(6, this)">6s (Reel)</button>
+              <button type="button" class="btn-toggle" id="btn-dur-10" onclick="setMotionDuration(10, this)">10s (Showcase)</button>
+            </div>
+
+            <div class="slider-row" style="margin-top: 10px;">
+              <label>Motion Zoom Depth</label>
+              <span class="val-tag" id="val-motion-zoom">110%</span>
+            </div>
+            <input type="range" id="in-motion-zoom" min="102" max="125" value="110" oninput="updateMotionParams()">
+          </div>
+
+          <div class="form-group" style="margin-top: 8px;">
+            <div class="section-label">Render & Export Short-Form Video</div>
+            <button type="button" class="btn-copy-big" style="background: linear-gradient(135deg, var(--primary) 0%, #044E47 100%); border-color: var(--primary-bright); font-size: 13px;" onclick="exportMotionVideo()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              Export Video (Reels / TikTok)
+            </button>
+            <p style="font-size: 11px; color: #94A3B8; text-align: center; margin-top: 4px; font-family: var(--font-mono);">
+              100% Client-Side 60FPS Video Rendering
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </aside>
+
+    <!-- Viewport & Stage Canvas -->
+    <section class="viewport-container" id="viewport-box">
+      
+      <!-- Floating Zoom Controls -->
+      <div class="zoom-toolbar">
+        <button type="button" class="btn-zoom" onclick="adjustZoom(-0.06)" title="Zoom Out">-</button>
+        <span class="zoom-indicator" id="zoom-indicator">55%</span>
+        <button type="button" class="btn-zoom" onclick="adjustZoom(0.06)" title="Zoom In">+</button>
+        <button type="button" class="btn-zoom-fit" onclick="fitToScreen()">Fit Screen</button>
+        <button type="button" class="btn-zoom-fit" onclick="setZoom(1.0)">100%</button>
+      </div>
+
+      <!-- Scrollable Stage Area -->
+      <div class="scroll-stage" id="scroll-stage">
+        
+        <div id="banner-scaler-pod">
+          <div id="banner" class="aspect-square">
+            
+            <!-- Staged Vehicle Image Layer -->
+            <div class="banner-vehicle-layer" id="banner-img-layer" style="background-image: url('https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1600&q=80');"></div>
+            
+            <!-- Vignette Scrim & Ambient Glow -->
+            <div class="banner-scrim-layer" id="banner-scrim"></div>
+            <div class="banner-ambient-glow" id="banner-glow"></div>
+
+            <!-- Top Header Row -->
+            <div class="banner-header-row">
+              <!-- Dealership Logo Pod -->
+              <div class="client-logo-pod pod-glass" id="wrap-client-logo">
+                <img id="disp-dealer-logo" src="" alt="Dealership Logo" style="display:none;">
+                <span class="client-logo-placeholder" id="disp-logo-placeholder">APEX PRESTIGE AUTO</span>
+              </div>
+
+              <!-- Dealership Top Tagline / Slogan Badge -->
+              <div class="dealer-top-badge" id="disp-dealer-tagline">PREMIER PRE-OWNED VEHICLES</div>
+            </div>
+
+            <!-- Optional Floating Canvas Corner Badge -->
+            <div class="canvas-corner-badge" id="disp-corner-badge" style="display:none;">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              <span id="disp-corner-badge-text">1 OWNER VEHICLE</span>
+            </div>
+
+            <!-- DRAGGABLE / MOVABLE TEMPLATE OVERLAY CARD -->
+            <div class="movable-overlay-card" id="movable-card" style="top: 58%; left: 50%; transform: translate(-50%, -50%); width: 88%;">
+              <div class="drag-hint-handle">
+                <svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+                Drag to Move
+              </div>
+              <div id="template-slot">
+                <!-- Injected dynamically by JS -->
+              </div>
+            </div>
+
+            <!-- Bottom Contact & Seal Footer Row -->
+            <div class="banner-footer-row">
+              <div class="footer-contact-info">
+                <div class="footer-contact-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  <span id="disp-foot-phone">+27 21 555 0199</span>
+                </div>
+                <div class="footer-contact-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+                  <span id="disp-foot-web">www.apexprestige.co.za</span>
+                </div>
+              </div>
+
+              <!-- Dealership Custom Trust Seal -->
+              <div class="trust-seal-badge" id="disp-trust-seal-box">
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <span id="disp-trust-seal">CERTIFIED PRE-OWNED</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Video Render Progress Modal -->
+  <div class="video-modal-backdrop" id="video-render-modal">
+    <div class="video-modal-card">
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(13,148,136,0.15); border: 2px solid var(--primary-bright); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--primary-bright);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="23 7 16 12 23 17 23 7"/>
+          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+        </svg>
+      </div>
+      <h3 style="font-size: 18px; font-weight: 800; color: #FFF; margin-bottom: 6px;">Rendering 60FPS Video Reel</h3>
+      <p id="video-render-status" style="font-size: 13px; color: #94A3B8; margin-bottom: 4px;">Synthesizing smooth animated frames...</p>
+      
+      <div class="video-progress-bar">
+        <div class="video-progress-fill" id="video-render-bar"></div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748B; font-family: var(--font-mono);">
+        <span id="video-render-percent">0%</span>
+        <span id="video-render-timer">0.0s / 6.0s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- JAVASCRIPT STATE & ENGINE -->
+  <!-- ============================================== -->
+  <script>
+    // Master Studio State
+    const defaultState = {
+      vertical: 'cars',
+      template: 'tpl-arrival',
+      ratio: 'aspect-square',
+      align: 'left',
+      zoom: 0.55,
+      activeSlideIndex: 0,
+      activeBadge: '1 Owner Vehicle',
+      activeFilterPreset: 'natural',
+      captionFormat: 'instagram',
+      captionTone: 'premium',
+      filter: {
+        brightness: 100,
+        contrast: 100,
+        saturation: 100
+      },
+      dealer: {
+        name: 'Apex Prestige Auto',
+        location: 'Cape Town, Western Cape',
+        tagline: 'PREMIER PRE-OWNED VEHICLES',
+        phone: '+27 21 555 0199',
+        whatsapp: '+27 82 555 0199',
+        web: 'www.apexprestige.co.za',
+        primaryColor: '#0D9488',
+        accentColor: '#2DD4BF',
+        logoSrc: '',
+        podStyle: 'pod-glass',
+        logoFilter: 'none',
+        logoScale: 100,
+        trustSeal: 'CERTIFIED PRE-OWNED'
+      },
+      vehicle: {
+        imgUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1600&q=80',
+        imgZoom: 100,
+        imgPanX: 0,
+        imgPanY: 0,
+        year: '2023',
+        make: 'Toyota',
+        model: 'Hilux',
+        variant: '2.8 GD-6 4x4 Legend RS Auto',
+        price: 'R 789,990',
+        oldPrice: 'R 829,990',
+        install: 'From R 11,850 /pm',
+        mileage: '24,000 km',
+        trans: 'Automatic',
+        fuel: 'Diesel',
+        pills: ['Full Service History', 'Balance of Factory Warranty', 'Spare Keys Included'],
+        customHeadline: 'JUST ARRIVED IN SHOWROOM',
+        customSubtext: 'Incredible service and immaculate vehicle handover! Highly recommend buying from this dealership.'
+      },
+      position: {
+        posY: 58,
+        posX: 50,
+        width: 88
+      },
+      style: {
+        titleFontSize: 46,
+        gapSpacing: 12,
+        scrimOpacity: 80,
+        cardBoxOpacity: 92,
+        badgeBgColor: '#0D9488',
+        badgeTextColor: '#2DD4BF'
+      },
+      motion: {
+        enabled: true,
+        preset: 'kenburns',
+        duration: 6,
+        zoomDepth: 110
+      }
+    };
+
+    // Load saved dealer settings from localStorage if available
+    let state = JSON.parse(localStorage.getItem('autobrand_studio_data') || 'null') || defaultState;
+
+    if (!state.vertical) state.vertical = 'cars';
+    if (!state.activeSlideIndex) state.activeSlideIndex = 0;
+    if (!state.activeBadge) state.activeBadge = '1 Owner Vehicle';
+    if (!state.activeFilterPreset) state.activeFilterPreset = 'natural';
+    if (!state.captionFormat) state.captionFormat = 'instagram';
+    if (!state.captionTone) state.captionTone = 'premium';
+    if (!state.filter) state.filter = { brightness: 100, contrast: 100, saturation: 100 };
+    if (!state.style) state.style = { titleFontSize: 46, gapSpacing: 12, scrimOpacity: 80, cardBoxOpacity: 92, badgeBgColor: '#0D9488', badgeTextColor: '#2DD4BF' };
+    if (state.style.cardBoxOpacity === undefined) state.style.cardBoxOpacity = 92;
+    if (!state.style.badgeBgColor) state.style.badgeBgColor = '#0D9488';
+    if (!state.style.badgeTextColor) state.style.badgeTextColor = '#2DD4BF';
+    if (!state.motion) state.motion = { enabled: true, preset: 'kenburns', duration: 6, zoomDepth: 110 };
+    if (state.motion.enabled === undefined) state.motion.enabled = true;
+    if (!state.motion.preset) state.motion.preset = 'kenburns';
+    if (!state.motion.duration) state.motion.duration = 6;
+    if (!state.motion.zoomDepth) state.motion.zoomDepth = 110;
+
+    const ratioDimensions = {
+      'aspect-square':    { w: 1080, h: 1080 },
+      'aspect-portrait':  { w: 1080, h: 1350 },
+      'aspect-story':     { w: 1080, h: 1920 },
+      'aspect-landscape': { w: 1200, h: 675  }
+    };
+
+    // Badges Library per Vertical
+    const verticalBadges = {
+      cars: [
+        { id: '1-owner', text: '1 Owner Vehicle', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>' },
+        { id: 'low-km', text: 'Low Mileage Certified', icon: '<circle cx="12" cy="12" r="10"/><path d="M16.24 7.76a6 6 0 1 0 0 8.49l-4.24-4.25"/>' },
+        { id: 'fsh', text: 'Full Service History', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' },
+        { id: 'spare-keys', text: 'Spare Keys Included', icon: '<path d="M21 2l-2 2m-1.5 1.5L16 7l-1.5-1.5L13 7l-2-2 2-2 1.5 1.5L16 3l1.5 1.5L19 3z"/><circle cx="7.5" cy="15.5" r="5.5"/>' },
+        { id: '4x4', text: '4x4 / All-Wheel Drive', icon: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>' },
+        { id: 'zero-dep', text: 'Zero Deposit Available', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>' },
+        { id: 'inspection', text: '101-Point Inspection', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>' },
+        { id: 'delivery', text: 'Nationwide Delivery', icon: '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>' }
+      ],
+      moto: [
+        { id: '1-owner', text: '1 Owner Superbike', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>' },
+        { id: 'low-km', text: 'Pristine Low Mileage', icon: '<circle cx="12" cy="12" r="10"/><path d="M16.24 7.76a6 6 0 1 0 0 8.49l-4.24-4.25"/>' },
+        { id: 'exhaust', text: 'Performance Exhaust', icon: '<path d="M3 12h18M18 6l3 6-3 6"/>' },
+        { id: 'abs-tc', text: 'ABS & Traction Control', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
+        { id: 'quickshifter', text: 'Quickshifter Fitted', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
+        { id: 'keys-fsh', text: 'FSH & Spare Keys', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' },
+        { id: 'mint', text: 'Showroom Mint Condition', icon: '<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>' },
+        { id: 'delivery', text: 'Nationwide Bike Crating', icon: '<rect x="1" y="3" width="15" height="13"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>' }
+      ],
+      commercial: [
+        { id: 'payload', text: 'Heavy Duty Payload', icon: '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>' },
+        { id: 'canopy', text: 'Canopy & Towbar Fitted', icon: '<rect x="3" y="3" width="18" height="18" rx="2"/>' },
+        { id: 'fsh-fleet', text: 'Full Fleet Maintenance', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' },
+        { id: 'vat', text: 'VAT Qualifying Vehicle', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>' },
+        { id: 'diesel', text: 'Turbo Diesel Power', icon: '<path d="M3 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18M18 10h4v12h-4z"/>' },
+        { id: 'cor', text: 'Roadworthy Certified', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>' },
+        { id: 'finance', text: 'Commercial Lease / Finance', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>' },
+        { id: 'delivery', text: 'Nationwide Delivery', icon: '<rect x="1" y="3" width="15" height="13"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>' }
+      ],
+      marine: [
+        { id: 'low-hrs', text: 'Low Engine Hours', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>' },
+        { id: 'trailer', text: 'Galvanized Trailer Included', icon: '<rect x="1" y="7" width="22" height="10" rx="2"/>' },
+        { id: 'outboard', text: 'Four-Stroke Outboards', icon: '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
+        { id: 'sonar', text: 'GPS & Fishfinder Fitted', icon: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>' },
+        { id: 'buoyancy', text: 'Current Buoyancy Cert', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
+        { id: 'sound', text: 'Marine Audio System', icon: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>' },
+        { id: 'trade-in', text: 'Boats & Jetskis Traded', icon: '<path d="M17 2.1l4 4-4 4"/><path d="M3 12.2v-2a4 4 0 0 1 4-4h14"/><path d="M7 21.9l-4-4 4-4"/><path d="M21 11.8v2a4 4 0 0 1-4 4H3"/>' },
+        { id: 'water-ready', text: 'Turnkey Water Ready', icon: '<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>' }
+      ]
+    };
+
+    // Save to LocalStorage
+    function persistData() {
+      try {
+        localStorage.setItem('autobrand_studio_data', JSON.stringify(state));
+      } catch (e) {
+        console.warn('Storage quota limit reached');
+      }
+    }
+
+    function saveAndRender() {
+      renderState();
+      persistData();
+    }
+
+    // Toggle Sidebar Expand / Collapse
+    function toggleSidebar() {
+      const layout = document.querySelector('main.studio-layout');
+      const btn = document.querySelector('.btn-sidebar-toggle');
+      layout.classList.toggle('sidebar-collapsed');
+      if (btn) btn.classList.toggle('active', layout.classList.contains('sidebar-collapsed'));
+      setTimeout(fitToScreen, 240);
+    }
+
+    // Tab Switching
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      const targetPane = document.getElementById(tabId);
+      if (targetPane) targetPane.classList.add('active');
+      if (btn) btn.classList.add('active');
+
+      if (tabId === 'tab-captions') {
+        generateSocialCaption();
+      }
+    }
+
+    // Ratio Switcher
+    function setRatio(ratioClass, btn) {
+      state.ratio = ratioClass;
+      const b = document.getElementById('banner');
+      b.className = `${state.ratio}`;
+      
+      const segGroup = btn ? btn.parentElement : null;
+      if (segGroup) {
+        segGroup.querySelectorAll('.btn-seg').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+      }
+
+      fitToScreen();
+      renderState();
+    }
+
+    // Template Switcher
+    function setTemplate(tplId, el) {
+      state.template = tplId;
+      document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderState();
+    }
+
+    // Alignment Switcher
+    function setTextAlign(alignMode, btn) {
+      state.align = alignMode;
+      document.querySelectorAll('#btn-align-left, #btn-align-center').forEach(el => el.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderState();
+    }
+
+    // Vertical Switcher
+    function setVertical(verticalId, btn) {
+      state.vertical = verticalId;
+      document.querySelectorAll('#vert-cars, #vert-moto, #vert-comm, #vert-marine').forEach(el => el.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      // Update vertical specific label texts
+      if (verticalId === 'moto') {
+        document.getElementById('lbl-veh-model').textContent = 'Bike Model';
+        document.getElementById('lbl-veh-variant').textContent = 'Displacement / Trim (e.g. 1000cc / SP)';
+        document.getElementById('lbl-spec-1').textContent = 'Mileage';
+        document.getElementById('lbl-spec-2').textContent = 'Transmission / Quickshifter';
+        document.getElementById('lbl-spec-3').textContent = 'Engine / Cooling';
+      } else if (verticalId === 'marine') {
+        document.getElementById('lbl-veh-model').textContent = 'Boat / Hull Model';
+        document.getElementById('lbl-veh-variant').textContent = 'Hull Spec / Length';
+        document.getElementById('lbl-spec-1').textContent = 'Engine Hours';
+        document.getElementById('lbl-spec-2').textContent = 'Outboard Motor Spec';
+        document.getElementById('lbl-spec-3').textContent = 'Trailer Spec';
+      } else if (verticalId === 'commercial') {
+        document.getElementById('lbl-veh-model').textContent = 'Model / Tonnage';
+        document.getElementById('lbl-veh-variant').textContent = 'Cab Configuration / Payload';
+        document.getElementById('lbl-spec-1').textContent = 'Odometer';
+        document.getElementById('lbl-spec-2').textContent = 'Transmission';
+        document.getElementById('lbl-spec-3').textContent = 'Engine / Fuel';
+      } else {
+        document.getElementById('lbl-veh-model').textContent = 'Model';
+        document.getElementById('lbl-veh-variant').textContent = 'Variant / Trim / Spec';
+        document.getElementById('lbl-spec-1').textContent = 'Mileage';
+        document.getElementById('lbl-spec-2').textContent = 'Transmission';
+        document.getElementById('lbl-spec-3').textContent = 'Fuel Type';
+      }
+
+      renderBadgeTray();
+      generateSocialCaption();
+      saveAndRender();
+    }
+
+    // Carousel Slide Switcher
+    function switchSlide(index) {
+      state.activeSlideIndex = index;
+      document.querySelectorAll('#btn-slide-1, #btn-slide-2, #btn-slide-3').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === index);
+      });
+
+      if (index === 0) {
+        // Slide 1: Hero & Price
+        setTemplate('tpl-arrival');
+        snapCard('bottom-center');
+      } else if (index === 1) {
+        // Slide 2: Specs Matrix
+        setTemplate('tpl-specs');
+        snapCard('center');
+      } else if (index === 2) {
+        // Slide 3: Finance & CTA
+        setTemplate('tpl-finance');
+        snapCard('bottom-center');
+      }
+      renderState();
+    }
+
+    // Zoom & Pan Mechanics
+    function setZoom(scale) {
+      state.zoom = Math.max(0.2, Math.min(1.5, scale));
+      applyScale();
+    }
+
+    function adjustZoom(delta) {
+      setZoom(state.zoom + delta);
+    }
+
+    function applyScale() {
+      const banner = document.getElementById('banner');
+      const pod = document.getElementById('banner-scaler-pod');
+      const dims = ratioDimensions[state.ratio];
+
+      pod.style.width = (dims.w * state.zoom) + 'px';
+      pod.style.height = (dims.h * state.zoom) + 'px';
+      banner.style.transform = `scale(${state.zoom})`;
+
+      document.getElementById('zoom-indicator').textContent = Math.round(state.zoom * 100) + '%';
+    }
+
+    function fitToScreen() {
+      const stage = document.getElementById('scroll-stage');
+      const dims = ratioDimensions[state.ratio];
+      
+      const availableW = stage.clientWidth - 80;
+      const availableH = stage.clientHeight - 80;
+
+      const scale = Math.min(availableW / dims.w, availableH / dims.h, 0.95);
+      setZoom(scale);
+    }
+
+    // ----------------------------------------------------
+    // MOVABLE DRAGGABLE OVERLAY CARD ENGINE
+    // ----------------------------------------------------
+    const cardEl = document.getElementById('movable-card');
+    const bannerEl = document.getElementById('banner');
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let cardStartLeft = 0;
+    let cardStartTop = 0;
+
+    cardEl.addEventListener('pointerdown', function(e) {
+      if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(e.target.tagName)) return;
+
+      isDragging = true;
+      cardEl.setPointerCapture(e.pointerId);
+
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+
+      cardStartLeft = (cardEl.offsetLeft / bannerEl.offsetWidth) * 100;
+      cardStartTop = (cardEl.offsetTop / bannerEl.offsetHeight) * 100;
+      
+      e.preventDefault();
+    });
+
+    cardEl.addEventListener('pointermove', function(e) {
+      if (!isDragging) return;
+
+      const deltaX = (e.clientX - dragStartX) / state.zoom;
+      const deltaY = (e.clientY - dragStartY) / state.zoom;
+
+      const newLeftPct = Math.max(5, Math.min(95, cardStartLeft + (deltaX / bannerEl.offsetWidth) * 100));
+      const newTopPct = Math.max(5, Math.min(95, cardStartTop + (deltaY / bannerEl.offsetHeight) * 100));
+
+      state.position.posX = Math.round(newLeftPct);
+      state.position.posY = Math.round(newTopPct);
+
+      applyCardPosition();
+      syncPositionSliders();
+    });
+
+    cardEl.addEventListener('pointerup', function(e) {
+      if (isDragging) {
+        isDragging = false;
+        try { cardEl.releasePointerCapture(e.pointerId); } catch(err){}
+        persistData();
+      }
+    });
+
+    function applyCardPosition() {
+      cardEl.style.left = state.position.posX + '%';
+      cardEl.style.top = state.position.posY + '%';
+      cardEl.style.width = state.position.width + '%';
+      cardEl.style.transform = 'translate(-50%, -50%)';
+    }
+
+    function syncPositionSliders() {
+      document.getElementById('in-pos-x').value = state.position.posX;
+      document.getElementById('in-pos-y').value = state.position.posY;
+      document.getElementById('in-card-width').value = state.position.width;
+
+      document.getElementById('val-pos-x').textContent = state.position.posX + '%';
+      document.getElementById('val-pos-y').textContent = state.position.posY + '%';
+      document.getElementById('val-card-width').textContent = state.position.width + '%';
+    }
+
+    function updateCardPositionFromSlider() {
+      state.position.posX = parseInt(document.getElementById('in-pos-x').value);
+      state.position.posY = parseInt(document.getElementById('in-pos-y').value);
+
+      document.getElementById('val-pos-x').textContent = state.position.posX + '%';
+      document.getElementById('val-pos-y').textContent = state.position.posY + '%';
+
+      applyCardPosition();
+      persistData();
+    }
+
+    function updateCardWidth() {
+      state.position.width = parseInt(document.getElementById('in-card-width').value);
+      document.getElementById('val-card-width').textContent = state.position.width + '%';
+      applyCardPosition();
+      persistData();
+    }
+
+    function snapCard(anchor) {
+      if (anchor === 'top-center') {
+        state.position.posX = 50;
+        state.position.posY = 28;
+      } else if (anchor === 'center') {
+        state.position.posX = 50;
+        state.position.posY = 50;
+      } else if (anchor === 'bottom-center') {
+        state.position.posX = 50;
+        state.position.posY = 62;
+      }
+      applyCardPosition();
+      syncPositionSliders();
+      persistData();
+    }
+
+    // ----------------------------------------------------
+    // PHOTO MANIPULATION & BRAND STYLING
+    // ----------------------------------------------------
+    function updateImageTransform() {
+      state.vehicle.imgZoom = document.getElementById('in-img-zoom').value;
+      state.vehicle.imgPanX = document.getElementById('in-img-panx').value;
+      state.vehicle.imgPanY = document.getElementById('in-img-pany').value;
+
+      document.getElementById('val-img-zoom').textContent = state.vehicle.imgZoom + '%';
+      document.getElementById('val-img-panx').textContent = state.vehicle.imgPanX + 'px';
+      document.getElementById('val-img-pany').textContent = state.vehicle.imgPanY + 'px';
+
+      applyImageFilter();
+      persistData();
+    }
+
+    function applyImageFilter() {
+      const imgLayer = document.getElementById('banner-img-layer');
+      let baseFilter = `brightness(${state.filter.brightness}%) contrast(${state.filter.contrast}%) saturate(${state.filter.saturation}%)`;
+
+      if (state.activeFilterPreset === 'golden') {
+        baseFilter += ' sepia(18%)';
+      } else if (state.activeFilterPreset === 'cyber') {
+        baseFilter += ' hue-rotate(185deg)';
+      } else if (state.activeFilterPreset === 'hdr') {
+        baseFilter += ' contrast(115%) saturate(125%)';
+      } else if (state.activeFilterPreset === 'contrast') {
+        baseFilter += ' contrast(128%)';
+      } else if (state.activeFilterPreset === 'mono') {
+        baseFilter += ' grayscale(100%)';
+      }
+
+      imgLayer.style.filter = baseFilter;
+      imgLayer.style.transform = `scale(${state.vehicle.imgZoom / 100}) translate(${state.vehicle.imgPanX}px, ${state.vehicle.imgPanY}px)`;
+    }
+
+    function applyPhotoFilter(preset, el) {
+      state.activeFilterPreset = preset;
+      document.querySelectorAll('.filter-preset-card').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      if (preset === 'natural') {
+        state.filter.brightness = 100;
+        state.filter.contrast = 100;
+        state.filter.saturation = 100;
+      } else if (preset === 'golden') {
+        state.filter.brightness = 104;
+        state.filter.contrast = 108;
+        state.filter.saturation = 125;
+      } else if (preset === 'cyber') {
+        state.filter.brightness = 92;
+        state.filter.contrast = 122;
+        state.filter.saturation = 115;
+      } else if (preset === 'hdr') {
+        state.filter.brightness = 106;
+        state.filter.contrast = 128;
+        state.filter.saturation = 135;
+      } else if (preset === 'contrast') {
+        state.filter.brightness = 95;
+        state.filter.contrast = 135;
+        state.filter.saturation = 110;
+      } else if (preset === 'mono') {
+        state.filter.brightness = 105;
+        state.filter.contrast = 125;
+        state.filter.saturation = 0;
+      }
+
+      document.getElementById('in-filter-bright').value = state.filter.brightness;
+      document.getElementById('in-filter-contrast').value = state.filter.contrast;
+      document.getElementById('in-filter-sat').value = state.filter.saturation;
+
+      document.getElementById('val-filter-bright').textContent = state.filter.brightness + '%';
+      document.getElementById('val-filter-contrast').textContent = state.filter.contrast + '%';
+      document.getElementById('val-filter-sat').textContent = state.filter.saturation + '%';
+
+      applyImageFilter();
+      persistData();
+    }
+
+    function updateCustomFilter() {
+      state.filter.brightness = parseInt(document.getElementById('in-filter-bright').value);
+      state.filter.contrast = parseInt(document.getElementById('in-filter-contrast').value);
+      state.filter.saturation = parseInt(document.getElementById('in-filter-sat').value);
+
+      document.getElementById('val-filter-bright').textContent = state.filter.brightness + '%';
+      document.getElementById('val-filter-contrast').textContent = state.filter.contrast + '%';
+      document.getElementById('val-filter-sat').textContent = state.filter.saturation + '%';
+
+      applyImageFilter();
+      persistData();
+    }
+
+    function updateBrandColors() {
+      state.dealer.primaryColor = document.getElementById('in-color-primary').value;
+      state.dealer.accentColor = document.getElementById('in-color-accent').value;
+
+      document.documentElement.style.setProperty('--primary', state.dealer.primaryColor);
+      document.documentElement.style.setProperty('--primary-bright', state.dealer.accentColor);
+      document.documentElement.style.setProperty('--primary-glow', hexToRgba(state.dealer.accentColor, 0.35));
+
+      saveAndRender();
+    }
+
+    function updateBadgeColors(source) {
+      let bg, text;
+      if (source === 'tab4') {
+        bg = document.getElementById('in-badge-bg-tab4').value;
+        text = document.getElementById('in-badge-text-tab4').value;
+        const tab2Bg = document.getElementById('in-badge-bg');
+        const tab2Text = document.getElementById('in-badge-text');
+        if (tab2Bg) tab2Bg.value = bg;
+        if (tab2Text) tab2Text.value = text;
+      } else {
+        const tab2Bg = document.getElementById('in-badge-bg');
+        const tab2Text = document.getElementById('in-badge-text');
+        bg = tab2Bg ? tab2Bg.value : '#0D9488';
+        text = tab2Text ? tab2Text.value : '#2DD4BF';
+        const tab4Bg = document.getElementById('in-badge-bg-tab4');
+        const tab4Text = document.getElementById('in-badge-text-tab4');
+        if (tab4Bg) tab4Bg.value = bg;
+        if (tab4Text) tab4Text.value = text;
+      }
+
+      state.style.badgeBgColor = bg;
+      state.style.badgeTextColor = text;
+
+      const bgAlpha = hexToRgba(bg, 0.95);
+      const pillBgAlpha = hexToRgba(bg, 0.28);
+
+      document.documentElement.style.setProperty('--badge-bg-custom', bgAlpha);
+      document.documentElement.style.setProperty('--badge-text-custom', text);
+      document.documentElement.style.setProperty('--badge-border-custom', text);
+      document.documentElement.style.setProperty('--pill-bg-custom', pillBgAlpha);
+      document.documentElement.style.setProperty('--pill-text-custom', text);
+      document.documentElement.style.setProperty('--pill-border-custom', text);
+
+      saveAndRender();
+    }
+
+    function applyBadgeColorPreset(bgHex, textHex) {
+      const tab2Bg = document.getElementById('in-badge-bg');
+      const tab2Text = document.getElementById('in-badge-text');
+      const tab4Bg = document.getElementById('in-badge-bg-tab4');
+      const tab4Text = document.getElementById('in-badge-text-tab4');
+
+      if (tab2Bg) tab2Bg.value = bgHex;
+      if (tab2Text) tab2Text.value = textHex;
+      if (tab4Bg) tab4Bg.value = bgHex;
+      if (tab4Text) tab4Text.value = textHex;
+
+      updateBadgeColors('preset');
+    }
+
+    function hexToRgba(hex, alpha) {
+      let r = 0, g = 0, b = 0;
+      if (!hex) return `rgba(13, 148, 136, ${alpha})`;
+      if (hex.length === 4) {
+        r = parseInt(hex[1] + hex[1], 16);
+        g = parseInt(hex[2] + hex[2], 16);
+        b = parseInt(hex[3] + hex[3], 16);
+      } else if (hex.length === 7) {
+        r = parseInt(hex.substring(1, 3), 16);
+        g = parseInt(hex.substring(3, 5), 16);
+        b = parseInt(hex.substring(5, 7), 16);
+      }
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function uploadDealerLogo(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          state.dealer.logoSrc = e.target.result;
+          saveAndRender();
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function uploadVehicleImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          state.vehicle.imgUrl = e.target.result;
+          document.getElementById('banner-img-layer').style.backgroundImage = `url('${e.target.result}')`;
+          saveAndRender();
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function updatePodStyle() {
+      state.dealer.podStyle = document.getElementById('in-pod-style').value;
+      document.getElementById('wrap-client-logo').className = `client-logo-pod ${state.dealer.podStyle}`;
+      persistData();
+    }
+
+    function updateLogoFilter() {
+      state.dealer.logoFilter = document.getElementById('in-logo-filter').value;
+      const logoImg = document.getElementById('disp-dealer-logo');
+      logoImg.className = (state.dealer.logoFilter !== 'none') ? state.dealer.logoFilter : '';
+      persistData();
+    }
+
+    function updateLogoScale() {
+      state.dealer.logoScale = document.getElementById('in-logo-scale').value;
+      document.getElementById('val-logo-scale').textContent = state.dealer.logoScale + '%';
+      document.getElementById('wrap-client-logo').style.transform = `scale(${state.dealer.logoScale / 100})`;
+      persistData();
+    }
+
+    function updateStyleOverrides() {
+      state.style.titleFontSize = document.getElementById('in-font-title').value;
+      state.style.scrimOpacity = document.getElementById('in-scrim-opacity').value;
+
+      const boxOpacityEl = document.getElementById('in-box-opacity');
+      if (boxOpacityEl) {
+        state.style.cardBoxOpacity = parseInt(boxOpacityEl.value, 10);
+        document.getElementById('val-box-opacity').textContent = state.style.cardBoxOpacity + '%';
+        const alpha = state.style.cardBoxOpacity / 100;
+        document.documentElement.style.setProperty('--card-box-bg', `rgba(9, 14, 23, ${alpha})`);
+      }
+
+      document.getElementById('val-font-title').textContent = state.style.titleFontSize + 'px';
+      document.getElementById('val-scrim-opacity').textContent = state.style.scrimOpacity + '%';
+
+      document.getElementById('banner-scrim').style.opacity = state.style.scrimOpacity / 100;
+      saveAndRender();
+    }
+
+    // ----------------------------------------------------
+    // BADGE TRAY RENDERING & CORNER BADGE ENGINE
+    // ----------------------------------------------------
+    function renderBadgeTray() {
+      const container = document.getElementById('badge-tray-container');
+      const badges = verticalBadges[state.vertical] || verticalBadges.cars;
+
+      container.innerHTML = badges.map(b => `
+        <div class="badge-tray-item ${state.activeBadge === b.text ? 'active' : ''}" onclick="toggleActiveBadge('${b.text}')">
+          <svg viewBox="0 0 24 24">${b.icon}</svg>
+          <span>${b.text}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleActiveBadge(badgeText) {
+      if (state.activeBadge === badgeText) {
+        state.activeBadge = '';
+      } else {
+        state.activeBadge = badgeText;
+      }
+      renderBadgeTray();
+      renderState();
+      persistData();
+    }
+
+    function updateCustomBadge(text) {
+      state.activeBadge = text.trim();
+      renderBadgeTray();
+      renderState();
+      persistData();
+    }
+
+    // ==============================================
+    // MAIN REACTIVE RENDER LOOP
+    // ==============================================
+    function renderState() {
+      // Sync State from inputs
+      state.dealer.name = document.getElementById('in-dealer-name').value || 'Apex Prestige Auto';
+      state.dealer.location = document.getElementById('in-dealer-loc').value || '';
+      state.dealer.tagline = document.getElementById('in-dealer-tagline').value || '';
+      state.dealer.phone = document.getElementById('in-dealer-phone').value || '';
+      state.dealer.whatsapp = document.getElementById('in-dealer-whatsapp').value || '';
+      state.dealer.web = document.getElementById('in-dealer-web').value || '';
+      state.dealer.trustSeal = document.getElementById('in-trust-seal').value || '';
+
+      state.vehicle.year = document.getElementById('in-veh-year').value || '';
+      state.vehicle.make = document.getElementById('in-veh-make').value || '';
+      state.vehicle.model = document.getElementById('in-veh-model').value || '';
+      state.vehicle.variant = document.getElementById('in-veh-variant').value || '';
+      state.vehicle.price = document.getElementById('in-veh-price').value || 'R 0';
+      state.vehicle.oldPrice = document.getElementById('in-veh-oldprice').value || '';
+      state.vehicle.install = document.getElementById('in-veh-install').value || '';
+      state.vehicle.mileage = document.getElementById('in-veh-mileage').value || '';
+      state.vehicle.trans = document.getElementById('in-veh-trans').value || '';
+      state.vehicle.fuel = document.getElementById('in-veh-fuel').value || '';
+      state.vehicle.pills = [
+        document.getElementById('in-pill-1').value,
+        document.getElementById('in-pill-2').value,
+        document.getElementById('in-pill-3').value
+      ].filter(p => p && p.trim() !== '');
+
+      state.vehicle.customHeadline = document.getElementById('in-custom-head').value;
+      state.vehicle.customSubtext = document.getElementById('in-custom-sub').value;
+
+      // Update Header & Footer Display
+      document.getElementById('disp-foot-phone').textContent = state.dealer.phone;
+      document.getElementById('disp-foot-web').textContent = state.dealer.web;
+      
+      const taglineEl = document.getElementById('disp-dealer-tagline');
+      if (state.dealer.tagline && state.dealer.tagline.trim() !== '') {
+        taglineEl.textContent = state.dealer.tagline;
+        taglineEl.style.display = 'block';
+      } else {
+        taglineEl.style.display = 'none';
+      }
+
+      const sealEl = document.getElementById('disp-trust-seal');
+      const sealBox = document.getElementById('disp-trust-seal-box');
+      if (state.dealer.trustSeal && state.dealer.trustSeal.trim() !== '') {
+        sealEl.textContent = state.dealer.trustSeal;
+        sealBox.style.display = 'flex';
+      } else {
+        sealBox.style.display = 'none';
+      }
+
+      // Update Floating Corner Badge
+      const cornerBadge = document.getElementById('disp-corner-badge');
+      const cornerBadgeText = document.getElementById('disp-corner-badge-text');
+      if (state.activeBadge && state.activeBadge.trim() !== '') {
+        cornerBadgeText.textContent = state.activeBadge;
+        cornerBadge.style.display = 'flex';
+      } else {
+        cornerBadge.style.display = 'none';
+      }
+
+      // Update Logo
+      const logoImg = document.getElementById('disp-dealer-logo');
+      const placeholder = document.getElementById('disp-logo-placeholder');
+      if (state.dealer.logoSrc) {
+        logoImg.src = state.dealer.logoSrc;
+        logoImg.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        logoImg.src = '';
+        logoImg.style.display = 'none';
+        placeholder.style.display = 'block';
+        placeholder.textContent = state.dealer.name;
+      }
+
+      // Apply movable card positioning and photo filter
+      applyCardPosition();
+      applyImageFilter();
+      applyMotionClasses();
+
+      // Render Active Template
+      renderTemplateSlot();
+    }
+
+    // Template HTML Generator
+    function renderTemplateSlot() {
+      const slot = document.getElementById('template-slot');
+      const alignClass = state.align === 'center' ? 'text-align: center;' : 'text-align: left;';
+      const titleSize = state.style.titleFontSize + 'px';
+
+      const fullVehicleName = `${state.vehicle.year} ${state.vehicle.make} ${state.vehicle.model}`.trim();
+
+      let html = '';
+
+      switch (state.template) {
+        
+        // ----------------------------------------------------
+        // 1. Just Arrived / New Stock
+        // ----------------------------------------------------
+        case 'tpl-arrival':
+          html = `
+            <div class="styled-card-box" style="${alignClass}">
+              <div class="card-header-badge">
+                <div class="badge-pill">
+                  <div class="pulse-dot"></div>
+                  <span>${state.vehicle.customHeadline || 'JUST ARRIVED IN SHOWROOM'}</span>
+                </div>
+              </div>
+              <div class="vehicle-title-wrap">
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+                ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
+              </div>
+              <div class="vehicle-price-row">
+                <div class="vehicle-price-main">${state.vehicle.price}</div>
+                ${state.vehicle.install ? `<div class="vehicle-install-pill">${state.vehicle.install}</div>` : ''}
+              </div>
+              <div class="spec-pill-deck">
+                ${state.vehicle.mileage ? `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${state.vehicle.mileage}</div>` : ''}
+                ${state.vehicle.trans ? `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${state.vehicle.trans}</div>` : ''}
+                ${state.vehicle.fuel ? `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><path d="M3 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18M18 10h4v12h-4z"/></svg>${state.vehicle.fuel}</div>` : ''}
+                ${state.vehicle.pills.map(p => `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${p}</div>`).join('')}
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 2. Price Drop / Hot Deal
+        // ----------------------------------------------------
+        case 'tpl-pricedrop':
+          html = `
+            <div class="styled-card-box" style="${alignClass} border-color: rgba(239, 68, 68, 0.4);">
+              <div class="card-header-badge" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span class="save-badge">
+                  <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  MASSIVE PRICE REDUCTION
+                </span>
+                <span class="badge-pill" style="border-color: #EF4444; color: #FCA5A5; background: rgba(239,68,68,0.2);">LIMITED TIME ONLY</span>
+              </div>
+              <div class="vehicle-title-wrap">
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+                ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
+              </div>
+              <div class="vehicle-price-row">
+                ${state.vehicle.oldPrice ? `<span class="price-old-strike">${state.vehicle.oldPrice}</span>` : ''}
+                <span class="price-new-glow">${state.vehicle.price}</span>
+              </div>
+              <div class="spec-pill-deck">
+                ${state.vehicle.mileage ? `<div class="spec-pill-item" style="border-color: rgba(239,68,68,0.3);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${state.vehicle.mileage}</div>` : ''}
+                ${state.vehicle.variant ? `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${state.vehicle.variant}</div>` : ''}
+                ${state.vehicle.pills.map(p => `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${p}</div>`).join('')}
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 3. Finance & Monthly Payment
+        // ----------------------------------------------------
+        case 'tpl-finance':
+          html = `
+            <div class="styled-card-box" style="${alignClass} border-color: var(--primary-bright);">
+              <div class="card-header-badge">
+                <div class="badge-pill">
+                  <div class="pulse-dot"></div>
+                  <span>DEALER FINANCE AVAILABLE</span>
+                </div>
+              </div>
+              <div class="vehicle-title-wrap">
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+                ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
+              </div>
+              <div class="finance-rate-highlight">
+                <span>Drive away from only</span>
+                <strong class="finance-rate-amount">${state.vehicle.install}</strong>
+              </div>
+              <div class="finance-grid">
+                <div class="finance-stat-card">
+                  <label>Cash Retail Price</label>
+                  <strong>${state.vehicle.price}</strong>
+                </div>
+                <div class="finance-stat-card">
+                  <label>Deposit Requirement</label>
+                  <strong>Zero Deposit Available</strong>
+                </div>
+                <div class="finance-stat-card">
+                  <label>Loan Term</label>
+                  <strong>Up to 72 Months</strong>
+                </div>
+              </div>
+              <div class="finance-disclaimer">
+                • Subject to bank credit approval. Ts & Cs Apply.
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 4. Just Sold / Handover
+        // ----------------------------------------------------
+        case 'tpl-sold':
+          html = `
+            <div class="styled-card-box" style="${alignClass} border-color: rgba(245, 158, 11, 0.4);">
+              <div class="sold-ribbon-banner">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <span>JUST SOLD & DELIVERED</span>
+              </div>
+              <div class="vehicle-title-wrap">
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+                ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
+              </div>
+              <p class="sold-congrats-text">
+                Congratulations to our valued customer on taking delivery of this immaculate vehicle! Thank you for choosing <strong>${state.dealer.name}</strong>.
+              </p>
+              <div class="sold-sourcing-tag">
+                Looking for something similar? Chat with us today.
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 5. Spec & Performance Matrix
+        // ----------------------------------------------------
+        case 'tpl-specs':
+          html = `
+            <div class="styled-card-box">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px;">
+                <div class="vehicle-title-wrap" style="margin-bottom: 0;">
+                  <div class="badge-pill" style="margin-bottom: 8px;">EXECUTIVE SPEC HIGHLIGHTS</div>
+                  <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+                  ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
+                </div>
+                <div class="vehicle-price-main">${state.vehicle.price}</div>
+              </div>
+              
+              <div class="spec-matrix-grid">
+                <div class="spec-matrix-cell">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <div>
+                    <strong>${state.vehicle.mileage || 'Low Mileage'}</strong>
+                    <span>Verified Odometer</span>
+                  </div>
+                </div>
+                <div class="spec-matrix-cell">
+                  <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+                  <div>
+                    <strong>${state.vehicle.trans || 'Automatic'}</strong>
+                    <span>Transmission</span>
+                  </div>
+                </div>
+                <div class="spec-matrix-cell">
+                  <svg viewBox="0 0 24 24"><path d="M3 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18M18 10h4v12h-4z"/></svg>
+                  <div>
+                    <strong>${state.vehicle.fuel || 'Pristine Engine'}</strong>
+                    <span>Fuel & Powertrain</span>
+                  </div>
+                </div>
+                <div class="spec-matrix-cell">
+                  <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <div>
+                    <strong>Quality Inspected</strong>
+                    <span>Multi-Point Check</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 6. Classifieds Watermark Bar
+        // ----------------------------------------------------
+        case 'tpl-watermark':
+          html = `
+            <div class="watermark-minimal-bar">
+              <div>
+                <strong style="font-size: 22px; color: #FFF; display: block; font-family: var(--font-sans);">${fullVehicleName}</strong>
+                <span style="font-size: 13.5px; color: var(--primary-bright); font-weight: 700;">${state.dealer.name} ${state.dealer.location ? '• ' + state.dealer.location : ''}</span>
+              </div>
+              <div style="font-size: 28px; font-weight: 900; color: #FFF; font-family: var(--font-sans);">
+                ${state.vehicle.price}
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 7. We Buy Cars / Trade-In Hook
+        // ----------------------------------------------------
+        case 'tpl-tradein':
+          html = `
+            <div class="styled-card-box" style="${alignClass} border-color: var(--primary-bright);">
+              <div class="card-header-badge">
+                <div class="badge-pill" style="background: rgba(45, 212, 191, 0.25);">
+                  <div class="pulse-dot"></div>
+                  <span>WE BUY CARS FOR CASH • TRADE-INS WELCOME</span>
+                </div>
+              </div>
+              <div class="vehicle-title-wrap">
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">Upgrade to this ${fullVehicleName}</div>
+              </div>
+              <p style="font-size: 16px; color: #E2E8F0; font-weight: 500; line-height: 1.45; margin: 8px 0;">
+                Get top market value on your trade-in today. Fast appraisals and bank settlements taken over seamlessly.
+              </p>
+              <div class="vehicle-price-row">
+                <div class="vehicle-price-main">${state.vehicle.price}</div>
+                <div class="vehicle-install-pill">WhatsApp Us For Fast Valuation</div>
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 8. Showroom Event & Sale
+        // ----------------------------------------------------
+        case 'tpl-event':
+          html = `
+            <div class="styled-card-box" style="${alignClass} border-color: rgba(220, 38, 38, 0.4);">
+              <div class="card-header-badge">
+                <div style="background: linear-gradient(90deg, #DC2626 0%, #991B1B 100%); color: #FFF; font-size: 14px; font-weight: 900; padding: 7px 20px; border-radius: 8px; display: inline-block; letter-spacing: 0.08em; text-transform: uppercase;">
+                  WEEKEND SHOWROOM MEGA SALE
+                </div>
+              </div>
+              <div class="vehicle-title-wrap">
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+              </div>
+              <div class="vehicle-price-row">
+                <div class="vehicle-price-main">${state.vehicle.price}</div>
+                <div class="badge-pill" style="border-color: #F59E0B; color: #FCD34D; background: rgba(245,158,11,0.2);">FREE TANK OF FUEL INCLUDED</div>
+              </div>
+              <div style="font-size: 14px; color: #CBD5E1; font-weight: 600; margin-top: 4px;">
+                • Visit our showroom this weekend • Test drives & instant finance available.
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 9. 5-Star Review & Testimonial
+        // ----------------------------------------------------
+        case 'tpl-review':
+          html = `
+            <div class="styled-card-box" style="${alignClass} border-color: rgba(245, 158, 11, 0.4);">
+              <div class="stars-row">
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <span style="color: #FFF; font-family: var(--font-mono); font-size: 13px; font-weight: 800; margin-left: 8px;">5-STAR VERIFIED REVIEW</span>
+              </div>
+              <p class="review-quote-text">
+                "${state.vehicle.customSubtext}"
+              </p>
+              <div style="font-size: 14px; color: var(--primary-bright); font-weight: 700; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 10px; width: 100%;">
+                Handover of ${fullVehicleName} • Verified Client Experience
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 10. Vertical Story (9:16)
+        // ----------------------------------------------------
+        case 'tpl-story':
+          html = `
+            <div class="styled-card-box" style="text-align: center;">
+              <div class="card-header-badge" style="display: flex; justify-content: center;">
+                <div class="badge-pill">
+                  <div class="pulse-dot"></div>
+                  <span>NEW ARRIVAL STORY</span>
+                </div>
+              </div>
+              <div class="vehicle-title-wrap">
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+                ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
+              </div>
+              <div class="vehicle-price-main" style="margin: 10px 0;">${state.vehicle.price}</div>
+              ${state.vehicle.install ? `<div class="vehicle-install-pill" style="margin-bottom: 12px;">${state.vehicle.install}</div>` : ''}
+              <div style="margin-top: 8px; font-size: 14px; font-weight: 700; color: #FFF; background: var(--primary); padding: 10px 24px; border-radius: 100px; box-shadow: 0 8px 24px rgba(13,148,136,0.4); display: inline-block;">
+                Tap to Chat on WhatsApp: ${state.dealer.whatsapp}
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 11. Slanted Speed Slash (Motorsport Non-Box Overlay)
+        // ----------------------------------------------------
+        case 'tpl-slant':
+          html = `
+            <div class="slant-banner-container" style="${alignClass}">
+              <div class="slant-cutout-panel">
+                <div class="slant-accent-stripe"></div>
+                <div class="slant-badge-flag">
+                  <span>${state.vehicle.customHeadline || 'HIGH PERFORMANCE SELECTION'}</span>
+                </div>
+                <div class="vehicle-title-wrap">
+                  <div class="vehicle-hero-title" style="font-size: ${titleSize}; text-transform: uppercase; letter-spacing: -0.03em;">${fullVehicleName}</div>
+                  ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle" style="font-weight: 700; color: var(--primary-bright);">${state.vehicle.variant}</div>` : ''}
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 14px;">
+                  <div class="slant-price-tag"><span>${state.vehicle.price}</span></div>
+                  ${state.vehicle.install ? `<div class="vehicle-install-pill" style="transform: skewX(-12deg);"><span style="display:inline-block; transform: skewX(12deg);">${state.vehicle.install}</span></div>` : ''}
+                </div>
+                <div class="spec-pill-deck" style="margin-top: 16px;">
+                  ${state.vehicle.mileage ? `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${state.vehicle.mileage}</div>` : ''}
+                  ${state.vehicle.trans ? `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${state.vehicle.trans}</div>` : ''}
+                  ${state.vehicle.fuel ? `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><path d="M3 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18M18 10h4v12h-4z"/></svg>${state.vehicle.fuel}</div>` : ''}
+                  ${state.vehicle.pills.map(p => `<div class="spec-pill-item"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${p}</div>`).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 12. Minimal Editorial Magazine (Floating Typography)
+        // ----------------------------------------------------
+        case 'tpl-editorial':
+          html = `
+            <div class="editorial-floating-container" style="${alignClass}">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div class="editorial-pill-tag">${state.vehicle.customHeadline || 'SHOWROOM SHOWCASE'}</div>
+                ${state.vehicle.mileage ? `<div class="editorial-pill-tag">${state.vehicle.mileage}</div>` : ''}
+              </div>
+              <div class="editorial-hero-title" style="font-size: calc(${titleSize} * 1.15);">${fullVehicleName}</div>
+              ${state.vehicle.variant ? `<div style="font-family: var(--font-sans); font-size: 22px; font-weight: 700; color: #FFF; text-shadow: 0 2px 10px rgba(0,0,0,0.8); margin-top: 4px;">${state.vehicle.variant}</div>` : ''}
+              
+              <div class="editorial-sub-bar">
+                <div class="editorial-price-clean">${state.vehicle.price}</div>
+                ${state.vehicle.install ? `<div class="vehicle-install-pill">${state.vehicle.install}</div>` : ''}
+                ${state.vehicle.trans ? `<div class="spec-pill-item">${state.vehicle.trans}</div>` : ''}
+                ${state.vehicle.fuel ? `<div class="spec-pill-item">${state.vehicle.fuel}</div>` : ''}
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 13. Asymmetric Split Mask & Spec HUD
+        // ----------------------------------------------------
+        case 'tpl-split':
+          html = `
+            <div class="split-hud-container" style="${alignClass}">
+              <div class="split-hud-left">
+                <div class="badge-pill" style="align-self: flex-start; margin-bottom: 6px;">
+                  <div class="pulse-dot"></div>
+                  <span>${state.vehicle.customHeadline || 'CERTIFIED SHOWROOM STOCK'}</span>
+                </div>
+                <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
+                ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
+                <div class="vehicle-price-main" style="margin-top: 8px;">${state.vehicle.price}</div>
+                ${state.vehicle.install ? `<div class="vehicle-install-pill" style="align-self: flex-start; margin-top: 4px;">${state.vehicle.install}</div>` : ''}
+              </div>
+              
+              <div class="split-hud-right">
+                <div class="split-spec-row"><span>Verified Odometer</span><strong>${state.vehicle.mileage || 'Low Km'}</strong></div>
+                <div class="split-spec-row"><span>Transmission</span><strong>${state.vehicle.trans || 'Automatic'}</strong></div>
+                <div class="split-spec-row"><span>Powertrain</span><strong>${state.vehicle.fuel || 'Pristine'}</strong></div>
+                <div class="split-spec-row"><span>Finance Status</span><strong style="color: var(--primary-bright);">Fast Approval</strong></div>
+                ${state.vehicle.pills && state.vehicle.pills[0] ? `<div class="split-spec-row"><span>Highlight</span><strong>${state.vehicle.pills[0]}</strong></div>` : ''}
+              </div>
+            </div>
+          `;
+          break;
+
+        // ----------------------------------------------------
+        // 14. Viewfinder Camera Focus & Floating HUD
+        // ----------------------------------------------------
+        case 'tpl-viewfinder':
+          html = `
+            <div class="viewfinder-hud-overlay" style="${alignClass}">
+              <div class="viewfinder-bracket-tl"></div>
+              <div class="viewfinder-bracket-tr"></div>
+              <div class="viewfinder-bracket-bl"></div>
+              <div class="viewfinder-bracket-br"></div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="viewfinder-status-tag">
+                  <div class="viewfinder-rec-dot"></div>
+                  <span>LIVE SHOWROOM FOCUS • 4K UHD</span>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 11px; color: #CBD5E1; font-weight: 700; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px;">
+                  ISO 100 • F/2.8 • 1/500s
+                </div>
+              </div>
+
+              <div class="vehicle-hero-title" style="font-size: ${titleSize}; text-shadow: 0 4px 20px rgba(0,0,0,0.9);">${fullVehicleName}</div>
+              ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle" style="text-shadow: 0 2px 10px rgba(0,0,0,0.9); font-weight: 700;">${state.vehicle.variant}</div>` : ''}
+
+              <div class="viewfinder-float-bar">
+                <div>
+                  <div class="vehicle-price-main" style="margin: 0; font-size: 34px;">${state.vehicle.price}</div>
+                  ${state.vehicle.install ? `<div style="font-size: 12px; color: #CBD5E1; font-weight: 600; margin-top: 2px;">${state.vehicle.install}</div>` : ''}
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  ${state.vehicle.mileage ? `<div class="spec-pill-item" style="margin: 0;">${state.vehicle.mileage}</div>` : ''}
+                  ${state.vehicle.trans ? `<div class="spec-pill-item" style="margin: 0;">${state.vehicle.trans}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          break;
+      }
+
+      slot.innerHTML = html;
+    }
+
+    // ==============================================
+    // AI SOCIAL CAPTION & HASHTAG GENERATOR
+    // ==============================================
+    function setCaptionFormat(format, btn) {
+      state.captionFormat = format;
+      document.querySelectorAll('#btn-cap-ig, #btn-cap-wa, #btn-cap-fb').forEach(el => el.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      generateSocialCaption();
+      persistData();
+    }
+
+    function setCaptionTone(tone, btn) {
+      state.captionTone = tone;
+      document.querySelectorAll('#tone-prem, #tone-urg, #tone-dir').forEach(el => el.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      generateSocialCaption();
+      persistData();
+    }
+
+    function handleCaptionManualEdit() {
+      // User typed directly in output box
+    }
+
+    function generateSocialCaption() {
+      const output = document.getElementById('caption-output');
+      const v = state.vehicle;
+      const d = state.dealer;
+      const fullVeh = `${v.year} ${v.make} ${v.model}`.trim();
+      const variantText = v.variant ? ` (${v.variant})` : '';
+
+      let text = '';
+
+      // Curated vertical hashtags
+      const hashtagsMap = {
+        cars: '#carsforsale #dealership #preownedcars #usedcars #carsales #instacars #cardealership #carsofinstagram #luxurycars #southafrica #carfinance',
+        moto: '#motorcycles #superbike #bikelife #dualsport #motorcycleforsale #twowheels #instamoto #motorcyclesofinstagram #bikerlifestyle #motoza',
+        commercial: '#commercialvehicles #bakkiesforsale #trucks #fleetmanagement #workhorse #southafricabakkies #commercialfleet #transport #dealership',
+        marine: '#boatsforsale #boating #boatlife #yamahaoutboards #centerconsole #jetski #watersports #fishingboat #boatinglife #marine'
+      };
+
+      const baseHashtags = hashtagsMap[state.vertical] || hashtagsMap.cars;
+      const dealerHashtag = '#' + (d.name || 'dealership').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+      if (state.captionFormat === 'whatsapp') {
+        // Direct WhatsApp Broadcast
+        text = `*${fullVeh.toUpperCase()}${variantText.toUpperCase()}*\n`;
+        text += `• Price: *${v.price}*\n`;
+        if (v.install) text += `• Installment: *${v.install}*\n`;
+        if (v.mileage) text += `• Mileage: *${v.mileage}*\n`;
+        if (v.trans) text += `• Transmission: *${v.trans}*\n`;
+        if (v.fuel) text += `• Fuel / Engine: *${v.fuel}*\n`;
+        
+        if (v.pills && v.pills.length > 0) {
+          text += `\n*Highlights:*\n`;
+          v.pills.forEach(p => text += `• ${p}\n`);
+        }
+
+        text += `\n*Dealership:* ${d.name} (${d.location})\n`;
+        text += `*WhatsApp Us Directly:* ${d.whatsapp}\n`;
+        text += `*Website:* ${d.web}`;
+
+      } else if (state.captionFormat === 'classifieds') {
+        // Facebook Marketplace / Long Description
+        text = `FOR SALE: ${fullVeh}${variantText}\n\n`;
+        text += `Offered exclusively by ${d.name} in ${d.location}.\n\n`;
+        text += `VEHICLE SPECIFICATIONS:\n`;
+        text += `• Selling Price: ${v.price}\n`;
+        if (v.install) text += `• Estimated Finance: ${v.install} (Zero deposit available)\n`;
+        if (v.mileage) text += `• Verified Odometer: ${v.mileage}\n`;
+        if (v.trans) text += `• Transmission: ${v.trans}\n`;
+        if (v.fuel) text += `• Fuel Type: ${v.fuel}\n\n`;
+
+        text += `KEY FEATURES & CONDITION:\n`;
+        if (v.pills && v.pills.length > 0) {
+          v.pills.forEach(p => text += `• ${p}\n`);
+        } else {
+          text += `• Excellent condition inside and out\n• Full multi-point mechanical inspection completed\n`;
+        }
+
+        text += `\nFINANCE & TRADE-INS:\n`;
+        text += `• Fast bank financing approved on-site with all major finance houses.\n`;
+        text += `• Trade-ins welcome — top market value offered.\n`;
+        text += `• Nationwide delivery available.\n\n`;
+        text += `CONTACT US TODAY:\n`;
+        text += `Phone: ${d.phone}\n`;
+        text += `WhatsApp: ${d.whatsapp}\n`;
+        text += `Website: ${d.web}\n`;
+        text += `Location: ${d.location}`;
+
+      } else {
+        // Instagram / Facebook Post Format
+        let hook = `NOW AVAILABLE | ${fullVeh}${variantText}`;
+        if (state.captionTone === 'urgent') {
+          hook = `MASSIVE PRICE SPECIAL | ${fullVeh}${variantText}`;
+        } else if (state.captionTone === 'direct') {
+          hook = `IN STOCK: ${fullVeh}${variantText}`;
+        }
+
+        text = `${hook}\n\n`;
+        text += `Immaculate condition pre-owned ${state.vertical === 'moto' ? 'motorcycle' : state.vertical === 'marine' ? 'vessel' : 'vehicle'} ready for immediate delivery.\n\n`;
+        text += `SPECIFICATIONS & PRICING:\n`;
+        text += `• Price: ${v.price}\n`;
+        if (v.install) text += `• Estimated Finance: ${v.install}\n`;
+        if (v.mileage) text += `• Mileage: ${v.mileage}\n`;
+        if (v.trans) text += `• Transmission: ${v.trans}\n`;
+        if (v.fuel) text += `• Powertrain: ${v.fuel}\n`;
+
+        if (v.pills && v.pills.length > 0) {
+          text += `\nKEY HIGHLIGHTS:\n`;
+          v.pills.forEach(p => text += `• ${p}\n`);
+        }
+
+        text += `\n---\n`;
+        text += `Finance available through all major banks • Zero deposit options\n`;
+        text += `Trade-ins accepted • Nationwide delivery available\n\n`;
+        text += `Call: ${d.phone} | WhatsApp: ${d.whatsapp}\n`;
+        text += `Visit: ${d.web}\n`;
+        text += `${d.location}\n\n`;
+        text += `${dealerHashtag} ${baseHashtags}`;
+      }
+
+      output.textContent = text;
+    }
+
+    async function copyCaptionToClipboard() {
+      const text = document.getElementById('caption-output').innerText;
+      const btn = document.getElementById('btn-copy-caption-act');
+
+      try {
+        await navigator.clipboard.writeText(text);
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Caption Copied!`;
+        btn.style.background = '#059669';
+        setTimeout(() => {
+          btn.innerHTML = origHtml;
+          btn.style.background = '';
+        }, 2200);
+      } catch (err) {
+        alert('Please copy text manually from the box.');
+      }
+    }
+
+    // ==============================================
+    // 4K HIGH-RESOLUTION EXPORT ENGINE (ISOLATED & SHARP)
+    // ==============================================
+    async function downloadBannerClean(format = 'png', filenameSuffix = '') {
+      const banner = document.getElementById('banner');
+      const pod = document.getElementById('banner-scaler-pod');
+      const dealerSlug = (state.dealer.name || 'dealership').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const vehSlug = `${state.vehicle.make}_${state.vehicle.model}`.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const suffix = filenameSuffix ? `_${filenameSuffix}` : '';
+      const filename = `${dealerSlug}_${vehSlug}_${state.template}_${state.ratio}${suffix}.${format}`;
+
+      const dims = ratioDimensions[state.ratio];
+
+      const originalTransform = banner.style.transform;
+      const originalPodW = pod.style.width;
+      const originalPodH = pod.style.height;
+
+      // Temporarily set unscaled native resolution
+      banner.style.transform = 'none';
+      pod.style.width = dims.w + 'px';
+      pod.style.height = dims.h + 'px';
+
+      // Hide interactive handle
+      const dragHandle = document.querySelector('.drag-hint-handle');
+      if (dragHandle) dragHandle.style.display = 'none';
+
+      try {
+        if (document.fonts) {
+          await document.fonts.ready;
+        }
+        await new Promise(r => requestAnimationFrame(r));
+        await new Promise(r => setTimeout(r, 60));
+
+        const options = {
+          pixelRatio: 2,
+          cacheBust: true,
+          width: dims.w,
+          height: dims.h,
+          quality: format === 'jpg' ? 0.95 : 1
+        };
+
+        const dataUrl = (format === 'jpg') 
+          ? await htmlToImage.toJpeg(banner, options)
+          : await htmlToImage.toPng(banner, options);
+
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        console.warn('htmlToImage export failed, falling back to html2canvas:', err);
+        const canvas = await html2canvas(banner, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#03060B',
+          width: dims.w,
+          height: dims.h
+        });
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = canvas.toDataURL(format === 'jpg' ? 'image/jpeg' : 'image/png', 0.95);
+        link.click();
+      } finally {
+        banner.style.transform = originalTransform;
+        pod.style.width = originalPodW;
+        pod.style.height = originalPodH;
+        if (dragHandle) dragHandle.style.display = 'flex';
+      }
+    }
+
+    // Copy to Clipboard
+    async function copyImageToClipboard() {
+      const banner = document.getElementById('banner');
+      const pod = document.getElementById('banner-scaler-pod');
+      const dims = ratioDimensions[state.ratio];
+
+      const originalTransform = banner.style.transform;
+      const originalPodW = pod.style.width;
+      const originalPodH = pod.style.height;
+
+      banner.style.transform = 'none';
+      pod.style.width = dims.w + 'px';
+      pod.style.height = dims.h + 'px';
+
+      const dragHandle = document.querySelector('.drag-hint-handle');
+      if (dragHandle) dragHandle.style.display = 'none';
+
+      try {
+        if (document.fonts) await document.fonts.ready;
+        await new Promise(r => requestAnimationFrame(r));
+        await new Promise(r => setTimeout(r, 60));
+
+        const blob = await htmlToImage.toBlob(banner, { pixelRatio: 2, width: dims.w, height: dims.h });
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        alert('High-resolution graphic copied to clipboard!');
+      } catch (err) {
+        console.error('Clipboard copy failed:', err);
+        alert('Could not copy automatically. Use Export 4K button.');
+      } finally {
+        banner.style.transform = originalTransform;
+        pod.style.width = originalPodW;
+        pod.style.height = originalPodH;
+        if (dragHandle) dragHandle.style.display = 'flex';
+      }
+    }
+
+    // Batch Export All 4 Ratios
+    async function batchExportAllRatios() {
+      const ratios = ['aspect-square', 'aspect-portrait', 'aspect-story', 'aspect-landscape'];
+      const originalRatio = state.ratio;
+
+      for (const r of ratios) {
+        setRatio(r);
+        await new Promise(res => setTimeout(res, 250));
+        await downloadBannerClean('png');
+        await new Promise(res => setTimeout(res, 350));
+      }
+
+      setRatio(originalRatio);
+    }
+
+    // Batch Export 3 Carousel Slides
+    async function batchExportCarouselSlides() {
+      const originalSlide = state.activeSlideIndex;
+
+      for (let i = 0; i < 3; i++) {
+        switchSlide(i);
+        await new Promise(res => setTimeout(res, 250));
+        await downloadBannerClean('png', `slide_${i + 1}`);
+        await new Promise(res => setTimeout(res, 350));
+      }
+
+      switchSlide(originalSlide);
+    }
+
+    // ==============================================
+    // MOTION STUDIO & VIDEO CREATOR ENGINE
+    // ==============================================
+    function applyMotionClasses() {
+      const banner = document.getElementById('banner');
+      const btnNav = document.getElementById('btn-motion-toggle-nav');
+      const btnOn = document.getElementById('btn-motion-on');
+      const btnOff = document.getElementById('btn-motion-off');
+
+      if (!banner) return;
+
+      const isAnimated = !!state.motion.enabled;
+
+      if (btnNav) btnNav.classList.toggle('active', isAnimated);
+      if (btnOn) btnOn.classList.toggle('active', isAnimated);
+      if (btnOff) btnOff.classList.toggle('active', !isAnimated);
+
+      if (isAnimated) {
+        banner.classList.add('animated-mode');
+        banner.classList.remove('motion-kenburns', 'motion-drift', 'motion-rise', 'motion-pulse');
+        banner.classList.add(`motion-${state.motion.preset || 'kenburns'}`);
+        banner.style.setProperty('--motion-duration', `${state.motion.duration || 6}s`);
+        banner.style.setProperty('--motion-scale', `${(state.motion.zoomDepth || 110) / 100}`);
+      } else {
+        banner.classList.remove('animated-mode', 'motion-kenburns', 'motion-drift', 'motion-rise', 'motion-pulse');
+      }
+
+      ['kenburns', 'drift', 'rise', 'pulse'].forEach(p => {
+        const card = document.getElementById(`mp-${p}`);
+        if (card) card.classList.toggle('active', state.motion.preset === p);
+      });
+
+      [4, 6, 10].forEach(d => {
+        const btn = document.getElementById(`btn-dur-${d}`);
+        if (btn) btn.classList.toggle('active', Number(state.motion.duration) === d);
+      });
+    }
+
+    function toggleMotionMode() {
+      state.motion.enabled = !state.motion.enabled;
+      applyMotionClasses();
+      persistData();
+    }
+
+    function setMotionMode(enabled) {
+      state.motion.enabled = enabled;
+      applyMotionClasses();
+      persistData();
+    }
+
+    function setMotionPreset(preset, el) {
+      state.motion.preset = preset;
+      state.motion.enabled = true;
+      applyMotionClasses();
+      persistData();
+    }
+
+    function setMotionDuration(dur, btn) {
+      state.motion.duration = dur;
+      const valLabel = document.getElementById('val-motion-dur');
+      if (valLabel) valLabel.textContent = `${dur} Seconds`;
+      applyMotionClasses();
+      persistData();
+    }
+
+    function updateMotionParams() {
+      const zoomInput = document.getElementById('in-motion-zoom');
+      const valLabel = document.getElementById('val-motion-zoom');
+      if (zoomInput) {
+        state.motion.zoomDepth = parseInt(zoomInput.value);
+        if (valLabel) valLabel.textContent = `${state.motion.zoomDepth}%`;
+        applyMotionClasses();
+        persistData();
+      }
+    }
+
+    // High-Resolution 60FPS Video Reel Generator (MediaRecorder / Canvas Stream)
+    async function exportMotionVideo() {
+      const banner = document.getElementById('banner');
+      const pod = document.getElementById('banner-scaler-pod');
+      const dims = ratioDimensions[state.ratio] || { w: 1080, h: 1920 };
+      const durationSec = Number(state.motion.duration) || 6;
+      const totalFrames = durationSec * 60;
+
+      const modal = document.getElementById('video-render-modal');
+      const progressBar = document.getElementById('video-render-bar');
+      const percentLabel = document.getElementById('video-render-percent');
+      const timerLabel = document.getElementById('video-render-timer');
+      const statusLabel = document.getElementById('video-render-status');
+
+      if (!window.MediaRecorder) {
+        alert('Video recording is not supported in this browser. Please use Google Chrome, Edge, or Safari.');
+        return;
+      }
+
+      if (modal) modal.style.display = 'flex';
+      if (progressBar) progressBar.style.width = '0%';
+      if (percentLabel) percentLabel.textContent = '0%';
+      if (timerLabel) timerLabel.textContent = `0.0s / ${durationSec.toFixed(1)}s`;
+      if (statusLabel) statusLabel.textContent = 'Preparing high-resolution video canvas...';
+
+      // Temporary element unscaling for crystal clear capture
+      const originalTransform = banner.style.transform;
+      const originalPodW = pod.style.width;
+      const originalPodH = pod.style.height;
+
+      banner.style.transform = 'none';
+      pod.style.width = dims.w + 'px';
+      pod.style.height = dims.h + 'px';
+
+      const dragHandle = document.querySelector('.drag-hint-handle');
+      if (dragHandle) dragHandle.style.display = 'none';
+
+      try {
+        if (document.fonts) await document.fonts.ready;
+        await new Promise(r => setTimeout(r, 80));
+
+        // Create recording canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = dims.w;
+        canvas.height = dims.h;
+        const ctx = canvas.getContext('2d', { alpha: false });
+
+        // Load background image
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = state.vehicle.imgUrl || '';
+        });
+
+        // Capture static overlay elements (header, footer, text card, badges)
+        const imgLayer = document.getElementById('banner-img-layer');
+        const origBg = imgLayer.style.backgroundImage;
+        imgLayer.style.backgroundImage = 'none'; // isolate text & overlays
+
+        const overlayDataUrl = await htmlToImage.toPng(banner, {
+          width: dims.w,
+          height: dims.h,
+          pixelRatio: 1,
+          cacheBust: true
+        });
+        imgLayer.style.backgroundImage = origBg;
+
+        const overlayImg = new Image();
+        await new Promise((resolve) => {
+          overlayImg.onload = resolve;
+          overlayImg.onerror = resolve;
+          overlayImg.src = overlayDataUrl;
+        });
+
+        // Setup MediaRecorder
+        const stream = canvas.captureStream(60);
+        let mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm;codecs=vp8';
+        }
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm';
+        }
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/mp4';
+        }
+
+        const recordedChunks = [];
+        const recorder = new MediaRecorder(stream, {
+          mimeType: mimeType,
+          videoBitsPerSecond: 8000000 // 8 Mbps high quality
+        });
+
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        const recordingCompletePromise = new Promise((resolve) => {
+          recorder.onstop = resolve;
+        });
+
+        recorder.start();
+        if (statusLabel) statusLabel.textContent = 'Rendering 60FPS motion reel...';
+
+        const preset = state.motion.preset || 'kenburns';
+        const maxZoom = (state.motion.zoomDepth || 110) / 100;
+
+        for (let frame = 0; frame < totalFrames; frame++) {
+          const t = frame / totalFrames; // 0.0 -> 1.0
+          const currentSec = (frame / 60).toFixed(1);
+
+          // Clear Canvas
+          ctx.fillStyle = '#03060B';
+          ctx.fillRect(0, 0, dims.w, dims.h);
+
+          // 1. Calculate Ken Burns / Motion Transform
+          let scale = 1.0;
+          let panX = 0;
+          let panY = 0;
+
+          if (preset === 'kenburns') {
+            scale = 1.0 + (maxZoom - 1.0) * Math.sin(t * Math.PI);
+            panX = -dims.w * 0.015 * Math.sin(t * Math.PI);
+            panY = -dims.h * 0.010 * Math.sin(t * Math.PI);
+          } else if (preset === 'drift') {
+            scale = 1.06;
+            panX = dims.w * 0.025 * Math.sin(t * Math.PI * 2 - Math.PI / 2);
+          } else if (preset === 'rise') {
+            scale = 1.06;
+            panY = dims.h * 0.025 * Math.sin(t * Math.PI * 2 - Math.PI / 2);
+          }
+
+          // Draw Image
+          if (img && img.width > 0) {
+            ctx.save();
+            const br = (state.filter && state.filter.brightness) ? state.filter.brightness : 100;
+            const co = (state.filter && state.filter.contrast) ? state.filter.contrast : 100;
+            const sa = (state.filter && state.filter.saturation) ? state.filter.saturation : 100;
+            ctx.filter = `brightness(${br}%) contrast(${co}%) saturate(${sa}%)`;
+
+            const imgAspect = img.width / img.height;
+            const canvasAspect = dims.w / dims.h;
+            let drawW, drawH;
+
+            if (imgAspect > canvasAspect) {
+              drawH = dims.h;
+              drawW = dims.h * imgAspect;
+            } else {
+              drawW = dims.w;
+              drawH = dims.w / imgAspect;
+            }
+
+            drawW *= scale;
+            drawH *= scale;
+            const drawX = (dims.w - drawW) / 2 + panX;
+            const drawY = (dims.h - drawH) / 2 + panY;
+
+            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+            ctx.restore();
+          }
+
+          // 2. Draw Scrim Overlay
+          const scrimGrad = ctx.createLinearGradient(0, 0, 0, dims.h);
+          const scrimAlpha = (state.style.scrimOpacity !== undefined ? state.style.scrimOpacity : 80) / 100;
+          scrimGrad.addColorStop(0, `rgba(3,6,11,${scrimAlpha * 0.7})`);
+          scrimGrad.addColorStop(0.3, 'rgba(3,6,11,0.1)');
+          scrimGrad.addColorStop(0.65, `rgba(3,6,11,${scrimAlpha * 0.45})`);
+          scrimGrad.addColorStop(1, `rgba(3,6,11,${scrimAlpha * 0.95})`);
+          ctx.fillStyle = scrimGrad;
+          ctx.fillRect(0, 0, dims.w, dims.h);
+
+          // 3. Draw Overlays (Header, Footer, Floating Card)
+          if (overlayImg && overlayImg.width > 0) {
+            ctx.drawImage(overlayImg, 0, 0, dims.w, dims.h);
+          }
+
+          // Update Progress Modal
+          const progressPercent = Math.round((frame / totalFrames) * 100);
+          if (progressBar) progressBar.style.width = `${progressPercent}%`;
+          if (percentLabel) percentLabel.textContent = `${progressPercent}%`;
+          if (timerLabel) timerLabel.textContent = `${currentSec}s / ${durationSec.toFixed(1)}s`;
+
+          if (frame % 3 === 0) {
+            await new Promise(r => setTimeout(r, 8));
+          }
+        }
+
+        if (statusLabel) statusLabel.textContent = 'Finalizing video file...';
+        recorder.stop();
+        await recordingCompletePromise;
+
+        const blob = new Blob(recordedChunks, { type: mimeType });
+        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const dealerSlug = (state.dealer.name || 'dealership').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const vehSlug = `${state.vehicle.make}_${state.vehicle.model}`.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${dealerSlug}_${vehSlug}_motion_${state.ratio}.${ext}`;
+
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 5000);
+
+      } catch (err) {
+        console.error('Video Reel Export failed:', err);
+        alert('Could not export video reel. Using static PNG export instead.');
+      } finally {
+        banner.style.transform = originalTransform;
+        pod.style.width = originalPodW;
+        pod.style.height = originalPodH;
+        if (dragHandle) dragHandle.style.display = 'flex';
+        if (modal) modal.style.display = 'none';
+      }
+    }
+
+    // Populate inputs from state on startup
+    function populateInputsFromState() {
+      document.getElementById('in-dealer-name').value = state.dealer.name || '';
+      document.getElementById('in-dealer-loc').value = state.dealer.location || '';
+      document.getElementById('in-dealer-tagline').value = state.dealer.tagline || '';
+      document.getElementById('in-dealer-phone').value = state.dealer.phone || '';
+      document.getElementById('in-dealer-whatsapp').value = state.dealer.whatsapp || '';
+      document.getElementById('in-dealer-web').value = state.dealer.web || '';
+      document.getElementById('in-color-primary').value = state.dealer.primaryColor || '#0D9488';
+      document.getElementById('in-color-accent').value = state.dealer.accentColor || '#2DD4BF';
+      document.getElementById('in-pod-style').value = state.dealer.podStyle || 'pod-glass';
+      document.getElementById('in-logo-filter').value = state.dealer.logoFilter || 'none';
+      document.getElementById('in-logo-scale').value = state.dealer.logoScale || 100;
+      document.getElementById('in-trust-seal').value = state.dealer.trustSeal || '';
+
+      document.getElementById('in-veh-year').value = state.vehicle.year || '';
+      document.getElementById('in-veh-make').value = state.vehicle.make || '';
+      document.getElementById('in-veh-model').value = state.vehicle.model || '';
+      document.getElementById('in-veh-variant').value = state.vehicle.variant || '';
+      document.getElementById('in-veh-price').value = state.vehicle.price || '';
+      document.getElementById('in-veh-oldprice').value = state.vehicle.oldPrice || '';
+      document.getElementById('in-veh-install').value = state.vehicle.install || '';
+      document.getElementById('in-veh-mileage').value = state.vehicle.mileage || '';
+      document.getElementById('in-veh-trans').value = state.vehicle.trans || '';
+      document.getElementById('in-veh-fuel').value = state.vehicle.fuel || '';
+
+      if (state.vehicle.pills && state.vehicle.pills[0]) document.getElementById('in-pill-1').value = state.vehicle.pills[0];
+      if (state.vehicle.pills && state.vehicle.pills[1]) document.getElementById('in-pill-2').value = state.vehicle.pills[1];
+      if (state.vehicle.pills && state.vehicle.pills[2]) document.getElementById('in-pill-3').value = state.vehicle.pills[2];
+
+      document.getElementById('in-custom-head').value = state.vehicle.customHeadline || '';
+      document.getElementById('in-custom-sub').value = state.vehicle.customSubtext || '';
+
+      syncPositionSliders();
+
+      document.getElementById('in-font-title').value = state.style.titleFontSize || 46;
+      document.getElementById('in-scrim-opacity').value = state.style.scrimOpacity || 80;
+
+      const boxOpacity = (state.style.cardBoxOpacity !== undefined) ? state.style.cardBoxOpacity : 92;
+      const boxOpacityEl = document.getElementById('in-box-opacity');
+      if (boxOpacityEl) {
+        boxOpacityEl.value = boxOpacity;
+        document.getElementById('val-box-opacity').textContent = boxOpacity + '%';
+      }
+
+      const badgeBg = state.style.badgeBgColor || '#0D9488';
+      const badgeText = state.style.badgeTextColor || '#2DD4BF';
+
+      const tab2Bg = document.getElementById('in-badge-bg');
+      const tab2Text = document.getElementById('in-badge-text');
+      const tab4Bg = document.getElementById('in-badge-bg-tab4');
+      const tab4Text = document.getElementById('in-badge-text-tab4');
+
+      if (tab2Bg) tab2Bg.value = badgeBg;
+      if (tab2Text) tab2Text.value = badgeText;
+      if (tab4Bg) tab4Bg.value = badgeBg;
+      if (tab4Text) tab4Text.value = badgeText;
+
+      const inMotionZoom = document.getElementById('in-motion-zoom');
+      if (inMotionZoom) inMotionZoom.value = state.motion.zoomDepth || 110;
+      const valMotionZoom = document.getElementById('val-motion-zoom');
+      if (valMotionZoom) valMotionZoom.textContent = `${state.motion.zoomDepth || 110}%`;
+      const valMotionDur = document.getElementById('val-motion-dur');
+      if (valMotionDur) valMotionDur.textContent = `${state.motion.duration || 6} Seconds`;
+
+      updateBrandColors();
+      updateBadgeColors();
+      updateStyleOverrides();
+      updatePodStyle();
+      updateLogoFilter();
+      updateLogoScale();
+      renderBadgeTray();
+      applyMotionClasses();
+    }
+
+    // Auto fit and initialization
+    window.addEventListener('resize', fitToScreen);
+    window.addEventListener('load', () => {
+      populateInputsFromState();
+      renderState();
+      fitToScreen();
+    });
+
+    populateInputsFromState();
+    renderState();
+  </script>
+</body>
+</html>

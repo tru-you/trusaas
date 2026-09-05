@@ -1,49 +1,44 @@
-# TruFlow Light
+# TruFlow Mobile
 
-*A lightweight dealer console — leads, inventory and vehicle upload, on the same DMS.*
+*The dealer's phone companion — the full DMS in your pocket, on the same backend.*
 
 ## What it does
 
-TruFlow Light is a stripped-back console for a dealer who needs the day-to-day essentials without the full desktop: work leads, look at inventory, and add a vehicle. It's a single page served by TruFlow at **`flow.tru-saas.com/light`** that signs in to the **same [TruFlow](./truflow.md) backend**, so it's the same live data — not a separate system or a copy. It's the fast way onto the platform for a small yard or a staff member who only touches those three things.
+TruFlow Mobile is the installable phone app (PWA) that gives floor staff the day-to-day DMS on a phone: work leads, look at stock, add a vehicle, and manage follow-ups — all against the **same TruFlow backend** as the desktop, so nothing is a copy or a separate system. It runs at **`app.tru-saas.com`** and proxies API calls to TruFlow (`flow.tru-saas.com`).
+
+It replaced **TruFlow Light** (the old `/light` console) on **2026-08-14**: the `/light` route on TruFlow now 301-redirects to `app.tru-saas.com`, so old bookmarks migrate automatically. Light is retired — do not document it as current.
 
 ## Who uses it
 
-- **Sales rep** — works leads and adds vehicles from a simple screen.
-- **Small-yard owner / admin** — the essentials without the full desktop's depth.
+- **Sales rep / floor staff** — leads, stock, add-vehicle and follow-ups on the phone.
+- **Small-yard owner / admin** — entry-level dealers can run entirely on Mobile (leads, inventory, add-vehicle) without the full desktop.
+- **Full-DMS dealers** — use it as the field companion to the desktop.
 
 ## Core workflow
 
-1. **Sign in.** Open `flow.tru-saas.com/light` and enter the dealer code (the server address is pre-filled).
-2. **Dashboard.** Land on a quick overview.
-3. **Leads.** Search leads by name, phone or source, and update a lead's status as it moves.
-4. **Inventory.** Search stock by make, model or year.
-5. **Add a vehicle.** Upload a car with its details — year, make, model, variant, mileage, description, asking price and TruPrice benchmark.
+1. **Sign in.** Open `app.tru-saas.com`, enter the dealer code (or "Try demo (24h)").
+2. **Home.** KPI tiles (In stock / Live on site / Active leads / Unpublished), follow-ups due today, stale-lead "follow up" list. 30s polling + pull-to-refresh.
+3. **Leads.** Search, stage stepper (New → Contacted → Test Drive Scheduled → Negotiating → Closed Won/Lost), Call/WhatsApp/Email, walk-in quick add, journey timeline.
+4. **Stock.** Search, chips (All / In stock / Live / Draft / Sold), vehicle sheet with the "Live on website" toggle, price/km/blurb editing, market value, "Share this car".
+5. **Add a vehicle.** Year/make/model/variant, mileage, asking price + TruPrice, market-value button.
+6. **Follow-ups.** Create/edit/resolve tasks, grouped Overdue / Today / Upcoming / No date / Recently done.
+7. **Activity + Account.** Feed, dealer code, WhatsApp support, sign-out.
 
-Because it talks to the canonical TruFlow backend, anything done here shows up in the full [TruFlow](./truflow.md) desktop and feeds the website stock feed the same way.
+Market value (the free live scraper) and "Share this car" (deep links that unfurl on the dealer website) were added in v1.3.
 
 ## How it relates to TruFlow
 
-TruFlow Light is **not** the retired "TruFlow Lite" service (that was a separate codebase with its own data). Light is a thin client over the **one** real DMS: same logins, same stock, same leads. Think of it as a smaller door into TruFlow, not a different building.
+Mobile is a **thin client over the one real DMS**: same logins, same stock, same leads, same backend (`truflow-premium`). It has **no service or database of its own** — `truflow-mobile/` is a static PWA + a small proxy server that forwards `/api/*` and `/media/*` to `flow.tru-saas.com`.
 
-It has **no service or database of its own** — TruFlow (the `trusaas-premium` service) serves it as a static page at `flow.tru-saas.com/light`, and it signs into the Premium API with a dealer code. The maintained source of truth is `truflow-light/index.html` (one self-contained file); the deploy copy lives at `truflow-premium/public/light/`.
-
-## Screenshots
-
-[SCREENSHOT: TruFlow Light sign-in at flow.tru-saas.com/light — dealer code entry, cyan suite branding]
-
-[SCREENSHOT: The Leads view — search bar and a lead with its status control]
-
-[SCREENSHOT: The Inventory view — stock search by make/model/year]
-
-[SCREENSHOT: The Add-vehicle form — year/make/model/variant/mileage/price/TruPrice fields]
+It is **not** the retired "TruFlow Lite" service (separate codebase, own data), and it is **not** "TruFlow Light" (the old `/light` console — retired in its favour).
 
 ## Notes on scope
 
-- **What's built:** a single-file console with sign-in against the TruFlow backend, a dashboard, lead management (search + status update), inventory search, and vehicle upload — all against the live DMS. Served at `flow.tru-saas.com/light` and rebranded to the cyan suite identity (the old blue "LITE" mark is gone).
-- **Status:** a supported, shipping entry point — not a demo, and not pending deletion (`render.yaml` documents it as the console served from `public/light`).
+- **What's built:** a vanilla-JS PWA (no build step) with Home KPIs, full lead + stock management, add-vehicle with market value, follow-up tasks, share deep links, Dealer Assist chat, and demo mode. Desktop viewport (>1200px) shows a "use your phone" splash with a QR code.
+- **Not in Mobile:** finance & recon, DocHub documents, TruSocial, invoicing, Imagin8 gated lookups — those stay in the full desktop.
 
 ## Related modules
 
-- **[TruFlow](./truflow.md)** — the full dealer desktop and the backend Light runs on.
+- **[TruFlow](./truflow.md)** — the DMS backend Mobile runs on.
 - **[TruLens](./trulens.md)** — captures that feed the same inventory.
-- **[Getting Started](./getting-started.md)** — onboarding; Light is a lighter alternative to the full desktop for the right dealer.
+- **[Getting Started](./getting-started.md)** — onboarding; Mobile is the fast door for floor staff.

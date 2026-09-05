@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+doc-page:not(:defined){visibility:hidden}
+body{margin:0}
+a{color:#07889B;text-decoration:none}
+a:hover{color:#0A6A78}
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+
+<doc-page size="a4">
+<section class="page" data-screen-label="One-pager" style="background:#F5F1E8;color:#12202B;font-family:'Inter Tight',system-ui,sans-serif;padding:10mm 14mm 9mm;box-sizing:border-box;display:flex;flex-direction:column;gap:2.4mm">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8mm">
+    <div style="display:flex;align-items:center;gap:3mm">
+      <svg viewBox="0 0 200 200" style="width:9mm;height:9mm;flex:none" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="#12202B"></path>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="#07889B"></path>
+      </svg>
+      <span style="font-size:17pt;font-weight:700;letter-spacing:-.035em;line-height:1"><span style="color:#12202B">Tru</span><span style="color:#07889B">Dealer</span></span>
+    </div>
+    <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:6.4pt;letter-spacing:.2em;text-transform:uppercase;color:#8A8172;line-height:1.7;white-space:nowrap">
+      <div>Built by dealers, for dealers</div>
+      <div>Cape Town · United Kingdom</div>
+    </div>
+  </div>
+
+  <div style="height:1px;background:rgba(18,32,43,.14)"></div>
+
+  <div style="display:flex;flex-direction:column;gap:2.4mm">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:7pt;letter-spacing:.24em;text-transform:uppercase;color:#07889B">The operating system for the independent dealer</div>
+    <h1 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 144,'SOFT' 30;font-size:25pt;line-height:1.02;letter-spacing:-.03em;color:#12202B;max-width:170mm;text-wrap:balance">Everything the floor does, in <em style="font-style:italic;color:#07889B;font-variation-settings:'opsz' 144,'SOFT' 100,'WONK' 1">one system.</em></h1>
+    <p style="margin:0;font-size:9.6pt;line-height:1.5;color:#3A4553;max-width:152mm;text-wrap:pretty">Capture the car, prove its condition, price the trade-in, run the deal and sell it on your own site — and let an assistant answer the leads that arrive after you've locked up. Inspections are included in every tier.</p>
+  </div>
+
+  <sc-if value="{{ showPhoneBand }}" hint-placeholder-val="{{ true }}">
+  <div style="position:relative;height:27mm;flex:none;border-radius:3mm;background:#0E1B26;overflow:hidden">
+    <div style="position:absolute;left:6mm;right:6mm;top:4.4mm;display:flex;justify-content:space-between;gap:6mm;font-family:'JetBrains Mono',monospace;font-size:6.6pt;letter-spacing:.2em;text-transform:uppercase;z-index:2;white-space:nowrap">
+      <span style="color:#5EEAD4">On the floor, on a phone</span>
+      <span style="color:#6D7A88">Capture flow · Damage tagging · Trade-in</span>
+    </div>
+    <div style="position:absolute;left:8mm;right:8mm;top:10.5mm;display:grid;grid-template-columns:repeat(3,1fr);gap:6mm">
+      <div style="height:20mm;overflow:hidden;border-radius:2mm;border:0.6pt solid rgba(255,255,255,.14)"><img src="shots/p3.png" alt="Guided capture — front right wing" style="width:100%;height:auto;display:block;margin-top:-5mm"></div>
+      <div style="height:20mm;overflow:hidden;border-radius:2mm;border:0.6pt solid rgba(255,255,255,.14)"><img src="shots/p4.png" alt="Damage tagging with AI" style="width:100%;height:auto;display:block;margin-top:-5mm"></div>
+      <div style="height:20mm;overflow:hidden;border-radius:2mm;border:0.6pt solid rgba(255,255,255,.14)"><img src="shots/p8.png" alt="Market valuation and trade-in" style="width:100%;height:auto;display:block;margin-top:-5mm"></div>
+    </div>
+  </div>
+  </sc-if>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3.4mm">
+    <div style="display:flex;flex-direction:column;gap:1.2mm;padding:2.8mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#B07A26">Capture</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:13pt;letter-spacing:-.025em;color:#12202B">TruLens</h3>
+      <p style="margin:0;font-size:8.2pt;line-height:1.42;color:#3A4553">Guided photos on any phone, auto-cropped and branded — plus a 360° orbit the buyer spins with a thumb.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.2mm;padding:2.8mm;border:1px solid rgba(7,136,155,.4);border-radius:2.4mm;background:rgba(7,136,155,.06)">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#07889B;line-height:1.1;min-height:1.1em;white-space:nowrap">Condition · Trade-in</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:13pt;letter-spacing:-.025em;color:#12202B">TruInspect</h3>
+      <p style="margin:0;font-size:8.2pt;line-height:1.42;color:#3A4553">35 checkpoints, damage photographed and pinned, service book captured. The trade-in tool lives here too.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.2mm;padding:2.8mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#B07A26">Valuation</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:13pt;letter-spacing:-.025em;color:#12202B">TruValue</h3>
+      <p style="margin:0;font-size:8.2pt;line-height:1.42;color:#3A4553">Market retail against your condition-adjusted offer, with the gap explained. Signed on the spot.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.2mm;padding:2.8mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#B07A26">DMS</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:13pt;letter-spacing:-.025em;color:#12202B">TruFlow</h3>
+      <p style="margin:0;font-size:8.2pt;line-height:1.42;color:#3A4553">Stock, leads, deal jackets and the money in one place — with aging units flagged before they cost you.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.2mm;padding:2.8mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#B07A26">Website</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:13pt;letter-spacing:-.025em;color:#12202B">TruShowroom</h3>
+      <p style="margin:0;font-size:8.2pt;line-height:1.42;color:#3A4553">Your branded store: condition score on every card, finance from the listing, WhatsApp one tap away.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.2mm;padding:2.8mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#B07A26">AI</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:13pt;letter-spacing:-.025em;color:#12202B">TruChat</h3>
+      <p style="margin:0;font-size:8.2pt;line-height:1.42;color:#3A4553">Answers at 2am on WhatsApp and web, qualifies the lead, books the drive and hands over the hot ones.</p>
+    </div>
+  </div>
+
+  <sc-if value="{{ showNewModules }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:2.4mm;padding:3.2mm 3.4mm 3.6mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:rgba(18,32,43,.035)">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6mm;font-family:'JetBrains Mono',monospace;font-size:6.4pt;letter-spacing:.2em;text-transform:uppercase">
+      <span style="color:#07889B;white-space:nowrap">Also on the stack</span>
+      <span style="color:#8A8172;white-space:nowrap">Included from TruPro up</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3.4mm">
+      <div style="display:flex;flex-direction:column;gap:1.2mm">
+        <div style="display:flex;align-items:baseline;gap:2mm">
+          <h4 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:11.5pt;letter-spacing:-.02em;color:#12202B">TruTrade</h4>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:5.6pt;letter-spacing:.14em;text-transform:uppercase;color:#07889B">Pro +</span>
+        </div>
+        <p style="margin:0;font-size:7.8pt;line-height:1.38;color:#3A4553">TruLive inverted — the customer walks their own car on camera and gets a trade-in value over the phone.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1.2mm">
+        <div style="display:flex;align-items:baseline;gap:2mm">
+          <h4 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:11.5pt;letter-spacing:-.02em;color:#12202B">TruForms</h4>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:5.6pt;letter-spacing:.14em;text-transform:uppercase;color:#07889B">Pro +</span>
+        </div>
+        <p style="margin:0;font-size:7.8pt;line-height:1.38;color:#3A4553">Every enquiry fires straight to WhatsApp and into the DMS. No inbox to watch, no lead left sitting.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1.2mm">
+        <div style="display:flex;align-items:baseline;gap:2mm">
+          <h4 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:11.5pt;letter-spacing:-.02em;color:#12202B">TruRepay</h4>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:5.6pt;letter-spacing:.14em;text-transform:uppercase;color:#07889B">Pro +</span>
+        </div>
+        <p style="margin:0;font-size:7.8pt;line-height:1.38;color:#3A4553">The finance calculator built into the listing. Buyers work out the instalment; you get the qualified lead.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1.2mm">
+        <div style="display:flex;align-items:baseline;gap:2mm">
+          <h4 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:11.5pt;letter-spacing:-.02em;color:#12202B">TruVoice</h4>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:5.6pt;letter-spacing:.14em;text-transform:uppercase;color:#B07A26">Top tier</span>
+        </div>
+        <p style="margin:0;font-size:7.8pt;line-height:1.38;color:#3A4553">The after-hours voice agent. It answers the dealership phone at 9pm, qualifies the caller and books the drive.</p>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6mm;font-family:'JetBrains Mono',monospace;font-size:6.6pt;letter-spacing:.2em;text-transform:uppercase">
+    <span style="color:#07889B;white-space:nowrap">Setup once · Pay monthly · Cancel anytime</span>
+    <span style="color:#8A8172;white-space:nowrap">ZAR shown · USD &amp; GBP on request</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1.05fr 1fr .88fr;gap:2.8mm;align-items:stretch">
+    <div style="display:flex;flex-direction:column;gap:1.3mm;padding:3mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#8A8172;line-height:1.1;min-height:1.1em;white-space:nowrap">Entry</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:14pt;letter-spacing:-.028em;color:#12202B">TruStart</h3>
+      <div style="display:flex;align-items:baseline;gap:1.4mm">
+        <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:11pt;color:#B07A26">R</span>
+        <span style="font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 144,'SOFT' 30;font-size:24pt;letter-spacing:-.04em;color:#12202B;line-height:1">2,499</span>
+        <span style="font-size:8pt;color:#8A8172">/mo</span>
+      </div>
+      <p style="margin:0;font-size:7.6pt;line-height:1.4;color:#3A4553">Setup <b style="color:#07889B">R 0</b> · zero friction to get live</p>
+      <p style="margin:0;font-size:7.8pt;line-height:1.42;color:#3A4553">Inspections, capture, AI chat and your website from day one. Single rooftop, no unit cap.</p>
+    </div>
+
+    <div style="position:relative;display:flex;flex-direction:column;gap:1.3mm;padding:3mm;border:1.2pt solid #07889B;border-radius:2.4mm;background:rgba(7,136,155,.07)">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#07889B;line-height:1.1;min-height:1.1em;white-space:nowrap">Most dealers</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:14pt;letter-spacing:-.028em;color:#12202B">TruPro</h3>
+      <div style="display:flex;align-items:baseline;gap:1.4mm">
+        <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:11pt;color:#B07A26">R</span>
+        <span style="font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 144,'SOFT' 30;font-size:24pt;letter-spacing:-.04em;color:#12202B;line-height:1">4,999</span>
+        <span style="font-size:8pt;color:#8A8172">/mo</span>
+      </div>
+      <p style="margin:0;font-size:7.6pt;line-height:1.4;color:#3A4553">Setup <s style="color:#8A8172">R 15,000</s> · <b style="color:#07889B">R 7,500</b> within 48h of demo</p>
+      <p style="margin:0;font-size:7.8pt;line-height:1.42;color:#3A4553">Full DMS with F&amp;I, unlimited inspection templates, TruValue and video handover — plus TruTrade, TruForms and TruRepay. 20–80 units a month.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:1.3mm;padding:3mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#8A8172;line-height:1.1;min-height:1.1em;white-space:nowrap">Scale</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:14pt;letter-spacing:-.028em;color:#12202B">TruEnterprise</h3>
+      <div style="display:flex;align-items:baseline;gap:1.4mm">
+        <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:11pt;color:#B07A26">R</span>
+        <span style="font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 144,'SOFT' 30;font-size:24pt;letter-spacing:-.04em;color:#12202B;line-height:1">12,000</span>
+        <span style="font-size:8pt;color:#8A8172">/mo+</span>
+      </div>
+      <p style="margin:0;font-size:7.6pt;line-height:1.4;color:#3A4553">Setup from <b style="color:#07889B">R 30,000</b> · quoted after call</p>
+      <p style="margin:0;font-size:7.8pt;line-height:1.42;color:#3A4553">Groups, franchise used departments and BHPH: white-label, multi-branch, API, SLA — and TruVoice after hours.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:1.3mm;padding:3mm;border:1px solid rgba(18,32,43,.12);border-radius:2.4mm;background:#FBF8F1">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.2em;text-transform:uppercase;color:#8A8172;line-height:1.1;min-height:1.1em;white-space:nowrap">À la carte</span>
+      <h3 style="margin:0;font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 72,'SOFT' 30;font-size:14pt;letter-spacing:-.028em;color:#12202B">Standalones</h3>
+      <div style="display:flex;align-items:baseline;gap:1.4mm">
+        <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:11pt;color:#B07A26">R</span>
+        <span style="font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 144,'SOFT' 30;font-size:24pt;letter-spacing:-.04em;color:#12202B;line-height:1">399</span>
+        <span style="font-size:8pt;color:#8A8172">/mo</span>
+      </div>
+      <p style="margin:0;font-size:7.6pt;line-height:1.4;color:#3A4553">Setup <b style="color:#07889B">R 2,000</b> once-off, per module</p>
+      <p style="margin:0;font-size:7.8pt;line-height:1.42;color:#3A4553">Already have a site? Bolt on one module — TruChat, TruForms, TruLens or TruRepay. No migration.</p>
+    </div>
+  </div>
+
+  <div style="font-family:'JetBrains Mono',monospace;font-size:6.2pt;letter-spacing:.16em;text-transform:uppercase;color:#8A8172;line-height:1.6">TruInspect is included in every tier · TruTrade, TruForms, TruRepay, TruConcierge and TruAfford from TruPro · TruVoice on TruEnterprise · Standalones are priced per module · Setup covers branding, domain, stock import and team training</div>
+
+  <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:8mm;padding:4mm 6mm;border-radius:3mm;background:#0E1B26">
+    <div style="display:flex;flex-direction:column;gap:2.6mm">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:6.4pt;letter-spacing:.2em;text-transform:uppercase;color:#5EEAD4;white-space:nowrap">Sign within 48 hours of your demo and setup drops by roughly half</span>
+      <span style="font-family:'Fraunces',Georgia,serif;font-weight:400;font-variation-settings:'opsz' 144,'SOFT' 30;font-size:15pt;letter-spacing:-.03em;color:#F5F1E8;line-height:1.05">Twenty-five minutes, on your own stock.</span>
+    </div>
+    <div style="text-align:right;display:flex;flex-direction:column;gap:1mm">
+      <a href="https://wa.me/27620502091" style="font-size:12pt;font-weight:600;letter-spacing:-.02em;color:#FFFFFF;white-space:nowrap">+27 62 050 2091</a>
+      <a href="https://wa.me/447476995694" style="font-size:12pt;font-weight:600;letter-spacing:-.02em;color:#FFFFFF;white-space:nowrap">+44 7476 995694</a>
+      <a href="mailto:trudealer@trusaas.com" style="font-size:8.4pt;color:#8FA0AE">trudealer@trusaas.com</a>
+    </div>
+  </div>
+
+</section>
+</doc-page>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showPhoneBand&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;},&quot;showNewModules&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showPhoneBand: this.props.showPhoneBand ?? true,
+      showNewModules: this.props.showNewModules ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

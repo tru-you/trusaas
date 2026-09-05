@@ -1,0 +1,29 @@
+# True Cars (True-Cars SA)
+
+> Premium pre-owned and new vehicle dealership based in Port Elizabeth (Gqeberha), Eastern Cape, South Africa. Powered by the TruDealer platform stack (TruFlow DMS, TruInspect, TruRepay, TruAfford, TruValue, and TruShare).
+
+## Overview
+True Cars is an independent automotive dealership offering rigorously inspected pre-owned and new vehicles in South Africa. Every vehicle on the showroom floor undergoes a comprehensive 114-point mechanical, electrical, and structural inspection (TruInspect) with an authenticated condition score (VIR).
+
+- **Website**: https://www.true-cars.co.za
+- **Physical Address**: Port Elizabeth (Gqeberha), Eastern Cape, South Africa
+- **WhatsApp / Direct Line**: +27 62 050 2091
+- **Live Inventory Feed**: https://premium.tru-saas.com/api/public/stock?dealer=true-cars
+- **Stock Range**: R150,000 to R1,200,000+ across SUVs, bakkies (pickups), hatchbacks, sedans, and performance vehicles.
+
+## Key Services & Technology
+- **Live Inventory & Pricing**: Real-time stock catalogue with high-definition multi-angle imagery, complete technical specifications, TransUnion data verification, and mileage verification.
+- **TruInspect Condition Reports (VIR)**: Transparent vehicle inspection ratings (0-100 score) auditing mechanical integrity, structural condition, electrical diagnostics, and tyre/brake health.
+- **Interactive Finance Calculator (TruRepay)**: Bank-grade instalment simulations with real-time deposit, loan term (24-72 months), interest rate, and balloon payment configurations.
+- **Affordability Screener (TruAfford)**: Instant income-to-instalment qualification conforming to NCA guidelines.
+- **Trade-in Equity Valuation (TruValue)**: Live algorithmic valuation against prevailing South African retail and trade market indices (AutoTrader, Cars.co.za).
+- **48-Hour Priority Reservation**: Guaranteed vehicle reservation with a 100% refundable holding deposit.
+
+## Primary Pages & Endpoints
+- Showroom / Featured Inventory: https://www.true-cars.co.za/
+- Full Stock Catalogue: https://www.true-cars.co.za/stock.html
+- Vehicle Detail Pages: https://www.true-cars.co.za/vehicle/?stock={stockNumber}
+- Vehicle Inspection Reports: https://www.true-cars.co.za/vir-report.html?stock={stockNumber}
+- Finance & Affordability Portal: https://www.true-cars.co.za/finance.html
+- Trade-in Appraisal Portal: https://www.true-cars.co.za/trade-in.html
+- Technology & Platform Architecture: https://www.true-cars.co.za/platform.html

@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TruDealer — Product Brochure</title>
+<meta name="description" content="TruDealer product brochure. The operating system for the modern independent dealer. Modules, packages and pricing."/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   TRUDEALER BROCHURE
+   Geometry: mm · Type: pt · Spacing scale: 4pt base
+   ═══════════════════════════════════════════════ */
+@page{size:A4 portrait;margin:0;}
+
+:root{
+  /* Paper */
+  --paper:#F5F1E8;
+  --paper-2:#EBE5D8;
+  --paper-3:#E1DACB;
+  /* Ink (dark panels use brand near-black) */
+  --night:#080C14;
+  --night-2:#0F1621;
+  --ink:#121A26;
+  --ink-2:#3A4553;
+  --muted:#6E6656;
+  --faint:#A79D8C;
+  --line:rgba(18,26,38,.14);
+  --line-soft:rgba(18,26,38,.07);
+  /* Brand */
+  --cyan:#07889B;          /* print-safe cyan */
+  --cyan-lit:#00E0F5;      /* screen cyan for dark panels */
+  --amber:#B07A26;
+  /* Type */
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  /* Spacing scale — 4pt base */
+  --s1:4pt; --s2:8pt; --s3:12pt; --s4:16pt; --s5:24pt; --s6:32pt; --s7:44pt;
+  /* Page geometry */
+  --pad-x:17mm; --pad-t:16mm; --pad-b:20mm;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--paper-3);}
+body{
+  background:var(--paper-3);color:var(--ink);
+  font-family:var(--sans);font-size:9.5pt;line-height:1.48;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-feature-settings:"kern","liga","ss01";
+}
+a{color:inherit;text-decoration:none;}
+img{display:block;max-width:100%;}
+
+/* Display type */
+h1,h2,h3,h4{font-family:var(--display);font-weight:400;color:var(--ink);letter-spacing:-.03em;}
+h1{font-variation-settings:"opsz" 144,"SOFT" 30;line-height:1;}
+h2{font-variation-settings:"opsz" 144,"SOFT" 30;line-height:1.06;}
+h3{font-variation-settings:"opsz" 72,"SOFT" 30;line-height:1.14;}
+h4{font-variation-settings:"opsz" 48,"SOFT" 30;line-height:1.18;}
+em{
+  font-family:var(--display);font-style:italic;color:var(--cyan);
+  font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;
+}
+
+/* ─── PAGE SHELL ─────────────────────────────── */
+.doc{width:210mm;margin:0 auto;}
+.page{
+  position:relative;width:210mm;min-height:297mm;
+  padding:var(--pad-t) var(--pad-x) var(--pad-b);
+  background:var(--paper);overflow:hidden;
+  break-after:page;page-break-after:always;
+}
+.page:last-child{break-after:auto;page-break-after:auto;}
+/* Warm tint wash — very subtle, keeps cream from looking flat */
+.page::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(70% 45% at 12% 8%,rgba(176,122,38,.045),transparent 60%),
+    radial-gradient(60% 40% at 92% 94%,rgba(7,136,155,.04),transparent 60%);
+}
+.page > *{position:relative;z-index:1;}
+
+/* ─── RUNNING HEAD / FOOT ────────────────────── */
+.rh{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:var(--s2);margin-bottom:var(--s5);
+  border-bottom:1px solid var(--line);
+}
+.rh-mark{display:flex;align-items:center;gap:6pt;}
+.rh-mark svg{width:13pt;height:13pt;flex:none;}
+.rh-mark .wm{font-family:var(--sans);font-size:11pt;font-weight:700;letter-spacing:-.03em;line-height:1;}
+.rh-mark .wm .t{color:var(--ink);}
+.rh-mark .wm .d{color:var(--cyan);}
+.rh-sec{font-family:var(--mono);font-size:6.8pt;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+
+.rf{
+  position:absolute;left:var(--pad-x);right:var(--pad-x);bottom:11mm;
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding-top:var(--s2);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:6.5pt;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);
+}
+.rf .n{color:var(--ink);font-weight:500;}
+
+/* ─── SHARED ATOMS ───────────────────────────── */
+.eyebrow{
+  font-family:var(--mono);font-size:7pt;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--cyan);font-weight:500;
+}
+.eyebrow.amber{color:var(--amber);}
+.eyebrow.dim{color:var(--muted);}
+
+.lead{margin-bottom:var(--s5);}
+.lead .eyebrow{margin-bottom:var(--s2);}
+.lead h2{font-size:23pt;margin-bottom:var(--s2);text-wrap:balance;max-width:158mm;}
+.lead h2 em{font-size:23pt;}
+.lead p{font-size:9.8pt;line-height:1.5;color:var(--ink-2);max-width:150mm;text-wrap:pretty;}
+
+.hr{height:1px;background:var(--line);margin:var(--s5) 0;}
+.hr-bold{height:1.6pt;background:var(--ink);width:44pt;margin:var(--s3) 0;}
+.fine{font-size:7.6pt;line-height:1.45;color:var(--muted);}
+
+/* ─── P1 · COVER ─────────────────────────────── */
+.cover{
+  background:
+    radial-gradient(76% 52% at 26% 20%,#132132 0%,transparent 62%),
+    radial-gradient(60% 46% at 84% 88%,rgba(7,136,155,.20) 0%,transparent 62%),
+    linear-gradient(178deg,var(--night-2) 0%,var(--night) 100%);
+  color:var(--paper);
+  padding:20mm 17mm 16mm;
+  display:flex;flex-direction:column;
+}
+.cover::after{display:none;}
+/* faint engineering grid */
+.cover-grid{
+  position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:14mm 14mm;
+  -webkit-mask-image:radial-gradient(72% 55% at 30% 30%,#000,transparent 78%);
+  mask-image:radial-gradient(72% 55% at 30% 30%,#000,transparent 78%);
+}
+.cover > *{position:relative;z-index:1;}
+
+.cover-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.cover-chip{
+  font-family:var(--mono);font-size:6.8pt;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(245,241,232,.62);padding:5pt 11pt;
+  border:1px solid rgba(245,241,232,.20);border-radius:100pt;
+}
+.cover-icon{width:15mm;height:15mm;}
+
+/* Real logo lockup */
+.cover-logo{margin:auto 0 0;}
+.cover-logo img{width:118mm;height:auto;margin-left:-3mm;}
+
+.cover-title{margin-top:var(--s5);}
+.cover-title h1{
+  font-size:41pt;line-height:1.02;letter-spacing:-.038em;color:var(--paper);
+  max-width:160mm;
+}
+.cover-title h1 em{font-size:41pt;color:var(--cyan-lit);}
+.cover-sub{
+  font-size:11.4pt;line-height:1.42;color:rgba(245,241,232,.70);
+  max-width:132mm;margin-top:var(--s3);
+}
+.cover-sub em{font-size:11.4pt;color:var(--cyan-lit);}
+
+.cover-stats{
+  margin-top:var(--s6);padding-top:var(--s3);
+  border-top:1.6pt solid rgba(245,241,232,.85);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:5mm;
+}
+.cover-stats .k{
+  font-family:var(--mono);font-size:6.4pt;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(245,241,232,.52);margin-bottom:3pt;
+}
+.cover-stats .v{
+  font-family:var(--display);font-size:19pt;font-weight:400;color:var(--paper);
+  letter-spacing:-.035em;line-height:1;font-variation-settings:"opsz" 144,"SOFT" 30;
+}
+.cover-stats .v i{
+  font-style:italic;color:var(--cyan-lit);font-size:19pt;
+  font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;
+}
+
+.cover-foot{
+  margin-top:var(--s5);padding-top:var(--s3);
+  border-top:1px solid rgba(245,241,232,.16);
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-family:var(--mono);font-size:6.8pt;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(245,241,232,.55);
+}
+.cover-foot .lit{color:var(--cyan-lit);}
+
+/* ─── MODULE GRID ────────────────────────────── */
+.layer{margin-bottom:var(--s4);}
+.layer-bar{display:flex;align-items:center;gap:8pt;margin-bottom:var(--s3);}
+.layer-bar .n{
+  font-family:var(--mono);font-size:6.6pt;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--amber);white-space:nowrap;
+}
+.layer-bar .t{
+  font-family:var(--display);font-size:11.5pt;font-weight:400;
+  letter-spacing:-.02em;color:var(--ink);white-space:nowrap;
+  font-variation-settings:"opsz" 48,"SOFT" 30;
+}
+.layer-bar .ln{flex:1;height:1px;background:var(--line);}
+
+.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;}
+.mods.duo{grid-template-columns:repeat(2,1fr);}
+.mod{
+  padding:9pt 10pt 10pt;border:1px solid var(--line);border-radius:4pt;
+  background:rgba(255,255,255,.42);break-inside:avoid;
+  display:flex;flex-direction:column;
+}
+.mod .tag{
+  font-family:var(--mono);font-size:6.2pt;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:3pt;
+}
+.mod h3{font-size:12.5pt;margin-bottom:4pt;}
+.mod p{font-size:8.4pt;line-height:1.42;color:var(--ink-2);margin-bottom:7pt;}
+.mod p em{font-size:8.4pt;}
+.mod .pills{display:flex;flex-wrap:wrap;gap:3pt;margin-top:auto;}
+.mod .pills span{
+  font-family:var(--mono);font-size:5.8pt;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:2pt 5pt;border:1px solid var(--line);border-radius:100pt;
+}
+.mod.key{background:rgba(7,136,155,.07);border-color:rgba(7,136,155,.42);}
+.mod.key .tag{color:var(--cyan);}
+
+/* ─── STEPS ──────────────────────────────────── */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;}
+.step{
+  padding:11pt 11pt 10pt;border:1px solid var(--line);border-radius:4pt;
+  background:var(--paper-2);break-inside:avoid;
+}
+.step .n{
+  font-family:var(--mono);font-size:6.6pt;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--cyan);margin-bottom:6pt;
+}
+.step h4{font-size:11.5pt;margin-bottom:4pt;}
+.step p{font-size:8.4pt;line-height:1.42;color:var(--ink-2);}
+.step .when{
+  margin-top:7pt;padding-top:6pt;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:6.2pt;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);
+}
+
+/* ─── PACKAGES ───────────────────────────────── */
+.pkgs{display:grid;grid-template-columns:1fr 1.04fr 1fr;gap:4mm;align-items:start;}
+.pkg{
+  padding:11pt 11pt 12pt;border:1px solid var(--line);border-radius:5pt;
+  background:rgba(255,255,255,.5);break-inside:avoid;position:relative;
+}
+.pkg.hero{
+  background:linear-gradient(178deg,var(--paper-2),rgba(7,136,155,.07));
+  border:1.4pt solid var(--cyan);padding-top:14pt;
+}
+.pkg.hero::before{
+  content:'Most popular';position:absolute;top:-6pt;left:50%;transform:translateX(-50%);
+  padding:2.6pt 9pt;background:var(--cyan);color:var(--paper);border-radius:100pt;
+  font-family:var(--mono);font-size:6pt;letter-spacing:.16em;text-transform:uppercase;font-weight:600;
+  white-space:nowrap;
+}
+.pkg .tier{
+  font-family:var(--mono);font-size:6.2pt;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:3pt;
+}
+.pkg .nm{
+  font-family:var(--display);font-size:17pt;font-weight:400;letter-spacing:-.03em;
+  color:var(--ink);line-height:1;margin-bottom:5pt;
+  font-variation-settings:"opsz" 72,"SOFT" 30;
+}
+.pkg .desc{font-size:8pt;line-height:1.38;color:var(--ink-2);margin-bottom:9pt;min-height:32pt;}
+.pkg .money{
+  padding:8pt 0;margin-bottom:9pt;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.pkg .money .lbl{
+  font-family:var(--mono);font-size:6pt;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);
+}
+.pkg .money .setup{font-size:7.8pt;color:var(--ink-2);margin:3pt 0 6pt;line-height:1.35;}
+.pkg .money .setup b{color:var(--cyan);font-weight:600;}
+.pkg .money .amt{display:flex;align-items:baseline;gap:2pt;margin-top:2pt;}
+.pkg .money .amt .sym{
+  font-family:var(--display);font-size:11pt;font-style:italic;color:var(--amber);
+  font-variation-settings:"opsz" 72,"SOFT" 100;
+}
+.pkg .money .amt .num{
+  font-family:var(--display);font-size:27pt;font-weight:400;letter-spacing:-.038em;
+  color:var(--ink);line-height:1;font-variation-settings:"opsz" 144,"SOFT" 30;
+}
+.pkg .money .amt .per{font-size:7.6pt;color:var(--muted);margin-left:2pt;}
+.pkg ul{list-style:none;display:grid;gap:4pt;}
+.pkg li{font-size:8pt;line-height:1.32;color:var(--ink-2);padding-left:9pt;position:relative;}
+.pkg li::before{
+  content:'';position:absolute;left:0;top:4.2pt;
+  width:3.4pt;height:3.4pt;border-radius:50%;background:var(--cyan);
+}
+.pkg li.off{color:var(--faint);}
+.pkg li.off::before{background:var(--faint);}
+.pkg .terms{
+  margin-top:8pt;padding-top:6pt;border-top:1px solid var(--line-soft);
+  font-family:var(--mono);font-size:6pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--cyan);
+}
+
+/* ─── STANDALONES ────────────────────────────── */
+.stands{display:grid;grid-template-columns:1fr 1fr;gap:4mm;}
+.stand{
+  padding:11pt;border:1px solid var(--line);border-radius:4pt;
+  background:rgba(255,255,255,.42);break-inside:avoid;
+}
+.stand .tag{
+  font-family:var(--mono);font-size:6.2pt;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--amber);margin-bottom:3pt;
+}
+.stand h4{font-size:12.5pt;margin-bottom:4pt;}
+.stand p{font-size:8.2pt;line-height:1.42;color:var(--ink-2);margin-bottom:8pt;}
+.stand p em{font-size:8.2pt;}
+.stand .row{display:flex;align-items:baseline;gap:3pt;padding-top:7pt;border-top:1px solid var(--line-soft);}
+.stand .row .sym{font-family:var(--display);font-size:9.5pt;font-style:italic;color:var(--amber);}
+.stand .row .num{
+  font-family:var(--display);font-size:19pt;font-weight:400;letter-spacing:-.035em;
+  color:var(--ink);line-height:1;font-variation-settings:"opsz" 72,"SOFT" 30;
+}
+.stand .row .per{font-size:7.6pt;color:var(--muted);}
+.stand .row .plus{color:var(--faint);margin:0 3pt;font-size:8pt;}
+.stand .row small{font-size:7.6pt;color:var(--ink-2);}
+
+/* ─── TABLES ─────────────────────────────────── */
+table{width:100%;border-collapse:collapse;}
+.fx{font-size:8.4pt;}
+.fx th,.fx td{padding:5pt 7pt;text-align:left;border-bottom:1px solid var(--line);}
+.fx thead th{
+  font-family:var(--mono);font-size:6.4pt;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);font-weight:500;
+  border-bottom:1.4pt solid var(--ink);
+}
+.fx td:first-child{
+  font-family:var(--mono);font-size:7.2pt;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap;
+}
+.fx .amt{
+  font-family:var(--display);font-size:10pt;font-weight:400;color:var(--ink);
+  font-variation-settings:"opsz" 72,"SOFT" 30;
+}
+.fx .amt .s{color:var(--amber);font-style:italic;}
+
+.cmp{font-size:7.8pt;}
+.cmp th,.cmp td{padding:4.4pt 7pt;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;}
+.cmp thead th{
+  font-family:var(--mono);font-size:6.4pt;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);font-weight:500;
+  border-bottom:1.4pt solid var(--ink);
+}
+.cmp td:first-child{color:var(--ink);font-weight:500;width:37%;}
+.cmp td.y{color:var(--cyan);font-weight:500;}
+.cmp td.n{color:var(--faint);}
+.cmp tbody tr:nth-child(even) td{background:rgba(18,26,38,.022);}
+
+/* ─── FOUNDER ────────────────────────────────── */
+.founder{display:grid;grid-template-columns:4.6fr 7.4fr;gap:9mm;align-items:start;}
+.f-side{padding-top:2pt;}
+.f-mark{
+  width:26mm;height:26mm;border:1.2pt solid var(--ink);border-radius:50%;
+  display:grid;place-items:center;position:relative;margin-bottom:var(--s4);
+}
+.f-mark::before{content:'';position:absolute;inset:4pt;border:1px solid var(--line);border-radius:50%;}
+.f-mark svg{width:13mm;height:13mm;}
+.f-meta{font-family:var(--mono);font-size:6.8pt;letter-spacing:.16em;text-transform:uppercase;}
+.f-meta .r{display:flex;justify-content:space-between;gap:8pt;padding:5.5pt 0;border-top:1px solid var(--line);}
+.f-meta .r:last-child{border-bottom:1px solid var(--line);}
+.f-meta .r .k{color:var(--muted);}
+.f-meta .r .v{color:var(--ink);letter-spacing:.08em;}
+
+.f-body{position:relative;padding-top:14pt;}
+.f-body::before{
+  content:'\201C';position:absolute;top:-22pt;left:-5pt;
+  font-family:var(--display);font-size:96pt;line-height:1;font-style:italic;font-weight:400;
+  color:var(--cyan);opacity:.14;pointer-events:none;user-select:none;
+  font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;
+}
+.f-eyebrow{
+  font-family:var(--mono);font-size:6.8pt;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:var(--s3);display:flex;align-items:center;gap:8pt;
+}
+.f-eyebrow::before{content:'';width:20pt;height:1px;background:var(--amber);}
+.f-quote{
+  font-family:var(--display);font-size:14.5pt;line-height:1.3;letter-spacing:-.024em;
+  font-weight:400;color:var(--ink);margin-bottom:var(--s4);text-wrap:balance;
+  font-variation-settings:"opsz" 144,"SOFT" 30;
+}
+.f-quote em{font-size:14.5pt;}
+.f-attr{
+  display:flex;align-items:baseline;gap:9pt;
+  padding-top:9pt;border-top:1px solid var(--line);margin-bottom:var(--s3);
+}
+.f-attr .nm{font-family:var(--display);font-size:11.5pt;font-weight:500;letter-spacing:-.02em;}
+.f-attr .rl{font-family:var(--mono);font-size:6.8pt;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.f-note{font-size:8.8pt;line-height:1.55;color:var(--ink-2);max-width:118mm;}
+.f-note em{font-size:8.8pt;color:var(--ink);font-family:var(--display);}
+
+.proof{display:grid;grid-template-columns:repeat(4,1fr);gap:5mm;padding-top:var(--s3);}
+.proof .k{
+  font-family:var(--mono);font-size:6.2pt;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:3pt;
+}
+.proof .v{
+  font-family:var(--display);font-size:22pt;font-weight:400;letter-spacing:-.038em;
+  color:var(--ink);line-height:1;font-variation-settings:"opsz" 144,"SOFT" 30;
+}
+.proof .v i{font-style:italic;color:var(--amber);font-size:22pt;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;}
+
+/* ─── P6 · BACK COVER ────────────────────────── */
+.back{
+  background:
+    radial-gradient(70% 48% at 22% 18%,#132132 0%,transparent 62%),
+    radial-gradient(58% 44% at 86% 86%,rgba(7,136,155,.20) 0%,transparent 62%),
+    linear-gradient(178deg,var(--night-2) 0%,var(--night) 100%);
+  color:var(--paper);padding:22mm 17mm 16mm;
+  display:flex;flex-direction:column;
+}
+.back::after{display:none;}
+.back > *{position:relative;z-index:1;}
+.back h2{color:var(--paper);font-size:31pt;letter-spacing:-.036em;line-height:1.02;max-width:160mm;}
+.back h2 em{font-size:31pt;color:var(--cyan-lit);}
+.back .sub{font-size:11.4pt;line-height:1.42;color:rgba(245,241,232,.70);max-width:140mm;margin-top:var(--s3);}
+
+.cal{
+  margin-top:var(--s6);padding:15pt 17pt;
+  border:1.4pt solid var(--cyan-lit);border-radius:6pt;
+  background:rgba(7,136,155,.13);
+  display:flex;justify-content:space-between;align-items:center;gap:12pt;
+}
+.cal .t{
+  font-family:var(--display);font-size:16.5pt;font-weight:400;letter-spacing:-.028em;
+  color:var(--paper);line-height:1.06;font-variation-settings:"opsz" 72,"SOFT" 30;
+}
+.cal .t em{font-size:16.5pt;color:var(--cyan-lit);}
+.cal .u{font-family:var(--mono);font-size:7.4pt;letter-spacing:.14em;color:rgba(245,241,232,.62);margin-top:5pt;}
+.cal .btn{
+  padding:9pt 16pt;background:var(--cyan-lit);color:var(--night);border-radius:100pt;
+  font-family:var(--sans);font-size:9.6pt;font-weight:700;letter-spacing:.01em;white-space:nowrap;
+}
+
+.wa{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-top:var(--s4);}
+.wa-card{
+  padding:12pt;border:1px solid rgba(245,241,232,.17);border-radius:5pt;
+  background:rgba(245,241,232,.035);
+}
+.wa-card .lbl{
+  font-family:var(--mono);font-size:6.4pt;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(245,241,232,.58);margin-bottom:6pt;display:flex;align-items:center;gap:5pt;
+}
+.wa-card .lbl .fl{font-size:10pt;line-height:1;}
+.wa-card .num{
+  font-family:var(--display);font-size:13.5pt;font-weight:500;letter-spacing:-.02em;
+  color:var(--paper);line-height:1.1;margin-bottom:4pt;
+}
+.wa-card .num em{font-size:13.5pt;color:var(--cyan-lit);}
+.wa-card .meta{font-size:7.8pt;line-height:1.4;color:rgba(245,241,232,.62);}
+.wa-card .meta .u{color:var(--cyan-lit);}
+
+.back-logo{margin-top:auto;padding-top:var(--s6);}
+.back-logo img{width:74mm;height:auto;margin-left:-2mm;opacity:.95;}
+.back-foot{
+  margin-top:var(--s4);padding-top:var(--s3);
+  border-top:1px solid rgba(245,241,232,.17);
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-family:var(--mono);font-size:6.5pt;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(245,241,232,.55);
+}
+.back-foot .lit{color:var(--cyan-lit);}
+
+/* ─── TOOLBAR (screen only) ──────────────────── */
+.tools{
+  position:fixed;top:12pt;right:12pt;z-index:200;display:flex;gap:7pt;
+  font-family:var(--sans);
+}
+.tools button,.tools a{
+  padding:8pt 14pt;border-radius:100pt;border:1.2pt solid var(--ink);
+  background:var(--paper);color:var(--ink);font-size:9.4pt;font-weight:600;
+  cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:6pt;
+  box-shadow:0 4pt 16pt -7pt rgba(18,26,38,.45);
+}
+.tools .go{background:var(--cyan);border-color:var(--cyan);color:#fff;}
+.tools button:hover,.tools a:hover{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.tools svg{width:13pt;height:13pt;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+@media screen{
+  body{padding:16pt 0 32pt;}
+  .page{box-shadow:0 6pt 30pt -12pt rgba(18,26,38,.4);margin-bottom:10pt;}
+}
+
+/* ─── PRINT ──────────────────────────────────── */
+@media print{
+  html,body{background:#fff;padding:0;}
+  .tools{display:none!important;}
+  .doc{width:auto;}
+  .page{
+    width:210mm;height:297mm;min-height:0;margin:0;box-shadow:none;
+    break-after:page;page-break-after:always;
+  }
+  .page:last-child{break-after:auto;page-break-after:auto;}
+  *,*::before,*::after{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  .pkg,.mod,.step,.stand,.founder,tr{break-inside:avoid;}
+  h2,h3,h4{break-after:avoid;}
+}
+</style>
+</head>
+<body>
+
+<!-- Document-level gradient defs — referenced by every mark on every page.
+     Kept in a zero-size positioned SVG (not display:none, which breaks url() resolution). -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="rhC1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8"/><stop offset="100%" stop-color="#121A26"/>
+    </linearGradient>
+    <linearGradient id="rhC2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22B8CC"/><stop offset="100%" stop-color="#065F73"/>
+    </linearGradient>
+    <linearGradient id="cvChrome" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="30%" stop-color="#CBD5E1"/>
+      <stop offset="65%" stop-color="#64748B"/><stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="cvCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/><stop offset="35%" stop-color="#38BDF8"/>
+      <stop offset="70%" stop-color="#00F2FE"/><stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="tools">
+  <button type="button" onclick="window.print()">
+    <svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg>
+    Print / Save as PDF
+  </button>
+  <a class="go" href="https://cal.com/pgdebeer" target="_blank" rel="noopener">Book a walkthrough →</a>
+</div>
+
+<div class="doc">
+
+<!-- ══ P1 · COVER ══════════════════════════════ -->
+<section class="page cover">
+  <div class="cover-grid"></div>
+
+  <div class="cover-top">
+    <svg class="cover-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="TruSaaS mark">
+      <circle cx="100" cy="100" r="82" fill="none" stroke="url(#cvCyan)" stroke-width="2" opacity=".9"/>
+      <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#cvChrome)" stroke="#1E293B" stroke-width="1"/>
+      <path d="M100 35 L145 60 L125 72 L100 58 Z" fill="#FFFFFF" opacity=".7"/>
+      <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#cvCyan)"/>
+      <line x1="100" y1="35" x2="100" y2="160" stroke="#E0F2FE" stroke-width="2.5" opacity=".8"/>
+    </svg>
+    <span class="cover-chip">Product brochure · 2026</span>
+  </div>
+
+  <div class="cover-logo">
+    <img src="trudealer-futureautomotive-8k-transparent.png" alt="TruDealer — Future Automotive"/>
+  </div>
+
+  <div class="cover-title">
+    <h1>The operating system for the modern <em>independent dealer.</em></h1>
+    <p class="cover-sub">Capture, DMS, condition-proof and 24/7 AI — <em>one stack</em>, any market. Built in Cape Town. Deployed anywhere.</p>
+  </div>
+
+  <div class="cover-stats">
+    <div><div class="k">Live dealerships</div><div class="v">3<i>+</i></div></div>
+    <div><div class="k">Modules shipping</div><div class="v">8</div></div>
+    <div><div class="k">DMS uptime</div><div class="v">99.97<i>%</i></div></div>
+    <div><div class="k">To go live</div><div class="v">10<i>d</i></div></div>
+  </div>
+
+  <div class="cover-foot">
+    <span class="lit">trudealer.tru-saas.com</span>
+    <span>Cape Town · Deployed anywhere</span>
+    <span>6 pages</span>
+  </div>
+</section>
+
+<!-- ══ P2 · THE STACK ══════════════════════════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">01 · The stack</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">Eight products · three layers</div>
+    <h2>Every module solves a problem you already have. <em>Together</em> they compound.</h2>
+    <p>Capture feeds condition. Condition feeds the DMS. The DMS feeds the showroom. The showroom feeds the AI. Buy one module, or buy the stack — everything here is running for a paying dealership right now.</p>
+  </div>
+
+  <div class="layer">
+    <div class="layer-bar"><span class="n">Layer 01</span><span class="t">Capture &amp; Condition</span><span class="ln"></span></div>
+    <div class="mods">
+      <div class="mod">
+        <span class="tag">Capture</span>
+        <h3>TruLens</h3>
+        <p>Photograph any vehicle in 90 seconds — guided capture, auto-cropped, dealer-branded. Every shot doubles as a <em>3D Orbit</em> spin buyers pinch and rotate.</p>
+        <div class="pills"><span>Mobile-first</span><span>Offline</span><span>3D Orbit</span></div>
+      </div>
+      <div class="mod">
+        <span class="tag">Condition</span>
+        <h3>TruInspect</h3>
+        <p>A condition report a buyer actually trusts — panel by panel, tyre depth, service history, signed off before the car hits the ad.</p>
+        <div class="pills"><span>Manual + AI</span><span>PDF export</span><span>Share link</span></div>
+      </div>
+      <div class="mod">
+        <span class="tag">Appraisal</span>
+        <h3>TruValue</h3>
+        <p>Inspect, grade and price any trade-in in minutes. Condition-corrected market pricing and a branded report the customer signs on the spot.</p>
+        <div class="pills"><span>Market data</span><span>Branded PDF</span><span>Trade-in</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer">
+    <div class="layer-bar"><span class="n">Layer 02</span><span class="t">Operations &amp; DMS</span><span class="ln"></span></div>
+    <div class="mods duo">
+      <div class="mod key">
+        <span class="tag">DMS</span>
+        <h3>TruFlow</h3>
+        <p>Stock, leads, deal jackets and the money in one place. <em>Light</em> is the stock portal for the lot that outgrew spreadsheets. <em>Pro</em> adds F&amp;I, multi-branch, roles and a full audit trail — same system, you move up without migrating.</p>
+        <div class="pills"><span>Setup in a day</span><span>Finance calc</span><span>Marketplace push</span></div>
+      </div>
+      <div class="mod key">
+        <span class="tag">AI</span>
+        <h3>TruChat</h3>
+        <p>A stock-aware assistant that qualifies leads at 2am, books test drives and hands the hot ones to your team on WhatsApp. Answers the showroom phone too, when nobody can.</p>
+        <div class="pills"><span>24/7 chat + call</span><span>Intent routing</span><span>DMS transcript</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer">
+    <div class="layer-bar"><span class="n">Layer 03</span><span class="t">Experience &amp; AI</span><span class="ln"></span></div>
+    <div class="mods">
+      <div class="mod">
+        <span class="tag">Web</span>
+        <h3>TruShowroom</h3>
+        <p>The dealer-branded site that turns inventory into an actual store — vehicle pages that convert, finance calculator, WhatsApp on every card.</p>
+        <div class="pills"><span>Your brand</span><span>Web Vitals</span><span>Live in 5 days</span></div>
+      </div>
+      <div class="mod">
+        <span class="tag">Video</span>
+        <h3>TruLive</h3>
+        <p>A salesperson with a phone becomes a showroom for whoever is watching. Works in reverse too — the customer films their trade-in while you price it.</p>
+        <div class="pills"><span>No buyer app</span><span>Buy / Reserve</span><span>Auto-summary</span></div>
+      </div>
+      <div class="mod">
+        <span class="tag">Money</span>
+        <h3>TruAfford</h3>
+        <p>Buyers work out affordability before they message you. Lives on every vehicle page — every calculation drops a qualified lead into TruFlow.</p>
+        <div class="pills"><span>Soft pre-qual</span><span>Lender routing</span><span>Qualified leads</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rf"><span>© TruSaaS · Cape Town</span><span class="n">02 / 06</span></div>
+</section>
+
+<!-- ══ P3 · PACKAGES ═══════════════════════════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">02 · Packages</span>
+  </div>
+
+  <div class="lead">
+    <div class="eyebrow">Buy the stack</div>
+    <h2>One setup fee. One monthly price. <em>Walk away whenever.</em></h2>
+    <p>No annual contracts, no per-seat fees, no enterprise pricing theatre. Shown in South African Rand — USD and GBP on the following page and on the live site.</p>
+  </div>
+
+  <div class="pkgs">
+    <div class="pkg">
+      <div class="tier">Entry</div>
+      <div class="nm">TruStart</div>
+      <div class="desc">For the single-rooftop independent getting online fast. No cap on stock — list every car you have.</div>
+      <div class="money">
+        <div class="lbl">One-time setup</div>
+        <div class="setup"><b>Waived</b> within 48h of demo · else R 2,500</div>
+        <div class="lbl">Then per month</div>
+        <div class="amt"><span class="sym">R</span><span class="num">850</span><span class="per">/mo</span></div>
+      </div>
+      <ul>
+        <li>TruShowroom — dealer website</li>
+        <li>TruFlow Light — stock portal, no unit limit</li>
+        <li>TruChat AI — WhatsApp + web</li>
+        <li>TruLens (1 user) + 3D Orbit</li>
+        <li class="off">TruFlow DMS — deal jackets, F&amp;I</li>
+        <li class="off">TruInspect deep VIR</li>
+        <li class="off">TruValue trade-in</li>
+      </ul>
+      <div class="terms">Cancel anytime</div>
+    </div>
+
+    <div class="pkg hero">
+      <div class="tier">Growth</div>
+      <div class="nm">TruPro</div>
+      <div class="desc">For the mid-size independent doing 20–80 units a month. Compete with the groups on trade-ins and condition transparency.</div>
+      <div class="money">
+        <div class="lbl">One-time setup</div>
+        <div class="setup"><b>Waived</b> within 48h of demo · else R 4,500</div>
+        <div class="lbl">Then per month</div>
+        <div class="amt"><span class="sym">R</span><span class="num">1,650</span><span class="per">/mo</span></div>
+      </div>
+      <ul>
+        <li>Everything in TruStart</li>
+        <li>TruFlow Pro — full DMS, F&amp;I, audit trail</li>
+        <li>TruInspect — deep VIR + trade-in</li>
+        <li>TruValue — market-correct valuations</li>
+        <li>TruLive — video handover</li>
+        <li>TruLens (3 users) + 3D Orbit</li>
+        <li>Priority WhatsApp support</li>
+      </ul>
+      <div class="terms">Cancel anytime</div>
+    </div>
+
+    <div class="pkg">
+      <div class="tier">Scale</div>
+      <div class="nm">TruEnterprise</div>
+      <div class="desc">For dealer groups, franchise used departments and BHPH operators needing custom workflows and white-label deployment.</div>
+      <div class="money">
+        <div class="lbl">Setup</div>
+        <div class="setup">Custom scope · quoted after call</div>
+        <div class="lbl">Then per month</div>
+        <div class="amt"><span class="num" style="font-size:19pt;">Custom</span></div>
+      </div>
+      <ul>
+        <li>Everything in TruPro</li>
+        <li>White-label deployment</li>
+        <li>TruAfford — finance + lenders</li>
+        <li>Custom VIR templates</li>
+        <li>API access + integrations</li>
+        <li>Unlimited TruLens + 3D Orbit</li>
+        <li>Dedicated onboarding + SLA</li>
+      </ul>
+      <div class="terms">Annual · SLA included</div>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="eyebrow amber" style="margin-bottom:var(--s3);">How you get live</div>
+  <div class="steps">
+    <div class="step">
+      <div class="n">Step 01</div>
+      <h4>Discovery call</h4>
+      <p>25 minutes on the same stack that runs Tru-Cars — your currency, your integrations, your stock plugged in. No slide-deck theatre.</p>
+      <div class="when">Same day</div>
+    </div>
+    <div class="step">
+      <div class="n">Step 02</div>
+      <h4>Staging build</h4>
+      <p>Logo, colours, domain and F&amp;I partners plugged in. You approve staging on a real URL, on your inventory, on your phone.</p>
+      <div class="when">Days 1 – 5</div>
+    </div>
+    <div class="step">
+      <div class="n">Step 03</div>
+      <h4>Go live</h4>
+      <p>DNS flips, stock imports, team trained, WhatsApp AI online. You capture after-hours leads while competitors still email PDFs.</p>
+      <div class="when">Day 10</div>
+    </div>
+  </div>
+
+  <div class="rf"><span>Setup waived within 48h · Month-to-month · Cancel anytime</span><span class="n">03 / 06</span></div>
+</section>
+
+<!-- ══ P4 · STANDALONES · CURRENCY · COMPARE ═══ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">03 · Standalones &amp; pricing</span>
+  </div>
+
+  <div class="lead" style="margin-bottom:var(--s4);">
+    <div class="eyebrow amber">Standalone modules</div>
+    <h2>Start with one module. <em>Bolt on the rest</em> when you're ready.</h2>
+    <p>You don't have to buy the platform to begin. Two of the most in-demand modules run standalone — same software, same support, same cancel-anytime terms.</p>
+  </div>
+
+  <div class="stands">
+    <div class="stand">
+      <div class="tag">Standalone</div>
+      <h4>TruInspect</h4>
+      <p>Deep vehicle inspection reports, trade-in appraisals and customer-facing PDFs. Buy it alone if you just need to condition-proof stock and send professional reports to buyers.</p>
+      <div class="row">
+        <span class="sym">R</span><span class="num">399</span><span class="per">/mo</span>
+        <span class="plus">+</span><small>R 2,000 once-off setup</small>
+      </div>
+    </div>
+    <div class="stand">
+      <div class="tag">Standalone · with 3D Orbit</div>
+      <h4>TruLens</h4>
+      <p>Guided photo capture with auto-cropping, instant web export and <em>3D Orbit</em> — a buyer-pinchable 360° spin generated automatically for every vehicle on your floor.</p>
+      <div class="row">
+        <span class="sym">R</span><span class="num">399</span><span class="per">/mo</span>
+        <span class="plus">+</span><small>R 2,000 once-off setup</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="eyebrow" style="margin-bottom:var(--s2);">Priced for your market</div>
+  <h3 style="font-size:13.5pt;margin-bottom:var(--s2);">Same product. Local currency. <em style="font-size:13.5pt;">No FX surprises.</em></h3>
+  <table class="fx">
+    <thead>
+      <tr><th>Currency</th><th>TruStart / mo</th><th>TruPro / mo</th><th>Standalone / mo</th><th>Standalone setup</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ZAR · South Africa</td>
+        <td><span class="amt"><span class="s">R</span> 850</span></td>
+        <td><span class="amt"><span class="s">R</span> 1,650</span></td>
+        <td><span class="amt"><span class="s">R</span> 399</span></td>
+        <td><span class="amt"><span class="s">R</span> 2,000</span></td>
+      </tr>
+      <tr>
+        <td>USD · United States</td>
+        <td><span class="amt"><span class="s">$</span> 149</span></td>
+        <td><span class="amt"><span class="s">$</span> 299</span></td>
+        <td><span class="amt"><span class="s">$</span> 79</span></td>
+        <td><span class="amt"><span class="s">$</span> 200</span></td>
+      </tr>
+      <tr>
+        <td>GBP · United Kingdom</td>
+        <td><span class="amt"><span class="s">£</span> 119</span></td>
+        <td><span class="amt"><span class="s">£</span> 229</span></td>
+        <td><span class="amt"><span class="s">£</span> 59</span></td>
+        <td><span class="amt"><span class="s">£</span> 160</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="hr"></div>
+
+  <div class="eyebrow" style="margin-bottom:var(--s2);">Every feature, every tier</div>
+  <table class="cmp">
+    <thead>
+      <tr><th>Feature</th><th>TruStart</th><th>TruPro</th><th>Enterprise</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Dealer website (TruShowroom)</td><td class="y">Included</td><td class="y">Included</td><td class="y">White-label</td></tr>
+      <tr><td>Live units on site</td><td class="y">Unlimited</td><td class="y">Unlimited</td><td class="y">Unlimited</td></tr>
+      <tr><td>AI chat (TruChat)</td><td class="y">Included</td><td class="y">Included</td><td class="y">Included</td></tr>
+      <tr><td>Guided capture (TruLens)</td><td>1 user</td><td>3 users</td><td class="y">Unlimited</td></tr>
+      <tr><td>3D Orbit — 360° spin</td><td class="y">Included</td><td class="y">Included</td><td class="y">Included</td></tr>
+      <tr><td>Deep VIR (TruInspect)</td><td class="n">—</td><td class="y">Included</td><td class="y">Custom templates</td></tr>
+      <tr><td>Trade-in appraisal</td><td class="n">—</td><td class="y">Included</td><td class="y">Included</td></tr>
+      <tr><td>Market valuation (TruValue)</td><td class="n">—</td><td class="y">Included</td><td class="y">Included</td></tr>
+      <tr><td>Video handover (TruLive)</td><td class="n">—</td><td class="y">Included</td><td class="y">Included</td></tr>
+      <tr><td>Finance calculator (TruAfford)</td><td class="n">—</td><td class="n">—</td><td class="y">Included</td></tr>
+      <tr><td>DMS — deal jackets, F&amp;I</td><td>Light · stock portal</td><td class="y">Full DMS</td><td class="y">Full DMS</td></tr>
+      <tr><td>Multi-branch support</td><td class="n">—</td><td class="n">—</td><td class="y">Included</td></tr>
+      <tr><td>API access</td><td class="n">—</td><td class="n">—</td><td class="y">Included</td></tr>
+      <tr><td>Support channel</td><td>WhatsApp</td><td>Priority WhatsApp</td><td>Phone + SLA</td></tr>
+      <tr><td>Go-live time</td><td>5 days</td><td>5 days</td><td>10 days</td></tr>
+    </tbody>
+  </table>
+  <p class="fine" style="margin-top:var(--s2);">Month-to-month on Start, Pro and standalone modules. Data exports to CSV or Excel on request — you own it.</p>
+
+  <div class="rf"><span>trudealer.tru-saas.com</span><span class="n">04 / 06</span></div>
+</section>
+
+<!-- ══ P5 · FOUNDER ════════════════════════════ -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">04 · Founder note</span>
+  </div>
+
+  <div class="founder">
+    <aside class="f-side">
+      <div class="f-mark">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+          <path d="M100 35 L145 60 L125 72 L100 58 Z" fill="#94A3B8" opacity=".55"/>
+          <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+        </svg>
+      </div>
+      <div class="f-meta">
+        <div class="r"><span class="k">Based</span><span class="v">Cape Town, ZA</span></div>
+        <div class="r"><span class="k">Under</span><span class="v">TruSaaS</span></div>
+        <div class="r"><span class="k">Building since</span><span class="v">2023</span></div>
+      </div>
+    </aside>
+
+    <div class="f-body">
+      <div class="f-eyebrow">Founder note</div>
+      <blockquote class="f-quote">A decade selling into dealers taught me one thing — they get sold half-finished software at enterprise prices. TruDealer is the <em>opposite bet</em>: real modules, shipped fast, priced honestly, built by someone who has stood on the floor.</blockquote>
+      <div class="f-attr">
+        <span class="nm">Paul de Beer</span>
+        <span class="rl">Founder · TruSaaS</span>
+      </div>
+      <p class="f-note">Every module started as a real request from a real dealer. <em>If it didn't move stock or save hours, it didn't ship.</em> Everything in this brochure is running for a paying dealership right now — no vaporware, no roadmap slides. You will see the live floor on the demo call, on real inventory, with real leads coming through.</p>
+    </div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="eyebrow dim" style="margin-bottom:var(--s3);">Where it stands today</div>
+  <div class="proof">
+    <div><div class="k">Live dealerships</div><div class="v">3<i>+</i></div></div>
+    <div><div class="k">Modules shipping</div><div class="v">8</div></div>
+    <div><div class="k">DMS uptime</div><div class="v">99.97<i>%</i></div></div>
+    <div><div class="k">To go live</div><div class="v">10<i>d</i></div></div>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="eyebrow amber" style="margin-bottom:var(--s2);">Who this is for</div>
+  <h3 style="font-size:14pt;margin-bottom:var(--s2);max-width:150mm;">Independent dealers who are done being sold enterprise theatre.</h3>
+  <p style="font-size:9.4pt;line-height:1.55;color:var(--ink-2);max-width:152mm;">
+    Single rooftops. Small groups. Franchise used departments. Buy-here-pay-here operators. If you are selling 5 to 500 units a month and you want tooling that competes with the groups — without their per-seat fees, twelve-month lock-ins and six-month rollouts — TruDealer is the stack.
+  </p>
+
+  <div class="rf"><span>© TruSaaS · Cape Town · Deployed anywhere</span><span class="n">05 / 06</span></div>
+</section>
+
+<!-- ══ P6 · BACK COVER ═════════════════════════ -->
+<section class="page back">
+  <div class="cover-grid"></div>
+
+  <div>
+    <div class="eyebrow amber">Next step</div>
+    <h2 style="margin-top:var(--s2);">See it running on a <em>real dealership</em>, then decide.</h2>
+    <p class="sub">A 25-minute walkthrough on the same stack that runs Tru-Cars — with your currency, your integrations and your stock plugged in.</p>
+  </div>
+
+  <a class="cal" href="https://cal.com/pgdebeer" target="_blank" rel="noopener">
+    <div>
+      <div class="t">25 minutes. On <em>your</em> stock.</div>
+      <div class="u">cal.com/pgdebeer</div>
+    </div>
+    <span class="btn">Book now →</span>
+  </a>
+
+  <div class="wa">
+    <a class="wa-card" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27d%20like%20to%20chat%20about%20TruDealer" target="_blank" rel="noopener">
+      <div class="lbl"><span class="fl">🇿🇦</span> WhatsApp · South Africa</div>
+      <div class="num">+27 62 <em>050 2091</em></div>
+      <div class="meta"><span class="u">wa.me/27620502091</span><br/>Cape Town hours, plus weekends.</div>
+    </a>
+    <a class="wa-card" href="https://wa.me/447476995694?text=Hi%20Paul%2C%20I%27d%20like%20to%20chat%20about%20TruDealer" target="_blank" rel="noopener">
+      <div class="lbl"><span class="fl">🇬🇧</span> WhatsApp · United Kingdom</div>
+      <div class="num">+44 7476 <em>995694</em></div>
+      <div class="meta"><span class="u">wa.me/447476995694</span><br/>UK &amp; EU — same team, same demo.</div>
+    </a>
+  </div>
+
+  <div class="back-logo">
+    <img src="trudealer-futureautomotive-8k-transparent.png" alt="TruDealer — Future Automotive"/>
+  </div>
+
+  <div class="back-foot">
+    <span class="lit">trudealer.tru-saas.com</span>
+    <span>© TruSaaS · Cape Town · Deployed anywhere</span>
+    <span>06 / 06</span>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

@@ -391,7 +391,19 @@
       if (!v) return;
 
       if (window.TruShare && typeof window.TruShare.open === "function") {
-        window.TruShare.open(v);
+        window.TruShare.open({
+          year: v.year,
+          make: v.make,
+          name: v.model,
+          variant: v.trim || v.variant || "",
+          price: v.truPrice || v.price,
+          km: v.mileage || v.km,
+          trans: v.transmission,
+          fuel: v.fuelType || v.fuel,
+          body: v.bodyType || v.body,
+          stock: v.stockNumber || v.id,
+          images: v.images && v.images.length ? v.images : (v.heroImage ? [v.heroImage] : []),
+        });
         return;
       }
       var url = location.origin + "/vehicle/?stock=" + encodeURIComponent(v.stockNumber);

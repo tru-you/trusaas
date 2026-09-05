@@ -1,0 +1,539 @@
+- generic [active] [ref=f20e1]:
+  - paragraph
+  - link "Skip to content" [ref=f20e2] [cursor=pointer]:
+    - /url: "#content"
+  - generic [ref=f20e4]:
+    - generic [ref=f20e5]:
+      - text:                
+      - generic [ref=f20e7]:
+        - paragraph [ref=f20e15]: 17 BURT DRIVE, NEWTON PARK, PE
+        - generic [ref=f20e17]:
+          - paragraph [ref=f20e19]:
+            - strong [ref=f20e20]:
+              - link "083 465 9921" [ref=f20e21] [cursor=pointer]:
+                - /url: tel:0834659921
+              - link "041 007 0393" [ref=f20e22] [cursor=pointer]:
+                - /url: tel:0410070393
+          - navigation "Home Menu" [ref=f20e23]:
+            - button "Toggle Navigation  " [ref=f20e24] [cursor=pointer]:
+              - generic [ref=f20e25]:
+                - generic: Toggle Navigation
+                - generic [ref=f20e27]:
+                  - generic [ref=f20e28]: 
+                  - generic [ref=f20e29]: 
+            - list:
+              - listitem:
+                - link "Home":
+                  - /url: https://yourcarguy.co.za/
+              - listitem:
+                - link "About Us":
+                  - /url: https://yourcarguy.co.za/about-us/
+              - listitem:
+                - link "Testimonials":
+                  - /url: https://yourcarguy.co.za/testimonials/
+              - listitem:
+                - link "Pre-Owned":
+                  - /url: /vehicles/?condition%5B%5D=pre-owned-certified
+              - listitem:
+                - link "Sell Your Vehicle":
+                  - /url: https://yourcarguy.co.za/sell-your-vehicle/
+              - listitem:
+                - link "Contact Us":
+                  - /url: https://yourcarguy.co.za/contact-us/
+              - listitem:
+                - link "Quick Menu":
+                  - /url: "#"
+                  - text: 
+                - text: 
+    - main [ref=f20e32]:
+      - generic [ref=f20e34]:
+        - navigation "Breadcrumb" [ref=f20e35]:
+          - list [ref=f20e36]:
+            - listitem [ref=f20e37]:
+              - link "Back to Search" [ref=f20e38] [cursor=pointer]:
+                - /url: https://yourcarguy.co.za/vehicles/
+              - text: ›
+            - listitem [ref=f20e39]:
+              - generic [ref=f20e40]: Excellent
+              - text: ›
+            - listitem [ref=f20e41]:
+              - link "FORD" [ref=f20e42] [cursor=pointer]:
+                - /url: https://yourcarguy.co.za/vehicles/?wpvl_search=1&make%5B0%5D=ford
+              - text: ›
+            - listitem [ref=f20e43]:
+              - link "RANGER" [ref=f20e44] [cursor=pointer]:
+                - /url: https://yourcarguy.co.za/vehicles/?wpvl_search=1&model%5B0%5D=ranger
+              - text: ›
+            - listitem [ref=f20e45]:
+              - generic [ref=f20e46]: 2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C
+        - generic [ref=f20e47]:
+          - generic [ref=f20e48]:
+            - img "2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=f20e51]
+            - generic [ref=f20e53]:
+              - generic [ref=f20e54]:
+                - heading "2020 FORD RANGER" [level=1] [ref=f20e55]
+                - paragraph [ref=f20e56]: FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C
+              - button "Compare Car" [ref=f20e57] [cursor=pointer]
+            - generic "Vehicle specifications" [ref=f20e58]:
+              - generic [ref=f20e59]:
+                - generic [ref=f20e60]:
+                  - generic [ref=f20e61]: ⛽
+                  - generic [ref=f20e62]: Fuel Type
+                - generic [ref=f20e63]: Diesel
+              - generic [ref=f20e64]:
+                - generic [ref=f20e65]:
+                  - generic [ref=f20e66]: 📅
+                  - generic [ref=f20e67]: Year
+                - generic [ref=f20e68]: "2020"
+              - generic [ref=f20e69]:
+                - generic [ref=f20e70]:
+                  - generic [ref=f20e71]: ⏱
+                  - generic [ref=f20e72]: Mileage
+                - generic [ref=f20e73]: 83,000 km
+              - generic [ref=f20e74]:
+                - generic [ref=f20e75]:
+                  - generic [ref=f20e76]: ⚙
+                  - generic [ref=f20e77]: Transmission
+                - generic [ref=f20e78]: Automatic
+              - generic [ref=f20e79]:
+                - generic [ref=f20e80]:
+                  - generic [ref=f20e81]: 🚗
+                  - generic [ref=f20e82]: Body Type
+                - generic [ref=f20e83]: Bakkie Double Cab
+            - generic [ref=f20e84]:
+              - heading "Description" [level=2] [ref=f20e85]
+              - generic [ref=f20e86]:
+                - paragraph [ref=f20e87]: 2020 Ford Ranger Wildtrak 2.0 Bi-Turbo 4×4 Automatic
+                - paragraph [ref=f20e88]: • 83,000 Km’s• DEKRA multipoint check & roadworthy available on request• One Owner• Accident Free• Full service history with agents
+                - paragraph [ref=f20e89]: ENGINE & PERFORMANCE
+                - paragraph [ref=f20e90]: "Engine: 2.0-litre Bi-Turbo dieselPower: 154 kW @ 3750 rpm. Torque: 500 Nm peaking from 1750–2000 rpmTransmission: Smooth 10-speed automaticDriveline: 4×4 with Electronic Shift On The Fly (ESOF)Selectable Drive Modes: Normal, Eco, Tow, Slippery, Mud, SandFuel Capacity: 80 L with good, combined economy for a heavy-duty dieselTowing Capacity: Up to 3,500 kg braked"
+                - paragraph [ref=f20e91]: COMFORT & INTERIOR FEATURES
+                - paragraph [ref=f20e92]: Premium cabin with Wildtrak-themed accents and embroiderySYNC® 3 infotainment system with touch display, Apple CarPlay & Android Auto Multi-function steering wheel for audio and drive controlsClimate control / air-conditioningMultiple power outlets (12V & 230V) Rear seats with ISOfix child anchor pointsReversing camera + park distance sensors
+                - paragraph [ref=f20e93]: SAFETY & SECURITY
+                - paragraph [ref=f20e94]: ABS, EBD & Electronic Stability Control (ESC)Multiple airbags including front & side airbagsHill-start & Hill-descent control for safer off-road drivingLane Departure Warning & Lane Keeping Aid help reduce drift from laneBlind Spot Monitoring (BSM) & Trailer CoverageTyre Pressure Monitoring System (TPMS)Thatcham Level 1 alarm & immobiliser
+                - paragraph [ref=f20e95]: EXTERIOR & FUNCTIONAL FEATURES
+                - paragraph [ref=f20e96]: 18? alloy wheels with all-terrain tyresLED headlamps & daytime running lightsEzi-lift tailgate — makes loading/unloading easier Off-road 4×4 capability + good ground clearance and water wading ability (800 mm)Tow bar and trailer light check system
+                - paragraph [ref=f20e97]: Finance can be arranged with all banks. We deliver countrywide! Terms & conditions apply
+            - generic [ref=f20e98]:
+              - generic [ref=f20e99]:
+                - button "Specifications" [ref=f20e100] [cursor=pointer]
+                - button "Features" [ref=f20e101] [cursor=pointer]
+                - button "Finance" [ref=f20e102] [cursor=pointer]
+                - button "Test Drive" [ref=f20e103] [cursor=pointer]
+              - table [ref=f20e105]:
+                - rowgroup [ref=f20e106]:
+                  - row [ref=f20e107]:
+                    - rowheader "Make" [ref=f20e108]
+                    - cell "FORD" [ref=f20e109]
+                  - row [ref=f20e110]:
+                    - rowheader "Model" [ref=f20e111]
+                    - cell "RANGER" [ref=f20e112]
+                  - row [ref=f20e113]:
+                    - rowheader "Year" [ref=f20e114]
+                    - cell "2020" [ref=f20e115]
+                  - row [ref=f20e116]:
+                    - rowheader "Body Type" [ref=f20e117]
+                    - cell "Bakkie Double Cab" [ref=f20e118]
+                  - row [ref=f20e119]:
+                    - rowheader "Condition" [ref=f20e120]
+                    - cell "Excellent" [ref=f20e121]
+                  - row [ref=f20e122]:
+                    - rowheader "Colour" [ref=f20e123]
+                    - cell "White" [ref=f20e124]
+                  - row [ref=f20e125]:
+                    - rowheader "Fuel Type" [ref=f20e126]
+                    - cell "Diesel" [ref=f20e127]
+                  - row [ref=f20e128]:
+                    - rowheader "Transmission" [ref=f20e129]
+                    - cell "Automatic" [ref=f20e130]
+                  - row [ref=f20e131]:
+                    - rowheader "Drive Type" [ref=f20e132]
+                    - cell "Diesel" [ref=f20e133]
+                  - row [ref=f20e134]:
+                    - rowheader "Power (kW)" [ref=f20e135]
+                    - cell "157 kW" [ref=f20e136]
+                  - row [ref=f20e137]:
+                    - rowheader "Doors" [ref=f20e138]
+                    - cell "4" [ref=f20e139]
+                  - row [ref=f20e140]:
+                    - rowheader "Seats" [ref=f20e141]
+                    - cell "5" [ref=f20e142]
+                  - row [ref=f20e143]:
+                    - rowheader "Mileage" [ref=f20e144]
+                    - cell "83,000 km" [ref=f20e145]
+                  - row [ref=f20e146]:
+                    - rowheader "Service Plan" [ref=f20e147]
+                    - cell "10" [ref=f20e148]
+                  - row [ref=f20e149]:
+                    - rowheader "VIN / Chassis" [ref=f20e150]
+                    - cell "AFAPXXMJ2PKU60760" [ref=f20e151]
+          - complementary [ref=f20e152]:
+            - generic [ref=f20e153]:
+              - heading "Pricing Summary" [level=2] [ref=f20e154]
+              - generic [ref=f20e155]: R 489,900
+              - button "Recalculate Finance" [ref=f20e157] [cursor=pointer]
+            - generic [ref=f20e159]:
+              - heading "Message the Dealer" [level=3] [ref=f20e160]
+              - generic [ref=f20e161]:
+                - generic [ref=f20e162]:
+                  - generic [ref=f20e163]: Full Name *
+                  - textbox [ref=f20e164]
+                - generic [ref=f20e165]:
+                  - generic [ref=f20e166]: Email Address *
+                  - textbox [ref=f20e167]
+                - generic [ref=f20e168]:
+                  - generic [ref=f20e169]: Phone Number
+                  - textbox [ref=f20e170]
+                - generic [ref=f20e171]:
+                  - generic [ref=f20e172]: Message *
+                  - textbox [ref=f20e173]: Hi, I am interested in the 2020 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C. Please contact me with more information.
+                - generic [ref=f20e175] [cursor=pointer]:
+                  - checkbox "Receive updates about similar vehicles" [ref=f20e176]
+                  - text: Receive updates about similar vehicles
+                - button "Message the Dealer" [ref=f20e178] [cursor=pointer]
+            - generic [ref=f20e180]:
+              - link "Chat on WhatsApp" [ref=f20e181] [cursor=pointer]:
+                - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202020%20FORD%20RANGER%202.0D%20BI-TURBO%20WILDTRAK%204X4%20A%2FT%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2020-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c%2F
+                - generic [ref=f20e182]: ✉
+                - text: WhatsApp
+              - button "Request Test Drive" [ref=f20e183] [cursor=pointer]
+              - button "Save Vehicle" [ref=f20e184] [cursor=pointer]
+        - generic [ref=f20e185]:
+          - heading "More from This Make" [level=3] [ref=f20e186]
+          - generic [ref=f20e187]:
+            - article [ref=f20e188]:
+              - generic [ref=f20e189]:
+                - link [ref=f20e190] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c-2/
+                  - img "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f20e191]
+                  - generic: "9"
+                - generic [ref=f20e192]:
+                  - generic [ref=f20e193]: Excellent
+                  - generic [ref=f20e194]: Used
+                - generic [ref=f20e195]:
+                  - button "Save vehicle" [ref=f20e196] [cursor=pointer]: ♡
+                  - button "Compare" [ref=f20e197] [cursor=pointer]: ⇄
+              - generic [ref=f20e198]:
+                - link "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f20e199] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c-2/
+                - generic [ref=f20e200]: FORD RANGER
+                - generic [ref=f20e201]:
+                  - generic [ref=f20e202]:
+                    - generic [ref=f20e203]: 📅
+                    - text: "2023"
+                  - generic [ref=f20e204]:
+                    - generic [ref=f20e205]: ⏱
+                    - text: 88,500 km
+                  - generic [ref=f20e206]:
+                    - generic [ref=f20e207]: ⚙
+                    - text: Automatic
+                  - generic [ref=f20e208]:
+                    - generic [ref=f20e209]: ⛽
+                    - text: Diesel
+                  - generic [ref=f20e210]:
+                    - generic [ref=f20e211]: 🚗
+                    - text: Bakkie Double Cab
+                - generic [ref=f20e212]: R 645,000
+              - generic [ref=f20e213]:
+                - link "View Details" [ref=f20e214] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c-2/
+                - link "Chat on WhatsApp" [ref=f20e215] [cursor=pointer]:
+                  - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202023%20FORD%20RANGER%202.0D%20BI-TURBO%20WILDTRAK%20A%2FT%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c-2%2F
+                  - generic [ref=f20e216]: ✉
+                  - text: WhatsApp
+            - article [ref=f20e217]:
+              - generic [ref=f20e218]:
+                - link [ref=f20e219] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2019-ford-ranger-2-2tdci-xl-p-u-d-c/
+                  - img "2019 FORD RANGER 2.2TDCi XL P/U D/C" [ref=f20e220]
+                  - generic: "9"
+                - generic [ref=f20e221]:
+                  - generic [ref=f20e222]: Excellent
+                  - generic [ref=f20e223]: Used
+                - generic [ref=f20e224]:
+                  - button "Save vehicle" [ref=f20e225] [cursor=pointer]: ♡
+                  - button "Compare" [ref=f20e226] [cursor=pointer]: ⇄
+              - generic [ref=f20e227]:
+                - link "2019 FORD RANGER 2.2TDCi XL P/U D/C" [ref=f20e228] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2019-ford-ranger-2-2tdci-xl-p-u-d-c/
+                - generic [ref=f20e229]: FORD RANGER
+                - generic [ref=f20e230]:
+                  - generic [ref=f20e231]:
+                    - generic [ref=f20e232]: 📅
+                    - text: "2019"
+                  - generic [ref=f20e233]:
+                    - generic [ref=f20e234]: ⏱
+                    - text: 84,000 km
+                  - generic [ref=f20e235]:
+                    - generic [ref=f20e236]: ⚙
+                    - text: Manual
+                  - generic [ref=f20e237]:
+                    - generic [ref=f20e238]: ⛽
+                    - text: Diesel
+                  - generic [ref=f20e239]:
+                    - generic [ref=f20e240]: 🚗
+                    - text: Bakkie Double Cab
+                - generic [ref=f20e241]: R 339,000
+              - generic [ref=f20e242]:
+                - link "View Details" [ref=f20e243] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2019-ford-ranger-2-2tdci-xl-p-u-d-c/
+                - link "Chat on WhatsApp" [ref=f20e244] [cursor=pointer]:
+                  - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202019%20FORD%20RANGER%202.2TDCi%20XL%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2019-ford-ranger-2-2tdci-xl-p-u-d-c%2F
+                  - generic [ref=f20e245]: ✉
+                  - text: WhatsApp
+            - article [ref=f20e246]:
+              - generic [ref=f20e247]:
+                - link [ref=f20e248] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c/
+                  - img "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f20e249]
+                  - generic: "10"
+                - generic [ref=f20e250]:
+                  - generic [ref=f20e251]: Excellent
+                  - generic [ref=f20e252]: Used
+                - generic [ref=f20e253]:
+                  - button "Save vehicle" [ref=f20e254] [cursor=pointer]: ♡
+                  - button "Compare" [ref=f20e255] [cursor=pointer]: ⇄
+              - generic [ref=f20e256]:
+                - link "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f20e257] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c/
+                - generic [ref=f20e258]: FORD RANGER
+                - generic [ref=f20e259]:
+                  - generic [ref=f20e260]:
+                    - generic [ref=f20e261]: 📅
+                    - text: "2023"
+                  - generic [ref=f20e262]:
+                    - generic [ref=f20e263]: ⏱
+                    - text: 55,500 km
+                  - generic [ref=f20e264]:
+                    - generic [ref=f20e265]: ⚙
+                    - text: Automatic
+                  - generic [ref=f20e266]:
+                    - generic [ref=f20e267]: ⛽
+                    - text: Diesel
+                  - generic [ref=f20e268]:
+                    - generic [ref=f20e269]: 🚗
+                    - text: Bakkie Double Cab
+                - generic [ref=f20e270]: R 569,000
+              - generic [ref=f20e271]:
+                - link "View Details" [ref=f20e272] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c/
+                - link "Chat on WhatsApp" [ref=f20e273] [cursor=pointer]:
+                  - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202023%20FORD%20RANGER%202.0D%20BI-TURBO%20WILDTRAK%20A%2FT%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c%2F
+                  - generic [ref=f20e274]: ✉
+                  - text: WhatsApp
+            - article [ref=f20e275]:
+              - generic [ref=f20e276]:
+                - link [ref=f20e277] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                  - img "2021 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=f20e278]
+                  - generic: "8"
+                - generic [ref=f20e279]:
+                  - generic [ref=f20e280]: Excellent
+                  - generic [ref=f20e281]: Used
+                - generic [ref=f20e282]:
+                  - button "Save vehicle" [ref=f20e283] [cursor=pointer]: ♡
+                  - button "Compare" [ref=f20e284] [cursor=pointer]: ⇄
+              - generic [ref=f20e285]:
+                - link "2021 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=f20e286] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                - generic [ref=f20e287]: FORD RANGER
+                - generic [ref=f20e288]:
+                  - generic [ref=f20e289]:
+                    - generic [ref=f20e290]: 📅
+                    - text: "2021"
+                  - generic [ref=f20e291]:
+                    - generic [ref=f20e292]: ⏱
+                    - text: 80,000 km
+                  - generic [ref=f20e293]:
+                    - generic [ref=f20e294]: ⚙
+                    - text: Automatic
+                  - generic [ref=f20e295]:
+                    - generic [ref=f20e296]: ⛽
+                    - text: Diesel
+                  - generic [ref=f20e297]:
+                    - generic [ref=f20e298]: 🚗
+                    - text: Bakkie Double Cab
+                - generic [ref=f20e299]: R 499,000
+              - generic [ref=f20e300]:
+                - link "View Details" [ref=f20e301] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                - link "Chat on WhatsApp" [ref=f20e302] [cursor=pointer]:
+                  - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202021%20FORD%20RANGER%202.0D%20BI-TURBO%20WILDTRAK%204X4%20A%2FT%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c%2F
+                  - generic [ref=f20e303]: ✉
+                  - text: WhatsApp
+        - generic [ref=f20e304]:
+          - heading "Similar Vehicles" [level=3] [ref=f20e305]
+          - generic [ref=f20e306]:
+            - article [ref=f20e307]:
+              - generic [ref=f20e308]:
+                - link [ref=f20e309] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                  - img "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [ref=f20e310]
+                  - generic: "9"
+                - generic [ref=f20e311]:
+                  - generic [ref=f20e312]: Excellent
+                  - generic [ref=f20e313]: Used
+                - generic [ref=f20e314]:
+                  - button "Save vehicle" [ref=f20e315] [cursor=pointer]: ♡
+                  - button "Compare" [ref=f20e316] [cursor=pointer]: ⇄
+              - generic [ref=f20e317]:
+                - link "2023 TOYOTA HILUX 2.4 GD-6 RAIDER X 4X4 A/T P/U D/C" [ref=f20e318] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                - generic [ref=f20e319]: TOYOTA HILUX
+                - generic [ref=f20e320]:
+                  - generic [ref=f20e321]:
+                    - generic [ref=f20e322]: 📅
+                    - text: "2023"
+                  - generic [ref=f20e323]:
+                    - generic [ref=f20e324]: ⏱
+                    - text: 147,000 km
+                  - generic [ref=f20e325]:
+                    - generic [ref=f20e326]: ⚙
+                    - text: Automatic
+                  - generic [ref=f20e327]:
+                    - generic [ref=f20e328]: ⛽
+                    - text: Diesel
+                  - generic [ref=f20e329]:
+                    - generic [ref=f20e330]: 🚗
+                    - text: Bakkie Double Cab
+                - generic [ref=f20e331]: R 479,000
+              - generic [ref=f20e332]:
+                - link "View Details" [ref=f20e333] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c/
+                - link "Chat on WhatsApp" [ref=f20e334] [cursor=pointer]:
+                  - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202023%20TOYOTA%20HILUX%202.4%20GD-6%20RAIDER%20X%204X4%20A%2FT%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2023-toyota-hilux-2-4-gd-6-raider-x-4x4-a-t-p-u-d-c%2F
+                  - generic [ref=f20e335]: ✉
+                  - text: WhatsApp
+            - article [ref=f20e336]:
+              - generic [ref=f20e337]:
+                - link [ref=f20e338] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c/
+                  - img "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f20e339]
+                  - generic: "10"
+                - generic [ref=f20e340]:
+                  - generic [ref=f20e341]: Excellent
+                  - generic [ref=f20e342]: Used
+                - generic [ref=f20e343]:
+                  - button "Save vehicle" [ref=f20e344] [cursor=pointer]: ♡
+                  - button "Compare" [ref=f20e345] [cursor=pointer]: ⇄
+              - generic [ref=f20e346]:
+                - link "2023 FORD RANGER 2.0D BI-TURBO WILDTRAK A/T P/U D/C" [ref=f20e347] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c/
+                - generic [ref=f20e348]: FORD RANGER
+                - generic [ref=f20e349]:
+                  - generic [ref=f20e350]:
+                    - generic [ref=f20e351]: 📅
+                    - text: "2023"
+                  - generic [ref=f20e352]:
+                    - generic [ref=f20e353]: ⏱
+                    - text: 55,500 km
+                  - generic [ref=f20e354]:
+                    - generic [ref=f20e355]: ⚙
+                    - text: Automatic
+                  - generic [ref=f20e356]:
+                    - generic [ref=f20e357]: ⛽
+                    - text: Diesel
+                  - generic [ref=f20e358]:
+                    - generic [ref=f20e359]: 🚗
+                    - text: Bakkie Double Cab
+                - generic [ref=f20e360]: R 569,000
+              - generic [ref=f20e361]:
+                - link "View Details" [ref=f20e362] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c/
+                - link "Chat on WhatsApp" [ref=f20e363] [cursor=pointer]:
+                  - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202023%20FORD%20RANGER%202.0D%20BI-TURBO%20WILDTRAK%20A%2FT%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2023-ford-ranger-2-0d-bi-turbo-wildtrak-a-t-p-u-d-c%2F
+                  - generic [ref=f20e364]: ✉
+                  - text: WhatsApp
+            - article [ref=f20e365]:
+              - generic [ref=f20e366]:
+                - link [ref=f20e367] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                  - img "2021 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=f20e368]
+                  - generic: "8"
+                - generic [ref=f20e369]:
+                  - generic [ref=f20e370]: Excellent
+                  - generic [ref=f20e371]: Used
+                - generic [ref=f20e372]:
+                  - button "Save vehicle" [ref=f20e373] [cursor=pointer]: ♡
+                  - button "Compare" [ref=f20e374] [cursor=pointer]: ⇄
+              - generic [ref=f20e375]:
+                - link "2021 FORD RANGER 2.0D BI-TURBO WILDTRAK 4X4 A/T P/U D/C" [ref=f20e376] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                - generic [ref=f20e377]: FORD RANGER
+                - generic [ref=f20e378]:
+                  - generic [ref=f20e379]:
+                    - generic [ref=f20e380]: 📅
+                    - text: "2021"
+                  - generic [ref=f20e381]:
+                    - generic [ref=f20e382]: ⏱
+                    - text: 80,000 km
+                  - generic [ref=f20e383]:
+                    - generic [ref=f20e384]: ⚙
+                    - text: Automatic
+                  - generic [ref=f20e385]:
+                    - generic [ref=f20e386]: ⛽
+                    - text: Diesel
+                  - generic [ref=f20e387]:
+                    - generic [ref=f20e388]: 🚗
+                    - text: Bakkie Double Cab
+                - generic [ref=f20e389]: R 499,000
+              - generic [ref=f20e390]:
+                - link "View Details" [ref=f20e391] [cursor=pointer]:
+                  - /url: https://yourcarguy.co.za/vehicle/2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c/
+                - link "Chat on WhatsApp" [ref=f20e392] [cursor=pointer]:
+                  - /url: https://wa.me/27834659921?text=Hi%2C%20I%20am%20interested%20in%20this%20vehicle%3A%202021%20FORD%20RANGER%202.0D%20BI-TURBO%20WILDTRAK%204X4%20A%2FT%20P%2FU%20D%2FC%20-%20https%3A%2F%2Fyourcarguy.co.za%2Fvehicle%2F2021-ford-ranger-2-0d-bi-turbo-wildtrak-4x4-a-t-p-u-d-c%2F
+                  - generic [ref=f20e393]: ✉
+                  - text: WhatsApp
+  - generic [ref=f20e394]:
+    - generic [ref=f20e395]:
+      - generic [ref=f20e396]: Software & Management by
+      - link "TruDealer" [ref=f20e397] [cursor=pointer]:
+        - /url: https://trudealer.tru-saas.com
+    - generic [ref=f20e398]:
+      - generic [ref=f20e399]:
+        - img "Your Car Guy" [ref=f20e400]
+        - generic [ref=f20e412]:
+          - emphasis [ref=f20e413]: "5.0"
+          - text: / 5.0
+        - paragraph [ref=f20e415]:
+          - strong [ref=f20e416]: 332 reviews
+      - generic [ref=f20e417]:
+        - img "2024 Ford Ranger XL" [ref=f20e419]
+        - img "2024 Toyota Urban Cruiser XR" [ref=f20e421]
+        - img "2023 Ford Ranger Wildtrak" [ref=f20e423]
+        - img "Ford Ranger detail" [ref=f20e425]
+        - img "Urban Cruiser detail" [ref=f20e427]
+      - generic [ref=f20e428]:
+        - iframe [ref=f20e430]
+        - generic [ref=f20e431]:
+          - generic [ref=f20e437]:
+            - generic [ref=f20e438]: Address
+            - generic [ref=f20e439]: 17 Burt Drive, Newton ParkGqeberha 6045
+          - generic [ref=f20e444]:
+            - generic [ref=f20e445]: Call us
+            - generic [ref=f20e446]:
+              - link "083 465 9921" [ref=f20e447] [cursor=pointer]:
+                - /url: tel:0834659921
+              - text: ·
+              - link "041 007 0393" [ref=f20e448] [cursor=pointer]:
+                - /url: tel:0410070393
+          - generic [ref=f20e454]:
+            - generic [ref=f20e455]: Email
+            - link "sales@yourcarguy.co.za" [ref=f20e457] [cursor=pointer]:
+              - /url: mailto:sales@yourcarguy.co.za
+          - generic [ref=f20e463]:
+            - generic [ref=f20e464]: Hours
+            - generic [ref=f20e465]: Mon-Fri 07:30-17:30Sat 08:00-13:00
+  - text: 
+  - button "Chat with us on WhatsApp" [ref=f20e466] [cursor=pointer]
+  - generic [ref=f20e470]:
+    - generic [ref=f20e471]:
+      - generic [ref=f20e472]: "0"
+      - text: Added to Compare
+    - generic [ref=f20e473]:
+      - link "Compare Now" [ref=f20e474] [cursor=pointer]:
+        - /url: https://yourcarguy.co.za/compare-vehicles/
+      - button "Clear" [ref=f20e475] [cursor=pointer]
+  - status [ref=f20e476]
+  - button "Check affordability" [ref=f20e477] [cursor=pointer]
+  - button "Open contact form" [ref=f20e482] [cursor=pointer]

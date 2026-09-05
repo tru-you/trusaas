@@ -296,7 +296,7 @@
     ".tf-field input:focus,.tf-field textarea:focus,.tf-field select:focus{",
     "border-color:rgb(var(--tf-signal-rgb)/.55);box-shadow:0 0 0 3px rgb(var(--tf-signal-rgb)/.22)}",
     ".tf-field textarea{min-height:88px;line-height:1.5}",
-    ".tf-field select option{background:var(--tf-surface);color:#fff}",
+    ".tf-field select option{background:var(--tf-surface);color:var(--tf-text);}",
     ".tf-field.tf-err input,.tf-field.tf-err textarea,.tf-field.tf-err select{border-color:rgba(239,68,68,.6);box-shadow:0 0 0 3px rgba(239,68,68,.15)}",
     ".tf-field .tf-hint{font-size:10px;color:var(--tf-err);margin-top:4px;display:none}",
     ".tf-field.tf-err .tf-hint{display:block}",

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Packages — TruDealer</title>
+<meta name="description" content="TruDealer packages for independent dealers. TruInspect included in every tier. Setup once, monthly license, cancel anytime."/>
+<link rel="canonical" href="https://trudealer.tru-saas.com/packages.html"/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="apple-touch-icon" href="favicon.svg"/>
+<meta name="theme-color" content="#F3F0E7"/>
+<meta property="og:title" content="TruDealer — Packages"/>
+<meta property="og:description" content="Packages for independent dealers. TruInspect in every tier. Setup once, monthly license, cancel anytime."/>
+<meta property="og:url" content="https://trudealer.tru-saas.com/packages.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="https://trudealer.tru-saas.com/trudealer-futureautomotive-8k-transparent.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="TruDealer — Packages"/>
+<meta name="twitter:description" content="Packages for independent dealers. TruInspect in every tier."/>
+<meta name="twitter:image" content="https://trudealer.tru-saas.com/trudealer-futureautomotive-8k-transparent.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#F3F0E7;--ink-2:#0F1923;--white:#14141F;--white-dim:rgba(20,20,31,.78);
+  --muted:rgba(84,98,120,.85);--faint:rgba(84,98,120,.55);
+  --cyan:#0B7C72;--cyan-soft:rgba(13,148,136,.18);--cyan-glow:rgba(13,148,136,.2);
+  --amber:#D4942A;--amber-soft:rgba(212,148,42,.2);--amber-glow:rgba(212,148,42,.18);
+  --border:rgba(0,0,0,.08);--glass:rgba(255,255,255,.75);--glass-line:rgba(0,0,0,.08);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces','Inter Tight',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;scroll-padding-top:90px;}
+body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;opacity:0;animation:pageFade .6s ease forwards;}
+@keyframes pageFade{to{opacity:1;}}
+a{color:inherit;text-decoration:none;}
+::selection{background:var(--cyan);color:#fff;}
+
+.bg-grid{display:none;position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:60px 60px;mask-image:radial-gradient(circle at 50% 50%,black 30%,transparent 80%);}
+.bg-vignette{display:none;position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 50% 35%,transparent 15%,rgba(3,5,8,.85) 75%),linear-gradient(to bottom,rgba(3,5,8,.5),transparent 30%,transparent 70%,var(--ink));}
+
+/* Scroll progress */
+.scroll-prog{position:fixed;top:0;left:0;right:0;height:2px;background:transparent;z-index:100;}
+.scroll-prog-fill{height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),#5EEAD4);box-shadow:0 0 8px rgba(13,148,136,.3);transform:scaleX(0);transform-origin:left;will-change:transform;}
+
+/* Nav */
+.nav{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 20px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:99px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:1100px;width:calc(100% - 48px);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .4s;}
+.nav.nav--hidden{transform:translateX(-50%) translateY(-120%);opacity:0;pointer-events:none;}
+.nav-brand{display:flex;align-items:center;color:var(--white);font-weight:800;font-size:22px;letter-spacing:-.02em;}
+.nav-brand .t{background:linear-gradient(180deg,#1E293B,#64748B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-brand .d{background:linear-gradient(180deg,#0D9488,#0F766E,#115E59);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:28px;font-size:13.5px;color:var(--white-dim);}
+.nav-links a{transition:color .2s;position:relative;padding-bottom:2px;}
+.nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease;}
+.nav-links a:hover{color:var(--white);}
+.nav-links a:hover::after{right:0;}
+.nav-links a[aria-current="page"]{color:var(--cyan);}
+.nav-links a[aria-current="page"]::after{right:0;}
+.nav-cta{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;border:1px solid var(--cyan);border-radius:100px;color:var(--cyan);transition:all .2s;}
+.nav-cta:hover{background:var(--cyan);color:#fff;}
+.nav-cta.armed{background:var(--cyan);color:var(--ink);animation:navArm 1s ease-in-out infinite;}
+@keyframes navArm{0%,100%{box-shadow:0 0 0 0 rgba(79,227,220,.5);}50%{box-shadow:0 0 0 6px rgba(79,227,220,0);}}
+.nav-right{display:flex;align-items:center;gap:14px;}
+.curr-toggle{display:flex;border:1px solid var(--glass-line);border-radius:100px;padding:3px;font-family:var(--mono);font-size:10.5px;}
+.curr-toggle button{padding:5px 10px;border-radius:100px;color:var(--muted);transition:all .2s;background:transparent;border:0;cursor:pointer;}
+.curr-toggle button.active{background:var(--cyan);color:#fff;}
+.nav-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.1em;}
+.nav-status .dot{width:5px;height:5px;border-radius:50%;background:#0D9488;box-shadow:0 0 6px rgba(13,148,136,.4);}
+.nav-burger{display:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--glass-line);align-items:center;justify-content:center;flex:none;background:none;cursor:pointer;}
+.nav-burger span,.nav-burger span::before,.nav-burger span::after{display:block;width:16px;height:1.5px;background:var(--white);transition:transform .25s,top .25s,background .25s;}
+.nav-burger span{position:relative;}
+.nav-burger span::before,.nav-burger span::after{content:'';position:absolute;left:0;}
+.nav-burger span::before{top:-5px;} .nav-burger span::after{top:5px;}
+.nav.open .nav-burger span{background:transparent;}
+.nav.open .nav-burger span::before{top:0;transform:rotate(45deg);}
+.nav.open .nav-burger span::after{top:0;transform:rotate(-45deg);}
+.nav-mobile{display:none;position:absolute;top:calc(100% + 10px);left:0;right:0;padding:10px;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.1);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .25s,transform .25s,visibility .25s;}
+.nav-mobile a{display:block;padding:13px 14px;border-radius:10px;font-size:15px;color:var(--white-dim);}
+.nav-mobile a:hover{background:rgba(13,148,136,.06);color:var(--white);}
+.nav-mobile a.active{color:var(--cyan);background:rgba(13,148,136,.06);}
+.nav-mobile-cta{margin-top:6px;text-align:center;background:var(--cyan);color:#fff!important;font-weight:600;}
+.nav.open .nav-mobile{opacity:1;visibility:visible;transform:translateY(0);}
+.nav-mobile a{opacity:0;transform:translateX(-12px);transition:opacity .35s ease,transform .35s ease,background .2s,color .2s;}
+.nav.open .nav-mobile a{opacity:1;transform:translateX(0);}
+.nav.open .nav-mobile a:nth-child(1){transition-delay:.04s;}
+.nav.open .nav-mobile a:nth-child(2){transition-delay:.08s;}
+.nav.open .nav-mobile a:nth-child(3){transition-delay:.12s;}
+.nav.open .nav-mobile a:nth-child(4){transition-delay:.16s;}
+.nav.open .nav-mobile a:nth-child(5){transition-delay:.20s;}
+.nav.open .nav-mobile a:nth-child(6){transition-delay:.24s;}
+.nav.open .nav-mobile a:nth-child(7){transition-delay:.28s;}
+@media(max-width:820px){
+  .nav-links{display:none;}
+  .nav{padding:8px 12px;width:calc(100% - 24px);}
+  .nav-burger{display:flex;}
+  .nav-mobile{display:block;}
+  .nav-cta{display:none;}
+  .nav-status{display:none;}
+}
+@media(max-width:640px){.nav{width:calc(100% - 24px);padding:8px 14px;}}
+
+/* Hero */
+.hero{position:relative;z-index:2;padding:140px 24px 60px;text-align:center;max-width:900px;margin:0 auto;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--cyan-soft);border-radius:100px;background:rgba(79,227,220,.06);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);width:fit-content;margin:0 auto 24px;}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:pulse 1.8s ease-out infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(79,227,220,.55);}70%{box-shadow:0 0 0 10px rgba(79,227,220,0);}100%{box-shadow:0 0 0 0 rgba(79,227,220,0);}}
+.hero h1{font-family:var(--display);font-size:clamp(38px,5.4vw,70px);line-height:1.02;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:22px;text-wrap:balance;}
+.hero h1 em{font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;color:var(--cyan);}
+.hero h1 .accent{color:var(--cyan);}
+.hero p{font-size:clamp(16px,1.4vw,19px);color:var(--white-dim);max-width:620px;margin:0 auto 36px;line-height:1.55;}
+
+/* Currency */
+.curr-bar{display:flex;justify-content:center;gap:8px;margin-bottom:48px;}
+.curr-btn{font-family:var(--mono);font-size:12px;letter-spacing:.1em;padding:8px 18px;border-radius:100px;border:1px solid var(--glass-line);background:var(--glass);color:var(--muted);cursor:pointer;transition:all .2s;}
+.curr-btn:hover{border-color:var(--cyan-soft);color:var(--white);}
+.curr-btn.active{background:var(--cyan);color:#fff;border-color:var(--cyan);}
+
+/* Section labels */
+.section-label{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 24px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);}
+
+/* Cards */
+.cards{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1440px;margin:0 auto;padding:0 24px 40px;}
+@media(max-width:1180px){.cards{grid-template-columns:repeat(2,1fr);max-width:760px;}}
+@media(max-width:640px){.cards{grid-template-columns:1fr;max-width:520px;}}
+
+.card{position:relative;padding:36px 28px 28px;border-radius:20px;background:#FBF9F3;border:1px solid rgba(60,50,30,.1);backdrop-filter:none;box-shadow:0 1px 3px rgba(60,50,30,.05),0 10px 30px -14px rgba(60,50,30,.11);transition:transform .35s ease,border-color .35s ease;display:flex;flex-direction:column;}
+.card:hover{transform:translateY(-4px);border-color:rgba(13,148,136,.3);box-shadow:0 4px 16px rgba(0,0,0,.08),0 16px 48px -16px rgba(13,148,136,.12);}
+.card.featured{border-color:rgba(13,148,136,.28);background:linear-gradient(180deg,rgba(13,148,136,.05),#FBF9F3);}
+.card.featured::before{content:"MOST POPULAR";position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:5px 14px;border-radius:100px;background:var(--cyan);color:#fff;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;font-weight:600;}
+
+.card-tier{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.card-name{font-family:var(--display);font-size:30px;font-weight:400;font-variation-settings:"opsz" 72,"SOFT" 30;letter-spacing:-.03em;margin-bottom:6px;}
+.card-desc{font-size:14px;color:var(--white-dim);line-height:1.5;margin-bottom:24px;min-height:42px;}
+
+/* Price block */
+.card-price-block{text-align:center;margin-bottom:20px;padding:18px 0;border-top:1px solid var(--glass-line);border-bottom:1px solid var(--glass-line);}
+.card-price-block .setup-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
+.card-price-block .setup-fee{font-size:15px;color:var(--white-dim);margin-bottom:4px;}
+.card-price-block .setup-fee .strike{text-decoration:line-through;color:var(--faint);margin-right:6px;}
+.card-price-block .setup-fee .waived{color:var(--cyan);font-weight:600;}
+.card-price-block .setup-note{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-bottom:14px;}
+.card-price-block .mo-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:4px;}
+.card-price{display:flex;align-items:flex-start;gap:4px;justify-content:center;}
+.card-price .sym{font-family:var(--display);font-size:20px;font-weight:400;font-variation-settings:"opsz" 72,"SOFT" 30;color:var(--amber);margin-top:6px;font-style:italic;}
+.card-price .num{font-family:var(--display);font-size:48px;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;letter-spacing:-.035em;line-height:1;color:var(--white);}
+.card-price .mo{font-size:13px;color:var(--muted);align-self:flex-end;margin-bottom:8px;margin-left:4px;}
+.card-cancel{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--cyan);margin-top:8px;}
+
+.card-cta{display:block;width:100%;padding:14px 0;border-radius:100px;text-align:center;font-size:14px;font-weight:600;transition:background .25s,color .25s,box-shadow .25s,transform .25s;margin-bottom:28px;}
+.card-cta.primary{background:var(--cyan);color:#fff;box-shadow:0 6px 20px -8px var(--cyan-glow),inset 0 1px 0 rgba(255,255,255,.2);}
+.card-cta.primary:hover{background:#0B7C72;color:#fff;transform:translateY(-1px);box-shadow:0 8px 28px -8px rgba(13,148,136,.35);}
+.card-cta.ghost{border:1px solid rgba(0,0,0,.12);color:var(--white);}
+.card-cta.ghost:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(13,148,136,.04);}
+
+.card-div{height:1px;background:var(--glass-line);margin-bottom:22px;}
+.card-features{list-style:none;display:grid;gap:10px;margin-bottom:8px;}
+.card-features li{font-size:13.5px;color:var(--white-dim);padding-left:22px;position:relative;line-height:1.45;}
+.card-features li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
+.card-features li.muted{color:var(--faint);}
+.card-features li.muted::before{background:var(--faint);box-shadow:none;}
+.card-note{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:auto;padding-top:20px;letter-spacing:.05em;}
+
+/* Standalone section */
+/* ─── INTERNATIONAL PRICING TABLE ──────────────── */
+.fx-section{padding-bottom:40px;}
+.fx-table td.fxv{font-family:var(--display);font-size:18px;font-weight:400;font-variation-settings:"opsz" 72,"SOFT" 30;letter-spacing:-.02em;color:var(--white);white-space:nowrap;}
+.fx-table td:first-child{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.fx-note{margin-top:18px;font-size:13px;color:var(--muted);text-align:center;}
+@media(max-width:820px){.fx-table td.fxv{font-size:15px;} .fx-table td:first-child{font-size:10.5px;}}
+
+
+/* Compare */
+.compare{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:0 24px 100px;}
+.compare h2{font-family:var(--display);font-size:clamp(28px,3.2vw,40px);font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;letter-spacing:-.03em;text-align:center;margin-bottom:48px;text-wrap:balance;}
+.compare-table{width:100%;border-collapse:collapse;font-size:14px;}
+.compare-table th{text-align:left;padding:14px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--glass-line);font-weight:500;}
+.compare-table th:not(:first-child){text-align:center;}
+.compare-table td{padding:14px 16px;border-bottom:1px solid var(--glass-line);color:var(--white-dim);}
+.compare-table td:first-child{color:var(--white);font-weight:500;}
+.compare-table td:not(:first-child){text-align:center;font-family:var(--mono);font-size:12px;}
+.compare-table .yes{color:var(--cyan);font-weight:600;}
+.compare-table .no{color:var(--faint);}
+.compare-table tr:hover td{background:rgba(13,148,136,.03);}
+@media(max-width:640px){.compare-table{font-size:12px;}.compare-table th,.compare-table td{padding:10px 8px;}}
+
+/* Trust */
+.trust{position:relative;z-index:2;border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);background:#EAE6DA;padding:60px 24px;}
+.trust-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center;}
+@media(max-width:820px){.trust-inner{grid-template-columns:repeat(2,1fr);}}
+.trust-item .n{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase;margin-bottom:8px;}
+.trust-item p{font-size:13.5px;color:var(--white-dim);line-height:1.5;}
+
+/* FAQ */
+.faq{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:100px 24px;}
+.faq h2{font-size:clamp(26px,3vw,36px);font-weight:600;letter-spacing:-.02em;text-align:center;margin-bottom:48px;}
+.faq-item{border-bottom:1px solid var(--glass-line);}
+.faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;padding:22px 0;background:none;border:none;color:var(--white);font-family:var(--sans);font-size:16px;font-weight:500;text-align:left;cursor:pointer;}
+.faq-q:hover{color:var(--cyan);}
+.faq-q:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px;}
+.faq-q .plus{font-family:var(--mono);font-size:18px;color:var(--cyan);transition:transform .3s;}
+.faq-item.open .plus{transform:rotate(45deg);}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;color:var(--white-dim);font-size:14.5px;line-height:1.6;}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:22px;}
+
+/* CTA */
+.cta{position:relative;z-index:2;padding:100px 24px;text-align:center;background:radial-gradient(ellipse 60% 100% at 50% 50%,rgba(13,148,136,.04),transparent);border-top:1px solid rgba(0,0,0,.06);}
+.cta h2{font-size:clamp(28px,4vw,48px);font-weight:600;letter-spacing:-.02em;margin-bottom:16px;}
+.cta p{font-size:17px;color:var(--white-dim);max-width:520px;margin:0 auto 32px;}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:100px;background:var(--cyan);color:#fff;font-size:15px;font-weight:600;transition:all .25s;}
+.cta-btn:hover{background:#0B7C72;transform:translateY(-2px);box-shadow:0 8px 28px -8px rgba(13,148,136,.35);}
+.cta-sub{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:16px;letter-spacing:.05em;}
+
+/* Footer */
+.footer{position:relative;z-index:2;padding:40px 24px;border-top:1px solid rgba(0,0,0,.06);background:#0F1923;text-align:center;}
+.footer p{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(148,163,184,.7);}
+.footer a{color:#5EEAD4;}
+
+/* Back to top */
+.btt{position:fixed;bottom:88px;right:24px;z-index:55;width:44px;height:44px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-line);display:grid;place-items:center;cursor:pointer;opacity:0;transform:translateY(12px);pointer-events:none;transition:all .35s cubic-bezier(.25,.46,.45,.94);backdrop-filter:blur(12px);}
+.btt:hover{border-color:rgba(13,148,136,.2);background:rgba(13,148,136,.06);transform:translateY(-2px);}
+.btt.visible{opacity:1;transform:translateY(0);pointer-events:auto;}
+.btt svg{width:18px;height:18px;stroke:var(--cyan);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+
+/* Reveal animations */
+.reveal{opacity:0;transform:translateY(24px);}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;animation:none;}}
+.reveal.visible{opacity:1;transform:translateY(0);transition:opacity .8s ease,transform .8s ease;}
+.reveal.d1{transition-delay:.1s;}
+.reveal.d2{transition-delay:.2s;}
+.reveal.d3{transition-delay:.3s;}
+
+/* Content visibility for performance */
+.section-label,.cards,.compare,.trust,.faq,.cta,.footer{content-visibility:auto;contain-intrinsic-size:auto 300px;}
+
+/* Print styles */
+@media print{
+  .nav,.scroll-prog,.btt,.bg-grid,.bg-vignette{display:none!important;}
+  body{background:#fff;color:#000;}
+  .card{break-inside:avoid;border:1px solid #ccc;}
+  .hero{padding-top:40px;}
+}
+
+/* Focus visible everywhere */
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-vignette"></div>
+<div class="scroll-prog"><div class="scroll-prog-fill" id="prog"></div></div>
+
+<nav class="nav" id="mainNav">
+  <a href="index.html" class="nav-brand"><span class="t">Tru</span><span class="d">Dealer</span></a>
+  <div class="nav-links">
+    <a href="index.html#work">Dealer sites</a>
+    <a href="packages.html" aria-current="page">Packages</a>
+    <a href="index.html#stack">Modules</a>
+    <a href="index.html#cases">Case studies</a>
+    <a href="index.html#how">How it works</a>
+    <a href="index.html#founder">Founder</a>
+  </div>
+  <div class="nav-right">
+    <div class="curr-toggle" role="group" aria-label="Currency">
+      <button data-curr="USD">$</button>
+      <button data-curr="GBP">£</button>
+      <button data-curr="ZAR">R</button>
+    </div>
+    <a href="index.html#book" class="nav-cta">Book a walkthrough →</a>
+    <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
+  </div>
+
+  <div class="nav-mobile" id="navMobile">
+    <a href="index.html#work">Dealer sites</a>
+    <a href="packages.html" class="active">Packages</a>
+    <a href="index.html#stack">Modules</a>
+    <a href="index.html#cases">Case studies</a>
+    <a href="index.html#how">How it works</a>
+    <a href="index.html#founder">Founder</a>
+    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-mobile-cta">Book a walkthrough →</a>
+  </div>
+</nav>
+
+<main>
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Setup once · Monthly license · Cancel anytime</div>
+  <h1>Setup once. Pay monthly. <em class="accent">Cancel anytime.</em></h1>
+  <p>No annual lock-ins, no per-seat fees, no enterprise pricing theatre. TruInspect is included in every tier — because trust isn't a premium feature. You pay once to get live, then monthly for the software. If it does not work for your floor, cancel and keep your data.</p>
+
+  <div class="curr-bar">
+    <button class="curr-btn" data-c="GBP" onclick="setC('GBP')">GBP £</button>
+    <button class="curr-btn active" data-c="USD" onclick="setC('USD')">USD $</button>
+    <button class="curr-btn" data-c="ZAR" onclick="setC('ZAR')">ZAR R</button>
+  </div>
+</section>
+
+<div class="section-label reveal">Full Stack Packages</div>
+
+<section class="cards">
+
+  <!-- TruStart -->
+  <article class="card reveal d1">
+    <div class="card-tier">Entry</div>
+    <div class="card-name">TruStart</div>
+    <div class="card-desc">For the single-rooftop independent getting credible and visible. Inspections, capture and AI chat from day one.</div>
+
+    <div class="card-price-block">
+      <div class="setup-label">One-time setup</div>
+      <div class="setup-fee">
+        <span class="waived"><b>Zero</b> setup fee — no friction to get live</span>
+      </div>
+      <div class="setup-note">Branding, domain, stock import, team training — included</div>
+
+      <div class="mo-label">Then per month</div>
+      <div class="card-price">
+        <span class="sym" data-sym>R</span>
+        <span class="num" data-price-start-mo>2,499</span>
+        <span class="mo">/mo</span>
+      </div>
+      <div class="card-cancel">Cancel anytime · no questions</div>
+    </div>
+
+    <a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20interested%20in%20TruStart" class="card-cta ghost" target="_blank" rel="noopener">Get started</a>
+    <div class="card-div"></div>
+    <ul class="card-features">
+      <li>TruInspect — VIR + trade-in appraisal (3 templates)</li>
+      <li>TruShowroom — dealer website</li>
+      <li>TruFlow Light — stock portal, no unit limit</li>
+      <li>TruChat AI — WhatsApp + web</li>
+      <li>TruLens (1 user) + 3D Orbit</li>
+      <li class="muted">TruFlow Full DMS — deal jackets, F&amp;I</li>
+      <li class="muted">TruSocial · TruLive · TruTrade · TruForms · TruRepay — from TruPro</li>
+    </ul>
+    <div class="card-note">Month-to-month software license. Setup fee is once-off.</div>
+  </article>
+
+  <!-- TruPro -->
+  <article class="card featured reveal d2">
+    <div class="card-tier">Growth</div>
+    <div class="card-name">TruPro</div>
+    <div class="card-desc">For the mid-size independent doing 20–80 units a month. Full DMS with F&amp;I, TruValue and video handover — plus TruTrade, TruForms and TruRepay. Compete with the groups.</div>
+
+    <div class="card-price-block">
+      <div class="setup-label">One-time setup</div>
+      <div class="setup-fee">
+        <span class="strike" data-setup-full="pro">R 15,000</span>
+        <span class="waived"><b data-setup-48="pro">R 7,500</b> if signed within 48h of demo</span>
+      </div>
+      <div class="setup-note">Covers branding, domain, stock import, team training</div>
+
+      <div class="mo-label">Then per month</div>
+      <div class="card-price">
+        <span class="sym" data-sym>R</span>
+        <span class="num" data-price-pro-mo>4,999</span>
+        <span class="mo">/mo</span>
+      </div>
+      <div class="card-cancel">Cancel anytime · no questions</div>
+    </div>
+
+    <a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20interested%20in%20TruPro" class="card-cta primary" target="_blank" rel="noopener">Get started</a>
+    <div class="card-div"></div>
+    <ul class="card-features">
+      <li>Everything in TruStart</li>
+      <li>TruInspect — full VIR + trade-in + unlimited templates</li>
+      <li>TruFlow Pro — full DMS, F&amp;I, audit trail</li>
+      <li>TruLive — video handover</li>
+      <li>TruTrade — live video trade-in appraisal</li>
+      <li>TruForms — enquiry forms straight to WhatsApp + DMS</li>
+      <li>TruRepay — finance calculator in every listing</li>
+      <li>TruConcierge — guided vehicle discovery for site visitors</li>
+      <li>TruAfford — affordability pre-qualifier, matches budget to stock</li>
+      <li>TruSocial — publish to Facebook, Instagram, Google Business, LinkedIn, WhatsApp</li>
+      <li>TruLens (3 users) + 3D Orbit</li>
+      <li>Priority WhatsApp support</li>
+    </ul>
+    <div class="card-note">Month-to-month software license. Setup fee is once-off.</div>
+  </article>
+
+  <!-- TruEnterprise -->
+  <article class="card reveal d3">
+    <div class="card-tier">Scale</div>
+    <div class="card-name">TruEnterprise</div>
+    <div class="card-desc">For dealer groups, franchise used departments, and BHPH operators who need custom workflows and white-label deployment.</div>
+
+    <div class="card-price-block">
+      <div class="setup-label">One-time setup</div>
+      <div class="setup-fee">
+        <span class="waived">Custom scope · from <b data-setup-ent>R 30,000</b> · quoted after call</span>
+      </div>
+      <div class="setup-note">Multi-branch, API work, custom integrations</div>
+
+      <div class="mo-label">Then per month</div>
+      <div class="card-price">
+        <span class="sym" data-sym>R</span>
+        <span class="num" data-price-ent-mo>12,000</span>
+        <span class="mo">/mo+</span>
+      </div>
+      <div class="card-cancel">Annual agreement · SLA included</div>
+    </div>
+
+    <a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20interested%20in%20TruEnterprise" class="card-cta ghost" target="_blank" rel="noopener">Talk to sales</a>
+    <div class="card-div"></div>
+    <ul class="card-features">
+      <li>Everything in TruPro</li>
+      <li>White-label deployment</li>
+      <li>TruVoice — after-hours AI voice agent</li>
+      <li>Custom VIR templates</li>
+      <li>TruConcierge — guided vehicle discovery for site visitors</li>
+      <li>TruAfford — affordability pre-qualifier, matches budget to stock</li>
+      <li>API access + custom integrations</li>
+      <li>Unlimited TruLens + 3D Orbit</li>
+      <li>Dedicated onboarding + SLA</li>
+    </ul>
+    <div class="card-note">Annual software license. Phone support included.</div>
+  </article>
+
+  <!-- Standalones -->
+  <article class="card reveal d4">
+    <div class="card-tier">À la carte</div>
+    <div class="card-name">Standalones</div>
+    <div class="card-desc">Already have a website or DMS? Add a single TruDealer module on its own — TruChat, TruForms, or TruLens alone.</div>
+
+    <div class="card-price-block">
+      <div class="setup-label">One-time setup</div>
+      <div class="setup-fee">
+        <span class="waived"><b data-setup-solo>R 2,000</b> once-off, per module</span>
+      </div>
+      <div class="setup-note">Install, connect to your existing site or number</div>
+
+      <div class="mo-label">Then per month</div>
+      <div class="card-price">
+        <span class="sym" data-sym>R</span>
+        <span class="num" data-price-solo-mo>399</span>
+        <span class="mo">/mo</span>
+      </div>
+      <div class="card-cancel">Per module · cancel anytime</div>
+    </div>
+
+    <a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20interested%20in%20a%20standalone%20module" class="card-cta ghost" target="_blank" rel="noopener">Ask about a module</a>
+    <div class="card-div"></div>
+    <ul class="card-features">
+      <li>Pick one: TruChat AI, TruForms, TruLens, or TruRepay</li>
+      <li>Drops into your existing site or WhatsApp number</li>
+      <li>No DMS or dealer site migration required</li>
+      <li class="muted">Bundle discount available above 2 modules</li>
+    </ul>
+    <div class="card-note">Priced per module. Setup fee is once-off.</div>
+  </article>
+
+</section>
+
+<div class="section-label reveal">Priced for your market</div>
+
+<section class="compare fx-section">
+  <h2 class="reveal">Same product. Local currency. <em>No FX surprises.</em></h2>
+  <table class="compare-table fx-table reveal">
+    <thead>
+      <tr>
+        <th>Currency</th>
+        <th>TruStart setup</th>
+        <th>TruStart / mo</th>
+        <th>TruPro setup</th>
+        <th>TruPro / mo</th>
+        <th>Standalone setup</th>
+        <th>Standalone / mo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ZAR · South Africa</td>
+        <td class="fxv" data-fx="ZAR-start-setup">R 0</td>
+        <td class="fxv" data-fx="ZAR-start-mo">R 2,499</td>
+        <td class="fxv" data-fx="ZAR-pro-setup">R 15,000</td>
+        <td class="fxv" data-fx="ZAR-pro-mo">R 4,999</td>
+        <td class="fxv" data-fx="ZAR-solo-setup">R 2,000</td>
+        <td class="fxv" data-fx="ZAR-solo-mo">R 399</td>
+      </tr>
+      <tr>
+        <td>USD · United States</td>
+        <td class="fxv" data-fx="USD-start-setup">$ 0</td>
+        <td class="fxv" data-fx="USD-start-mo">$ 199</td>
+        <td class="fxv" data-fx="USD-pro-setup">$ 1,499</td>
+        <td class="fxv" data-fx="USD-pro-mo">$ 399</td>
+        <td class="fxv" data-fx="USD-solo-setup">$ 199</td>
+        <td class="fxv" data-fx="USD-solo-mo">$ 39</td>
+      </tr>
+      <tr>
+        <td>GBP · United Kingdom</td>
+        <td class="fxv" data-fx="GBP-start-setup">£ 0</td>
+        <td class="fxv" data-fx="GBP-start-mo">£ 169</td>
+        <td class="fxv" data-fx="GBP-pro-setup">£ 1,199</td>
+        <td class="fxv" data-fx="GBP-pro-mo">£ 319</td>
+        <td class="fxv" data-fx="GBP-solo-setup">£ 155</td>
+        <td class="fxv" data-fx="GBP-solo-mo">£ 29</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="fx-note reveal">48-hour demo discount applies in all currencies. Enterprise pricing quoted after a scoping call.</p>
+</section>
+
+<section class="compare">
+  <h2 class="reveal">What you get at each tier</h2>
+  <table class="compare-table reveal">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>TruStart</th>
+        <th>TruPro</th>
+        <th>Enterprise</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>TruInspect — VIR + trade-in</td><td class="yes">Standard · 3 templates</td><td class="yes">Full · unlimited</td><td class="yes">Custom templates</td></tr>
+      <tr><td>Dealer website (TruShowroom)</td><td class="yes">Included</td><td class="yes">Included</td><td class="yes">White-label</td></tr>
+      <tr><td>Live units on site</td><td class="yes">Unlimited</td><td class="yes">Unlimited</td><td class="yes">Unlimited</td></tr>
+      <tr><td>AI chat (TruChat)</td><td class="yes">Web + WhatsApp</td><td class="yes">Web + WhatsApp + phone</td><td class="yes">Custom routing</td></tr>
+      <tr><td>Guided photo capture (TruLens)</td><td>1 user</td><td>3 users</td><td class="yes">Unlimited</td></tr>
+      <tr><td>3D Orbit — 360° spin</td><td class="yes">Included</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+      <tr><td>Trade-in appraisal</td><td class="yes">Via TruInspect</td><td class="yes">Via TruInspect</td><td class="yes">Via TruInspect</td></tr>
+      <tr><td>Video handover (TruLive)</td><td class="no">—</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+      <tr><td>Finance calculator (TruRepay)</td><td class="no">—</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+      <tr><td>Live video trade-in (TruTrade)</td><td class="no">—</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+      <tr><td>Enquiry forms (TruForms)</td><td class="no">—</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+      <tr><td>Social publishing (TruSocial)</td><td class="no">—</td><td class="yes">Included</td><td class="yes">Included</td></tr>
+      <tr><td>After-hours voice (TruVoice)</td><td class="no">—</td><td class="no">—</td><td class="yes">Included</td></tr>
+      <tr><td>DMS — deal jackets, F&amp;I</td><td>Light · stock portal</td><td class="yes">Full DMS</td><td class="yes">Full DMS + API</td></tr>
+      <tr><td>Vehicle valuation &amp; spec data</td><td class="yes">Bundled reference lookup</td><td class="yes">Bundled + market cross-check</td><td class="yes">Bundled + custom engine</td></tr>
+      <tr><td>Lead pipeline &amp; scoring</td><td class="yes">6-stage pipeline</td><td class="yes">Pipeline + SLA alerts + AI auto-assign</td><td class="yes">Custom routing rules</td></tr>
+      <tr><td>Multi-branch support</td><td class="no">—</td><td class="no">—</td><td class="yes">Included</td></tr>
+      <tr><td>API access</td><td class="no">—</td><td class="no">—</td><td class="yes">Included</td></tr>
+      <tr><td>Support</td><td>WhatsApp</td><td>Priority WhatsApp</td><td>Phone + SLA</td></tr>
+      <tr><td>Go-live time</td><td>5 days</td><td>5 days</td><td>10 days</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="trust">
+  <div class="trust-inner">
+    <div class="trust-item">
+      <div class="n">Setup discounted</div>
+      <p>Sign within 48 hours of your demo and setup drops by roughly half. We charge it to cover real onboarding work — and to filter out time-wasters.</p>
+    </div>
+    <div class="trust-item">
+      <div class="n">Cancel anytime</div>
+      <p>Month-to-month on TruStart and TruPro. No annual lock-in. No cancellation fees. Your data exports on request.</p>
+    </div>
+    <div class="trust-item">
+      <div class="n">Built in CPT</div>
+      <p>Enterprise-grade hosting in EU-West. GDPR and POPIA aligned by default.</p>
+    </div>
+    <div class="trust-item">
+      <div class="n">Real support</div>
+      <p>You WhatsApp the founder. Not a ticket queue. Responses same day, usually within the hour.</p>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <h2 class="reveal">Questions dealers actually ask</h2>
+
+  <div class="faq-item reveal">
+    <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Do I have to pay extra for TruInspect? <span class="plus">+</span></button>
+    <div class="faq-a">No. TruInspect is included in every tier — VIR reports and trade-in appraisals from day one, on TruStart as well as TruPro. Trust isn't a premium feature, so we don't price it like one. TruStart gives you three report templates; TruPro unlocks unlimited templates and the deeper inspection workflow.</div>
+  </div>
+
+  <div class="faq-item reveal">
+    <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Why is there a setup fee? <span class="plus">+</span></button>
+    <div class="faq-a">The setup fee covers skinning your brand, configuring your domain, importing your stock, and training your team. It is a one-time cost. Sign within 48 hours of the demo and we cut it by roughly half — that tells us you are serious, and we like working with decisive dealers.</div>
+  </div>
+
+  <div class="faq-item reveal">
+    <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">What happens if I cancel? <span class="plus">+</span></button>
+    <div class="faq-a">You walk away. No cancellation fee. No clawback. Your stock data, customer list, and deal history exports to CSV or Excel on request. The website goes offline but your data is yours. We do not hold dealers hostage.</div>
+  </div>
+
+  <div class="faq-item reveal">
+    <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I switch tiers later? <span class="plus">+</span></button>
+    <div class="faq-a">Yes. Start on TruStart, upgrade to TruPro when you hit 20 units, or jump straight to Enterprise if you are a group. You never migrate data — it is the same stack, just more features unlocked. The monthly adjusts on your next billing cycle.</div>
+  </div>
+
+  <div class="faq-item reveal">
+    <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Do I pay extra for TruLens users? <span class="plus">+</span></button>
+    <div class="faq-a">No. TruStart includes 1 user, TruPro includes 3, Enterprise is unlimited. We do not charge per-seat fees on the capture side — your photographer, lot porter, and sales manager can all shoot without us invoicing per login.</div>
+  </div>
+
+  <div class="faq-item reveal">
+    <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Does this work outside South Africa? <span class="plus">+</span></button>
+    <div class="faq-a">Yes. We have live deployments in the UK and US. Currency, compliance language, and F&I partners switch per market. The core stack is the same — just localized to your buyer.</div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2 class="reveal">Still not sure which tier?</h2>
+  <p class="reveal">Book a 25-minute walkthrough. We will run your actual stock through the stack and tell you honestly which tier fits — no upsell if you do not need it.</p>
+  <a href="https://cal.com/pgdebeer" target="_blank" class="cta-btn reveal">Book a walkthrough →</a>
+  <div class="cta-sub reveal">Or WhatsApp Paul directly: <a href="https://wa.me/27620502091" style="color:#0D9488;">+27 62 050 2091</a></div>
+</section>
+</main>
+
+<footer class="footer">
+  <p>© 2026 TruDealer — a <a href="https://tru-saas.com/">TruSaas</a> company · Built in Cape Town · Deployed anywhere</p>
+</footer>
+
+<button class="btt" id="btt" aria-label="Back to top"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+
+<script>
+/* ═══════════════════════════════════════════════
+   PER-CURRENCY PRICING — SA gets its own numbers
+   ═══════════════════════════════════════════════ */
+
+/* Setup is DISCOUNTED (not waived) when signed within 48h of demo.
+   ZAR figures are authoritative (from the brochure); USD/GBP 48h figures
+   are derived at the same ratio. Enterprise USD/GBP are derived from the
+   ZAR floor — confirm before quoting. */
+const PRICING = {
+  USD: {
+    sym: '$',
+    start: { mo: 199, setup: 0,    setup48: 0 },
+    pro:   { mo: 399, setup: 1499, setup48: 749 },
+    ent:   { mo: 899, setup: 4500 },
+    solo:  { mo: 39,  setup: 199 }
+  },
+  GBP: {
+    sym: '£',
+    start: { mo: 169, setup: 0,    setup48: 0 },
+    pro:   { mo: 319, setup: 1199, setup48: 599 },
+    ent:   { mo: 799, setup: 3600 },
+    solo:  { mo: 29,  setup: 155 }
+  },
+  ZAR: {
+    sym: 'R',
+    start: { mo: 2499, setup: 0,     setup48: 0 },
+    pro:   { mo: 4999, setup: 15000, setup48: 7500 },
+    ent:   { mo: 12000, setup: 30000 },
+    solo:  { mo: 399,  setup: 2000 }
+  }
+};
+
+function setC(curr) {
+  // Sync hero bar
+  document.querySelectorAll('.curr-btn').forEach(b => b.classList.toggle('active', b.dataset.c === curr));
+  // Sync nav toggle
+  document.querySelectorAll('.curr-toggle button').forEach(b => b.classList.toggle('active', b.dataset.curr === curr));
+  
+  const P = PRICING[curr];
+  const sym = P.sym;
+
+  // All symbols
+  document.querySelectorAll('[data-sym]').forEach(el => el.textContent = sym);
+
+  const money = n => sym + ' ' + n.toLocaleString();
+
+  // Monthly figures
+  document.querySelectorAll('[data-price-start-mo]').forEach(el => el.textContent = P.start.mo.toLocaleString());
+  document.querySelectorAll('[data-price-pro-mo]').forEach(el => el.textContent = P.pro.mo.toLocaleString());
+  document.querySelectorAll('[data-price-ent-mo]').forEach(el => el.textContent = P.ent.mo.toLocaleString());
+
+  // Setup: full price, then the 48-hour signed rate
+  const tiers = { start: P.start, pro: P.pro };
+  Object.keys(tiers).forEach(k => {
+    document.querySelectorAll('[data-setup-full="' + k + '"]').forEach(el => el.textContent = money(tiers[k].setup));
+    document.querySelectorAll('[data-setup-48="' + k + '"]').forEach(el => el.textContent = money(tiers[k].setup48));
+  });
+
+  // Enterprise setup floor
+  document.querySelectorAll('[data-setup-ent]').forEach(el => el.textContent = money(P.ent.setup));
+
+  // Standalone
+  document.querySelectorAll('[data-price-solo-mo]').forEach(el => el.textContent = P.solo.mo.toLocaleString());
+  document.querySelectorAll('[data-setup-solo]').forEach(el => el.textContent = money(P.solo.setup));
+
+  // Currency comparison table
+  Object.keys(PRICING).forEach(c => {
+    const Q = PRICING[c];
+    const put = (sel, v) => document.querySelectorAll(sel).forEach(el => el.textContent = Q.sym + ' ' + v.toLocaleString());
+    put('[data-fx="' + c + '-start-setup"]', Q.start.setup);
+    put('[data-fx="' + c + '-start-mo"]',    Q.start.mo);
+    put('[data-fx="' + c + '-pro-setup"]',   Q.pro.setup);
+    put('[data-fx="' + c + '-pro-mo"]',      Q.pro.mo);
+    put('[data-fx="' + c + '-solo-setup"]',  Q.solo.setup);
+    put('[data-fx="' + c + '-solo-mo"]',     Q.solo.mo);
+  });
+
+  // Persist
+  localStorage.setItem('trudealer-curr', curr);
+  document.body.dataset.curr = curr;
+}
+
+// Default to USD, or detect from browser
+const locale = (navigator.language || '').toUpperCase();
+const guess = localStorage.getItem('trudealer-curr') || (locale.includes('GB') ? 'GBP' : locale.includes('ZA') ? 'ZAR' : 'USD');
+setC(guess);
+</script>
+
+<script>
+/* ─── HAMBURGER MENU ────────────────────────────── */
+(function(){
+  const burger=document.getElementById('navBurger');
+  const nav=document.querySelector('.nav');
+  const mobile=document.getElementById('navMobile');
+  if(!burger||!nav)return;
+  burger.addEventListener('click',function(e){
+    e.stopPropagation();
+    const open=nav.classList.toggle('open');
+    burger.setAttribute('aria-expanded',open);
+    document.body.style.overflow=open?'hidden':'';
+  });
+  if(mobile){
+    mobile.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+      nav.classList.remove('open');
+      burger.setAttribute('aria-expanded','false');
+      document.body.style.overflow='';
+    }));
+  }
+  document.addEventListener('click',function(e){
+    if(nav.classList.contains('open')&&!nav.contains(e.target)){
+      nav.classList.remove('open');
+      burger.setAttribute('aria-expanded','false');
+      document.body.style.overflow='';
+    }
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&nav.classList.contains('open')){
+      nav.classList.remove('open');
+      burger.setAttribute('aria-expanded','false');
+      document.body.style.overflow='';
+    }
+  });
+})();
+
+/* ─── CURRENCY TOGGLE (nav) ─────────────────────── */
+(function(){
+  const btns=document.querySelectorAll('.curr-toggle button');
+  btns.forEach(b=>b.addEventListener('click',()=>setC(b.dataset.curr)));
+})();
+
+/* ─── SCROLL PROGRESS BAR ───────────────────────── */
+(function(){
+  const bar=document.getElementById('prog');if(!bar)return;
+  const update=()=>{const h=document.documentElement.scrollHeight-innerHeight;bar.style.transform='scaleX('+(scrollY/h)+')';};
+  addEventListener('scroll',update,{passive:true});update();
+})();
+
+/* ─── SMART NAV HIDE ────────────────────────────── */
+(function(){
+  const nav=document.getElementById('mainNav');if(!nav)return;
+  let lastY=0,ticking=false,threshold=80;
+  window.addEventListener('scroll',function(){
+    if(!ticking){requestAnimationFrame(function(){const y=window.scrollY;if(y>threshold&&y>lastY){nav.classList.add('nav--hidden');}else{nav.classList.remove('nav--hidden');}lastY=y;ticking=false;});ticking=true;}
+  },{passive:true});
+})();
+
+/* ─── BACK TO TOP ───────────────────────────────── */
+(function(){
+  const btt=document.getElementById('btt');if(!btt)return;
+  const onScroll=()=>{btt.classList.toggle('visible',window.scrollY>600);};
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  btt.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+})();
+
+/* ─── REVEAL ON SCROLL (fallback if no GSAP) ────── */
+(function(){
+  if(window.IntersectionObserver){
+    const obs=new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('visible');obs.unobserve(en.target);}});
+    },{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+    document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  }else{
+    document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'));
+  }
+})();
+
+/* ─── FAQ KEYBOARD NAVIGATION ───────────────────── */
+(function(){
+  const items=Array.from(document.querySelectorAll('.faq-item'));
+  const buttons=items.map(i=>i.querySelector('.faq-q'));
+  buttons.forEach((btn,i)=>{
+    btn.addEventListener('keydown',(e)=>{
+      if(e.key==='ArrowDown'){e.preventDefault();buttons[(i+1)%buttons.length].focus();}
+      if(e.key==='ArrowUp'){e.preventDefault();buttons[(i-1+buttons.length)%buttons.length].focus();}
+      if(e.key==='Home'){e.preventDefault();buttons[0].focus();}
+      if(e.key==='End'){e.preventDefault();buttons[buttons.length-1].focus();}
+      if(e.key==='Escape'){items[i].classList.remove('open');btn.focus();}
+    });
+    btn.addEventListener('click',()=>{
+      const open=items[i].classList.toggle('open');
+      // Close others if you want accordion behavior (optional)
+      // if(open) items.forEach((it,j)=>{if(j!==i)it.classList.remove('open');});
+    });
+  });
+})();
+
+/* ─── GUARDED NAV DIALLER ───────────────────────── */
+(function(){
+  var b = document.getElementById('navCall');
+  if(!b) return;
+  var tel = (b.dataset.tel || '').trim();
+  var armWindow = (parseInt(b.dataset.armSeconds,10) || 4) * 1000;
+  var idle = 'Call TruChat';
+  var armed = false, timer = null;
+  function disarm(){
+    armed = false;
+    b.classList.remove('armed');
+    b.textContent = idle;
+    if(timer){ clearTimeout(timer); timer = null; }
+  }
+  b.addEventListener('click', function(e){
+    e.preventDefault();
+    if(!e.isTrusted) return;
+    if(!tel) return;
+    if(!armed){
+      armed = true;
+      b.classList.add('armed');
+      b.textContent = tel + ' ↗';
+      timer = setTimeout(disarm, armWindow);
+      return;
+    }
+    disarm();
+    window.location.href = 'tel:' + tel.replace(/\s+/g,'');
+  });
+  disarm();
+})();
+</script>
+
+</body>
+</html>
