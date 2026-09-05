@@ -54,6 +54,41 @@
   <link rel="stylesheet" href="site.css">
 </head>
 <body>
+<nav class="nav" id="mainNav">
+  <a href="index.html#top" class="nav-brand"><img src="trudealer-nav-logo.svg" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
+  <div class="nav-links">
+    <a href="index.html#work">Showrooms</a>
+    <a href="packages.html">Packages</a>
+    <a href="index.html#stack">Modules</a>
+    <a href="moto.html" style="color:var(--cyan,#00f2fe);">Moto</a>
+    <a href="uk.html">UK</a>
+    <a href="faq.html">FAQ</a>
+    <a href="trudealer-vs-vmg.html">vs VMG</a>
+  </div>
+  <div class="nav-right">
+    <button type="button" class="nav-sandbox-btn" data-open-sandbox><span class="dot"></span> Live Sandbox ↗</button>
+    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-cta">Book walkthrough →</a>
+    <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
+  </div>
+
+  <div class="nav-mobile" id="navMobile">
+    <a href="index.html#work">Showrooms</a>
+    <a href="packages.html">Packages</a>
+    <a href="index.html#stack">Modules</a>
+    <a href="moto.html" style="color:var(--cyan,#00f2fe);font-weight:600;">TruDealer Moto</a>
+    <a href="uk.html" style="font-weight:600;">TruDealer UK</a>
+    <a href="faq.html">Master FAQ</a>
+    <a href="trudealer-vs-vmg.html">TruDealer vs VMG Software</a>
+    <a href="trudealer-vs-autoxloo.html">TruDealer vs AutoXloo</a>
+    <a href="index.html#cases">Case studies</a>
+    <a href="index.html#roi">ROI Calculator</a>
+    <a href="index.html#how">How it works</a>
+    <a href="lead-demo.html">How leads work</a>
+    <a href="index.html#sandbox" data-open-sandbox>Live Sandbox ↗</a>
+    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-mobile-cta">Book a walkthrough →</a>
+  </div>
+</nav>
+
 
 <div id="bg3d"></div>
 
@@ -678,6 +713,7 @@ function setPalette(primary, dark){
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') tcClose(); });
 })();
 </script>
+
 
 <div class="wa-fab" id="waFab">
   <div class="wa-fab-menu" role="menu" aria-hidden="true">
