@@ -2496,6 +2496,7 @@ td.highlight::before {
 footer, .footer { 
   background: linear-gradient(180deg, var(--ink) 0%, #EAE6DA 100%);
   position: relative;
+  color: var(--white);
 }
 footer::before, .footer::before {
   content: '';
@@ -2503,7 +2504,17 @@ footer::before, .footer::before {
   top: 0; left: 10%; right: 10%; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(11,124,114,.2), transparent);
 }
-.footer-col a { transition: color .2s ease, transform .2s ease; display: inline-block; }
+.footer h5 { color: var(--muted); }
+.footer p, .footer-brand p { color: var(--white-dim); }
+.footer a { color: var(--muted); }
+.footer a:hover { color: var(--white); }
+.footer-bottom { 
+  border-top: 1px solid rgba(0,0,0,.1) !important; 
+  color: var(--muted); 
+}
+.footer-social a { color: var(--muted); }
+.footer-social a:hover { color: var(--cyan); }
+.footer-col a { color: var(--muted); transition: color .2s ease, transform .2s ease; display: inline-block; }
 .footer-col a:hover { color: var(--cyan); transform: translateX(3px); }
 
 /* CTA box — gradient border */
