@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 260" width="100%" height="100%">
+  <defs>
+    <!-- Liquid Chrome 3D Extrusion Base for 'Tru' -->
+    <linearGradient id="truBevelDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="50%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+
+    <!-- Polished Chrome Body with Horizon Reflection -->
+    <linearGradient id="truBodyDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="20%" stop-color="#F1F5F9"/>
+      <stop offset="48%" stop-color="#94A3B8"/>
+      <stop offset="52%" stop-color="#64748B"/>
+      <stop offset="85%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+
+    <!-- Specular Chamfer Edge for 'Tru' -->
+    <linearGradient id="truStrokeDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#E2E8F0" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Cyan-Green 3D Extrusion Base -->
+    <linearGradient id="cgBevelDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="50%" stop-color="#065A53"/>
+      <stop offset="100%" stop-color="#042F2C"/>
+    </linearGradient>
+
+    <!-- Luminous Cyan-Green Body -->
+    <linearGradient id="cgBodyDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#A7F3D0"/>
+      <stop offset="18%" stop-color="#5EEAD4"/>
+      <stop offset="48%" stop-color="#2DD4BF"/>
+      <stop offset="52%" stop-color="#0D9488"/>
+      <stop offset="82%" stop-color="#0B7C72"/>
+      <stop offset="100%" stop-color="#044E47"/>
+    </linearGradient>
+
+    <!-- Specular Chamfer Edge for 'Dealer' -->
+    <linearGradient id="cgStrokeDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#99F6E4" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#042F2C" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <!-- Sharp, controlled ambient backlight in index cyan-green -->
+    <filter id="cgNeonBacklight" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="9" result="blur1"/>
+      <feComponentTransfer in="blur1" result="glow1">
+        <feFuncA type="linear" slope="0.45"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="glow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="groundShadowDark" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(480, 135)">
+    <!-- 3D Extrusion Shadow Layer -->
+    <text text-anchor="middle" y="4" filter="url(#groundShadowDark)">
+      <tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="url(#truBevelDark)">Tru</tspan><tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="url(#cgBevelDark)">Dealer</tspan>
+    </text>
+
+    <!-- Intermediate 3D Layer -->
+    <text text-anchor="middle" y="2">
+      <tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="url(#truBevelDark)">Tru</tspan><tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="url(#cgBevelDark)">Dealer</tspan>
+    </text>
+
+    <!-- 3D Front Face -->
+    <text text-anchor="middle" y="0">
+      <tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="url(#truBodyDark)">Tru</tspan><tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="url(#cgBodyDark)" filter="url(#cgNeonBacklight)">Dealer</tspan>
+    </text>
+
+    <!-- Specular Chamfer Rim -->
+    <text text-anchor="middle" y="0">
+      <tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="none" stroke="url(#truStrokeDark)" stroke-width="1.2">Tru</tspan><tspan font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="112" font-weight="800" letter-spacing="-0.035em" fill="none" stroke="url(#cgStrokeDark)" stroke-width="1.2">Dealer</tspan>
+    </text>
+
+    <!-- Tracked Subtitle -->
+    <text text-anchor="middle" y="58" font-family="'Inter Tight', 'Inter', system-ui, sans-serif" font-size="14.5" font-weight="700" letter-spacing="0.46em" fill="#94A3B8">
+      FUTURE AUTOMOTIVE
+    </text>
+  </g>
+</svg>

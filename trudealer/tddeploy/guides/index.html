@@ -40,7 +40,8 @@ a{color:var(--cyan);text-decoration:none;transition:color .2s}
 a:hover{color:var(--cyan-2)}
 ::selection{background:var(--cyan);color:#fff}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
-.accent{color:var(--cyan-2);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
+.accent{display:inline-block;padding-left:0.15em;padding-right:0.08em;margin-left:-0.15em;margin-right:-0.08em;overflow:visible;font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em;color:#065A53;background:linear-gradient(90deg,#044E48 0%,#0D9488 45%,#0B7C72 70%,#044E48 100%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:headingShimmer 4s ease-in-out infinite}
+@keyframes headingShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 
 main{max-width:var(--wrap);margin:0 auto;padding:0 28px 96px}
 
@@ -86,15 +87,52 @@ h1{font-family:var(--display);font-size:clamp(38px,7vw,60px);line-height:1.02;le
 .note .lab{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:7px}
 .note p{margin:0}
 
-footer{max-width:var(--wrap);margin:0 auto;padding:40px 28px 60px}
+footer{max-width:var(--wrap);margin:60px auto 0;padding:60px 28px 40px;background:linear-gradient(180deg,#0F172A 0%,#020617 100%)!important;color:#F1F5F9!important;position:relative;border-top:1px solid rgba(255,255,255,.08);}
+footer::before{content:'';position:absolute;top:0;left:5%;right:5%;height:1px;background:linear-gradient(90deg,transparent,rgba(13,148,136,.4),transparent);}
 .foot-mark{font-family:var(--display);font-size:24px;letter-spacing:-.02em;color:var(--white)}
 .foot-mark .i{color:var(--cyan)}
-footer p{color:var(--muted);font-size:13.5px;margin-top:8px;max-width:64ch}
-footer .bottom{margin-top:22px;padding-top:18px;border-top:1px solid var(--glass-line);font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+footer p{color:#94A3B8!important;font-size:13.5px;margin-top:8px;max-width:64ch}
+footer .bottom{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)!important;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#64748B!important}
+
+/* Nav header pill matching homepage */
+.nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 20px;background:rgba(248,245,238,0.97);border:1px solid rgba(0,0,0,.08);border-radius:99px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 10px 36px rgba(0,0,0,.1);max-width:1240px;width:calc(100% - 32px);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .4s,padding .3s ease;}
+.nav-brand{display:flex;align-items:center;color:var(--white);height:100%;flex-shrink:0;transition:transform .25s ease;}
+.nav-brand:hover{transform:scale(1.03);}
+.nav-brand img{height:42px;width:auto;filter:drop-shadow(0 2px 5px rgba(0,0,0,.15));transition:height .3s ease;}
+.nav-links{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--white-dim);flex-shrink:1;}
+.nav-links a{display:inline-flex;align-items:center;padding:7px 14px;border-radius:99px;font-size:14px;font-weight:500;color:#334155;white-space:nowrap;transition:all .25s cubic-bezier(.22,1,.36,1);position:relative;text-decoration:none;}
+.nav-links a:hover{color:#0F172A;background:rgba(13,148,136,.12);transform:translateY(-1px);box-shadow:0 3px 10px rgba(13,148,136,.12);}
+.nav-links a.active{color:#0D9488;background:rgba(13,148,136,.15);border:1px solid rgba(13,148,136,.25);font-weight:600;}
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.nav-sandbox-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;font-weight:600;padding:9px 18px;background:linear-gradient(135deg,#0B7C72,#065A53);border:none;border-radius:100px;color:#fff!important;cursor:pointer;transition:all .25s ease;white-space:nowrap;box-shadow:0 4px 16px -4px rgba(11,124,114,.5),0 1px 0 rgba(255,255,255,.15) inset;position:relative;overflow:hidden;text-decoration:none;}
+.nav-sandbox-btn .dot{width:6px;height:6px;border-radius:50%;background:#5EEAD4;box-shadow:0 0 8px rgba(94,234,212,.9);animation:pulseDot 2s infinite;}
+@keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.5;}}
+.nav-cta{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;padding:9px 18px;background:linear-gradient(135deg,#1E293B,#334155);border:none;border-radius:100px;color:#fff!important;white-space:nowrap;transition:all .25s cubic-bezier(.22,1,.36,1);font-weight:600;text-decoration:none;box-shadow:0 4px 14px -4px rgba(30,41,59,.4),0 1px 0 rgba(255,255,255,.1) inset;}
+.nav-cta:hover{background:linear-gradient(135deg,#0B7C72,#065A53);color:#fff!important;transform:translateY(-1px);box-shadow:0 6px 20px -4px rgba(11,124,114,.5),0 1px 0 rgba(255,255,255,.15) inset;}
+@media(max-width:960px){.nav-links{display:none;}}
 </style>
 </head>
 <body>
-<main>
+
+<nav class="nav" id="mainNav">
+  <a href="../index.html" class="nav-brand"><img src="../trudealer-nav-logo.svg" alt="TruDealer" height="42" style="height:42px;width:auto;"></a>
+  <div class="nav-links">
+    <a href="../index.html">Cars</a>
+    <a href="../moto.html">Moto</a>
+    <a href="../marine.html">Marine</a>
+    <a href="../commercial.html">Commercial</a>
+    <a href="../caravans.html">Caravans</a>
+    <a href="index.html" class="active">Guides</a>
+    <a href="../faq.html">FAQ</a>
+    <a href="../packages.html">Packages</a>
+  </div>
+  <div class="nav-right">
+    <a href="https://premium.tru-saas.com" target="_blank" rel="noopener" class="nav-sandbox-btn"><span class="dot"></span> Live Sandbox ↗</a>
+    <a href="../demo.html" class="nav-cta">Book walkthrough →</a>
+  </div>
+</nav>
+
+<main style="padding-top:120px;">
 
   <section class="hero">
     <span class="badge"><span class="dot"></span>TruDealer · dealer guides</span>
@@ -182,7 +220,7 @@ footer .bottom{margin-top:22px;padding-top:18px;border-top:1px solid var(--glass
 </main>
 
 <footer>
-  <div class="foot-mark">Tru<span class="i">Dealer</span></div>
+  <a href="../index.html" class="footer-brand-logo"><img src="../trudealer-logo-3d.svg" alt="TruDealer — Future Automotive" style="height:48px;width:auto;margin-bottom:14px;"></a>
   <p>Dealer how-to guides — TruLens · TruInspect · TruFlow Premium · TruFlow Mobile · TruDealer Moto. Built in Cape Town.</p>
   <div class="bottom">TruDealer · Future Automotive · South Africa &amp; United Kingdom</div>
 </footer>
