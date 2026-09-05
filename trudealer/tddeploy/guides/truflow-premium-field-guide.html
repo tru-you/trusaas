@@ -17,44 +17,204 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TruDealer design system — cream ground · teal accent · Fraunces
+   ============================================================ */
+:root{
+  --ink:#F3F0E7; --ink-2:#EAE6DA; --card:#FBF9F3; --card-2:#EFEBE0;
+  --white:#14141F; --white-dim:rgba(20,20,31,.78);
+  --muted:rgba(64,78,100,.92); --faint:rgba(64,78,100,.58);
+  --cyan:#0B7C72; --cyan-2:#0D9488; --cyan-hi:#5EEAD4;
+  --cyan-soft:rgba(13,148,136,.18); --cyan-glow:rgba(13,148,136,.2); --cyan-faint:rgba(13,148,136,.06);
+  --amber:#D4942A; --amber-soft:rgba(212,148,42,.2); --amber-glow:rgba(212,148,42,.18); --amber-faint:rgba(212,148,42,.08);
+  --border:rgba(0,0,0,.08); --border-warm:rgba(60,50,30,.1); --glass-line:rgba(0,0,0,.08);
+  --danger:#B0413E; --danger-faint:rgba(176,65,62,.07);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --wrap:860px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:16px;line-height:1.62;overflow-x:hidden}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan-2)}
+::selection{background:var(--cyan);color:#fff}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+img{max-width:100%;display:block}
+.accent{color:var(--cyan-2);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
 
-  <link rel="stylesheet" href="../site.css">
+/* ---- nav ---- */
+.nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 12px 9px 20px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:99px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:var(--wrap);width:calc(100% - 40px)}
+.nav-brand{font-family:var(--display);font-size:20px;font-weight:500;letter-spacing:-.02em;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.nav-brand .i{color:var(--cyan)}
+.nav-brand .tier{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);border:1px solid var(--cyan-soft);background:var(--cyan-faint);border-radius:100px;padding:2px 7px}
+.nav-links{display:flex;gap:20px;font-size:13px;color:var(--white-dim)}
+.nav-links a{color:var(--white-dim);position:relative;padding-bottom:3px;white-space:nowrap}
+.nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{right:0}
+.nav-links a.route{color:var(--cyan);font-weight:600}
+.nav-links a.route::after{right:0;background:var(--cyan-soft)}
+.nav-links a.route:hover::after{background:var(--cyan)}
+.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:8px 15px;border:1px solid var(--cyan);border-radius:100px;color:var(--cyan);white-space:nowrap;transition:all .2s}
+.nav-cta:hover{background:var(--cyan);color:#fff}
+@media(max-width:900px){.nav-links a:not(.route){display:none}}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---- two-routes fork ---- */
+.routes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:40px 0 8px}
+@media(max-width:640px){.routes{grid-template-columns:1fr}}
+.route-card{display:block;position:relative;padding:26px 26px 22px;border-radius:20px;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 14px rgba(60,50,30,.06);overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s,border-color .3s}
+.route-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.route-card:hover{transform:translateY(-4px);border-color:var(--cyan-soft);box-shadow:0 20px 46px -20px var(--cyan-glow)}
+.route-card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:12px}
+.route-card h3{font-family:var(--display);font-size:25px;font-weight:500;letter-spacing:-.02em;margin:0 0 6px;font-variation-settings:"opsz" 72,"SOFT" 30}
+.route-card .out{font-size:14px;color:var(--white-dim);margin:0 0 16px;line-height:1.5}
+.route-card .chain{list-style:none;display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 18px;padding:0}
+.route-card .chain li{padding:5px 9px;border-radius:100px;border:1px solid var(--border-warm);background:rgba(0,0,0,.02);white-space:nowrap}
+.route-card .chain li.arw{border:none;background:none;padding:5px 0;color:var(--faint)}
+.route-card .go{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:inline-flex;align-items:center;gap:8px}
+.route-card.b2::before{background:var(--amber)}
+.route-card.b2 .tag,.route-card.b2 .go{color:#B07B1E}
+.route-card.b2:hover{border-color:var(--amber-soft);box-shadow:0 20px 46px -20px var(--amber-glow)}
+
+/* ---- layout ---- */
+main{max-width:var(--wrap);margin:0 auto;padding:0 28px 100px}
+section{scroll-margin-top:88px}
+
+/* ---- hero ---- */
+.hero{position:relative;padding:150px 0 52px;border-bottom:1px solid var(--border);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 90% 70% at 20% 0%,#F6F4EE 0%,transparent 60%)}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 11px;border:1px solid var(--cyan-soft);border-radius:100px;background:var(--cyan-faint);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:26px}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(13,148,136,.5);animation:ping 1.9s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(13,148,136,.5)}70%{box-shadow:0 0 0 11px rgba(13,148,136,0)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
+h1{font-family:var(--display);font-size:clamp(38px,6.4vw,62px);line-height:1.02;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30,"WONK" 0;margin-bottom:22px;text-wrap:balance}
+.lede{font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:var(--white-dim);max-width:62ch;text-wrap:pretty}
+.hero-ticker{display:flex;flex-wrap:wrap;gap:7px 20px;margin-top:34px;padding-top:22px;border-top:1px solid var(--glass-line);font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.hero-ticker .d{color:var(--cyan)}
+
+/* ---- contents ---- */
+.toc{margin:36px 0 8px;padding:10px 26px;border:1px solid var(--border-warm);border-radius:18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.06);display:grid;grid-template-columns:repeat(2,1fr);gap:0 32px}
+@media(max-width:560px){.toc{grid-template-columns:1fr}}
+.toc a{display:flex;gap:14px;align-items:baseline;padding:11px 0;color:var(--white-dim);border-bottom:1px solid var(--glass-line)}
+.toc a:hover{color:var(--white)}
+.toc .n{font-family:var(--mono);font-size:12px;color:var(--cyan);width:22px;flex:none}
+
+/* ---- section heads ---- */
+.sec-head{padding:64px 0 6px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+h2{font-family:var(--display);font-size:clamp(27px,4.2vw,42px);line-height:1.07;letter-spacing:-.03em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 30;margin-bottom:14px;text-wrap:balance}
+.sec-intro{font-size:17px;color:var(--white-dim);max-width:66ch;line-height:1.6}
+h3{font-family:var(--display);font-size:22px;font-weight:500;letter-spacing:-.015em;font-variation-settings:"opsz" 72,"SOFT" 30;margin:36px 0 10px}
+p{margin:0 0 16px}
+strong{font-weight:600}
+
+/* ---- steps ---- */
+ol.steps{list-style:none;counter-reset:s;margin:22px 0 8px}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 24px 58px}
+ol.steps>li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:-1px;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft)}
+ol.steps>li::after{content:"";position:absolute;left:17.5px;top:38px;bottom:2px;width:1px;background:linear-gradient(var(--border-warm),transparent)}
+ol.steps>li:last-child::after{display:none}
+ol.steps>li .st{font-family:var(--display);font-weight:500;font-size:18px;letter-spacing:-.01em;color:var(--white);display:block;margin-bottom:4px;font-variation-settings:"opsz" 48,"SOFT" 30}
+ol.steps>li p{margin:0}
+ol.steps>li p+p{margin-top:9px}
+ul.plain{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px}
+ul.plain li{position:relative;padding-left:20px;color:var(--white-dim)}
+ul.plain li::before{content:"→";position:absolute;left:0;color:var(--faint);font-family:var(--mono)}
+
+/* ---- pills ---- */
+.ui{font-weight:600;font-size:.92em;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:7px;padding:1px 8px;white-space:nowrap}
+kbd{font-family:var(--mono);font-size:.82em;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-bottom-width:2px;border-radius:6px;padding:1px 7px}
+code{font-family:var(--mono);font-size:.85em;color:var(--cyan);background:var(--cyan-faint);padding:1px 6px;border-radius:5px}
+.desk{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#B07B1E;background:var(--amber-faint);border:1px solid var(--amber-soft);border-radius:100px;padding:2px 9px;white-space:nowrap;vertical-align:middle}
+
+/* ---- callouts ---- */
+.note,.tip,.warn{border-radius:16px;padding:16px 20px;margin:22px 0;background:var(--card);border:1px solid var(--border-warm);box-shadow:0 2px 12px rgba(60,50,30,.05);font-size:14.5px;color:var(--white-dim)}
+.note{border-left:3px solid var(--cyan)}
+.tip{border-left:3px solid var(--cyan-2)}
+.warn{border-left:3px solid var(--amber);background:var(--amber-faint)}
+.note .lab,.tip .lab,.warn .lab{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:7px}
+.note .lab,.tip .lab{color:var(--cyan)}
+.warn .lab{color:#B07B1E}
+.note p:last-child,.tip p:last-child,.warn p:last-child{margin-bottom:0}
+
+/* ---- legend cards ---- */
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0}
+@media(max-width:560px){.legend{grid-template-columns:1fr}}
+.legend .b{border:1px solid var(--border-warm);border-radius:16px;padding:16px 18px;background:var(--card);box-shadow:0 2px 12px rgba(60,50,30,.05)}
+.legend .b .t{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:500;font-size:18px;color:var(--white);margin-bottom:6px;font-variation-settings:"opsz" 48}
+.legend .b small{color:var(--muted);font-size:13.5px;line-height:1.5;display:block}
+.glyph{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;font-size:14px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);color:var(--cyan);font-family:var(--mono)}
+
+/* ---- table ---- */
+.tablewrap{overflow-x:auto;margin:24px 0;border:1px solid var(--border-warm);border-radius:16px;box-shadow:0 2px 12px rgba(60,50,30,.05)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px;background:var(--card)}
+th,td{text-align:left;padding:13px 18px;border-bottom:1px solid var(--glass-line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);font-weight:500;background:rgba(13,148,136,.03)}
+tr:last-child td{border-bottom:none}
+td b{color:var(--white);font-weight:600}
+
+/* ---- field list ---- */
+.fields{margin:16px 0;border-top:1px solid var(--glass-line)}
+.fields .f{display:flex;gap:18px;padding:13px 0;border-bottom:1px solid var(--glass-line)}
+.fields .f .k{flex:0 0 32%;min-width:140px;font-family:var(--display);font-weight:500;font-size:16px;color:var(--white);font-variation-settings:"opsz" 36}
+.fields .f .v{color:var(--white-dim);font-size:14.5px}
+@media(max-width:520px){.fields .f{flex-direction:column;gap:4px}.fields .f .k{flex:none}}
+
+.pillrow{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 14px;align-items:center}
+.opt{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--muted);background:#fff;border:1px solid var(--border-warm);border-radius:100px;padding:4px 11px}
+.opt.good{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint)}
+.opt.bad{color:var(--danger);border-color:rgba(176,65,62,.3);background:var(--danger-faint)}
+.opt.arw{border:none;background:none;color:var(--faint);padding:4px 2px}
+.opt.tag{border:none;background:none;color:var(--faint);padding-left:2px}
+
+.formula{font-family:var(--mono);font-size:14px;color:var(--white);background:#fff;border:1px solid var(--border-warm);border-radius:14px;padding:16px 18px;margin:14px 0;overflow-x:auto;box-shadow:inset 0 1px 3px rgba(60,50,30,.04)}
+.formula .hl{color:var(--cyan)}
+
+/* ---- footer ---- */
+footer{background:#1A2332;color:#F1F5F9;margin-top:24px}
+.foot-inner{max-width:var(--wrap);margin:0 auto;padding:52px 28px 44px}
+.foot-mark{font-family:var(--display);font-size:30px;letter-spacing:-.02em;margin-bottom:14px}
+.foot-mark .tru{color:#E2E8F0}.foot-mark .i{color:var(--cyan-hi)}
+.foot-inner p{color:rgba(241,245,249,.62);font-size:14px;max-width:64ch}
+.foot-inner a{color:var(--cyan-hi)}
+.foot-inner a:hover{color:#fff}
+.foot-bottom{margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(148,163,184,.7)}
+
+/* ---- print ---- */
+@page{size:A4;margin:15mm 14mm}
+@media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  html,body{background:#fff !important}
+  body{font-size:11px;line-height:1.5}
+  .nav{display:none}
+  .hero{padding:8px 0 24px}.hero::before{display:none}.hero-ticker{display:none}
+  main{padding:0 0 20px}
+  section,.card,.note,.tip,.warn,.legend .b,.tablewrap,ol.steps>li,.fields .f,.route-card{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  .sec-head{padding-top:22px}
+  a{color:var(--cyan)}
+}
+</style>
 </head>
 <body>
 
-<nav class="nav" id="mainNav">
-  <a href="../index.html#top" class="nav-brand"><img src="../trudealer-nav-logo.svg" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
+<nav class="nav">
+  <span class="nav-brand">Tru<span class="i">Flow</span><span class="tier">Premium</span></span>
   <div class="nav-links">
-    <a href="../index.html#work">Showrooms</a>
-    <a href="../packages.html">Packages</a>
-    <a href="../index.html#stack">Modules</a>
-    <a href="../moto.html" style="color:var(--cyan,#00f2fe);">Moto</a>
-    <a href="../uk.html">UK</a>
-    <a href="../faq.html">FAQ</a>
-    <a href="../trudealer-vs-vmg.html">vs VMG</a>
+    <a href="#signin">Sign in</a>
+    <a href="#workspace">Workspace</a>
+    <a class="route" href="#stock">Stock</a>
+    <a class="route" href="#leads">Leads</a>
+    <a class="route" href="#deals">Deals</a>
+    <a href="#finance">Finance</a>
+    <a href="#help">Help</a>
   </div>
-  <div class="nav-right">
-    <button type="button" class="nav-sandbox-btn" data-open-sandbox><span class="dot"></span> Live Sandbox ↗</button>
-    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-cta">Book walkthrough →</a>
-    <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
-  </div>
-
-  <div class="nav-mobile" id="navMobile">
-    <a href="../index.html#work">Showrooms</a>
-    <a href="../packages.html">Packages</a>
-    <a href="../index.html#stack">Modules</a>
-    <a href="../moto.html" style="color:var(--cyan,#00f2fe);font-weight:600;">TruDealer Moto</a>
-    <a href="../uk.html" style="font-weight:600;">TruDealer UK</a>
-    <a href="../faq.html">Master FAQ</a>
-    <a href="../trudealer-vs-vmg.html">TruDealer vs VMG Software</a>
-    <a href="../trudealer-vs-autoxloo.html">TruDealer vs AutoXloo</a>
-    <a href="../index.html#cases">Case studies</a>
-    <a href="../index.html#roi">ROI Calculator</a>
-    <a href="../index.html#how">How it works</a>
-    <a href="../lead-demo.html">How leads work</a>
-    <a href="../index.html#sandbox" data-open-sandbox>Live Sandbox ↗</a>
-    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-mobile-cta">Book a walkthrough →</a>
-  </div>
+  <a class="nav-cta" href="https://premium.tru-saas.com">Open TruFlow ↗</a>
 </nav>
 
 <main>
@@ -398,30 +558,11 @@
 
 <footer>
   <div class="foot-inner">
-    <a href="../index.html" class="footer-brand-logo"><img src="../trudealer-logo-3d.svg" alt="TruDealer — Future Automotive" style="height:48px;width:auto;margin-bottom:14px;"></a>
+    <div class="foot-mark"><span class="tru">Tru</span><span class="i">Flow</span> Premium</div>
     <p>The full dealer management system — stock, leads, deals, documents, finance and web — part of the TruDealer platform (TruFlow · TruLens · TruInspect · TruChat). Live at <a href="https://premium.tru-saas.com">premium.tru-saas.com</a>; the phone companion is at <a href="https://app.tru-saas.com">app.tru-saas.com</a>. One dealer access code across every app.</p>
     <div class="foot-bottom">TruDealer · Future Automotive · Built in Cape Town</div>
   </div>
 </footer>
 
-<div class="wa-fab" id="waFab">
-  <div class="wa-fab-menu" role="menu" aria-hidden="true">
-    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">UK</span>
-      <span class="label"><b>United Kingdom</b><span>WhatsApp Support</span></span>
-    </a>
-    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp South Africa">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">ZA</span>
-      <span class="label"><b>South Africa</b><span>WhatsApp Support</span></span>
-    </a>
-    <a class="wa-fab-opt" role="menuitem" href="tel:+447476995694" aria-label="AI Receptionist Demo">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">AI</span>
-      <span class="label"><b>AI Receptionist</b><span>Demo Call</span></span>
-    </a>
-  </div>
-  <button type="button" class="wa-fab-trigger" id="waFabToggle" aria-expanded="false" aria-controls="waFab" aria-label="Contact us — choose option">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
-  </button>
-</div>
 </body>
 </html>
