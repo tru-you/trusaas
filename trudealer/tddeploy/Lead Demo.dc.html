@@ -12,7 +12,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
-  <link rel="stylesheet" href="site.css">
 </head>
 <body>
 <x-dc>
@@ -46,39 +45,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 </helmet>
 
 <!-- ═══ PILL NAV (matches main site) ═══ -->
-<nav class="nav" id="mainNav">
-  <a href="index.html#top" class="nav-brand"><img src="trudealer-nav-logo.svg" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
-  <div class="nav-links">
-    <a href="index.html#work">Showrooms</a>
-    <a href="packages.html">Packages</a>
-    <a href="index.html#stack">Modules</a>
-    <a href="moto.html" style="color:var(--cyan,#00f2fe);">Moto</a>
-    <a href="uk.html">UK</a>
-    <a href="faq.html">FAQ</a>
-    <a href="trudealer-vs-vmg.html">vs VMG</a>
+<nav style="position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 20px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:99px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:1100px;width:calc(100% - 48px);">
+  <a href="/" style="display:flex;align-items:center;flex-shrink:0;">
+    <span style="font-family:'Fraunces',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:-.03em;"><span style="color:#0B7C72;">Tru</span><span style="color:#14141F;">Dealer</span></span>
+  </a>
+  <div style="display:flex;gap:28px;font-size:13.5px;color:rgba(20,20,31,.78);">
+    <a href="#pipeline" style="transition:color .2s;padding-bottom:2px;" style-hover="color:#0B7C72;">Pipeline</a>
+    <a href="#demo" style="transition:color .2s;padding-bottom:2px;" style-hover="color:#0B7C72;">Demo</a>
+    <a href="#widgets" style="transition:color .2s;padding-bottom:2px;" style-hover="color:#0B7C72;">Widgets</a>
+    <a href="#truflow" style="transition:color .2s;padding-bottom:2px;" style-hover="color:#0B7C72;">TruFlow</a>
   </div>
-  <div class="nav-right">
-    <button type="button" class="nav-sandbox-btn" data-open-sandbox><span class="dot"></span> Live Sandbox ↗</button>
-    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-cta">Book walkthrough →</a>
-    <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
-  </div>
-
-  <div class="nav-mobile" id="navMobile">
-    <a href="index.html#work">Showrooms</a>
-    <a href="packages.html">Packages</a>
-    <a href="index.html#stack">Modules</a>
-    <a href="moto.html" style="color:var(--cyan,#00f2fe);font-weight:600;">TruDealer Moto</a>
-    <a href="uk.html" style="font-weight:600;">TruDealer UK</a>
-    <a href="faq.html">Master FAQ</a>
-    <a href="trudealer-vs-vmg.html">TruDealer vs VMG Software</a>
-    <a href="trudealer-vs-autoxloo.html">TruDealer vs AutoXloo</a>
-    <a href="index.html#cases">Case studies</a>
-    <a href="index.html#roi">ROI Calculator</a>
-    <a href="index.html#how">How it works</a>
-    <a href="lead-demo.html">How leads work</a>
-    <a href="index.html#sandbox" data-open-sandbox>Live Sandbox ↗</a>
-    <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-mobile-cta">Book a walkthrough →</a>
-  </div>
+  <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" style="font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;border:1px solid #0B7C72;border-radius:100px;color:#0B7C72;transition:all .2s;flex-shrink:0;" style-hover="background:#0B7C72;color:#fff;">Book a walkthrough →</a>
 </nav>
 
 <!-- ═══ HERO ═══ -->
@@ -860,25 +837,5 @@ class Component extends DCLogic {
   });
 })();
 </script>
-<div class="wa-fab" id="waFab">
-  <div class="wa-fab-menu" role="menu" aria-hidden="true">
-    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">UK</span>
-      <span class="label"><b>United Kingdom</b><span>WhatsApp Support</span></span>
-    </a>
-    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp South Africa">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">ZA</span>
-      <span class="label"><b>South Africa</b><span>WhatsApp Support</span></span>
-    </a>
-    <a class="wa-fab-opt" role="menuitem" href="tel:+447476995694" aria-label="AI Receptionist Demo">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">AI</span>
-      <span class="label"><b>AI Receptionist</b><span>Demo Call</span></span>
-    </a>
-  </div>
-  <button type="button" class="wa-fab-trigger" id="waFabToggle" aria-expanded="false" aria-controls="waFab" aria-label="Contact us — choose option">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
-  </button>
-</div>
-<script src="site.js" defer></script>
 </body>
 </html>
