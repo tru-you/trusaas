@@ -80,7 +80,7 @@ A dedicated, zero-latency creative suite designed for dealerships to brand their
 - **Precision Position Sliders:** Fine-tune Vertical Position (Y%), Horizontal Position (X%), and Block Width (%) in the sidebar.
 - **Quick Snap Anchors:** One-click snapping to *Top Center*, *Center*, or *Bottom*.
 
-### 12. 10 Purpose-Built Automotive Templates
+### 12. 14 Purpose-Built Automotive Templates (Box & Non-Box Freeform)
 1. **Just Arrived / New Stock** — Hero vehicle visual with dynamic lower-third, price pill, specs chip deck, and WhatsApp CTA.
 2. **Price Drop / Hot Deal** — Strikethrough original price, glowing red reduction price, and urgency tag.
 3. **Finance & Monthly Installment** — Highlight affordability (*"From R X,XXX /pm"*), zero-deposit badge, and loan parameters.
@@ -91,6 +91,28 @@ A dedicated, zero-latency creative suite designed for dealerships to brand their
 8. **Showroom Event & Sale** — High-energy weekend event banner with address pin and free fuel voucher/warranty perk.
 9. **5-Star Review & Testimonial** — 5 gold stars and genuine customer review snippet over customer vehicle handover.
 10. **9:16 Story & Reels Cover** — Safe-zone vertical layout tailored for Instagram Stories, TikTok, Reels, and WhatsApp Status.
+11. **Slanted Speed Slashes (Motorsport)** — Angled polygon speed chevrons, dynamic skew price flags, and pill deck.
+12. **Minimal Editorial Magazine** — High-fashion floating typography with 90%+ image visibility and deep drop shadows.
+13. **Asymmetric Split Panel & Spec HUD** — Dual-column layout with technical specs matrix and vehicle showcase.
+14. **Viewfinder Camera Frame & HUD** — Corner brackets `[ + ]`, rec status tag, and floating metadata pills.
+
+---
+
+## Motion Studio & Short-Form 60FPS Video Creator (Reels / TikTok / Status)
+- **Live Motion Canvas Engine:** Toggleable real-time animation with Ken Burns Zoom In/Out, Lateral Drift, and Cinematic Rise.
+- **Micro-Animations:** Pulsing price tags, breathing neon badge glows, and staggered typography entrances.
+- **Customizable Duration & Depth:** 4s (Story), 6s (Reels), 10s (Showcase) duration options with 102%–125% zoom depth slider.
+- **Client-Side 60FPS Video Export:** Direct browser-based frame synthesis and `MediaRecorder` stream capture to `.webm` / `.mp4` video with 0 server rendering cost.
+
+---
+
+## Free Lead Magnet & Dealership Acquisition Architecture
+- **Zero Login Friction:** Dealerships use the tool 100% free with no sign-up wall, producing white-label 4K graphics immediately.
+- **Top Nav Lead Trigger:** `[ Claim Free Suite ]` button opening the Dealership Onboarding Modal.
+- **Inventory Auto-Sync Hook:** Tab 3 banner prompting dealers to connect their live website stock / TruDealer DMS to eliminate manual typing.
+- **Social Auto-Publisher Hook:** Tab 5 banner offering 1-click multi-channel auto-publishing to Facebook, Instagram, and Google Business.
+- **Post-Export Lead Toast:** Non-intrusive toast triggering after exports with a 1-tap pre-filled WhatsApp lead message to TruDealer sales.
+- **1-Tap WhatsApp Lead Dispatch:** Pre-filled structured lead message containing dealership name, location, contact, and product interest.
 
 ---
 
@@ -107,25 +129,10 @@ A dedicated, zero-latency creative suite designed for dealerships to brand their
 - **Copy to Clipboard:** Directly copy full-resolution graphic to OS clipboard for instant pasting.
 - **Batch Export All Ratios:** Automatically iterates and downloads all 4 social aspect ratios in one click.
 - **Batch Export Carousel:** Iterates and downloads all 3 story slides in one click.
+- **60FPS Video Export:** Directly downloads animated short-form video reels for social sharing.
 
 ---
 
 ## Usage
-Open `packages/TruBrand/index.html` directly in any modern web browser. All dealer customizations, badge colors, and box transparency settings are saved automatically to browser storage.
-
----
-
-## Planned Roadmap (Next Iterations)
-
-### 1. Non-Box Geometric & Freeform Overlays
-- **Diagonal Speed Slashes & Angular Badges:** Dynamic angled speed stripes across corners and bottom edges without rectangular containers.
-- **Minimal Floating Typography:** Bold editorial magazine typography floating directly over high-contrast photo scrims.
-- **Split-Screen Dual Tone Overlays:** Vertical and diagonal split masks showcasing specs on one side and clean vehicle photography on the other.
-- **Minimal Edge Watermark Ribbons & Framing:** Edge-pinned border frames and floating pill tags that keep 95% of the vehicle canvas unobstructed.
-
-### 2. Animation Mode & Short-Form Video Creator (Reels / TikTok / Shorts)
-- **Ken Burns Dynamic Motion:** Smooth subtle zoom-in / pan motion on the vehicle photo layer (5s to 10s loops).
-- **Staggered Motion Typography:** Animated slide-in entrance for vehicle title, price reveal, and spec badge pops.
-- **Pulsing Accent Badges & Glowing Price Drops:** Looping neon pulse animations on price badges and "Just Arrived" status pills.
-- **Client-Side Video Export (WebM / MP4):** Direct browser-based canvas frame recording (`MediaRecorder` / WebCodecs API) for zero-latency 1080x1920 60fps Reels and TikTok video export without external video rendering servers.
+Open `packages/TruBrand/index.html` directly in any modern web browser or host it as a standalone static tool. All dealer customizations, badge colors, and box transparency settings are saved automatically to local storage.
 

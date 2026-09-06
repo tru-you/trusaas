@@ -1,0 +1,65 @@
+{
+  "name": "TruBrand Studio Pro — Automotive Creative Suite",
+  "short_name": "TruBrand",
+  "description": "Free Automotive Social & Vehicle Creative Suite for Dealerships",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#03060B",
+  "theme_color": "#0D9488",
+  "categories": [
+    "business",
+    "productivity",
+    "photo"
+  ],
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Vehicle Post",
+      "short_name": "New Post",
+      "url": "./index.html",
+      "icons": [
+        {
+          "src": "assets/icon.svg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Make 60FPS Video Reel",
+      "short_name": "Video Reel",
+      "url": "./index.html?mode=motion",
+      "icons": [
+        {
+          "src": "assets/icon.svg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI Social Copywriter",
+      "short_name": "AI Copy",
+      "url": "./index.html?mode=captions",
+      "icons": [
+        {
+          "src": "assets/icon.svg",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

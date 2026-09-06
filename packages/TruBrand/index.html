@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TruBrand Studio Pro — Automotive Social & Vehicle Creative Suite</title>
+  
+  <!-- PWA & Mobile Web App Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0D9488">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TruBrand">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..800&family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -198,6 +208,157 @@
       filter: brightness(1.15);
       transform: translateY(-1px);
     }
+
+    /* Header Lead Action Button */
+    .btn-lead-header {
+      background: rgba(13, 148, 136, 0.15);
+      border: 1px solid rgba(45, 212, 191, 0.45);
+      color: var(--primary-bright);
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-lead-header:hover {
+      background: rgba(13, 148, 136, 0.32);
+      border-color: var(--primary-bright);
+      color: #FFF;
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+
+    /* In-Tab Lead Promotion Banner */
+    .lead-promo-card {
+      background: linear-gradient(135deg, rgba(13, 148, 136, 0.14) 0%, rgba(9, 14, 23, 0.95) 100%);
+      border: 1px solid rgba(45, 212, 191, 0.32);
+      border-radius: 10px;
+      padding: 13px 15px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .lead-promo-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--primary-bright);
+    }
+    .lead-promo-header strong {
+      display: block;
+      font-size: 12px;
+      color: #FFF;
+      font-weight: 800;
+    }
+    .lead-promo-header span {
+      font-size: 10px;
+      color: #94A3B8;
+      font-family: var(--font-mono);
+    }
+    .lead-promo-card p {
+      font-size: 11px;
+      color: #CBD5E1;
+      line-height: 1.45;
+    }
+    .btn-lead-promo {
+      background: #090E17;
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      color: var(--primary-bright);
+      padding: 7px 11px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+      margin-top: 2px;
+    }
+    .btn-lead-promo:hover {
+      background: var(--primary);
+      border-color: var(--primary-bright);
+      color: #FFF;
+    }
+
+    /* Post-Export Toast */
+    .lead-export-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #090E17;
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      border-radius: 12px;
+      padding: 14px 18px;
+      max-width: 440px;
+      width: calc(100vw - 48px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+      z-index: 9990;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      animation: slideFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .lead-export-toast.active { display: flex; }
+    .toast-content { display: flex; gap: 12px; align-items: flex-start; }
+    .toast-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid var(--primary-bright);
+      color: var(--primary-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .toast-body strong { display: block; font-size: 13px; color: #FFF; margin-bottom: 2px; }
+    .toast-body p { font-size: 11.5px; color: #94A3B8; line-height: 1.4; }
+    .toast-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-toast-wa {
+      background: #059669;
+      border: 1px solid #34D399;
+      color: #FFF;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-toast-wa:hover { filter: brightness(1.15); }
+    .btn-toast-more {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #CBD5E1;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-toast-more:hover { background: rgba(255,255,255,0.12); color: #FFF; }
+    .btn-toast-close {
+      background: transparent;
+      border: none;
+      color: #64748B;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-toast-close:hover { color: #FFF; }
 
     /* Main Split Layout — Collapsible */
     main.studio-layout {
@@ -1541,6 +1702,129 @@
     #banner.aspect-story .split-hud-right { border-left: none; border-top: 1px solid rgba(255,255,255,0.12); padding-left: 0; padding-top: 12px; }
     #banner.aspect-story .banner-header-row { top: 90px; }
     #banner.aspect-story .banner-footer-row { bottom: 70px; }
+
+    /* PWA Install Button */
+    .btn-pwa-install {
+      background: linear-gradient(135deg, rgba(45, 212, 191, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%);
+      border: 1px solid var(--primary-bright);
+      color: #FFF;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      animation: badgeBreathing 3s ease-in-out infinite;
+    }
+    .btn-pwa-install:hover {
+      background: var(--primary);
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+
+    /* ----------------------------------------------------
+       RESPONSIVE ADAPTATIONS (MOBILE, TABLET, DESKTOP)
+       ---------------------------------------------------- */
+    @media (max-width: 1024px) {
+      main.studio-layout {
+        grid-template-columns: 390px 1fr;
+      }
+    }
+
+    @media (max-width: 860px) {
+      html, body {
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100% !important;
+      }
+      header.tool-header {
+        height: auto !important;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .header-center-toggles {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .header-actions {
+        margin-left: auto;
+        gap: 6px;
+      }
+      main.studio-layout {
+        display: flex !important;
+        flex-direction: column-reverse !important;
+        height: auto !important;
+        min-height: calc(100vh - 100px);
+        overflow: visible !important;
+      }
+      aside.sidebar {
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        border-right: none !important;
+        border-top: 1px solid var(--panel-border);
+      }
+      .tab-content {
+        max-height: 550px;
+        overflow-y: auto !important;
+      }
+      section.viewport-container {
+        height: 52vh !important;
+        min-height: 360px !important;
+        flex: none !important;
+      }
+      .zoom-toolbar {
+        top: 8px;
+        right: 8px;
+        transform: scale(0.88);
+        transform-origin: top right;
+      }
+      .lead-export-toast {
+        left: 12px !important;
+        right: 12px !important;
+        bottom: 12px !important;
+        width: calc(100vw - 24px) !important;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .brand-logo-text img {
+        height: 22px !important;
+      }
+      .brand-logo-badge {
+        display: none;
+      }
+      .btn-action-ghost span,
+      .btn-lead-header span,
+      .btn-pwa-install span {
+        display: none;
+      }
+      .btn-action-ghost,
+      .btn-lead-header,
+      .btn-pwa-install {
+        padding: 6px 8px !important;
+      }
+      .tab-btn span {
+        font-size: 10px;
+      }
+      .tab-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+      .template-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .video-modal-card {
+        padding: 20px 16px !important;
+        width: 94% !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1597,6 +1881,14 @@
       <button type="button" class="btn-action-ghost" onclick="exportMotionVideo()" title="Export 60FPS Video Reel (MP4 / WebM for Reels, TikTok)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
         <span>Video Reel</span>
+      </button>
+      <button type="button" class="btn-action-ghost btn-pwa-install" id="btn-pwa-install" onclick="triggerPWAInstall()" style="display:none;" title="Install TruBrand App to Desktop / Home Screen">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Install App</span>
+      </button>
+      <button type="button" class="btn-lead-header" onclick="openLeadModal('header_nav')" title="Connect TruDealer DMS & Claim Free Showroom Suite">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Claim Free Suite</span>
       </button>
       <button type="button" class="btn-export-primary" onclick="downloadBannerClean('png')" title="Export 4K PNG">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1903,6 +2195,26 @@
         <!-- ============================================== -->
         <div id="tab-vehicle" class="tab-pane">
           
+          <!-- Stock Auto-Sync Lead Hook -->
+          <div class="lead-promo-card">
+            <div class="lead-promo-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <div>
+                <strong>Auto-Sync Showroom Inventory</strong>
+                <span>Stop typing vehicle specs manually</span>
+              </div>
+            </div>
+            <p>Connect your dealer website or TruDealer DMS to pull live stock, 360 photos, and TransUnion specs in 1 click.</p>
+            <button type="button" class="btn-lead-promo" onclick="openLeadModal('inventory_sync')">
+              <span>Connect My Dealership Free</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
           <div class="form-group">
             <div class="section-label">Multi-Vertical Selector</div>
             <div class="segmented-switch">
@@ -2221,6 +2533,28 @@
             </div>
           </div>
 
+          <!-- Social Auto-Publisher Lead Hook -->
+          <div class="lead-promo-card" style="margin-top: 12px;">
+            <div class="lead-promo-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              <div>
+                <strong>1-Click Multi-Channel Auto-Publisher</strong>
+                <span>Direct to FB, Instagram & Google Business</span>
+              </div>
+            </div>
+            <p>Auto-publish branded vehicle graphics, reels, and formatted captions to your social channels the minute a car arrives in showroom stock.</p>
+            <button type="button" class="btn-lead-promo" onclick="openLeadModal('social_autopilot')">
+              <span>Request TruSocial Auto-Publisher</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
         </div>
 
         <!-- ============================================== -->
@@ -2397,6 +2731,97 @@
         <span id="video-render-percent">0%</span>
         <span id="video-render-timer">0.0s / 6.0s</span>
       </div>
+    </div>
+  </div>
+
+  <!-- Dealership Lead Capture & Onboarding Modal -->
+  <div class="video-modal-backdrop" id="lead-capture-modal">
+    <div class="video-modal-card" style="max-width: 480px; padding: 24px 28px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+        <div style="text-align: left;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 800; color: var(--primary-bright); background: rgba(13,148,136,0.2); border: 1px solid var(--primary-bright); padding: 3px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.12em;">Free Dealership Suite</span>
+          </div>
+          <h3 style="font-size: 19px; font-weight: 900; color: #FFF; letter-spacing: -0.02em;">Get TruDealer For Your Dealership</h3>
+          <p style="font-size: 12px; color: #94A3B8; margin-top: 2px;">Automate inventory sync, 360 photo studio, and multi-channel marketing.</p>
+        </div>
+        <button type="button" onclick="closeLeadModal()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94A3B8; width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="lead-capture-form" onsubmit="handleLeadSubmit(event)" style="text-align: left; display: flex; flex-direction: column; gap: 11px;">
+        <div class="btn-grid-2">
+          <div>
+            <label style="font-size: 11px; color: #CBD5E1; font-weight: 700; margin-bottom: 4px; display: block;">Dealership Name *</label>
+            <input type="text" id="lead-dealership" required placeholder="e.g. Apex Prestige Auto" style="width: 100%; background: #060910; border: 1px solid var(--card-border); color: #FFF; padding: 8px 11px; border-radius: 7px; font-size: 12.5px;">
+          </div>
+          <div>
+            <label style="font-size: 11px; color: #CBD5E1; font-weight: 700; margin-bottom: 4px; display: block;">Contact Person & Role *</label>
+            <input type="text" id="lead-contact" required placeholder="e.g. John Doe (DP / Sales Mgr)" style="width: 100%; background: #060910; border: 1px solid var(--card-border); color: #FFF; padding: 8px 11px; border-radius: 7px; font-size: 12.5px;">
+          </div>
+        </div>
+
+        <div class="btn-grid-2">
+          <div>
+            <label style="font-size: 11px; color: #CBD5E1; font-weight: 700; margin-bottom: 4px; display: block;">WhatsApp / Mobile *</label>
+            <input type="tel" id="lead-phone" required placeholder="e.g. +27 82 123 4567" style="width: 100%; background: #060910; border: 1px solid var(--card-border); color: #FFF; padding: 8px 11px; border-radius: 7px; font-size: 12.5px;">
+          </div>
+          <div>
+            <label style="font-size: 11px; color: #CBD5E1; font-weight: 700; margin-bottom: 4px; display: block;">Dealership Location *</label>
+            <input type="text" id="lead-location" required placeholder="e.g. Cape Town, Western Cape" style="width: 100%; background: #060910; border: 1px solid var(--card-border); color: #FFF; padding: 8px 11px; border-radius: 7px; font-size: 12.5px;">
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11px; color: #CBD5E1; font-weight: 700; margin-bottom: 4px; display: block;">Primary Goal / Interest</label>
+          <select id="lead-interest" style="width: 100%; background: #060910; border: 1px solid var(--card-border); color: #FFF; padding: 8px 11px; border-radius: 7px; font-size: 12.5px;">
+            <option value="all_suite">Full 7-App TruDealer Ecosystem (DMS, Studio, 360 Spin, Chatbot)</option>
+            <option value="inventory_sync">Automated Live Inventory & Photo Sync</option>
+            <option value="social_autopilot">1-Click Social Media Auto-Publishing (TruSocial)</option>
+            <option value="inspections_valuations">Vehicle Condition Reports & TransUnion Valuations</option>
+          </select>
+        </div>
+
+        <div style="background: rgba(13,148,136,0.08); border: 1px solid rgba(45,212,191,0.22); border-radius: 7px; padding: 9px 12px; font-size: 11px; color: #E2E8F0; line-height: 1.45;">
+          <strong>Included in Free Onboarding:</strong> Multi-user sales access, custom branded templates, and live inventory sync setup.
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <button type="button" class="btn-copy-big" style="flex: 1.3; background: linear-gradient(135deg, #059669 0%, #047857 100%); border-color: #34D399; font-size: 12px; font-weight: 800; padding: 8px 12px;" onclick="submitLeadViaWhatsApp()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <span>Connect on WhatsApp</span>
+          </button>
+          <button type="submit" class="btn-copy-big" style="flex: 1; font-size: 12px; padding: 8px 12px;">
+            <span>Submit Request</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Post-Export Lead Toast Notification -->
+  <div id="lead-export-toast" class="lead-export-toast">
+    <div class="toast-content">
+      <div class="toast-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="toast-body">
+        <strong>Ultra-HD Creative Exported!</strong>
+        <p>Loved using TruBrand? Get TruDealer's full 7-app ecosystem (360 photo studio, VIR condition reports, AI chatbot) free for your showroom.</p>
+      </div>
+    </div>
+    <div class="toast-actions">
+      <button type="button" class="btn-toast-wa" onclick="dispatchDirectWhatsAppLead('post_export')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span>Chat on WhatsApp</span>
+      </button>
+      <button type="button" class="btn-toast-more" onclick="openLeadModal('post_export'); closeLeadToast();">
+        <span>Showroom Suite Demo</span>
+      </button>
+      <button type="button" class="btn-toast-close" onclick="closeLeadToast()" title="Dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
   </div>
 
@@ -2700,12 +3125,14 @@
 
     function fitToScreen() {
       const stage = document.getElementById('scroll-stage');
-      const dims = ratioDimensions[state.ratio];
+      if (!stage) return;
+      const dims = ratioDimensions[state.ratio] || { w: 1080, h: 1080 };
       
-      const availableW = stage.clientWidth - 80;
-      const availableH = stage.clientHeight - 80;
+      const pad = (stage.clientWidth < 600) ? 24 : 80;
+      const availableW = Math.max(stage.clientWidth - pad, 120);
+      const availableH = Math.max(stage.clientHeight - pad, 120);
 
-      const scale = Math.min(availableW / dims.w, availableH / dims.h, 0.95);
+      const scale = Math.max(Math.min(availableW / dims.w, availableH / dims.h, 0.95), 0.12);
       setZoom(scale);
     }
 
@@ -3794,6 +4221,7 @@
         pod.style.width = originalPodW;
         pod.style.height = originalPodH;
         if (dragHandle) dragHandle.style.display = 'flex';
+        showLeadSuccessToast();
       }
     }
 
@@ -3832,6 +4260,7 @@
         pod.style.width = originalPodW;
         pod.style.height = originalPodH;
         if (dragHandle) dragHandle.style.display = 'flex';
+        showLeadSuccessToast();
       }
     }
 
@@ -3848,6 +4277,7 @@
       }
 
       setRatio(originalRatio);
+      showLeadSuccessToast();
     }
 
     // Batch Export 3 Carousel Slides
@@ -3862,6 +4292,7 @@
       }
 
       switchSlide(originalSlide);
+      showLeadSuccessToast();
     }
 
     // ==============================================
@@ -4155,6 +4586,111 @@
         pod.style.height = originalPodH;
         if (dragHandle) dragHandle.style.display = 'flex';
         if (modal) modal.style.display = 'none';
+        showLeadSuccessToast();
+      }
+    }
+
+    // ==============================================
+    // DEALERSHIP LEAD CAPTURE & CONVERSION ENGINE
+    // ==============================================
+    function openLeadModal(originGoal = 'general') {
+      const modal = document.getElementById('lead-capture-modal');
+      const inDealer = document.getElementById('lead-dealership');
+      const inPhone = document.getElementById('lead-phone');
+      const inLoc = document.getElementById('lead-location');
+      const selInterest = document.getElementById('lead-interest');
+
+      if (inDealer) inDealer.value = state.dealer.name || '';
+      if (inPhone) inPhone.value = state.dealer.whatsapp || state.dealer.phone || '';
+      if (inLoc) inLoc.value = state.dealer.location || '';
+
+      if (selInterest && originGoal) {
+        if (originGoal === 'inventory_sync') selInterest.value = 'inventory_sync';
+        else if (originGoal === 'social_autopilot') selInterest.value = 'social_autopilot';
+        else if (originGoal === 'inspections_valuations') selInterest.value = 'inspections_valuations';
+        else selInterest.value = 'all_suite';
+      }
+
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeLeadModal() {
+      const modal = document.getElementById('lead-capture-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function showLeadSuccessToast() {
+      const toast = document.getElementById('lead-export-toast');
+      if (!toast) return;
+      toast.classList.add('active');
+      setTimeout(() => {
+        if (toast && toast.classList.contains('active')) {
+          toast.classList.remove('active');
+        }
+      }, 10000);
+    }
+
+    function closeLeadToast() {
+      const toast = document.getElementById('lead-export-toast');
+      if (toast) toast.classList.remove('active');
+    }
+
+    function submitLeadViaWhatsApp() {
+      const dealership = (document.getElementById('lead-dealership').value || state.dealer.name || 'Our Dealership').trim();
+      const contact = (document.getElementById('lead-contact').value || 'Sales Manager').trim();
+      const phone = (document.getElementById('lead-phone').value || state.dealer.phone || '').trim();
+      const location = (document.getElementById('lead-location').value || state.dealer.location || 'South Africa').trim();
+      const interestSelect = document.getElementById('lead-interest');
+      const interestText = interestSelect ? interestSelect.options[interestSelect.selectedIndex].text : 'Full TruDealer Suite';
+
+      const msg = `Hi TruDealer! I am using TruBrand Studio Pro for *${dealership}* (${location}).\n\n` +
+                  `• Contact: *${contact}*\n` +
+                  `• Phone: *${phone}*\n` +
+                  `• Primary Goal: *${interestText}*\n\n` +
+                  `We'd love to see how your automated DMS, live stock sync, and 360 photo studio work for our showroom.`;
+
+      const waUrl = `https://api.whatsapp.com/send?phone=27725454644&text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
+
+      saveLeadRecord({ dealership, contact, phone, location, interestText, source: 'whatsapp_modal', date: new Date().toISOString() });
+      closeLeadModal();
+    }
+
+    function dispatchDirectWhatsAppLead(trigger = 'post_export') {
+      const dealership = (state.dealer.name || 'Our Dealership').trim();
+      const location = (state.dealer.location || 'South Africa').trim();
+
+      const msg = `Hi TruDealer! I just exported a vehicle creative for *${dealership}* (${location}) on TruBrand Studio Pro.\n\n` +
+                  `I would love to see a quick 5-min demo of the full 7-app TruDealer ecosystem (360 photo studio, condition inspections, automated stock publishing) for our dealership.`;
+
+      const waUrl = `https://api.whatsapp.com/send?phone=27725454644&text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
+      closeLeadToast();
+    }
+
+    function handleLeadSubmit(e) {
+      if (e) e.preventDefault();
+
+      const dealership = (document.getElementById('lead-dealership').value || state.dealer.name || '').trim();
+      const contact = (document.getElementById('lead-contact').value || '').trim();
+      const phone = (document.getElementById('lead-phone').value || '').trim();
+      const location = (document.getElementById('lead-location').value || '').trim();
+      const interestSelect = document.getElementById('lead-interest');
+      const interestText = interestSelect ? interestSelect.options[interestSelect.selectedIndex].text : 'Full TruDealer Suite';
+
+      saveLeadRecord({ dealership, contact, phone, location, interestText, source: 'web_form', date: new Date().toISOString() });
+
+      alert(`Thank you, ${contact}! Your request for ${dealership} has been received. A TruDealer onboarding specialist will reach out on WhatsApp (${phone}) shortly.`);
+      closeLeadModal();
+    }
+
+    function saveLeadRecord(lead) {
+      try {
+        const leads = JSON.parse(localStorage.getItem('trubrand_leads') || '[]');
+        leads.push(lead);
+        localStorage.setItem('trubrand_leads', JSON.stringify(leads));
+      } catch (err) {
+        console.warn('Could not save lead record:', err);
       }
     }
 
@@ -4243,6 +4779,47 @@
 
     populateInputsFromState();
     renderState();
+
+    // PWA Service Worker & Install Prompt Handling
+    let deferredPWAInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPWAInstallPrompt = e;
+      const btnInstall = document.getElementById('btn-pwa-install');
+      if (btnInstall) btnInstall.style.display = 'inline-flex';
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPWAInstallPrompt = null;
+      const btnInstall = document.getElementById('btn-pwa-install');
+      if (btnInstall) btnInstall.style.display = 'none';
+      showLeadSuccessToast('TruBrand Studio Pro Installed Successfully!');
+    });
+
+    function triggerPWAInstall() {
+      if (deferredPWAInstallPrompt) {
+        deferredPWAInstallPrompt.prompt();
+        deferredPWAInstallPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            deferredPWAInstallPrompt = null;
+            const btnInstall = document.getElementById('btn-pwa-install');
+            if (btnInstall) btnInstall.style.display = 'none';
+          }
+        });
+      } else {
+        alert('To install TruBrand Studio Pro, tap Share or Menu in your browser and select "Add to Home Screen" or "Install App".');
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('[TruBrand PWA] Service worker registered:', reg.scope);
+        }).catch((err) => {
+          console.log('[TruBrand PWA] Service worker registration note:', err.message);
+        });
+      });
+    }
   </script>
 </body>
 </html>
