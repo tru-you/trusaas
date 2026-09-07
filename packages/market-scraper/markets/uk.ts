@@ -24,7 +24,7 @@ export const uk: MarketConfig = {
   currency: "£",
   country: "gb",
   googleDomain: "google.co.uk",
-  googleGl: "gl=uk&hl=en",
+  googleGl: "gl=gb&hl=en",
   googleQuerySuffix: "United Kingdom",
   minPrice: 1_000,
   maxPrice: 3_000_000,

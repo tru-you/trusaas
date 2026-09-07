@@ -14,7 +14,6 @@ interface Case { label: string; id: string; make: string; model: string; year: s
 
 const cases: Case[] = [
   { label: "ZA (car)",      id: "za",         make: "Volkswagen", model: "Golf",      year: "2021", mileage: 40000, market: markets.za },
-  { label: "US (car)",      id: "us",         make: "Honda",      model: "Civic",     year: "2021", mileage: 40000, market: markets.us },
   { label: "UK (car)",      id: "uk",         make: "Ford",       model: "Fiesta",    year: "2021", mileage: 40000, market: markets.uk },
   { label: "Housing ZA",    id: "housingZa",  make: "Cape Town",  model: "apartment", year: "2024",              market: markets.housingZa },
 ];
@@ -34,6 +33,9 @@ async function main() {
       console.log(`time: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
       console.log(JSON.stringify({
         avg: r.averageRetailPrice,
+        tradeEst: r.tradeEstimate,
+        range: r.priceRange,
+        confidence: r.confidenceScore,
         listings: r.listingsFound,
         fallback: r.fallbackRequired,
         searchUrl: r.searchUrl,

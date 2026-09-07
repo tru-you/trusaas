@@ -14,6 +14,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import * as cheerio from "cheerio";
 import fs from "fs";
 import path from "path";
+import type { SerperResponse } from './serper';
 
 /* ────────────────────────────────────────────────
    TYPES
@@ -41,6 +42,9 @@ export interface Listing {
 
 export interface ValuationResult {
   averageRetailPrice: number | null;
+  tradeEstimate?: number | null;
+  priceRange?: { low: number | null; high: number | null };
+  confidenceScore?: number;
   listingsFound: number;
   fallbackRequired: boolean;
   searchUrl?: string;
@@ -190,20 +194,23 @@ const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAG
 const SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
 const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
 
-const SERP_API_URL = process.env.SERP_API_URL || "";
-const SERP_API_KEY = process.env.SERP_API_KEY || "";
-const SERP_ZONE = process.env.SERP_ZONE || "serp";
-const SERP_PROVIDER = (
-  process.env.SERP_PROVIDER ||
-  (SERP_API_URL.includes("brightdata") ? "brightdata" : SERP_API_URL.includes("serpapi") ? "serpapi" : "")
-).toLowerCase();
-const SERP_TIMEOUT_MS = Number(process.env.SERP_TIMEOUT_MS) || 12000;
+// SERP env — lazy getters (same dotenv load-order issue as unlocker vars)
+function getSerpApiUrl() { return process.env.SERP_API_URL || ""; }
+function getSerpApiKey() { return process.env.SERP_API_KEY || ""; }
+function getSerpZone() { return process.env.SERP_ZONE || "serp"; }
+function getSerpProvider() {
+  if (process.env.SERPER_API_KEY) return 'serper';  // Serper.dev is primary when configured
+  const url = getSerpApiUrl();
+  return (process.env.SERP_PROVIDER || (url.includes("brightdata") ? "brightdata" : url.includes("serpapi") ? "serpapi" : "")).toLowerCase();
+}
+const SERP_TIMEOUT_MS = 12000;
 
-const BD_API_KEY = process.env.BRIGHTDATA_API_KEY || SERP_API_KEY;
-const UNLOCKER_ZONE = process.env.UNLOCKER_ZONE || process.env.BRIGHTDATA_UNLOCKER_ZONE || "unlocker";
-const UNLOCKER_ENABLED = /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || "");
-const UNLOCKER_TIMEOUT_MS = Number(process.env.UNLOCKER_TIMEOUT_MS) || 20000;
-const UNLOCKER_MAX_PAGES = Math.max(1, Number(process.env.UNLOCKER_MAX_PAGES) || 1);
+// Bright Data env — lazy getters because dotenv.config() may run after this module loads
+function getBdApiKey() { return process.env.BRIGHTDATA_API_KEY || process.env.SERP_API_KEY || ""; }
+function getUnlockerZone() { return process.env.UNLOCKER_ZONE || process.env.BRIGHTDATA_UNLOCKER_ZONE || "unlocker"; }
+function isUnlockerEnabled() { return /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || ""); }
+const UNLOCKER_TIMEOUT_MS = 20000;
+const UNLOCKER_MAX_PAGES = 1;
 
 /* ────────────────────────────────────────────────
    SMALL HELPERS
@@ -258,7 +265,7 @@ function escapeRegex(s: string): string {
 }
 
 const MODEL_NOISE_RE =
-  /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4wd|automatic|auto|manual|fwd|awd|rwd|style|storage|extras)\b)/gi;
+  /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc|kw|hp|bhp)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|gd-6|d-4d|cdti|crdi|hdi|dci|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4x2|4wd|2wd|automatic|auto|manual|fwd|awd|rwd|p\/u|s\/c|d\/c|cab|bakkie|double cab|single cab|super cab|style|storage|extras|bluemotion|quattro|xdrive|sdrive|4matic|mhev|phev|ev|hybrid)\b)/gi;
 export function modelCore(text: string): string {
   const s = String(text || "").trim().toLowerCase();
   if (!s || s === "any" || s === "-") return "";
@@ -268,12 +275,17 @@ export function modelCore(text: string): string {
 const MAKE_ALIASES: Record<string, string[]> = {
   vw: ["volkswagen"],
   volkswagen: ["vw"],
-  "mercedes-benz": ["mercedes", "benz"],
-  mercedes: ["mercedes-benz", "benz"],
-  "land rover": ["landrover"],
-  landrover: ["land rover"],
+  "mercedes-benz": ["mercedes", "benz", "merc"],
+  mercedes: ["mercedes-benz", "benz", "merc"],
+  merc: ["mercedes-benz", "mercedes", "benz"],
+  "land rover": ["landrover", "landie", "range rover"],
+  landrover: ["land rover", "range rover"],
   "alfa romeo": ["alfa"],
   alfa: ["alfa romeo"],
+  bmw: ["b.m.w."],
+  chevy: ["chevrolet"],
+  chevrolet: ["chevy"],
+  gwm: ["great wall", "great wall motors"],
 };
 
 function makeVariants(make: string): string[] {
@@ -339,11 +351,12 @@ async function renderViaWorker(url: string, maxMs?: number): Promise<string | nu
 }
 
 async function brightDataFetch(targetUrl: string, zone: string, country: string, timeoutMs: number): Promise<string | null> {
-  if (!BD_API_KEY) return null;
+  const apiKey = getBdApiKey();
+  if (!apiKey) return null;
   try {
-    const res = await fetch(SERP_API_URL || "https://api.brightdata.com/request", {
+    const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
       method: "POST",
-      headers: { Authorization: `Bearer ${BD_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ zone, url: targetUrl, format: "raw", country }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -369,16 +382,17 @@ async function brightDataFetch(targetUrl: string, zone: string, country: string,
 }
 
 export function unlockerConfigured(): boolean {
-  return UNLOCKER_ENABLED && !!BD_API_KEY;
+  return isUnlockerEnabled() && !!getBdApiKey();
 }
 
 export async function renderViaUnlocker(url: string, country: string, maxMs?: number): Promise<string | null> {
   if (!unlockerConfigured()) return null;
-  return brightDataFetch(url, UNLOCKER_ZONE, country, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
+  console.log(`[scraper] Attempting Bright Data unlocker for: ${url}`);
+  return brightDataFetch(url, getUnlockerZone(), country, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
 }
 
 export function serpConfigured(): boolean {
-  return !!SERP_API_KEY && (SERP_PROVIDER === "brightdata" || SERP_PROVIDER === "serpapi");
+  return !!process.env.SERPER_API_KEY || (!!getSerpApiKey() && (getSerpProvider() === "brightdata" || getSerpProvider() === "serpapi"));
 }
 
 export function parseSerpResults(json: any, make: string, model: string, year: string, cfg: MarketConfig): Listing[] {
@@ -406,23 +420,37 @@ export function parseSerpResults(json: any, make: string, model: string, year: s
 
 export async function fetchSerpListings(make: string, model: string, year: string, cfg: MarketConfig): Promise<Listing[]> {
   if (!serpConfigured()) return [];
-  const q = `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
+  const isHousing = cfg.id.startsWith("housing");
+  const q = isHousing
+    ? `${make} ${model === "property" ? "" : model} property for sale South Africa price`
+    : `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
   try {
     let json: any = null;
-    if (SERP_PROVIDER === "brightdata") {
+    
+    // 1. Primary: Serper.dev (cheapest, fastest)
+    if (process.env.SERPER_API_KEY) {
+      const { serperSearch, toEngineFormat } = await import('./serper');
+      const glCode = cfg.googleGl?.replace('gl=', '') || 'za';
+      const result = await serperSearch(q, { gl: glCode, num: 20 });
+      json = toEngineFormat(result);
+    }
+    // 2. Fallback: Bright Data SERP
+    else if (getSerpProvider() === "brightdata") {
       const googleUrl = `https://${cfg.googleDomain}/search?q=${encodeURIComponent(q)}&${cfg.googleGl}&num=20&brd_json=1`;
-      const res = await fetch(SERP_API_URL || "https://api.brightdata.com/request", {
+      const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
         method: "POST",
-        headers: { Authorization: `Bearer ${SERP_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ zone: SERP_ZONE, url: googleUrl, format: "raw" }),
+        headers: { Authorization: `Bearer ${getSerpApiKey()}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ zone: getSerpZone(), url: googleUrl, format: "raw" }),
         signal: AbortSignal.timeout(SERP_TIMEOUT_MS),
       });
       if (!res.ok) return [];
       const body = await res.text();
       try { json = JSON.parse(body); } catch { return []; }
-    } else {
-      const base = SERP_API_URL || "https://serpapi.com/search.json";
-      const url = `${base}?engine=google&google_domain=${cfg.googleDomain}&${cfg.googleGl}&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(SERP_API_KEY)}`;
+    }
+    // 3. Fallback: SerpAPI
+    else {
+      const base = getSerpApiUrl() || "https://serpapi.com/search.json";
+      const url = `${base}?engine=google&google_domain=${cfg.googleDomain}&${cfg.googleGl}&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(getSerpApiKey())}`;
       const res = await fetch(url, { signal: AbortSignal.timeout(SERP_TIMEOUT_MS) });
       if (!res.ok) return [];
       json = await res.json();
@@ -460,7 +488,12 @@ function priceFromText(text: string, cfg: MarketConfig): number | null {
 function jsonPrice(v: unknown, cfg: MarketConfig): number | null {
   let n: number;
   if (typeof v === "number") n = v;
-  else n = parseFloat(String(v ?? "").replace(/[^\d.,]/g, ""));
+  else {
+    const s = String(v ?? "").trim();
+    // Strip thousands-separator commas before extracting digits/decimals
+    const clean = s.replace(/,/g, "").replace(/[^\d.]/g, "");
+    n = parseFloat(clean);
+  }
   return Number.isFinite(n) && n >= cfg.minPrice && n <= cfg.maxPrice ? Math.round(n) : null;
 }
 
@@ -479,8 +512,8 @@ export function extractPrices(html: string, selectors: string[], cfg: MarketConf
   const prices: number[] = [];
   for (const sel of selectors) {
     $(sel.trim()).each((_, el) => {
-      const val = parseInt($(el).text().replace(/[^\d]/g, ""), 10);
-      if (val >= cfg.minPrice && val <= cfg.maxPrice) prices.push(val);
+      const val = priceFromText($(el).text(), cfg);
+      if (val !== null) prices.push(val);
     });
   }
   if (prices.length === 0) return extractPricesFromText($.text(), cfg);
@@ -811,23 +844,15 @@ export async function fetchJsonDealerPrices(
   });
 }
 
-function buildSources(cfg: MarketConfig): ScraperSource[] {
-  return cfg.classifieds.map((s) => ({
-    ...s,
-    fetchConfig: { ...s.fetchConfig, headers: { ...DEFAULT_HEADERS, "Accept-Language": cfg.acceptLanguage } },
-  }));
-}
-
-export async function fetchPageForParsing(url: string, cfg?: MarketConfig): Promise<string | null> {
-  const c = cfg || { id: "za", country: "za", acceptLanguage: "en-ZA,en;q=0.9" } as MarketConfig;
+export async function fetchPageForParsing(url: string, cfg: MarketConfig): Promise<string | null> {
   const rendered = await renderViaWorker(url);
   if (rendered) return rendered;
-  const unlocked = await renderViaUnlocker(url, c.country);
+  const unlocked = await renderViaUnlocker(url, cfg.country);
   if (unlocked) return unlocked;
   try {
     return await fetchWithRetry(url, {
       timeout: REQUEST_TIMEOUT,
-      headers: { ...DEFAULT_HEADERS, "Accept-Language": c.acceptLanguage },
+      headers: { ...DEFAULT_HEADERS, "Accept-Language": cfg.acceptLanguage },
     });
   } catch (err: any) {
     console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);

@@ -36,16 +36,21 @@ import {
 export * from "./engine";
 
 import { sa } from "./markets/sa";
-import { us } from "./markets/us";
 import { uk } from "./markets/uk";
 import { housingZa } from "./markets/housing";
 
-export const markets = { za: sa, us, uk, housingZa };
+export const markets = { za: sa, uk, housingZa };
+const ALLOWED_MARKETS = (process.env.MARKETS || '').split(',').map(s => s.trim()).filter(Boolean);
+const filteredMarkets: Record<string, MarketConfig> = ALLOWED_MARKETS.length
+  ? Object.fromEntries(Object.entries(markets).filter(([id]) => ALLOWED_MARKETS.includes(id)))
+  : markets;
+export { filteredMarkets as activeMarkets };
 export { sa };
 
 export type { MarketConfig, FetchValuationOptions, ValuationResult, Listing, SourceResult, DealerSource };
 
 const DEFAULT_MARKET: MarketConfig = sa;
+// TODO: export from engine.ts to avoid drift
 const CACHE_TTL_MS = Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1000;
 const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
 const MIN_DEALER_LISTINGS = Number(process.env.SCRAPER_MIN_DEALER_LISTINGS) || 3;
@@ -58,8 +63,8 @@ const SERP_TRIGGER_MAX = Number(process.env.SERP_TRIGGER_MAX) || 6;
 interface CacheEntry { data: ValuationResult; ts: number; }
 const cache = new Map<string, CacheEntry>();
 
-function cacheKey(marketId: string, make: string, model: string, year: string, vin?: string, dealerSlug?: string): string {
-  return `${marketId}|${(dealerSlug || "default").toLowerCase()}|${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || "novin").toUpperCase()}`;
+function cacheKey(marketId: string, make: string, model: string, year: string, vin?: string, dealerSlug?: string, mileage?: number): string {
+  return `${marketId}|${(dealerSlug || "default").toLowerCase()}|${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || "novin").toUpperCase()}|${mileage != null && Number.isFinite(mileage) ? Math.round(mileage) : "nomileage"}`;
 }
 function cacheGet(key: string): ValuationResult | null {
   const e = cache.get(key);
@@ -67,12 +72,20 @@ function cacheGet(key: string): ValuationResult | null {
   if (Date.now() - e.ts > CACHE_TTL_MS) { cache.delete(key); return null; }
   return e.data;
 }
-function cachePut(key: string, data: ValuationResult): void { cache.set(key, { data, ts: Date.now() }); }
+const MAX_CACHE_SIZE = Number(process.env.SCRAPER_MAX_CACHE_SIZE) || 500;
+function cachePut(key: string, data: ValuationResult): void {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const oldest = cache.keys().next().value;
+    if (oldest) cache.delete(oldest);
+  }
+  cache.set(key, { data, ts: Date.now() });
+}
 
 export function clearValuationCache(): void { cache.clear(); }
 
 /* ── helpers ──────────────────────────────────── */
 
+// TODO: export from engine.ts
 async function mapPool<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>): Promise<R[]> {
   const out = new Array<R>(items.length);
   let next = 0;
@@ -122,7 +135,8 @@ export async function fetchValuation(
 ): Promise<ValuationResult> {
   const cfg = market;
   const baseModel = modelCore(model);
-  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug);
+  const targetKm = Number(opts.mileage);
+  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug, targetKm);
   const cached = cacheGet(key);
   if (cached) return cached;
 
@@ -177,7 +191,6 @@ export async function fetchValuation(
   const dealerListings = dealerResults.flatMap((r) => r.listings);
   const dealerSources: SourceResult[] = dealerResults.map(({ name, count, avg }) => ({ name, count, avg }));
 
-  const targetKm = Number(opts.mileage);
   const kmOf = (ls: Listing[]) => median(ls.map((l) => l.km).filter((k): k is number => typeof k === "number"));
 
   if (dealerListings.length >= DEALER_FINAL_THRESHOLD) {
@@ -244,18 +257,60 @@ export async function fetchValuation(
     ? cfg.secondaryUrl?.(make, baseModel, y)
     : undefined;
 
+function calcConfidenceScore(prices: number[]): number {
+  const n = prices.length;
+  if (n === 0) return 0;
+  if (n === 1) return 30;
+  const avg = prices.reduce((a, b) => a + b, 0) / n;
+  const variance = prices.reduce((a, b) => a + (b - avg) ** 2, 0) / n;
+  const stdDev = Math.sqrt(variance);
+  const cv = avg > 0 ? stdDev / avg : 0.5;
+  const base = n >= 15 ? 85 : n >= 5 ? 70 : 45;
+  const penalty = Math.min(20, Math.round(cv * 80));
+  return Math.max(15, Math.min(99, base - penalty + (n >= 20 ? 5 : 0)));
+}
+
+function calcPriceRange(prices: number[]): { low: number | null; high: number | null } {
+  if (!prices.length) return { low: null, high: null };
+  const sorted = [...prices].sort((a, b) => a - b);
+  return { low: sorted[0], high: sorted[sorted.length - 1] };
+}
+
   if (allListings.length === 0) {
-    const data: ValuationResult = { averageRetailPrice: null, listingsFound: 0, fallbackRequired: true, currency: cfg.currency, distanceUnit: cfg.distanceUnit, searchUrl, carsUrl, sources: finalSources, mileageAdjusted: false, sampleMedianKm: null };
+    const data: ValuationResult = {
+      averageRetailPrice: null,
+      tradeEstimate: null,
+      priceRange: { low: null, high: null },
+      confidenceScore: 0,
+      listingsFound: 0,
+      fallbackRequired: true,
+      currency: cfg.currency,
+      distanceUnit: cfg.distanceUnit,
+      searchUrl,
+      carsUrl,
+      sources: finalSources,
+      mileageAdjusted: false,
+      sampleMedianKm: null
+    };
     cachePut(key, data);
     return data;
   }
 
   const adjustedAll = adjustForMileage(allListings, targetKm);
+  const avgRetail = robustAverage(adjustedAll);
+  const range = calcPriceRange(adjustedAll);
+  const confidence = calcConfidenceScore(adjustedAll);
+  const tradeEst = avgRetail != null ? Math.round(avgRetail * 0.85) : null;
+
   const data: ValuationResult = {
-    averageRetailPrice: robustAverage(adjustedAll),
+    averageRetailPrice: avgRetail,
+    tradeEstimate: tradeEst,
+    priceRange: range,
+    confidenceScore: confidence,
     listingsFound: adjustedAll.length,
     fallbackRequired: dealerListings.length < MIN_DEALER_LISTINGS,
-    searchUrl, carsUrl,
+    searchUrl,
+    carsUrl,
     sources: finalSources,
     currency: cfg.currency,
     distanceUnit: cfg.distanceUnit,

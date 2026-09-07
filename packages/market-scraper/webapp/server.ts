@@ -15,7 +15,7 @@
  * tiers only engage when the owning instance has configured a key.
  */
 import express from "express";
-import { fetchValuation, markets } from "../index";
+import { fetchValuation, markets, activeMarkets } from "../index";
 
 const PORT = Number(process.env.PORT || 4300);
 const API_KEY = process.env.API_KEY || "";
@@ -36,10 +36,21 @@ app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
+
+if (API_KEY) {
+  const checkAuth = (req: any, res: any, next: any) => {
+    const auth = req.headers.authorization;
+    if (!auth || auth !== `Bearer ${API_KEY}`) return res.status(401).json({ error: "Unauthorized" });
+    next();
+  };
+  app.use("/api/valuation", checkAuth);
+  app.use("/api/fsbo", checkAuth);
+  app.use("/api/agency/crawl", checkAuth);
+}
 
 // Per-IP throttle (in-memory; resets on restart — fine for a public form).
 const hits = new Map<string, { n: number; ts: number }>();
@@ -60,7 +71,7 @@ function throttled(ip: string): boolean {
 }
 
 app.get("/api/markets", (_req, res) => {
-  res.json(Object.keys(markets).map((id) => ({ id, label: LABELS[id] || id })));
+  res.json(Object.keys(activeMarkets).map((id) => ({ id, label: LABELS[id] || id })));
 });
 
 app.post("/api/valuation", async (req, res) => {
@@ -71,7 +82,7 @@ app.post("/api/valuation", async (req, res) => {
     if (!make || !model || !year) {
       return res.status(400).json({ error: "make, model, and year are required" });
     }
-    const cfg = markets[market || "za"] || markets.za;
+    const cfg = activeMarkets[market || "za"] || markets.za;
     // Housing passes location as the make hint; cars pass make directly.
     const m = cfg.id === "housingZa" ? (location || make) : make;
     const data = await fetchValuation(String(m), String(model), String(year), {
@@ -83,7 +94,45 @@ app.post("/api/valuation", async (req, res) => {
   }
 });
 
+app.post("/api/fsbo", async (req, res) => {
+  const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
+  if (throttled(ip)) return res.status(429).json({ error: "Too many requests — slow down." });
+  try {
+    const { suburb, city, limit } = req.body || {};
+    if (!suburb) return res.status(400).json({ error: "suburb is required" });
+    const { extractFsboLeads } = await import("../fsbo-extractor");
+    const cleanLimit = Math.min(25, Math.max(1, Number(limit) || 8));
+    const data = await extractFsboLeads(String(suburb).trim(), String(city || "").trim(), cleanLimit);
+    res.json(data);
+  } catch (err: any) {
+    res.status(502).json({ error: err?.message || "FSBO extraction failed" });
+  }
+});
+
+app.post("/api/agency/crawl", async (req, res) => {
+  const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
+  if (throttled(ip)) return res.status(429).json({ error: "Too many requests — slow down." });
+  try {
+    const { city = "Durban", industry = "plumbers", country = "za", limit = 10 } = req.body || {};
+    const { crawlLegacySites } = await import("../legacy-finder/crawler");
+    const data = await crawlLegacySites({
+      city: String(city).trim(),
+      industry: String(industry).trim(),
+      country: country === "uk" ? "uk" : "za",
+      maxResults: Math.min(25, Math.max(1, Number(limit) || 10)),
+    });
+    res.json(data);
+  } catch (err: any) {
+    res.status(502).json({ error: err?.message || "Legacy site crawl failed" });
+  }
+});
+
 // Static frontend (index.html sits at the webapp root, same file Netlify serves).
 app.use(express.static(__dirname));
 
-app.listen(PORT, () => console.log(`market value on http://localhost:${PORT}`));
+const server = app.listen(PORT, () => console.log(`market value on http://localhost:${PORT}`));
+process.on("SIGTERM", () => {
+  console.log("[scraper] SIGTERM received, draining...");
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 10_000);
+});

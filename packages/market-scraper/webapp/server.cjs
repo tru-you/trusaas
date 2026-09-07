@@ -4,6 +4,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -20,6 +27,774 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+
+// serper.ts
+var serper_exports = {};
+__export(serper_exports, {
+  serperConfigured: () => serperConfigured,
+  serperSearch: () => serperSearch,
+  toEngineFormat: () => toEngineFormat
+});
+function serperConfigured() {
+  return !!process.env.SERPER_API_KEY;
+}
+async function serperSearch(query, opts = {}) {
+  const apiKey = process.env.SERPER_API_KEY;
+  if (!apiKey) throw new Error("SERPER_API_KEY not configured");
+  const body = {
+    q: query,
+    gl: opts.gl || "za",
+    hl: opts.hl || "en",
+    num: opts.num || 20
+  };
+  if (opts.location) body.location = opts.location;
+  const res = await fetch("https://google.serper.dev/search", {
+    method: "POST",
+    headers: {
+      "X-API-KEY": apiKey,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(SERPER_TIMEOUT_MS)
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Serper API error ${res.status}: ${text.slice(0, 200)}`);
+  }
+  const json = await res.json();
+  return {
+    organic: (json.organic || []).map((r, i) => ({
+      title: r.title || "",
+      link: r.link || "",
+      snippet: r.snippet || "",
+      position: r.position || i + 1
+    })),
+    searchParameters: json.searchParameters,
+    credits: json.credits
+  };
+}
+function toEngineFormat(serperResponse) {
+  return {
+    organic_results: serperResponse.organic.map((r) => ({
+      title: r.title,
+      link: r.link,
+      snippet: r.snippet
+    }))
+  };
+}
+var SERPER_TIMEOUT_MS;
+var init_serper = __esm({
+  "serper.ts"() {
+    SERPER_TIMEOUT_MS = 1e4;
+  }
+});
+
+// fsbo-extractor.ts
+var fsbo_extractor_exports = {};
+__export(fsbo_extractor_exports, {
+  extractFsboLeads: () => extractFsboLeads
+});
+function formatZar(amount) {
+  return new Intl.NumberFormat("en-ZA", {
+    style: "currency",
+    currency: "ZAR",
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+async function extractFsboLeads(suburb, city = "", maxResults = 8) {
+  const cleanSuburb = suburb.split(",")[0].trim();
+  const serpApiKey = process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || "";
+  const serpZone = process.env.SERP_ZONE || "serp";
+  const liveLeads = [];
+  if (process.env.SERPER_API_KEY && liveLeads.length < maxResults) {
+    try {
+      const { serperSearch: serperSearch2 } = await Promise.resolve().then(() => (init_serper(), serper_exports));
+      const queries = [
+        `${cleanSuburb} property for sale private seller`,
+        `${cleanSuburb} property for sale owner Gumtree`,
+        `${cleanSuburb} house for sale private seller South Africa`
+      ];
+      for (const q of queries) {
+        if (liveLeads.length >= maxResults) break;
+        const result = await serperSearch2(q, { gl: "za", num: 20 });
+        for (const r of result.organic) {
+          if (liveLeads.length >= maxResults) break;
+          const title = String(r.title || "");
+          const snippet = String(r.snippet || "");
+          const link = String(r.link || "");
+          const priceMatch = `${title} ${snippet}`.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,8})/i);
+          if (!priceMatch) continue;
+          const rawPrice = parseInt(priceMatch[1].replace(/[^\d]/g, ""), 10);
+          if (rawPrice < 15e4 || rawPrice > 1e8) continue;
+          const isGumtree = link.includes("gumtree.co.za");
+          const isPrivateProp = link.includes("privateproperty.co.za");
+          const portal = isGumtree ? "Gumtree Private" : isPrivateProp ? "Private Property (Direct)" : "Direct Classifieds";
+          const phoneMatch = `${title} ${snippet}`.match(/(?:\+?27|0)\s?(?:[678]\d{1})\s?\d{3}\s?\d{4}/);
+          const phone = phoneMatch ? phoneMatch[0] : "Inquire via portal";
+          const cleanPhone = phoneMatch ? phoneMatch[0].replace(/[^\d]/g, "").replace(/^0/, "27") : "";
+          const whatsAppUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : link;
+          if (liveLeads.some((l) => l.sourceUrl === link || l.headline === title)) continue;
+          liveLeads.push({
+            id: `live-fsbo-${import_crypto.default.randomUUID().slice(0, 8)}`,
+            headline: title.replace(/[-|]\s*(Gumtree|Private Property|Property24).*$/i, "").trim(),
+            suburb: cleanSuburb,
+            city: city || "South Africa",
+            askingPrice: rawPrice,
+            formattedPrice: formatZar(rawPrice),
+            ownerName: "Private Seller",
+            phone,
+            whatsAppUrl,
+            daysListed: null,
+            portalSource: portal,
+            sourceUrl: link,
+            propertyType: /apartment|flat/i.test(title) ? "Apartment" : "House / Property",
+            source: "serp"
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[FSBO-Extractor] Serper.dev note:", err?.message || err);
+    }
+  }
+  if (liveLeads.length < maxResults && serpApiKey) {
+    try {
+      const q = `"${cleanSuburb}" property for sale "private seller" OR "by owner"`;
+      const googleUrl = `https://www.google.co.za/search?q=${encodeURIComponent(q)}&gl=za&hl=en&num=15&brd_json=1`;
+      const res = await import_axios2.default.post("https://api.brightdata.com/request", {
+        zone: serpZone,
+        url: googleUrl,
+        format: "raw"
+      }, {
+        headers: {
+          Authorization: `Bearer ${serpApiKey}`,
+          "Content-Type": "application/json"
+        },
+        timeout: 1e4
+      });
+      const body = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+      const organic = body?.organic_results || body?.organic || [];
+      for (const item of Array.isArray(organic) ? organic : []) {
+        if (liveLeads.length >= maxResults) break;
+        const title = String(item?.title || "");
+        const snippet = String(item?.snippet || item?.description || "");
+        const link = String(item?.link || item?.url || "");
+        const priceMatch = `${title} ${snippet}`.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,8})/i);
+        if (!priceMatch) continue;
+        const rawPrice = parseInt(priceMatch[1].replace(/[^\d]/g, ""), 10);
+        if (rawPrice < 25e4 || rawPrice > 1e8) continue;
+        const isGumtree = link.includes("gumtree.co.za");
+        const portal = isGumtree ? "Gumtree Private" : "Private Property (Direct)";
+        const phoneMatch = snippet.match(/(?:\+?27|0)\s?(?:[678]\d{1})\s?\d{3}\s?\d{4}/);
+        const phone = phoneMatch ? phoneMatch[0] : "Contact via portal";
+        const cleanPhone = phoneMatch ? phoneMatch[0].replace(/[^\d]/g, "").replace(/^0/, "27") : "";
+        const whatsAppUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : link;
+        liveLeads.push({
+          id: `live-fsbo-${import_crypto.default.randomUUID().slice(0, 8)}`,
+          headline: title.replace(/[-|]\s*(Gumtree|Private Property).*$/i, "").trim(),
+          suburb: cleanSuburb,
+          city: city || "South Africa",
+          askingPrice: rawPrice,
+          formattedPrice: formatZar(rawPrice),
+          ownerName: "Private Seller",
+          phone,
+          whatsAppUrl,
+          daysListed: null,
+          portalSource: portal,
+          sourceUrl: link,
+          propertyType: /apartment|flat/i.test(title) ? "Apartment" : "House / Property",
+          source: "serp"
+        });
+      }
+    } catch (err) {
+      console.warn("[FSBO-Extractor] SERP search note:", err?.message || err);
+    }
+  }
+  const finalLeads = liveLeads.slice(0, maxResults);
+  const avgPrice = finalLeads.length > 0 ? Math.round(finalLeads.reduce((acc, l) => acc + l.askingPrice, 0) / finalLeads.length) : 0;
+  return {
+    suburb: cleanSuburb,
+    city: city || "South Africa",
+    count: finalLeads.length,
+    leads: finalLeads,
+    averageAskingPrice: avgPrice,
+    scannedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+var import_axios2, import_crypto;
+var init_fsbo_extractor = __esm({
+  "fsbo-extractor.ts"() {
+    import_axios2 = __toESM(require("axios"));
+    import_crypto = __toESM(require("crypto"));
+  }
+});
+
+// legacy-finder/detector.ts
+function auditWebsite(url, html, headers, loadTimeMs, currency = "R") {
+  const $ = cheerio2.load(html);
+  const defects = [];
+  let deduction = 0;
+  const rawHtml = html.toLowerCase();
+  const isHttps = url.startsWith("https://");
+  const viewport = $('meta[name="viewport"]').attr("content") || "";
+  const hasViewportMeta = viewport.includes("width=device-width") || viewport.includes("initial-scale");
+  if (!hasViewportMeta) {
+    deduction += 35;
+    defects.push({
+      id: "NO_VIEWPORT",
+      category: "MOBILE",
+      severity: "CRITICAL",
+      title: "Missing Mobile Viewport Tag (Broken on Mobile)",
+      description: "The website does not declare a responsive viewport. Mobile visitors see a shrunken, non-scrollable desktop page requiring pinch-to-zoom.",
+      agencyPitchAngle: "Over 65% of local commercial search traffic is on mobile. This site is actively losing high-intent client calls every single day."
+    });
+  }
+  const hasFrames = $("frameset, frame").length > 0;
+  const hasFlash = rawHtml.includes(".swf") || $("object, embed").length > 0;
+  if (hasFrames || hasFlash) {
+    deduction += 25;
+    defects.push({
+      id: "OBSOLETE_FRAMES_FLASH",
+      category: "OBSOLETE_TECH",
+      severity: "CRITICAL",
+      title: "Obsolete Legacy Architecture (Frames or Flash)",
+      description: "The site utilizes deprecated HTML frames or Flash elements that are completely blocked by modern iOS, Android, and Chromium browsers.",
+      agencyPitchAngle: "Major browsers refuse to render these components. A modern clean HTML5/React/WordPress rebuild is mandatory."
+    });
+  }
+  if (!isHttps) {
+    deduction += 25;
+    defects.push({
+      id: "NO_SSL",
+      category: "SECURITY",
+      severity: "CRITICAL",
+      title: "No SSL / Unencrypted HTTP Protocol",
+      description: 'The website serves unencrypted HTTP traffic. Google Chrome and Safari flag the domain with an intimidating "Not Secure" warning in the address bar.',
+      agencyPitchAngle: "Visitors immediately bounce when seeing browser security warnings. Immediate trust failure."
+    });
+  }
+  let cms = "Custom HTML / PHP";
+  if (rawHtml.includes("/wp-content/") || rawHtml.includes("wp-json")) {
+    cms = "WordPress";
+    if (rawHtml.includes("twentyten") || rawHtml.includes("twentyeleven") || rawHtml.includes("wp-content/themes/default")) {
+      cms = "Legacy WordPress (< v4.5)";
+      deduction += 15;
+      defects.push({
+        id: "LEGACY_WP",
+        category: "OBSOLETE_TECH",
+        severity: "HIGH",
+        title: "Severely Outdated WordPress Installation",
+        description: "Running an obsolete theme and core version with known security vulnerabilities and unpatched CVEs.",
+        agencyPitchAngle: "High vulnerability to automated malware and defacement bots. Urgent upgrade required."
+      });
+    }
+  } else if (rawHtml.includes("/media/system/js/") || rawHtml.includes("joomla")) {
+    cms = "Joomla (Legacy)";
+    deduction += 20;
+    defects.push({
+      id: "LEGACY_JOOMLA",
+      category: "OBSOLETE_TECH",
+      severity: "HIGH",
+      title: "Outdated Joomla CMS Architecture",
+      description: "The site is built on an unmaintained legacy Joomla installation that is incompatible with modern PHP 8+ hosting.",
+      agencyPitchAngle: "Host is likely running insecure legacy PHP. Perfect candidate for a high-value redesign."
+    });
+  } else if (rawHtml.includes("wix.com") || rawHtml.includes("wixsite")) {
+    cms = "Wix (Basic)";
+  } else if (rawHtml.includes("squarespace")) {
+    cms = "Squarespace";
+  }
+  const usesOutdatedJQuery = /jquery[.-](1\.[0-8]\.[0-9]+)/i.test(rawHtml);
+  if (usesOutdatedJQuery) {
+    deduction += 10;
+    defects.push({
+      id: "OLD_JQUERY",
+      category: "OBSOLETE_TECH",
+      severity: "MEDIUM",
+      title: "Vulnerable JavaScript Libraries (jQuery 1.x)",
+      description: "Using ancient jQuery versions with cross-site scripting (XSS) vulnerabilities and slow execution.",
+      agencyPitchAngle: "Causes script errors on modern iOS/macOS Safari."
+    });
+  }
+  const hasSchemaOrg = $('script[type="application/ld+json"]').length > 0 || $("[itemscope]").length > 0;
+  if (!hasSchemaOrg) {
+    deduction += 10;
+    defects.push({
+      id: "NO_SCHEMA",
+      category: "SEO",
+      severity: "HIGH",
+      title: "Missing Schema.org LocalBusiness Structured Data",
+      description: "The site lacks structured data markup, preventing Google from generating rich snippets, operating hours, and local map highlights.",
+      agencyPitchAngle: "Outranked on Google Maps by local competitors with Schema-optimized pages."
+    });
+  }
+  const metaDesc = $('meta[name="description"]').attr("content");
+  const hasMetaDescription = !!metaDesc && metaDesc.length > 20;
+  if (!hasMetaDescription) {
+    deduction += 8;
+    defects.push({
+      id: "NO_META_DESC",
+      category: "SEO",
+      severity: "MEDIUM",
+      title: "Missing or Broken Meta Description",
+      description: "Search results show messy scrapings of navigation text instead of an engaging, high-converting snippet.",
+      agencyPitchAngle: "Substantial click-through rate (CTR) deficit on Google organic listings."
+    });
+  }
+  const estimatedLoadSeconds = parseFloat((loadTimeMs / 1e3).toFixed(2));
+  if (loadTimeMs > 4500) {
+    deduction += 15;
+    defects.push({
+      id: "SLOW_LCP",
+      category: "PERFORMANCE",
+      severity: "HIGH",
+      title: `Slow Page Load Speed (${estimatedLoadSeconds}s)`,
+      description: "Exceeds Google Core Web Vitals threshold (>2.5s). High bounce rate and search rank penalty.",
+      agencyPitchAngle: "53% of mobile visits are abandoned if a site takes longer than 3 seconds to load."
+    });
+  }
+  const hasGoogleAnalyticsOrPixel = rawHtml.includes("gtag") || rawHtml.includes("google-analytics") || rawHtml.includes("fbq(") || rawHtml.includes("googletagmanager");
+  if (!hasGoogleAnalyticsOrPixel) {
+    deduction += 8;
+    defects.push({
+      id: "NO_ANALYTICS",
+      category: "SEO",
+      severity: "MEDIUM",
+      title: "Zero Tracking or Conversion Analytics",
+      description: "The business has no Google Analytics or Meta Pixel tracking, flying blind on marketing ROI.",
+      agencyPitchAngle: "They have no idea where their customers are coming from or which campaigns work."
+    });
+  }
+  const score = Math.max(15, Math.min(98, 100 - deduction));
+  let estimatedPitchValue = `${currency} 25,000 - ${currency} 40,000`;
+  if (currency === "\xA3") {
+    estimatedPitchValue = score < 40 ? "\xA32,500 - \xA34,500" : "\xA31,500 - \xA32,800";
+  } else {
+    estimatedPitchValue = score < 40 ? "R 35,000 - R 55,000" : "R 22,000 - R 38,000";
+  }
+  const techStack = {
+    cms,
+    server: headers["server"] || "Standard Cloud",
+    hasViewportMeta,
+    isSslValid: isHttps,
+    usesOutdatedJQuery,
+    hasFlashOrFrames: hasFrames || hasFlash,
+    hasSchemaOrg,
+    hasMetaDescription,
+    hasGoogleAnalyticsOrPixel,
+    estimatedLoadSeconds
+  };
+  return {
+    score,
+    defects,
+    techStack,
+    estimatedPitchValue
+  };
+}
+var cheerio2;
+var init_detector = __esm({
+  "legacy-finder/detector.ts"() {
+    cheerio2 = __toESM(require("cheerio"));
+  }
+});
+
+// legacy-finder/contacts.ts
+function extractPhones(text, html, country = "za") {
+  const phones = /* @__PURE__ */ new Set();
+  const telRegex = /href=["']tel:([^"']+)["']/gi;
+  let match;
+  while ((match = telRegex.exec(html)) !== null) {
+    const raw = match[1].replace(/[\s\-\(\)\.]/g, "");
+    if (raw.length >= 9 && raw.length <= 15) {
+      phones.add(formatPhone(raw, country));
+    }
+  }
+  const zaPattern = /(?:(?:\+27|0027)\s*\(?0?\)?|0)\s*[1-8](?:[\s\-]?[0-9]){8}/g;
+  const ukPattern = /(?:(?:\+44|0044)\s*\(?0?\)?|0)\s*[1-9](?:[\s\-]?[0-9]){9}/g;
+  const pattern = country === "uk" ? ukPattern : zaPattern;
+  const textMatches = text.match(pattern) || [];
+  textMatches.forEach((p) => {
+    const clean = p.replace(/[\s\-\(\)\.]/g, "");
+    if (clean.length >= 9 && clean.length <= 14) {
+      phones.add(formatPhone(clean, country));
+    }
+  });
+  return Array.from(phones).slice(0, 6);
+}
+function formatPhone(phone, country) {
+  let p = phone.replace(/[^\d+]/g, "");
+  if (country === "za") {
+    if (p.startsWith("0") && p.length === 10) {
+      return `+27 ${p.slice(1, 3)} ${p.slice(3, 6)} ${p.slice(6)}`;
+    }
+    if (p.startsWith("27") && p.length === 11) {
+      return `+27 ${p.slice(2, 4)} ${p.slice(4, 7)} ${p.slice(7)}`;
+    }
+    if (p.startsWith("+27") && p.length === 12) {
+      return `+27 ${p.slice(3, 5)} ${p.slice(5, 8)} ${p.slice(8)}`;
+    }
+  } else if (country === "uk") {
+    if (p.startsWith("0") && p.length === 11) {
+      return `+44 ${p.slice(1, 5)} ${p.slice(5)}`;
+    }
+  }
+  return p;
+}
+function extractEmails(text, html) {
+  const emails = /* @__PURE__ */ new Set();
+  const mailtoRegex = /href=["']mailto:([^"'\?]+)/gi;
+  let match;
+  while ((match = mailtoRegex.exec(html)) !== null) {
+    const email = match[1].trim().toLowerCase();
+    if (isValidEmail(email)) {
+      emails.add(email);
+    }
+  }
+  const emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
+  const textMatches = text.match(emailPattern) || [];
+  textMatches.forEach((e) => {
+    const email = e.trim().toLowerCase();
+    if (isValidEmail(email)) {
+      emails.add(email);
+    }
+  });
+  return Array.from(emails).slice(0, 6);
+}
+function isValidEmail(email) {
+  if (!email || email.length > 80 || email.length < 5) return false;
+  if (/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i.test(email)) return false;
+  for (const blacklisted of EMAIL_BLACKLIST) {
+    if (email.includes(blacklisted)) return false;
+  }
+  return true;
+}
+function extractWhatsAppLinks(html) {
+  const links = /* @__PURE__ */ new Set();
+  const waRegex = /(https?:\/\/(?:api\.whatsapp\.com\/send\?phone=|wa\.me\/)[0-9+]+)/gi;
+  let match;
+  while ((match = waRegex.exec(html)) !== null) {
+    links.add(match[1]);
+  }
+  return Array.from(links);
+}
+function parseContactPage($, country = "za") {
+  const text = $("body").text();
+  const html = $.html();
+  const phones = extractPhones(text, html, country);
+  const emails = extractEmails(text, html);
+  const whatsAppLinks = extractWhatsAppLinks(html);
+  const socialLinks = {};
+  $('a[href*="facebook.com"]').each((_, el) => {
+    const href = $(el).attr("href");
+    if (href && !href.includes("sharer") && !socialLinks.facebook) socialLinks.facebook = href;
+  });
+  $('a[href*="instagram.com"]').each((_, el) => {
+    const href = $(el).attr("href");
+    if (href && !socialLinks.instagram) socialLinks.instagram = href;
+  });
+  $('a[href*="linkedin.com"]').each((_, el) => {
+    const href = $(el).attr("href");
+    if (href && !socialLinks.linkedin) socialLinks.linkedin = href;
+  });
+  $('a[href*="google.com/maps"], a[href*="maps.google.com"], a[href*="goo.gl/maps"]').each((_, el) => {
+    const href = $(el).attr("href");
+    if (href && !socialLinks.googleMaps) socialLinks.googleMaps = href;
+  });
+  let address;
+  $('[class*="address"], [class*="location"], [itemprop="address"], address').each((_, el) => {
+    const t = $(el).text().trim().replace(/\s+/g, " ");
+    if (t.length > 10 && t.length < 200 && !address) {
+      address = t;
+    }
+  });
+  const contactPagesFound = [];
+  $('a[href*="contact"], a[href*="about"], a[href*="reach"]').each((_, el) => {
+    const href = $(el).attr("href");
+    if (href && !contactPagesFound.includes(href)) {
+      contactPagesFound.push(href);
+    }
+  });
+  return {
+    phones,
+    whatsAppLinks,
+    emails,
+    address,
+    contactPagesFound: contactPagesFound.slice(0, 4),
+    socialLinks
+  };
+}
+var EMAIL_BLACKLIST;
+var init_contacts = __esm({
+  "legacy-finder/contacts.ts"() {
+    EMAIL_BLACKLIST = [
+      "example.com",
+      "domain.com",
+      "email.com",
+      "yoursite.com",
+      "company.com",
+      "sentry.io",
+      "wixpress.com",
+      "wordpress.org",
+      "cloudflare.com",
+      "googleapis.com",
+      "schema.org",
+      "w3.org",
+      "jquery.com",
+      "bootstrap.com",
+      "fontawesome.com"
+    ];
+  }
+});
+
+// legacy-finder/crawler.ts
+var crawler_exports = {};
+__export(crawler_exports, {
+  crawlLegacySites: () => crawlLegacySites
+});
+async function crawlLegacySites(request) {
+  const { city, industry, country = "za", maxResults = 10 } = request;
+  const currency = country === "uk" ? "\xA3" : "R";
+  const query = `${industry} in ${city}`;
+  console.log(`[LegacyFinder] Starting crawl for: "${query}" (${country.toUpperCase()})`);
+  const candidateDomains = await discoverBusinessDomains(industry, city, country, maxResults * 3);
+  console.log(`[LegacyFinder] Discovered ${candidateDomains.length} candidate business domains.`);
+  const targets = [];
+  const CONCURRENCY = 5;
+  const candidates = candidateDomains.slice(0, maxResults * 3);
+  for (let i = 0; i < candidates.length; i += CONCURRENCY) {
+    if (targets.length >= maxResults) break;
+    const batch = candidates.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map(
+        (domainInfo) => auditDomain(domainInfo.domain, domainInfo.title, city, industry, currency, country)
+      )
+    );
+    for (const r of results) {
+      if (targets.length >= maxResults) break;
+      if (r.status === "fulfilled" && r.value) {
+        targets.push(r.value);
+      }
+    }
+  }
+  const criticalDefectsFound = targets.reduce((sum, t) => sum + t.defects.filter((d) => d.severity === "CRITICAL").length, 0);
+  const avgScore = targets.length > 0 ? Math.round(targets.reduce((sum, t) => sum + t.readinessScore, 0) / targets.length) : 35;
+  return {
+    query,
+    city,
+    industry,
+    totalFound: targets.length,
+    criticalDefectsFound,
+    averageReadinessScore: avgScore,
+    targets,
+    scannedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+async function discoverBusinessDomains(industry, city, country, limit) {
+  const domains = [];
+  const queryStr = `${industry} ${city} contact`;
+  const serpApiKey = process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || "";
+  const serpZone = process.env.SERP_ZONE || "serp_api1";
+  const googleDomain = country === "uk" ? "google.co.uk" : "google.co.za";
+  const gl = country === "uk" ? "gl=gb" : "gl=za";
+  if (process.env.SERPER_API_KEY && domains.length < limit) {
+    try {
+      const { serperSearch: serperSearch2 } = await Promise.resolve().then(() => (init_serper(), serper_exports));
+      const result = await serperSearch2(queryStr, {
+        gl: country === "uk" ? "gb" : "za",
+        num: 20
+      });
+      for (const r of result.organic) {
+        if (domains.length >= limit) break;
+        if (r.link.startsWith("http")) {
+          try {
+            const u = new URL(r.link);
+            const domain = u.hostname.replace(/^www\./, "").toLowerCase();
+            const isDirectory = DIRECTORY_DOMAINS.some((d) => domain.includes(d));
+            if (!isDirectory && !domains.some((d) => d.domain === domain)) {
+              domains.push({ domain, title: r.title || domain });
+            }
+          } catch {
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[LegacyFinder] Serper.dev note:", err.message);
+    }
+  }
+  if (!process.env.SERPER_API_KEY && serpApiKey && domains.length < limit) {
+    try {
+      const googleUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(queryStr)}&${gl}&num=20&brd_json=1`;
+      const res = await import_axios3.default.post("https://api.brightdata.com/request", {
+        zone: serpZone,
+        url: googleUrl,
+        format: "raw"
+      }, {
+        headers: {
+          "Authorization": `Bearer ${serpApiKey}`,
+          "Content-Type": "application/json"
+        },
+        timeout: 12e3
+      });
+      const body = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+      const organic = body?.organic_results || body?.organic || [];
+      for (const r of Array.isArray(organic) ? organic : []) {
+        if (domains.length >= limit) break;
+        const link = String(r?.link || r?.url || "");
+        const title = String(r?.title || "");
+        if (link.startsWith("http")) {
+          try {
+            const u = new URL(link);
+            const domain = u.hostname.replace(/^www\./, "").toLowerCase();
+            const isDirectory = DIRECTORY_DOMAINS.some((d) => domain.includes(d));
+            if (!isDirectory && !domains.some((d) => d.domain === domain)) {
+              domains.push({ domain, title: title || domain });
+            }
+          } catch {
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[LegacyFinder] Bright Data SERP note:", err.message);
+    }
+  }
+  if (domains.length < 3) {
+    try {
+      const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(queryStr)}`;
+      const res = await import_axios3.default.get(searchUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept-Language": "en-US,en;q=0.9"
+        },
+        timeout: 6e3
+      });
+      const $ = cheerio3.load(res.data);
+      $(".result__body, .result").each((_, el) => {
+        if (domains.length >= limit) return;
+        const title = $(el).find(".result__title, a.result__url").text().trim();
+        let rawUrl = $(el).find("a.result__url, .result__title a").attr("href") || "";
+        if (rawUrl.includes("uddg=")) {
+          const match = rawUrl.match(/uddg=([^&]+)/);
+          if (match) rawUrl = decodeURIComponent(match[1]);
+        }
+        try {
+          if (rawUrl.startsWith("http")) {
+            const u = new URL(rawUrl);
+            const domain = u.hostname.replace(/^www\./, "").toLowerCase();
+            const isDirectory = DIRECTORY_DOMAINS.some((d) => domain.includes(d));
+            if (!isDirectory && !domains.some((d) => d.domain === domain)) {
+              domains.push({ domain, title: title || domain });
+            }
+          }
+        } catch (e) {
+        }
+      });
+    } catch (err) {
+      console.warn("[LegacyFinder] HTML search fallback note:", err.message);
+    }
+  }
+  return domains;
+}
+async function auditDomain(domain, rawTitle, city, industry, currency, country) {
+  const t0 = Date.now();
+  let activeUrl = `https://${domain}`;
+  let html = "";
+  let headers = {};
+  let loadTimeMs = 2500;
+  try {
+    const res = await import_axios3.default.get(activeUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      },
+      timeout: 7e3,
+      maxRedirects: 3
+    });
+    html = res.data;
+    headers = res.headers;
+    loadTimeMs = Date.now() - t0;
+  } catch (err) {
+    try {
+      const httpUrl = `http://${domain}`;
+      const res = await import_axios3.default.get(httpUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        },
+        timeout: 7e3
+      });
+      activeUrl = httpUrl;
+      html = res.data;
+      headers = res.headers;
+      loadTimeMs = Date.now() - t0;
+    } catch (httpErr) {
+      return null;
+    }
+  }
+  if (!html || typeof html !== "string" || html.length < 200) {
+    return null;
+  }
+  const $ = cheerio3.load(html);
+  let businessName = $("title").text().trim().split(/[-|–•]/)[0].trim() || rawTitle || domain;
+  if (businessName.length > 50) businessName = businessName.slice(0, 50);
+  const contacts = parseContactPage($, country);
+  const audit = auditWebsite(activeUrl, html, headers, loadTimeMs, currency);
+  if (contacts.phones.length === 0 && contacts.contactPagesFound.length > 0) {
+    try {
+      const contactUrl = new URL(contacts.contactPagesFound[0], activeUrl).toString();
+      const contactRes = await import_axios3.default.get(contactUrl, { timeout: 4e3 });
+      if (typeof contactRes.data === "string") {
+        const $c = cheerio3.load(contactRes.data);
+        const contactPageInfo = parseContactPage($c, country);
+        if (contactPageInfo.phones.length > 0) contacts.phones = contactPageInfo.phones;
+        if (contactPageInfo.emails.length > 0) contacts.emails = contactPageInfo.emails;
+        if (contactPageInfo.address && !contacts.address) contacts.address = contactPageInfo.address;
+      }
+    } catch (e) {
+    }
+  }
+  return {
+    id: import_crypto2.default.randomUUID(),
+    domain,
+    url: activeUrl,
+    businessName,
+    city,
+    industry,
+    readinessScore: audit.score,
+    defects: audit.defects,
+    techStack: audit.techStack,
+    contacts,
+    estimatedPitchValue: audit.estimatedPitchValue,
+    discoveredAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+var import_axios3, cheerio3, import_crypto2, DIRECTORY_DOMAINS;
+var init_crawler = __esm({
+  "legacy-finder/crawler.ts"() {
+    import_axios3 = __toESM(require("axios"));
+    cheerio3 = __toESM(require("cheerio"));
+    import_crypto2 = __toESM(require("crypto"));
+    init_detector();
+    init_contacts();
+    DIRECTORY_DOMAINS = [
+      "google.com",
+      "google.co.za",
+      "facebook.com",
+      "instagram.com",
+      "linkedin.com",
+      "yellowpages.co.za",
+      "snupit.co.za",
+      "sayellow.com",
+      "gumtree.co.za",
+      "property24.com",
+      "privateproperty.co.za",
+      "autotrader.co.za",
+      "cars.co.za",
+      "yell.com",
+      "checkatrade.com",
+      "wikipedia.org",
+      "tripadvisor.co.za",
+      "hellopeter.com",
+      "cylex.net.za"
+    ];
+  }
+});
 
 // webapp/server.ts
 var import_express = __toESM(require("express"));
@@ -61,16 +836,31 @@ var MIN_HTTP_LISTINGS = Number(process.env.SCRAPER_MIN_HTTP_LISTINGS) || 8;
 var CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
 var SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
 var TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 2e4;
-var SERP_API_URL = process.env.SERP_API_URL || "";
-var SERP_API_KEY = process.env.SERP_API_KEY || "";
-var SERP_ZONE = process.env.SERP_ZONE || "serp";
-var SERP_PROVIDER = (process.env.SERP_PROVIDER || (SERP_API_URL.includes("brightdata") ? "brightdata" : SERP_API_URL.includes("serpapi") ? "serpapi" : "")).toLowerCase();
-var SERP_TIMEOUT_MS = Number(process.env.SERP_TIMEOUT_MS) || 12e3;
-var BD_API_KEY = process.env.BRIGHTDATA_API_KEY || SERP_API_KEY;
-var UNLOCKER_ZONE = process.env.UNLOCKER_ZONE || process.env.BRIGHTDATA_UNLOCKER_ZONE || "unlocker";
-var UNLOCKER_ENABLED = /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || "");
-var UNLOCKER_TIMEOUT_MS = Number(process.env.UNLOCKER_TIMEOUT_MS) || 2e4;
-var UNLOCKER_MAX_PAGES = Math.max(1, Number(process.env.UNLOCKER_MAX_PAGES) || 1);
+function getSerpApiUrl() {
+  return process.env.SERP_API_URL || "";
+}
+function getSerpApiKey() {
+  return process.env.SERP_API_KEY || "";
+}
+function getSerpZone() {
+  return process.env.SERP_ZONE || "serp";
+}
+function getSerpProvider() {
+  if (process.env.SERPER_API_KEY) return "serper";
+  const url = getSerpApiUrl();
+  return (process.env.SERP_PROVIDER || (url.includes("brightdata") ? "brightdata" : url.includes("serpapi") ? "serpapi" : "")).toLowerCase();
+}
+var SERP_TIMEOUT_MS = 12e3;
+function getBdApiKey() {
+  return process.env.BRIGHTDATA_API_KEY || process.env.SERP_API_KEY || "";
+}
+function getUnlockerZone() {
+  return process.env.UNLOCKER_ZONE || process.env.BRIGHTDATA_UNLOCKER_ZONE || "unlocker";
+}
+function isUnlockerEnabled() {
+  return /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || "");
+}
+var UNLOCKER_TIMEOUT_MS = 2e4;
 async function fetchWithRetry(url, config, retries = MAX_RETRIES) {
   let lastErr = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -101,7 +891,7 @@ function median(nums) {
 function escapeRegex(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-var MODEL_NOISE_RE = /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4wd|automatic|auto|manual|fwd|awd|rwd|style|storage|extras)\b)/gi;
+var MODEL_NOISE_RE = /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc|kw|hp|bhp)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|gd-6|d-4d|cdti|crdi|hdi|dci|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4x2|4wd|2wd|automatic|auto|manual|fwd|awd|rwd|p\/u|s\/c|d\/c|cab|bakkie|double cab|single cab|super cab|style|storage|extras|bluemotion|quattro|xdrive|sdrive|4matic|mhev|phev|ev|hybrid)\b)/gi;
 function modelCore(text) {
   const s = String(text || "").trim().toLowerCase();
   if (!s || s === "any" || s === "-") return "";
@@ -110,24 +900,30 @@ function modelCore(text) {
 var MAKE_ALIASES = {
   vw: ["volkswagen"],
   volkswagen: ["vw"],
-  "mercedes-benz": ["mercedes", "benz"],
-  mercedes: ["mercedes-benz", "benz"],
-  "land rover": ["landrover"],
-  landrover: ["land rover"],
+  "mercedes-benz": ["mercedes", "benz", "merc"],
+  mercedes: ["mercedes-benz", "benz", "merc"],
+  merc: ["mercedes-benz", "mercedes", "benz"],
+  "land rover": ["landrover", "landie", "range rover"],
+  landrover: ["land rover", "range rover"],
   "alfa romeo": ["alfa"],
-  alfa: ["alfa romeo"]
+  alfa: ["alfa romeo"],
+  bmw: ["b.m.w."],
+  chevy: ["chevrolet"],
+  chevrolet: ["chevy"],
+  gwm: ["great wall", "great wall motors"]
 };
 function makeVariants(make) {
   const m = String(make).toLowerCase().trim();
   return [m, ...MAKE_ALIASES[m] || []];
 }
 var YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
-function titleMentionsVehicle(title, make, model, year, match) {
+function titleMentionsVehicle(title, make, model, year, match, opts) {
   const t = String(title || "");
   const y = parseInt(String(year), 10);
+  const tolerance = opts?.yearTolerance ?? YEAR_TOLERANCE;
   if (Number.isFinite(y) && y >= 1990 && y <= 2100) {
     const ym = t.match(/\b(?:19|20)\d{2}\b/);
-    if (ym && Math.abs(parseInt(ym[0], 10) - y) > YEAR_TOLERANCE) return false;
+    if (ym && Math.abs(parseInt(ym[0], 10) - y) > tolerance) return false;
   }
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), "i").test(t));
   const q = modelCore(model);
@@ -170,11 +966,12 @@ async function renderViaWorker(url, maxMs) {
   return null;
 }
 async function brightDataFetch(targetUrl, zone, country, timeoutMs) {
-  if (!BD_API_KEY) return null;
+  const apiKey = getBdApiKey();
+  if (!apiKey) return null;
   try {
-    const res = await fetch(SERP_API_URL || "https://api.brightdata.com/request", {
+    const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
       method: "POST",
-      headers: { Authorization: `Bearer ${BD_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ zone, url: targetUrl, format: "raw", country }),
       signal: AbortSignal.timeout(timeoutMs)
     });
@@ -198,14 +995,15 @@ async function brightDataFetch(targetUrl, zone, country, timeoutMs) {
   }
 }
 function unlockerConfigured() {
-  return UNLOCKER_ENABLED && !!BD_API_KEY;
+  return isUnlockerEnabled() && !!getBdApiKey();
 }
 async function renderViaUnlocker(url, country, maxMs) {
   if (!unlockerConfigured()) return null;
-  return brightDataFetch(url, UNLOCKER_ZONE, country, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
+  console.log(`[scraper] Attempting Bright Data unlocker for: ${url}`);
+  return brightDataFetch(url, getUnlockerZone(), country, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
 }
 function serpConfigured() {
-  return !!SERP_API_KEY && (SERP_PROVIDER === "brightdata" || SERP_PROVIDER === "serpapi");
+  return !!process.env.SERPER_API_KEY || !!getSerpApiKey() && (getSerpProvider() === "brightdata" || getSerpProvider() === "serpapi");
 }
 function parseSerpResults(json, make, model, year, cfg) {
   if (!json || typeof json !== "object") return [];
@@ -231,15 +1029,21 @@ function parseSerpResults(json, make, model, year, cfg) {
 }
 async function fetchSerpListings(make, model, year, cfg) {
   if (!serpConfigured()) return [];
-  const q = `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
+  const isHousing = cfg.id.startsWith("housing");
+  const q = isHousing ? `${make} ${model === "property" ? "" : model} property for sale South Africa price` : `${year} ${make} ${model} for sale ${cfg.googleQuerySuffix} price`;
   try {
     let json = null;
-    if (SERP_PROVIDER === "brightdata") {
+    if (process.env.SERPER_API_KEY) {
+      const { serperSearch: serperSearch2, toEngineFormat: toEngineFormat2 } = await Promise.resolve().then(() => (init_serper(), serper_exports));
+      const glCode = cfg.googleGl?.replace("gl=", "") || "za";
+      const result = await serperSearch2(q, { gl: glCode, num: 20 });
+      json = toEngineFormat2(result);
+    } else if (getSerpProvider() === "brightdata") {
       const googleUrl = `https://${cfg.googleDomain}/search?q=${encodeURIComponent(q)}&${cfg.googleGl}&num=20&brd_json=1`;
-      const res = await fetch(SERP_API_URL || "https://api.brightdata.com/request", {
+      const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
         method: "POST",
-        headers: { Authorization: `Bearer ${SERP_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ zone: SERP_ZONE, url: googleUrl, format: "raw" }),
+        headers: { Authorization: `Bearer ${getSerpApiKey()}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ zone: getSerpZone(), url: googleUrl, format: "raw" }),
         signal: AbortSignal.timeout(SERP_TIMEOUT_MS)
       });
       if (!res.ok) return [];
@@ -250,8 +1054,8 @@ async function fetchSerpListings(make, model, year, cfg) {
         return [];
       }
     } else {
-      const base = SERP_API_URL || "https://serpapi.com/search.json";
-      const url = `${base}?engine=google&google_domain=${cfg.googleDomain}&${cfg.googleGl}&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(SERP_API_KEY)}`;
+      const base = getSerpApiUrl() || "https://serpapi.com/search.json";
+      const url = `${base}?engine=google&google_domain=${cfg.googleDomain}&${cfg.googleGl}&num=20&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(getSerpApiKey())}`;
       const res = await fetch(url, { signal: AbortSignal.timeout(SERP_TIMEOUT_MS) });
       if (!res.ok) return [];
       json = await res.json();
@@ -266,7 +1070,7 @@ function priceScanRe(cfg) {
   return new RegExp(`${escapeRegex(cfg.currency)}\\s?(\\d{1,3}(?:[ ,]\\d{3})+|\\d{5,7})`, "g");
 }
 function priceReg(cfg) {
-  return new RegExp(`${escapeRegex(cfg.currency)}\\s?((?:\\d{1,3}(?:[ ,]\\d{3})*)|\\d{6,7})`);
+  return new RegExp(`${escapeRegex(cfg.currency)}\\s?(\\d{1,3}(?:[ ,]\\d{3})+|\\d{4,7})`);
 }
 function priceFromText(text, cfg) {
   const m = String(text).match(priceReg(cfg));
@@ -277,7 +1081,11 @@ function priceFromText(text, cfg) {
 function jsonPrice(v, cfg) {
   let n;
   if (typeof v === "number") n = v;
-  else n = parseFloat(String(v ?? "").replace(/[^\d.,]/g, ""));
+  else {
+    const s = String(v ?? "").trim();
+    const clean = s.replace(/,/g, "").replace(/[^\d.]/g, "");
+    n = parseFloat(clean);
+  }
   return Number.isFinite(n) && n >= cfg.minPrice && n <= cfg.maxPrice ? Math.round(n) : null;
 }
 function extractPricesFromText(text, cfg) {
@@ -295,8 +1103,8 @@ function extractPrices(html, selectors, cfg) {
   const prices = [];
   for (const sel of selectors) {
     $(sel.trim()).each((_, el) => {
-      const val = parseInt($(el).text().replace(/[^\d]/g, ""), 10);
-      if (val >= cfg.minPrice && val <= cfg.maxPrice) prices.push(val);
+      const val = priceFromText($(el).text(), cfg);
+      if (val !== null) prices.push(val);
     });
   }
   if (prices.length === 0) return extractPricesFromText($.text(), cfg);
@@ -321,7 +1129,10 @@ function extractJsonLd(html, cfg) {
       const price = num(offer?.price ?? offer?.lowPrice ?? node.price);
       if (price == null || price < cfg.minPrice || price > cfg.maxPrice) continue;
       const odo = node.mileageFromOdometer;
-      const km = num(odo && typeof odo === "object" ? odo.value : odo);
+      let km = num(odo && typeof odo === "object" ? odo.value : odo);
+      const unit = odo && typeof odo === "object" ? String(odo.unitCode || "") : "";
+      const miles = /^smi$/i.test(unit) || !unit && cfg.distanceUnit === "mi";
+      if (km != null && miles) km = km * 1.60934;
       out.push({
         price: Math.round(price),
         km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0
@@ -345,9 +1156,9 @@ function jsonLdNodes(root) {
   return out;
 }
 var VEHICLE_TYPE_RE = /car|vehicle|motorcycle|product/i;
-function yearTolerant(cfg, title, make, model, year, match) {
+function yearTolerant(cfg, title, make, model, year, match, opts) {
   const fn = cfg.titleMatch || titleMentionsVehicle;
-  return fn(title, make, model, year, match);
+  return fn(title, make, model, year, match, opts);
 }
 function extractNextDataListings(html, make, model, year, cfg) {
   const $ = cheerio.load(html);
@@ -380,12 +1191,14 @@ function extractNextDataListings(html, make, model, year, cfg) {
     }
     const price = typeof n.price === "number" ? n.price : null;
     if (price != null && price >= cfg.minPrice && price <= cfg.maxPrice && (n.make || n.model || n.title)) {
-      const title = String(n.title || `${n.year ?? ""} ${n.make ?? ""} ${n.model ?? ""}`);
+      const yr = n.year ?? n.modelYear ?? n.vehicleYear;
+      const title = String(n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`);
       if (yearTolerant(cfg, title, make, model, year)) {
         const key = `${n.reference ?? n.id ?? ""}|${price}`;
         if (!seen.has(key)) {
           seen.add(key);
-          const km = num(n.mileage ?? n.km ?? n.odometer);
+          let km = num(n.mileage ?? n.km ?? n.odometer);
+          if (km != null && cfg.distanceUnit === "mi") km = km * 1.60934;
           out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0 });
         }
       }
@@ -410,7 +1223,8 @@ function adjustForMileage(listings, targetKm) {
   let slope = den ? numr / den : 0;
   const medPrice = median(withKm.map((l) => l.price)) ?? my;
   const defaultSlope = -(medPrice * 0.03) / 2e4;
-  if (!(slope < -0.2 && slope > -3)) slope = defaultSlope;
+  const rel = medPrice > 0 ? slope / medPrice : 0;
+  if (!(rel < -1e-6 && rel > -15e-6)) slope = defaultSlope;
   return listings.map((l) => {
     if (typeof l.km !== "number") return l.price;
     const adj = l.price + slope * (targetKm - l.km);
@@ -545,15 +1359,14 @@ async function fetchJsonDealerPrices(source, make, model, year, cfg) {
   });
 }
 async function fetchPageForParsing(url, cfg) {
-  const c = cfg || { id: "za", country: "za", acceptLanguage: "en-ZA,en;q=0.9" };
   const rendered = await renderViaWorker(url);
   if (rendered) return rendered;
-  const unlocked = await renderViaUnlocker(url, c.country);
+  const unlocked = await renderViaUnlocker(url, cfg.country);
   if (unlocked) return unlocked;
   try {
     return await fetchWithRetry(url, {
       timeout: REQUEST_TIMEOUT,
-      headers: { ...DEFAULT_HEADERS, "Accept-Language": c.acceptLanguage }
+      headers: { ...DEFAULT_HEADERS, "Accept-Language": cfg.acceptLanguage }
     });
   } catch (err) {
     console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
@@ -599,60 +1412,35 @@ var sa = {
   secondarySourceName: "Cars.co.za"
 };
 
-// markets/us.ts
-var us = {
-  id: "us",
-  currency: "$",
-  country: "us",
-  googleDomain: "google.com",
-  googleGl: "gl=us&hl=en",
-  googleQuerySuffix: "USA",
-  minPrice: 1e3,
-  maxPrice: 3e6,
-  acceptLanguage: "en-US,en;q=0.9",
-  classifieds: [
-    {
-      name: "Autotrader.com",
-      url: (make, model, year) => `https://www.autotrader.com/cars-for-sale/${encodeURIComponent(make)}-${encodeURIComponent(model)}-${year}`,
-      fetchConfig: {},
-      selectors: '[class*="price"], [class*="Price"]'.split(",")
-    },
-    {
-      name: "Cars.com",
-      url: (make, model, year) => `https://www.cars.com/shopping/results/?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year_purchase=${year}`,
-      fetchConfig: {},
-      selectors: '[class*="price"], [data-testid="price"]'.split(",")
-    }
-  ],
-  searchUrl: (make, model, year) => `https://www.autotrader.com/cars-for-sale/${encodeURIComponent(make)}-${encodeURIComponent(model)}-${year}`
-};
-
 // markets/uk.ts
+var import_path2 = __toESM(require("path"));
+var slug = (s) => encodeURIComponent(String(s).toLowerCase().trim().replace(/\s+/g, "-"));
 var uk = {
   id: "uk",
   currency: "\xA3",
   country: "gb",
   googleDomain: "google.co.uk",
-  googleGl: "gl=uk&hl=en",
+  googleGl: "gl=gb&hl=en",
   googleQuerySuffix: "United Kingdom",
   minPrice: 1e3,
   maxPrice: 3e6,
   acceptLanguage: "en-GB,en;q=0.9",
+  distanceUnit: "mi",
+  /* Market-scoped dealer layer: the default price-sources.json holds SA
+   * dealers whose rand prices would poison a £ pool. UK gets its own file
+   * (absent until we onboard UK dealer groups = empty layer, classifieds
+   * only). */
+  priceSourcesPath: import_path2.default.join(process.cwd(), "data", "price-sources-uk.json"),
   classifieds: [
     {
-      name: "AutoTrader UK",
-      url: (make, model, year) => `https://www.autotrader.co.uk/car-search?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year-from=${year}&year-to=${year}`,
+      name: "cinch",
+      url: (make, model) => `https://www.cinch.co.uk/used-cars/${slug(urlMake(make))}/${slug(model)}/`,
       fetchConfig: {},
-      selectors: '[class*="price"], [class*="Price"]'.split(",")
-    },
-    {
-      name: "Parkers",
-      url: (make, model, year) => `https://www.parkers.co.uk/cars-for-sale/${encodeURIComponent(make)}/${encodeURIComponent(model)}/?year=${year}`,
-      fetchConfig: {},
-      selectors: '[class*="price"], [class*="listing-price"]'.split(",")
+      /* Fallback only — cinch parses via __NEXT_DATA__. */
+      selectors: '[data-testid*="price"], [class*="price"]'.split(",")
     }
   ],
-  searchUrl: (make, model, year) => `https://www.autotrader.co.uk/car-search?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year-from=${year}&year-to=${year}`
+  searchUrl: (make, model) => `https://www.cinch.co.uk/used-cars/${slug(urlMake(make))}/${slug(model)}/`
 };
 
 // markets/housing.ts
@@ -684,20 +1472,22 @@ var housingZa = {
       name: "Private Property",
       url: (_make, _model, _year) => `https://www.privateproperty.co.za/for-sale`,
       fetchConfig: {},
-      selectors: '[class*="price"], [class*="Price"]'.split(",")
+      selectors: '.property-price, .price, [class*="price"], [class*="Price"]'.split(",")
     },
     {
       name: "Property24",
       url: (_make, _model, _year) => `https://www.property24.com/for-sale`,
       fetchConfig: {},
-      selectors: '[class*="price"], [class*="Price"]'.split(",")
+      selectors: '.p24_price, .p24_listingTilePrice, [class*="price"], [class*="Price"]'.split(",")
     }
   ],
   searchUrl: (_make, _model, _year) => `https://www.property24.com/for-sale`
 };
 
 // index.ts
-var markets = { za: sa, us, uk, housingZa };
+var markets = { za: sa, uk, housingZa };
+var ALLOWED_MARKETS = (process.env.MARKETS || "").split(",").map((s) => s.trim()).filter(Boolean);
+var filteredMarkets = ALLOWED_MARKETS.length ? Object.fromEntries(Object.entries(markets).filter(([id]) => ALLOWED_MARKETS.includes(id))) : markets;
 var DEFAULT_MARKET = sa;
 var CACHE_TTL_MS2 = Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1e3;
 var TOTAL_BUDGET_MS2 = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 2e4;
@@ -706,8 +1496,8 @@ var DEALER_FINAL_THRESHOLD2 = Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD)
 var CLASSIFIEDS_PAGES2 = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
 var SERP_TRIGGER_MAX2 = Number(process.env.SERP_TRIGGER_MAX) || 6;
 var cache = /* @__PURE__ */ new Map();
-function cacheKey(marketId, make, model, year, vin, dealerSlug) {
-  return `${marketId}|${(dealerSlug || "default").toLowerCase()}|${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || "novin").toUpperCase()}`;
+function cacheKey(marketId, make, model, year, vin, dealerSlug, mileage) {
+  return `${marketId}|${(dealerSlug || "default").toLowerCase()}|${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || "novin").toUpperCase()}|${mileage != null && Number.isFinite(mileage) ? Math.round(mileage) : "nomileage"}`;
 }
 function cacheGet(key) {
   const e = cache.get(key);
@@ -718,7 +1508,12 @@ function cacheGet(key) {
   }
   return e.data;
 }
+var MAX_CACHE_SIZE = Number(process.env.SCRAPER_MAX_CACHE_SIZE) || 500;
 function cachePut(key, data) {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const oldest = cache.keys().next().value;
+    if (oldest) cache.delete(oldest);
+  }
   cache.set(key, { data, ts: Date.now() });
 }
 async function mapPool(items, size, fn) {
@@ -757,7 +1552,8 @@ function htmlToAnyListings(html, selectors, cfg) {
 async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MARKET) {
   const cfg = market;
   const baseModel = modelCore(model);
-  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug);
+  const targetKm = Number(opts.mileage);
+  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug, targetKm);
   const cached = cacheGet(key);
   if (cached) return cached;
   const y = String(year);
@@ -808,7 +1604,6 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
   const dealerResults = [...jsonResults, ...htmlResults];
   const dealerListings = dealerResults.flatMap((r) => r.listings);
   const dealerSources = dealerResults.map(({ name, count, avg }) => ({ name, count, avg }));
-  const targetKm = Number(opts.mileage);
   const kmOf = (ls) => median(ls.map((l) => l.km).filter((k) => typeof k === "number"));
   if (dealerListings.length >= DEALER_FINAL_THRESHOLD2) {
     const adjusted = adjustForMileage(dealerListings, targetKm);
@@ -818,6 +1613,7 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
       fallbackRequired: false,
       sources: dealerSources,
       currency: cfg.currency,
+      distanceUnit: cfg.distanceUnit,
       mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && dealerListings.some((l) => typeof l.km === "number"),
       sampleMedianKm: kmOf(dealerListings)
     };
@@ -877,20 +1673,59 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
   const finalSources = [...dealerSources, ...sourcesOutput];
   const searchUrl = cfg.searchUrl(make, baseModel, y);
   const carsUrl = cfg.secondarySourceName && sources.some((s) => s.name === cfg.secondarySourceName) ? cfg.secondaryUrl?.(make, baseModel, y) : void 0;
+  function calcConfidenceScore(prices) {
+    const n = prices.length;
+    if (n === 0) return 0;
+    if (n === 1) return 30;
+    const avg = prices.reduce((a, b) => a + b, 0) / n;
+    const variance = prices.reduce((a, b) => a + (b - avg) ** 2, 0) / n;
+    const stdDev = Math.sqrt(variance);
+    const cv = avg > 0 ? stdDev / avg : 0.5;
+    const base = n >= 15 ? 85 : n >= 5 ? 70 : 45;
+    const penalty = Math.min(20, Math.round(cv * 80));
+    return Math.max(15, Math.min(99, base - penalty + (n >= 20 ? 5 : 0)));
+  }
+  function calcPriceRange(prices) {
+    if (!prices.length) return { low: null, high: null };
+    const sorted = [...prices].sort((a, b) => a - b);
+    return { low: sorted[0], high: sorted[sorted.length - 1] };
+  }
   if (allListings.length === 0) {
-    const data2 = { averageRetailPrice: null, listingsFound: 0, fallbackRequired: true, currency: cfg.currency, searchUrl, carsUrl, sources: finalSources, mileageAdjusted: false, sampleMedianKm: null };
+    const data2 = {
+      averageRetailPrice: null,
+      tradeEstimate: null,
+      priceRange: { low: null, high: null },
+      confidenceScore: 0,
+      listingsFound: 0,
+      fallbackRequired: true,
+      currency: cfg.currency,
+      distanceUnit: cfg.distanceUnit,
+      searchUrl,
+      carsUrl,
+      sources: finalSources,
+      mileageAdjusted: false,
+      sampleMedianKm: null
+    };
     cachePut(key, data2);
     return data2;
   }
   const adjustedAll = adjustForMileage(allListings, targetKm);
+  const avgRetail = robustAverage(adjustedAll);
+  const range = calcPriceRange(adjustedAll);
+  const confidence = calcConfidenceScore(adjustedAll);
+  const tradeEst = avgRetail != null ? Math.round(avgRetail * 0.85) : null;
   const data = {
-    averageRetailPrice: robustAverage(adjustedAll),
+    averageRetailPrice: avgRetail,
+    tradeEstimate: tradeEst,
+    priceRange: range,
+    confidenceScore: confidence,
     listingsFound: adjustedAll.length,
     fallbackRequired: dealerListings.length < MIN_DEALER_LISTINGS,
     searchUrl,
     carsUrl,
     sources: finalSources,
     currency: cfg.currency,
+    distanceUnit: cfg.distanceUnit,
     mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && allListings.some((l) => typeof l.km === "number"),
     sampleMedianKm: kmOf(allListings)
   };
@@ -913,24 +1748,41 @@ app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
+if (API_KEY) {
+  const checkAuth = (req, res, next) => {
+    const auth = req.headers.authorization;
+    if (!auth || auth !== `Bearer ${API_KEY}`) return res.status(401).json({ error: "Unauthorized" });
+    next();
+  };
+  app.use("/api/valuation", checkAuth);
+  app.use("/api/fsbo", checkAuth);
+  app.use("/api/agency/crawl", checkAuth);
+}
 var hits = /* @__PURE__ */ new Map();
+var THROTTLE_WINDOW = 6e4;
+var THROTTLE_MAX = 12;
+setInterval(() => {
+  const cutoff = Date.now() - THROTTLE_WINDOW;
+  for (const [ip, e] of hits) {
+    if (e.ts < cutoff) hits.delete(ip);
+  }
+}, 5 * 6e4).unref();
 function throttled(ip) {
-  const WINDOW = 6e4, MAX = 12;
   const now = Date.now();
   const e = hits.get(ip);
-  if (!e || now - e.ts > WINDOW) {
+  if (!e || now - e.ts > THROTTLE_WINDOW) {
     hits.set(ip, { n: 1, ts: now });
     return false;
   }
   e.n++;
-  return e.n > MAX;
+  return e.n > THROTTLE_MAX;
 }
 app.get("/api/markets", (_req, res) => {
-  res.json(Object.keys(markets).map((id) => ({ id, label: LABELS[id] || id })));
+  res.json(Object.keys(filteredMarkets).map((id) => ({ id, label: LABELS[id] || id })));
 });
 app.post("/api/valuation", async (req, res) => {
   const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
@@ -940,7 +1792,7 @@ app.post("/api/valuation", async (req, res) => {
     if (!make || !model || !year) {
       return res.status(400).json({ error: "make, model, and year are required" });
     }
-    const cfg = markets[market || "za"] || markets.za;
+    const cfg = filteredMarkets[market || "za"] || markets.za;
     const m = cfg.id === "housingZa" ? location || make : make;
     const data = await fetchValuation(String(m), String(model), String(year), {
       mileage: Number(mileage) || void 0
@@ -950,5 +1802,41 @@ app.post("/api/valuation", async (req, res) => {
     res.status(502).json({ error: err?.message || "Valuation failed" });
   }
 });
+app.post("/api/fsbo", async (req, res) => {
+  const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
+  if (throttled(ip)) return res.status(429).json({ error: "Too many requests \u2014 slow down." });
+  try {
+    const { suburb, city, limit } = req.body || {};
+    if (!suburb) return res.status(400).json({ error: "suburb is required" });
+    const { extractFsboLeads: extractFsboLeads2 } = await Promise.resolve().then(() => (init_fsbo_extractor(), fsbo_extractor_exports));
+    const cleanLimit = Math.min(25, Math.max(1, Number(limit) || 8));
+    const data = await extractFsboLeads2(String(suburb).trim(), String(city || "").trim(), cleanLimit);
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: err?.message || "FSBO extraction failed" });
+  }
+});
+app.post("/api/agency/crawl", async (req, res) => {
+  const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
+  if (throttled(ip)) return res.status(429).json({ error: "Too many requests \u2014 slow down." });
+  try {
+    const { city = "Durban", industry = "plumbers", country = "za", limit = 10 } = req.body || {};
+    const { crawlLegacySites: crawlLegacySites2 } = await Promise.resolve().then(() => (init_crawler(), crawler_exports));
+    const data = await crawlLegacySites2({
+      city: String(city).trim(),
+      industry: String(industry).trim(),
+      country: country === "uk" ? "uk" : "za",
+      maxResults: Math.min(25, Math.max(1, Number(limit) || 10))
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: err?.message || "Legacy site crawl failed" });
+  }
+});
 app.use(import_express.default.static(__dirname));
-app.listen(PORT, () => console.log(`market value on http://localhost:${PORT}`));
+var server = app.listen(PORT, () => console.log(`market value on http://localhost:${PORT}`));
+process.on("SIGTERM", () => {
+  console.log("[scraper] SIGTERM received, draining...");
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 1e4);
+});
