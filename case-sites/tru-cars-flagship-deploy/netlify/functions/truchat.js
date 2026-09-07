@@ -57,8 +57,13 @@ exports.handler = async (event) => {
 
   let body;
   try {
-    body = JSON.parse(event.body || "{}");
-  } catch {
+    if (typeof event.body === "object" && event.body !== null) {
+      body = event.body;
+    } else {
+      const raw = event.isBase64Encoded ? Buffer.from(event.body || "", "base64").toString("utf8") : (event.body || "{}");
+      body = typeof raw === "string" ? JSON.parse(raw) : raw;
+    }
+  } catch (err) {
     return { statusCode: 400, headers: cors, body: JSON.stringify({ error: "invalid JSON" }) };
   }
 
