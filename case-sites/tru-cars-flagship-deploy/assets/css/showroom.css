@@ -2868,23 +2868,47 @@ a.chip:hover, button.chip:hover { color: var(--ink); border-color: var(--ink-qui
 
 /* Push the stack above the mobile action-bar (62px). Chat FAB moves too — its
    own CSS handles that — but our own bottom needs to clear it. */
-@media (max-width: 860px) {
-  .contact-fab { display: none; }
-}
-@media (max-width: 860px) {
-  #tc-fab { bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 12px) !important; }
+/* TruChat FAB visibility & responsive positioning */
+#tc-fab {
+  z-index: 999990 !important;
 }
 
-#tc-fab, .contact-fab, #tc-tip {
-  display: none !important;
+@media (max-width: 860px) {
+  .contact-fab { display: none; }
+  #tc-fab {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.tcsa-mab-on #tc-fab {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+  }
 }
+
 #tc-panel {
-  right: 24px !important;
-  left: auto !important;
-  bottom: 84px !important;
-  transform-origin: bottom right !important;
   z-index: 10000 !important;
 }
+@media (min-width: 641px) {
+  #tc-panel {
+    right: 24px !important;
+    left: auto !important;
+    bottom: 84px !important;
+    transform-origin: bottom right !important;
+  }
+}
+@media (max-width: 640px) {
+  #tc-panel {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+    height: min(75vh, 560px) !important;
+    border-radius: 20px !important;
+  }
+}
+
 
 
 /* Two-tone accent, as the brochure uses it: the deep cyan that reads well on

@@ -450,14 +450,27 @@
         }
       }
 
-      /* hide default TruChat launcher & tip because glassmorphic #fabChat triggers it */
+      /* hide default TruChat launcher on desktop where glassmorphic #fabDock triggers it;
+         keep #tc-fab active & visible on mobile (<768px) or whenever glass dock is hidden */
+      var isMobile = window.innerWidth < 768;
       var chatFab = document.getElementById("tc-fab");
       if (chatFab) {
-        chatFab.style.setProperty("display", "none", "important");
+        if (isMobile) {
+          chatFab.style.removeProperty("display");
+          chatFab.style.setProperty("display", "grid", "important");
+          chatFab.style.setProperty("visibility", "visible", "important");
+          chatFab.style.setProperty("opacity", "1", "important");
+        } else {
+          chatFab.style.setProperty("display", "none", "important");
+        }
       }
       var chatTip = document.getElementById("tc-tip");
       if (chatTip) {
-        chatTip.style.setProperty("display", "none", "important");
+        if (isMobile) {
+          chatTip.style.removeProperty("display");
+        } else {
+          chatTip.style.setProperty("display", "none", "important");
+        }
       }
     }
     sweep();

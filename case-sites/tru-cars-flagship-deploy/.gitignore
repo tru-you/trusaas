@@ -1,6 +1,11 @@
 # Local Netlify folder
 .netlify
 
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+
 # Agent / QA litter
 .playwright-mcp/
 tc-*.png

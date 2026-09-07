@@ -37,9 +37,16 @@ a.fab-wa,
   opacity: 1 !important;
 }
 #tc-fab {
-  width: 68px !important;
-  height: 68px !important;
+  width: 58px !important;
+  height: 58px !important;
   display: grid !important;
+}
+
+@media (max-width: 768px) {
+  #tc-fab {
+    width: 48px !important;
+    height: 48px !important;
+  }
 }
 
 .tcsa-trust-row {
