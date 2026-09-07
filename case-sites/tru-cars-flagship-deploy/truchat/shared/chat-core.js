@@ -737,7 +737,7 @@
       }
 
       var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      var timeoutId = controller ? setTimeout(function() { controller.abort(); }, 4500) : null;
+      var timeoutId = controller ? setTimeout(function() { controller.abort(); }, 15000) : null;
 
       var endpoint = CFG.chatApi || CFG.aiEndpoint || "/.netlify/functions/truchat";
 

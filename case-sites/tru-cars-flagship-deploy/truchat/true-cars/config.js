@@ -13,9 +13,9 @@ window.TRUECARS_TRUCHAT_CONFIG = {
   logoUrl: "/assets/brand/favicon.svg",
   fabIconUrl: "/assets/brand/favicon.svg",
 
-  /** TruChat AI API (DeepSeek Powered). Falls back to Netlify function and local brain */
-  aiEndpoint: "https://chat.tru-saas.com/api/chat",
-  chatApi: "https://chat.tru-saas.com/api/chat",
+  /** TruChat AI API (DeepSeek Powered). Uses Netlify function proxy */
+  aiEndpoint: "/.netlify/functions/truchat",
+  chatApi: "/.netlify/functions/truchat",
 
   /** Site blue/teal (matches true-cars CSS) */
   theme: "light",
