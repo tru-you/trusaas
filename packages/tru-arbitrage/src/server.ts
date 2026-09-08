@@ -422,8 +422,6 @@ export function startServer(port = CONFIG.PORT) {
   });
 }
 
-if (process.argv[1]?.includes('server')) {
-  startServer();
-}
+startServer();
 
 export default app;
