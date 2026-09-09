@@ -55,6 +55,7 @@ export interface Dealership {
   tradingAs?: string;
   /** Public contact email — the address printed on documents and used for
    *  buyer-facing notifications, distinct from any staff user's login email. */
+  contactEmail?: string;
   /** Zernio profile ID — deprecated legacy field. */
   zernioProfileId?: string;
   /** Whether TruSocial 1-Click Command Hub is active. */

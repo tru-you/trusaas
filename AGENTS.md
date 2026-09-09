@@ -122,10 +122,11 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 - `DEEPSEEK_API_KEY` — AI listing copywriter, chat brain
 - Optional — apps fall back to mock mode when unset
 
-### Zernio (TruSocial)
+### TruSocial (Native 1-Click Multi-Channel Command Hub)
 
-- `ZERNIO_API_KEY` — social auto-publishing (Facebook, Instagram, Google Business)
-- Only in Premium DMS
+- **Status:** Active, 100% self-sufficient (Zernio retired 2026-09-09)
+- Generates algorithmic-compliant 1-Click marketing packs across 6 channels: Facebook Marketplace (with 8-photo bundle), Facebook Page, Instagram, WhatsApp Status/Broadcast, LinkedIn, Google Business Profile.
+- No external SaaS dependencies or OAuth token fragility.
 
 ### Bright Data Web Unlocker
 
