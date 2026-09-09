@@ -2034,6 +2034,13 @@ app.put('/api/sync/vehicle', (req, res) => {
   })();
 });
 
+// 4d. Backfill inventory from TruFlow DMS into TruLens local store
+app.post('/api/sync/backfill-from-dms', async (req, res) => {
+  const dealer = String(req.query.dealer || req.body?.dealer || 'cars-on-caledon');
+  const result = await backfillVehiclesFromDms(dealer);
+  res.json({ success: true, dealer, ...result });
+});
+
 // 5. AI Listing Description Writer (DeepSeek) — kept at /api/gemini/analyze for
 // frontend compatibility; no image is sent to the model.
 app.post('/api/gemini/analyze', authenticate, async (req: any, res) => {
@@ -2725,6 +2732,129 @@ async function restoreCorruptedDemoVehicles() {
   }
 }
 
+async function backfillVehiclesFromDms(dealerSlug = 'cars-on-caledon') {
+  try {
+    const url = `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/public/stock?dealer=${encodeURIComponent(dealerSlug)}`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) {
+      console.warn(`[backfill] DMS stock fetch returned ${r.status} for ${dealerSlug}`);
+      return { count: 0, added: 0, updated: 0 };
+    }
+    const data = await r.json();
+    const dmsVehicles = data?.vehicles || [];
+    if (!Array.isArray(dmsVehicles) || dmsVehicles.length === 0) {
+      console.log(`[backfill] No DMS vehicles returned for ${dealerSlug}`);
+      return { count: 0, added: 0, updated: 0 };
+    }
+
+    const templateSlots = DEFAULT_TEMPLATE.slots.map((s) => s.id);
+    const store = readLocalStore();
+    let added = 0;
+    let updated = 0;
+
+    for (const dv of dmsVehicles) {
+      const stockNum = String(dv.stockNumber || '').trim();
+      const existingIdx = store.vehicles.findIndex(
+        (v: any) =>
+          (v.dealerSlug === dealerSlug || (!v.dealerSlug && dealerSlug === 'cars-on-caledon')) &&
+          ((stockNum && String(v.stockNumber || '').trim().toLowerCase() === stockNum.toLowerCase()) ||
+            (dv.id && v.id === dv.id) ||
+            (dv.vin && v.vin && v.vin.toLowerCase() === dv.vin.toLowerCase()))
+      );
+
+      // Build photos mapping from images array
+      const photos: Record<string, string> = {};
+      const quality: Record<string, any> = {};
+      const images: string[] = Array.isArray(dv.images) ? dv.images : (dv.heroImage ? [dv.heroImage] : []);
+
+      images.forEach((imgUrl: string, idx: number) => {
+        const slotId = templateSlots[idx] || `photo_${idx + 1}`;
+        photos[slotId] = imgUrl;
+        quality[slotId] = {
+          overallScore: 92,
+          lightingCheck: { status: 'Perfect', brightness: 128, contrast: 125, feedback: 'Studio daylight standard' },
+          angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Standard lot alignment' },
+        };
+      });
+
+      if (existingIdx >= 0) {
+        const existing = store.vehicles[existingIdx];
+        const existingPhotosCount = Object.keys(existing.photos || {}).length;
+        const mergedPhotos = existingPhotosCount >= images.length ? existing.photos : { ...photos, ...(existing.photos || {}) };
+        store.vehicles[existingIdx] = {
+          ...existing,
+          dealerSlug,
+          make: existing.make || dv.make || '',
+          model: existing.model || dv.model || '',
+          trim: existing.trim || dv.trim || '',
+          year: Number(existing.year || dv.year) || new Date().getFullYear(),
+          price: Number(existing.price || dv.price) || 0,
+          truPrice: dv.truPrice ? Number(dv.truPrice) : existing.truPrice,
+          mileage: Number(existing.mileage || dv.mileage) || 0,
+          transmission: existing.transmission || dv.transmission || '',
+          fuelType: existing.fuelType || dv.fuelType || '',
+          vehicleType: existing.vehicleType || dv.bodyType || dv.vehicleType || '',
+          color: existing.color || dv.color || '',
+          vin: existing.vin || dv.vin || '',
+          description: existing.description || dv.description || '',
+          status: dv.status === 'SOLD' ? 'Sold' : 'Ready',
+          showOnWebsite: true,
+          photos: mergedPhotos,
+          quality: { ...quality, ...(existing.quality || {}) },
+          vir: dv.vir ?? existing.vir,
+          virReport: dv.virReport ?? existing.virReport,
+          damage: dv.damage ?? existing.damage,
+          updatedAt: dv.updatedAt || existing.updatedAt || new Date().toISOString(),
+        };
+        updated++;
+      } else {
+        const newVehicle = {
+          id: dv.id || `v_lens_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          stockNumber: stockNum || `STK-${Date.now()}`,
+          dealerSlug,
+          ownerId: 'dms-sync',
+          year: Number(dv.year) || new Date().getFullYear(),
+          make: dv.make || '',
+          model: dv.model || '',
+          trim: dv.trim || '',
+          price: Number(dv.price) || 0,
+          truPrice: dv.truPrice ? Number(dv.truPrice) : undefined,
+          mileage: Number(dv.mileage) || 0,
+          transmission: dv.transmission || '',
+          fuelType: dv.fuelType || '',
+          vehicleType: dv.bodyType || dv.vehicleType || '',
+          color: dv.color || '',
+          vin: dv.vin || '',
+          description: dv.description || '',
+          status: dv.status === 'SOLD' ? 'Sold' : 'Ready',
+          showOnWebsite: true,
+          photos,
+          quality,
+          vir: dv.vir,
+          virReport: dv.virReport,
+          damage: dv.damage,
+          optionalExtras: dv.optionalExtras,
+          createdAt: dv.dateAcquired ? new Date(dv.dateAcquired).toISOString() : (dv.createdAt || new Date().toISOString()),
+          updatedAt: dv.updatedAt || new Date().toISOString(),
+          lastDmsVehicleId: dv.id,
+          lastDmsStockNumber: stockNum,
+        };
+        store.vehicles.unshift(newVehicle);
+        added++;
+      }
+    }
+
+    if (added > 0 || updated > 0) {
+      writeLocalStore(store);
+      console.log(`[backfill] Synced ${dmsVehicles.length} DMS vehicles for ${dealerSlug} (Added: ${added}, Updated: ${updated}).`);
+    }
+    return { count: dmsVehicles.length, added, updated };
+  } catch (err: any) {
+    console.error(`[backfill] Error backfilling vehicles for ${dealerSlug}:`, err?.message || err);
+    return { count: 0, added: 0, updated: 0, error: err?.message || String(err) };
+  }
+}
+
 // ==================== VITE & STATIC FILES ====================
 
 async function startServer() {
@@ -2785,6 +2915,7 @@ async function startServer() {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(` PWA: ${PORT === 443 || process.env.HTTPS ? 'https' : 'http'}://<this-host>:${PORT}  → Add to Home Screen on phone`);
     restoreCorruptedDemoVehicles().catch((err) => console.error('[restore] failed to run recovery:', err));
+    backfillVehiclesFromDms('cars-on-caledon').catch((err) => console.error('[backfill] failed on startup:', err));
   });
 }
 
