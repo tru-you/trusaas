@@ -82,14 +82,6 @@ function numberToWords(n: number): string {
   return parts.join(", ");
 }
 
-interface SocialAccount {
-  accountId: string;
-  dealershipId: string;
-  platform: string;
-  username?: string;
-  connectedAt: string;
-}
-
 interface VehicleDetailModalProps {
   /** Documents filed against this vehicle, rendered as its own tab. */
   documentsPanel?: React.ReactNode;
@@ -139,12 +131,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [showOutrightOtp, setShowOutrightOtp] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
 
-  // Social publish states
-  const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
-  const [socialLoading, setSocialLoading] = useState(false);
-  const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set());
-  const [socialCaption, setSocialCaption] = useState("");
-  const [socialPublishing, setSocialPublishing] = useState(false);
+  // Feedback state for 1-click social copy actions
   const [socialResult, setSocialResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   // Elite DMS States
@@ -367,56 +354,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     setActiveImageIndex(Math.max(0, indexToDelete - 1));
   };
 
-  // Load connected social accounts when syndication tab opens
-  const loadSocialAccounts = async () => {
-    if (!dealershipId) return;
-    setSocialLoading(true);
-    try {
-      const res = await authFetch(`/api/social/accounts?dealershipId=${encodeURIComponent(dealershipId)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSocialAccounts(data.accounts || []);
-      }
-    } catch { /* best-effort */ }
-    setSocialLoading(false);
-  };
-
-  const buildDefaultCaption = () =>
-    `${vehicle.year} ${vehicle.make} ${vehicle.model} (${vehicle.transmission})\n` +
-    `${formatDistance(Number(vehicle.mileage), market.distanceUnit, market.locale)} · ${vehicle.fuelType}\n` +
-    `${money(vehicle.retailPrice)}\n\n` +
-    (vehicle.description ? vehicle.description + "\n\n" : "") +
-    `Contact us to book a test-drive or secure this vehicle!`;
-
-  const handleSocialPublish = async () => {
-    if (!dealershipId || !selectedAccounts.size) return;
-    setSocialPublishing(true);
-    setSocialResult(null);
-    try {
-      const res = await authFetch("/api/social/publish", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dealershipId,
-          vehicleId: vehicle.id,
-          caption: socialCaption,
-          accountIds: Array.from(selectedAccounts),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Publish failed");
-      setSocialResult({ ok: true, message: `Published to ${data.platforms?.join(", ") || "selected channels"}` });
-      setSelectedAccounts(new Set());
-    } catch (err: any) {
-      setSocialResult({ ok: false, message: err?.message || "Publish failed" });
-    }
-    setSocialPublishing(false);
-  };
-
-  const handleWhatsAppShare = () => {
-    const text = socialCaption || buildDefaultCaption();
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-  };
 
   // No stand-in photo. This fell back to a stock image of an unrelated car,
   // which the public feed then served as the vehicle's hero shot.

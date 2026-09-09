@@ -55,11 +55,15 @@ export interface Dealership {
   tradingAs?: string;
   /** Public contact email — the address printed on documents and used for
    *  buyer-facing notifications, distinct from any staff user's login email. */
-  contactEmail?: string;
-  /** Zernio profile ID — provisioned when TruSocial is enabled for this dealer. */
+  /** Zernio profile ID — deprecated legacy field. */
   zernioProfileId?: string;
-  /** Whether TruSocial is active (UI shown, publishes triggered). */
+  /** Whether TruSocial 1-Click Command Hub is active. */
   truSocialEnabled?: boolean;
+  /** Dealership social channel profiles for 1-Click marketing packs */
+  facebookPage?: string;
+  instagramHandle?: string;
+  whatsappNumber?: string;
+  googleBusinessUrl?: string;
   /** Codat company ID — provisioned when accounting integrations are enabled
    *  for this dealer. One Codat company can hold multiple data connections
    *  (Xero, QuickBooks, Zoho), so unlike zernioProfileId this is not per
