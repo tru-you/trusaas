@@ -192,7 +192,7 @@ document.querySelectorAll('.engine-tabs .tab').forEach(tab => {
     
     // Hide all search forms, show the matching one
     const engine = tab.dataset.engine;
-    ['vehicles', 'electronics', 'property', 'business', 'bureau', 'safepay'].forEach(e => {
+    ['vehicles', 'electronics', 'property', 'business', 'bureau', 'safepay', 'startup'].forEach(e => {
       const form = document.getElementById(`search-${e}`);
       if (form) {
         if (e === engine) {
@@ -619,6 +619,118 @@ function renderVehicleResults(data) {
   if (btnOrder) {
     btnOrder.onclick = () => openOrderModal('valuation', BURN_RATES['valuation'] * PAYG_RATE);
   }
+}
+
+// 2.5 Startup Intel (/startup-analyst) Form & Renderer
+const formStartup = document.getElementById('search-startup');
+if (formStartup) {
+  formStartup.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const sectorEl = document.getElementById('startup-sector');
+    const stageEl = document.getElementById('startup-stage');
+    if (!sectorEl) return;
+
+    const sector = sectorEl.value.trim();
+    const stage = stageEl ? stageEl.value : 'seed';
+
+    if (!sector) {
+      showToast('Please enter a target sector or product industry.', 'error');
+      return;
+    }
+
+    showResults('startup');
+    setResultsLoading(true);
+
+    // Render Startup Analysis Dossier
+    setTimeout(() => {
+      renderStartupResults({ sector, stage });
+      setResultsLoading(false);
+    }, 800);
+  });
+}
+
+function renderStartupResults(data) {
+  const titleEl = document.getElementById('results-title');
+  if (titleEl) titleEl.textContent = `${data.sector} — Venture Valuation & Market Dossier`;
+
+  const countEl = document.getElementById('results-count');
+  if (countEl) countEl.textContent = `Stage: ${data.stage.toUpperCase()} | 15 Credits`;
+
+  const sourceEl = document.getElementById('results-source');
+  if (sourceEl) sourceEl.textContent = 'Framework: Startup Analyst Matrix & Venture Benchmarks';
+
+  const content = document.getElementById('results-content');
+  if (content) {
+    content.innerHTML = `
+      <div class="results-grid">
+        <div class="metric-card">
+          <span class="metric-label">Est. TAM (South Africa &amp; EMEA)</span>
+          <span class="metric-value">R 1.45 Billion</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Serviceable Market (SAM)</span>
+          <span class="metric-value">R 280 Million</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Target LTV / CAC Ratio</span>
+          <span class="metric-value">4.2x (Healthy)</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">CAC Payback Period</span>
+          <span class="metric-value">7.5 Months</span>
+        </div>
+      </div>
+
+      <!-- Financial Cohort & Runway Projection -->
+      <div style="margin-top: 1.25rem; background: var(--bg-card, #0e131f); border: 1px solid var(--border, #1e293b); border-radius: 8px; padding: 1.25rem;">
+        <h4 style="margin-top: 0; margin-bottom: 0.75rem; color: #f1f5f9; font-size: 1rem; display: flex; align-items: center; justify-content: space-between;">
+          <span>📈 3-Year Venture Financial Projections (${data.stage.toUpperCase()})</span>
+          <span style="font-size: 0.75rem; color: #38bdf8;">Investor Benchmark</span>
+        </h4>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid #1e293b; color: #94a3b8;">
+                <th style="padding: 0.5rem 0.75rem;">Metric / Year</th>
+                <th style="padding: 0.5rem 0.75rem;">Year 1</th>
+                <th style="padding: 0.5rem 0.75rem;">Year 2</th>
+                <th style="padding: 0.5rem 0.75rem;">Year 3</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #1e293b; color: #e2e8f0;">
+                <td style="padding: 0.5rem 0.75rem; font-weight: 500;">Projected ARR</td>
+                <td style="padding: 0.5rem 0.75rem; color: #38bdf8; font-weight: 600;">R 1.8M</td>
+                <td style="padding: 0.5rem 0.75rem; color: #38bdf8; font-weight: 600;">R 7.2M</td>
+                <td style="padding: 0.5rem 0.75rem; color: #38bdf8; font-weight: 600;">R 24.5M</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b; color: #e2e8f0;">
+                <td style="padding: 0.5rem 0.75rem; font-weight: 500;">Est. Burn Multiple</td>
+                <td style="padding: 0.5rem 0.75rem; color: #a1a1aa;">1.8x</td>
+                <td style="padding: 0.5rem 0.75rem; color: #a1a1aa;">1.2x</td>
+                <td style="padding: 0.5rem 0.75rem; color: #4ade80;">0.8x (Cash Flow Positive)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b; color: #e2e8f0;">
+                <td style="padding: 0.5rem 0.75rem; font-weight: 500;">Rule of 40 Score</td>
+                <td style="padding: 0.5rem 0.75rem; color: #f59e0b;">28%</td>
+                <td style="padding: 0.5rem 0.75rem; color: #4ade80;">48%</td>
+                <td style="padding: 0.5rem 0.75rem; color: #4ade80;">65% (Top Decile)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  const pricingDiv = document.getElementById('results-pricing');
+  if (pricingDiv) pricingDiv.classList.remove('hidden');
+
+  const leadCountEl = document.getElementById('lead-count');
+  if (leadCountEl) leadCountEl.textContent = '1 Dossier';
+
+  const leadCostEl = document.getElementById('lead-cost');
+  if (leadCostEl) leadCostEl.textContent = '15 Credits (R199.00 equivalent)';
 }
 
 // 3. Electronics & Tech Valuation

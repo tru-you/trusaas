@@ -100,6 +100,7 @@
           <button class="tab" data-engine="business">🏢 Business Finder</button>
           <button class="tab" data-engine="bureau">📋 Bureau Reports</button>
           <button class="tab" data-engine="safepay">🔒 SafePay</button>
+          <button class="tab" data-engine="startup">📊 Startup Intel</button>
         </div>
         
         <form class="search-form" id="search-vehicles">
@@ -181,6 +182,16 @@
           <input type="text" placeholder="Initials (e.g. JM)" id="safepay-initials">
           <input type="text" placeholder="Surname" id="safepay-surname">
           <button class="btn-primary">Verify Account (3 Credits)</button>
+        </form>
+
+        <form class="search-form hidden" id="search-startup">
+          <input type="text" placeholder="Target Sector / Product Industry (e.g. B2B SaaS, FinTech, Car Dealer DMS)" id="startup-sector" style="flex: 2; min-width: 240px;">
+          <select id="startup-stage" style="flex: 1; min-width: 140px;">
+            <option value="pre-seed">Pre-Seed / Idea</option>
+            <option value="seed">Seed Stage</option>
+            <option value="series-a">Series A</option>
+          </select>
+          <button class="btn-primary" id="btn-search-startup">Generate Pitch Dossier (15 Credits)</button>
         </form>
       </div>
     </section>
@@ -267,7 +278,20 @@
             <li>Registration check (stolen, finance) &amp; accident history</li>
           </ul>
           <div class="price">3 Credits per lookup</div>
-          <button class="btn-secondary select-vertical" data-target="bureau">Run Lookup</button>
+          <button class="btn-secondary select-vertical" data-target="bureau">Run Bureau Check</button>
+        </div>
+
+        <!-- Card 6: Startup Intel -->
+        <div class="card">
+          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <h3>Startup Pitch &amp; Valuation</h3>
+          <p>TAM/SAM/SOM market sizing, unit economics &amp; 3-year cohort models.</p>
+          <ul class="features">
+            <li>Investor pitch-deck backup data</li>
+            <li>LTV/CAC, burn multiple &amp; financial runway</li>
+          </ul>
+          <div class="price">15 Credits per report</div>
+          <button class="btn-secondary select-vertical" data-target="startup">Generate Pitch Pack</button>
         </div>
 
         <!-- Card 6 -->
