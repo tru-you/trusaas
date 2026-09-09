@@ -279,6 +279,61 @@ export function modelCore(text: string): string {
   return s.replace(/[-_]/g, " ").replace(MODEL_NOISE_RE, " ").replace(/\s+/g, " ").trim();
 }
 
+export function splitModelAndVariant(rawModel: string, rawVariant?: string): { baseModel: string; variant: string } {
+  let m = String(rawModel || '').trim();
+  let v = String(rawVariant || '').trim();
+
+  const compoundPatterns: Array<{ re: RegExp; base: string; extractVariant?: (match: RegExpMatchArray) => string }> = [
+    { re: /^golf\s+(gti|gtd|r\b|1\.4\s*tsi|1\.0\s*tsi|1\.2\s*tsi|2\.0\s*tdi|comfortline|highline|trendline)/i, base: 'Golf', extractVariant: (m) => m[1] },
+    { re: /^polo\s+(gti|vivo\b|1\.0\s*tsi|1\.2\s*tsi|1\.4|1\.6|comfortline|highline|trendline)/i, base: 'Polo', extractVariant: (m) => m[1].toLowerCase().startsWith('vivo') ? 'Polo Vivo' : m[1] },
+    { re: /^hilux\s+(2\.8\s*gd-6|2\.4\s*gd-6|2\.7\s*vvti|4\.0\s*v6|raider|legend|srx|gr-s)/i, base: 'Hilux', extractVariant: (m) => m[1] },
+    { re: /^fortuner\s+(2\.8\s*gd-6|2\.4\s*gd-6|4\.0\s*v6|epic)/i, base: 'Fortuner', extractVariant: (m) => m[1] },
+    { re: /^corolla\s+(cross|quest|1\.8|1\.6|1\.4|hybrid|prestige|exclusive)/i, base: 'Corolla', extractVariant: (m) => m[1].toLowerCase().includes('cross') || m[1].toLowerCase().includes('quest') ? `Corolla ${m[1]}` : m[1] },
+    { re: /^ranger\s+(raptor|2\.0\s*bi-turbo|2\.0\s*si-turbo|3\.2\s*tdci|2\.2\s*tdci|wildtrak|xlt|xl)/i, base: 'Ranger', extractVariant: (m) => m[1] },
+    { re: /^(?:3\s*series\s+)?(318[id]|320[id]|325[i]|328[i]|330[id]|335[i]|340[i]|m340i|m3)\b/i, base: '3 Series', extractVariant: (m) => m[1] },
+    { re: /^(?:1\s*series\s+)?(116[i]|118[id]|120[id]|125[i]|135[i]|m135i|m140i|1m)\b/i, base: '1 Series', extractVariant: (m) => m[1] },
+    { re: /^(?:2\s*series\s+)?(218[id]|220[id]|228[i]|235[i]|m235i|m240i|m2)\b/i, base: '2 Series', extractVariant: (m) => m[1] },
+    { re: /^(?:4\s*series\s+)?(420[id]|428[i]|430[id]|435[i]|440[i]|m440i|m4)\b/i, base: '4 Series', extractVariant: (m) => m[1] },
+    { re: /^(?:5\s*series\s+)?(520[id]|523[i]|525[id]|528[i]|530[id]|535[id]|540[i]|550[i]|m550i|m5)\b/i, base: '5 Series', extractVariant: (m) => m[1] },
+    { re: /^(?:c[- ]?class\s+)?(c180|c200|c220d|c250|c300|c350|c43|c63)\b/i, base: 'C-Class', extractVariant: (m) => m[1] },
+    { re: /^(?:a[- ]?class\s+)?(a180|a200|a220d|a250|a35|a45)\b/i, base: 'A-Class', extractVariant: (m) => m[1] },
+    { re: /^(?:e[- ]?class\s+)?(e200|e220d|e250|e300|e350|e400|e43|e53|e63)\b/i, base: 'E-Class', extractVariant: (m) => m[1] },
+    { re: /^(?:cla[- ]?class\s+|cla\s+)?(cla180|cla200|cla220d|cla250|cla35|cla45)\b/i, base: 'CLA', extractVariant: (m) => m[1] },
+    { re: /^a3\s+(1\.0\s*tfsi|1\.4\s*tfsi|1\.8\s*tfsi|2\.0\s*tfsi|2\.0\s*tdi|s3|rs3|sedan|sportback)/i, base: 'A3', extractVariant: (m) => m[1] },
+    { re: /^a4\s+(1\.4\s*tfsi|1\.8\s*tfsi|2\.0\s*tfsi|2\.0\s*tdi|3\.0\s*tdi|s4|rs4)/i, base: 'A4', extractVariant: (m) => m[1] },
+  ];
+
+  for (const cp of compoundPatterns) {
+    const match = m.match(cp.re);
+    if (match) {
+      if (cp.base === 'Polo' && match[1]?.toLowerCase().startsWith('vivo')) {
+        m = 'Polo Vivo';
+      } else {
+        m = cp.base;
+      }
+      if (!v && cp.extractVariant) {
+        v = cp.extractVariant(match);
+      }
+      break;
+    }
+  }
+
+  return { baseModel: m, variant: v };
+}
+
+/** Simplify complex or hyper-specific dealer trim strings to closest core sibling trim.
+ * e.g. "Audi A3 SS Trendline" -> "Trendline", "Golf 1.4 TSI R-Line DSG" -> "1.4 TSI" */
+export function simplifyVariant(variant: string): string {
+  const v = String(variant || '').trim();
+  if (!v) return '';
+  return v
+    .replace(/\b(?:ss|special edition|black edition|night package|launch edition|conceptline|plus)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+
+
 const MAKE_ALIASES: Record<string, string[]> = {
   vw: ["volkswagen"],
   volkswagen: ["vw"],
@@ -300,7 +355,7 @@ function makeVariants(make: string): string[] {
   return [m, ...(MAKE_ALIASES[m] || [])];
 }
 
-const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 1;
+const YEAR_TOLERANCE = 1; // Strict: 1 year only either side
 
 function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number; variant?: string }): boolean {
   const t = String(title || "");
@@ -652,7 +707,14 @@ export function extractCardListings(html: string, make: string, model: string, y
     if (seen.has(key)) return;
     seen.add(key);
 
-    out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
+    const yrMatch = cardText.match(/\b(19\d{2}|20\d{2})\b/);
+    const parsedYear = yrMatch ? parseInt(yrMatch[1], 10) : undefined;
+    out.push({
+      price: Math.round(price),
+      km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined,
+      year: parsedYear,
+      title: cardText.slice(0, 120),
+    });
   });
 
   return out;
@@ -688,11 +750,13 @@ export function extractNextDataListings(html: string, make: string, model: strin
         if (!seen.has(key)) {
           seen.add(key);
           let km = num(n.mileage ?? n.km ?? n.odometer);
-          /* A market's own classifieds report in the market's unit — miles
-           * markets (US/UK) normalise to km here so engine maths stays
-           * km-denominated everywhere. */
           if (km != null && cfg.distanceUnit === "mi") km = km * 1.60934;
-          out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
+          out.push({
+            price: Math.round(price),
+            km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined,
+            year: Number.isFinite(Number(yr)) ? Number(yr) : undefined,
+            title: title.slice(0, 120),
+          });
         }
       }
     }
@@ -701,29 +765,43 @@ export function extractNextDataListings(html: string, make: string, model: strin
   visit(root);
   return out;
 }
-export function adjustForMileage(listings: Listing[], targetKm?: number): number[] {
-  const raw = listings.map((l) => l.price);
-  if (!targetKm || !Number.isFinite(targetKm) || targetKm <= 0) return raw;
-  const withKm = listings.filter((l): l is Required<Listing> => typeof l.km === "number");
-  if (withKm.length < 3) return raw;
-  const mx = withKm.reduce((s, l) => s + l.km, 0) / withKm.length;
-  const my = withKm.reduce((s, l) => s + l.price, 0) / withKm.length;
-  let numr = 0, den = 0;
-  for (const l of withKm) { numr += (l.km - mx) * (l.price - my); den += (l.km - mx) ** 2; }
-  let slope = den ? numr / den : 0;
-  const medPrice = median(withKm.map((l) => l.price)) ?? my;
-  const defaultSlope = -(medPrice * 0.03) / 20_000;
-  /* Acceptance band expressed as a fraction of the median price per km so it
-   * holds in any currency. The old absolute band (R0.2–R3 per km) was tuned
-   * for a ~R200k median; -1e-6 … -1.5e-5 of price per km reproduces exactly
-   * that at R200k and scales with the car's value in ZAR/USD/GBP alike. */
-  const rel = medPrice > 0 ? slope / medPrice : 0;
-  if (!(rel < -1e-6 && rel > -1.5e-5)) slope = defaultSlope;
-  return listings.map((l) => {
-    if (typeof l.km !== "number") return l.price;
-    const adj = l.price + slope * (targetKm - l.km);
-    return Math.round(Math.min(l.price * 1.2, Math.max(l.price * 0.8, adj)));
-  });
+
+export const YEAR_DEPRECIATION_RATE = 0.035; // 3.5% per year SA auto market depreciation
+
+export function adjustForYearGap(price: number, compYear?: number, subjectYear?: number): number {
+  if (!compYear || !subjectYear || compYear === subjectYear) return price;
+  const gap = subjectYear - compYear; // e.g. subject=2020, comp=2019 -> +1 year -> +3.5%
+  if (Math.abs(gap) > 1) return price;
+  const factor = 1 + gap * YEAR_DEPRECIATION_RATE;
+  return Math.round(price * factor);
+}
+
+export function adjustForTrim(price: number, compTitle?: string, subjectVariant?: string): number {
+  if (!subjectVariant || !compTitle) return price;
+  const sVar = subjectVariant.toLowerCase();
+  const cTitle = compTitle.toLowerCase();
+
+  const getTrimScore = (text: string) => {
+    if (/\b(highline|exclusive|prestige|autobiography|gt-line|gt|vogue|overland)\b/i.test(text)) return 3;
+    if (/\b(comfortline|advance|sport|dynamic|elegance|srx|raider|limited)\b/i.test(text)) return 2;
+    if (/\b(trendline|base|conceptline|entry|active|essential|s|sr|start)\b/i.test(text)) return 1;
+    return 0;
+  };
+
+  const sScore = getTrimScore(sVar);
+  const cScore = getTrimScore(cTitle);
+
+  if (sScore > 0 && cScore > 0 && sScore !== cScore) {
+    const diff = sScore - cScore; // e.g. Highline(3) vs Comfortline(2) = +1 -> +7%
+    const factor = 1 + diff * 0.07;
+    return Math.round(price * factor);
+  }
+  return price;
+}
+
+export function adjustForMileage(listings: Listing[], _targetKm?: number): number[] {
+  // Make NO synthetic slope adjustments for mileage — pass clean raw listing prices
+  return listings.map((l) => l.price);
 }
 
 function iqrFilter(prices: number[]): number[] {
@@ -737,16 +815,27 @@ function iqrFilter(prices: number[]): number[] {
   const filtered = s.filter((v) => v >= lo && v <= hi);
   return filtered.length >= 2 ? filtered : s;
 }
+
 export function robustAverage(prices: number[]): number | null {
-  if (!prices.length) return null;
-  const s = iqrFilter(prices);
-  if (s.length <= 12) {
-    const mid = Math.floor(s.length / 2);
-    return Math.round(s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2);
+  if (!prices || !prices.length) return null;
+  const s = [...prices].sort((a, b) => a - b);
+
+  // Tiny sample (1–3 comps): bottom comps are usually damaged/auction liquidations.
+  // Anchor to the top clean retail comp in that pool.
+  if (s.length <= 3) {
+    return s[s.length - 1];
   }
-  const trim = Math.max(1, Math.floor(s.length * 0.1));
-  const core = s.slice(trim, s.length - trim);
-  return Math.round(core.reduce((a, b) => a + b, 0) / core.length);
+
+  // 4 comps: average of the top 2 comps
+  if (s.length === 4) {
+    return Math.round((s[2] + s[3]) / 2);
+  }
+
+  // Large pool (>= 5 comps): filter IQR outliers and take the dense cluster median
+  const filtered = iqrFilter(s);
+  if (!filtered.length) return median(s);
+  const mid = Math.floor(filtered.length / 2);
+  return Math.round(filtered.length % 2 ? filtered[mid] : (filtered[mid - 1] + filtered[mid]) / 2);
 }
 
 /* ────────────────────────────────────────────────

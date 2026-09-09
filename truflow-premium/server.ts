@@ -6246,7 +6246,7 @@ import { fetchValuation } from "./src/lib/scraper";
  * switch — the legacy fork is SA-only by definition. */
 import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from "../packages/market-scraper/index";
 
-const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || "legacy").toLowerCase();
+const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || "remote").toLowerCase();
 const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || "https://scraper.tru-saas.com").replace(/\/+$/, "");
 const INSTANCE_MARKET = (process.env.MARKET || "za").toLowerCase();
 const INSTANCE_VERTICAL = (process.env.VERTICAL || "cars").toLowerCase();
@@ -6567,23 +6567,37 @@ app.post("/api/valuation", authenticate, async (req: any, res) => {
     const valuationOpts = {
       mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
     };
-    const data = VALUATION_ENGINE === "remote"
-      ? await fetchRemoteValuation(
+    let data;
+    if (VALUATION_ENGINE === "remote") {
+      try {
+        data = await fetchRemoteValuation(
           String(make),
           String(model),
           String(year),
           valuationOpts,
           INSTANCE_MARKET,
-        )
-      : VALUATION_ENGINE === "package"
-      ? await pkgFetchValuation(
+        );
+      } catch (remErr: any) {
+        console.warn("[valuation] remote failed, falling back to package engine:", remErr?.message || remErr);
+        data = await pkgFetchValuation(
           String(make),
           String(model),
           String(year),
           valuationOpts,
           (pkgMarkets as Record<string, any>)[INSTANCE_MARKET] || pkgMarkets.za,
-        )
-      : await fetchValuation(String(make), String(model), String(year), valuationOpts);
+        );
+      }
+    } else if (VALUATION_ENGINE === "package") {
+      data = await pkgFetchValuation(
+        String(make),
+        String(model),
+        String(year),
+        valuationOpts,
+        (pkgMarkets as Record<string, any>)[INSTANCE_MARKET] || pkgMarkets.za,
+      );
+    } else {
+      data = await fetchValuation(String(make), String(model), String(year), valuationOpts);
+    }
     console.log(`[scraper] valuation for ${make} ${model} ${year}: avg=${data.averageRetailPrice} listings=${data.listingsFound}`);
     res.json(data);
   } catch (err: any) {
@@ -6702,11 +6716,19 @@ app.post("/api/public/trade-estimate", async (req: any, res) => {
      * takes the package engine regardless of the kill-switch. */
     const requestedMarket = String((req.body || {}).market || INSTANCE_MARKET).toLowerCase();
     const marketCfg = (pkgMarkets as Record<string, any>)[requestedMarket] || pkgMarkets.za;
-    const data = VALUATION_ENGINE === "remote"
-      ? await fetchRemoteValuation(String(make), String(model), String(year), valuationOpts, requestedMarket)
-      : (VALUATION_ENGINE === "package" || marketCfg.id !== "za")
-      ? await pkgFetchValuation(String(make), String(model), String(year), valuationOpts, marketCfg)
-      : await fetchValuation(String(make), String(model), String(year), valuationOpts);
+    let data;
+    if (VALUATION_ENGINE === "remote") {
+      try {
+        data = await fetchRemoteValuation(String(make), String(model), String(year), valuationOpts, requestedMarket);
+      } catch (remErr: any) {
+        console.warn("[trade-estimate] remote failed, falling back to package engine:", remErr?.message || remErr);
+        data = await pkgFetchValuation(String(make), String(model), String(year), valuationOpts, marketCfg);
+      }
+    } else if (VALUATION_ENGINE === "package" || marketCfg.id !== "za") {
+      data = await pkgFetchValuation(String(make), String(model), String(year), valuationOpts, marketCfg);
+    } else {
+      data = await fetchValuation(String(make), String(model), String(year), valuationOpts);
+    }
     const retail = data.averageRetailPrice;
     if (retail == null) {
       return res.json({ ok: false, reason: "no_data", listingsFound: 0 });

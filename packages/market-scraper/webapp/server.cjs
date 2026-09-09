@@ -899,6 +899,49 @@ function modelCore(text) {
   if (!s || s === "any" || s === "-") return "";
   return s.replace(/[-_]/g, " ").replace(MODEL_NOISE_RE, " ").replace(/\s+/g, " ").trim();
 }
+function splitModelAndVariant(rawModel, rawVariant) {
+  let m = String(rawModel || "").trim();
+  let v = String(rawVariant || "").trim();
+  const compoundPatterns = [
+    { re: /^golf\s+(gti|gtd|r\b|1\.4\s*tsi|1\.0\s*tsi|1\.2\s*tsi|2\.0\s*tdi|comfortline|highline|trendline)/i, base: "Golf", extractVariant: (m2) => m2[1] },
+    { re: /^polo\s+(gti|vivo\b|1\.0\s*tsi|1\.2\s*tsi|1\.4|1\.6|comfortline|highline|trendline)/i, base: "Polo", extractVariant: (m2) => m2[1].toLowerCase().startsWith("vivo") ? "Polo Vivo" : m2[1] },
+    { re: /^hilux\s+(2\.8\s*gd-6|2\.4\s*gd-6|2\.7\s*vvti|4\.0\s*v6|raider|legend|srx|gr-s)/i, base: "Hilux", extractVariant: (m2) => m2[1] },
+    { re: /^fortuner\s+(2\.8\s*gd-6|2\.4\s*gd-6|4\.0\s*v6|epic)/i, base: "Fortuner", extractVariant: (m2) => m2[1] },
+    { re: /^corolla\s+(cross|quest|1\.8|1\.6|1\.4|hybrid|prestige|exclusive)/i, base: "Corolla", extractVariant: (m2) => m2[1].toLowerCase().includes("cross") || m2[1].toLowerCase().includes("quest") ? `Corolla ${m2[1]}` : m2[1] },
+    { re: /^ranger\s+(raptor|2\.0\s*bi-turbo|2\.0\s*si-turbo|3\.2\s*tdci|2\.2\s*tdci|wildtrak|xlt|xl)/i, base: "Ranger", extractVariant: (m2) => m2[1] },
+    { re: /^(?:3\s*series\s+)?(318[id]|320[id]|325[i]|328[i]|330[id]|335[i]|340[i]|m340i|m3)\b/i, base: "3 Series", extractVariant: (m2) => m2[1] },
+    { re: /^(?:1\s*series\s+)?(116[i]|118[id]|120[id]|125[i]|135[i]|m135i|m140i|1m)\b/i, base: "1 Series", extractVariant: (m2) => m2[1] },
+    { re: /^(?:2\s*series\s+)?(218[id]|220[id]|228[i]|235[i]|m235i|m240i|m2)\b/i, base: "2 Series", extractVariant: (m2) => m2[1] },
+    { re: /^(?:4\s*series\s+)?(420[id]|428[i]|430[id]|435[i]|440[i]|m440i|m4)\b/i, base: "4 Series", extractVariant: (m2) => m2[1] },
+    { re: /^(?:5\s*series\s+)?(520[id]|523[i]|525[id]|528[i]|530[id]|535[id]|540[i]|550[i]|m550i|m5)\b/i, base: "5 Series", extractVariant: (m2) => m2[1] },
+    { re: /^(?:c[- ]?class\s+)?(c180|c200|c220d|c250|c300|c350|c43|c63)\b/i, base: "C-Class", extractVariant: (m2) => m2[1] },
+    { re: /^(?:a[- ]?class\s+)?(a180|a200|a220d|a250|a35|a45)\b/i, base: "A-Class", extractVariant: (m2) => m2[1] },
+    { re: /^(?:e[- ]?class\s+)?(e200|e220d|e250|e300|e350|e400|e43|e53|e63)\b/i, base: "E-Class", extractVariant: (m2) => m2[1] },
+    { re: /^(?:cla[- ]?class\s+|cla\s+)?(cla180|cla200|cla220d|cla250|cla35|cla45)\b/i, base: "CLA", extractVariant: (m2) => m2[1] },
+    { re: /^a3\s+(1\.0\s*tfsi|1\.4\s*tfsi|1\.8\s*tfsi|2\.0\s*tfsi|2\.0\s*tdi|s3|rs3|sedan|sportback)/i, base: "A3", extractVariant: (m2) => m2[1] },
+    { re: /^a4\s+(1\.4\s*tfsi|1\.8\s*tfsi|2\.0\s*tfsi|2\.0\s*tdi|3\.0\s*tdi|s4|rs4)/i, base: "A4", extractVariant: (m2) => m2[1] }
+  ];
+  for (const cp of compoundPatterns) {
+    const match = m.match(cp.re);
+    if (match) {
+      if (cp.base === "Polo" && match[1]?.toLowerCase().startsWith("vivo")) {
+        m = "Polo Vivo";
+      } else {
+        m = cp.base;
+      }
+      if (!v && cp.extractVariant) {
+        v = cp.extractVariant(match);
+      }
+      break;
+    }
+  }
+  return { baseModel: m, variant: v };
+}
+function simplifyVariant(variant) {
+  const v = String(variant || "").trim();
+  if (!v) return "";
+  return v.replace(/\b(?:ss|special edition|black edition|night package|launch edition|conceptline|plus)\b/gi, "").replace(/\s+/g, " ").trim();
+}
 var MAKE_ALIASES = {
   vw: ["volkswagen"],
   volkswagen: ["vw"],
@@ -918,7 +961,7 @@ function makeVariants(make) {
   const m = String(make).toLowerCase().trim();
   return [m, ...MAKE_ALIASES[m] || []];
 }
-var YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 1;
+var YEAR_TOLERANCE = 1;
 function titleMentionsVehicle(title, make, model, year, match, opts) {
   const t = String(title || "");
   const y = parseInt(String(year), 10);
@@ -1201,7 +1244,14 @@ function extractCardListings(html, make, model, year, cfg, opts) {
     const key = `${Math.round(price)}|${km ?? ""}`;
     if (seen.has(key)) return;
     seen.add(key);
-    out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0 });
+    const yrMatch = cardText.match(/\b(19\d{2}|20\d{2})\b/);
+    const parsedYear = yrMatch ? parseInt(yrMatch[1], 10) : void 0;
+    out.push({
+      price: Math.round(price),
+      km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0,
+      year: parsedYear,
+      title: cardText.slice(0, 120)
+    });
   });
   return out;
 }
@@ -1245,7 +1295,12 @@ function extractNextDataListings(html, make, model, year, cfg, opts) {
           seen.add(key);
           let km = num(n.mileage ?? n.km ?? n.odometer);
           if (km != null && cfg.distanceUnit === "mi") km = km * 1.60934;
-          out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0 });
+          out.push({
+            price: Math.round(price),
+            km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0,
+            year: Number.isFinite(Number(yr)) ? Number(yr) : void 0,
+            title: title.slice(0, 120)
+          });
         }
       }
     }
@@ -1254,28 +1309,32 @@ function extractNextDataListings(html, make, model, year, cfg, opts) {
   visit(root);
   return out;
 }
-function adjustForMileage(listings, targetKm) {
-  const raw = listings.map((l) => l.price);
-  if (!targetKm || !Number.isFinite(targetKm) || targetKm <= 0) return raw;
-  const withKm = listings.filter((l) => typeof l.km === "number");
-  if (withKm.length < 3) return raw;
-  const mx = withKm.reduce((s, l) => s + l.km, 0) / withKm.length;
-  const my = withKm.reduce((s, l) => s + l.price, 0) / withKm.length;
-  let numr = 0, den = 0;
-  for (const l of withKm) {
-    numr += (l.km - mx) * (l.price - my);
-    den += (l.km - mx) ** 2;
+var YEAR_DEPRECIATION_RATE = 0.035;
+function adjustForYearGap(price, compYear, subjectYear) {
+  if (!compYear || !subjectYear || compYear === subjectYear) return price;
+  const gap = subjectYear - compYear;
+  if (Math.abs(gap) > 1) return price;
+  const factor = 1 + gap * YEAR_DEPRECIATION_RATE;
+  return Math.round(price * factor);
+}
+function adjustForTrim(price, compTitle, subjectVariant) {
+  if (!subjectVariant || !compTitle) return price;
+  const sVar = subjectVariant.toLowerCase();
+  const cTitle = compTitle.toLowerCase();
+  const getTrimScore = (text) => {
+    if (/\b(highline|exclusive|prestige|autobiography|gt-line|gt|vogue|overland)\b/i.test(text)) return 3;
+    if (/\b(comfortline|advance|sport|dynamic|elegance|srx|raider|limited)\b/i.test(text)) return 2;
+    if (/\b(trendline|base|conceptline|entry|active|essential|s|sr|start)\b/i.test(text)) return 1;
+    return 0;
+  };
+  const sScore = getTrimScore(sVar);
+  const cScore = getTrimScore(cTitle);
+  if (sScore > 0 && cScore > 0 && sScore !== cScore) {
+    const diff = sScore - cScore;
+    const factor = 1 + diff * 0.07;
+    return Math.round(price * factor);
   }
-  let slope = den ? numr / den : 0;
-  const medPrice = median(withKm.map((l) => l.price)) ?? my;
-  const defaultSlope = -(medPrice * 0.03) / 2e4;
-  const rel = medPrice > 0 ? slope / medPrice : 0;
-  if (!(rel < -1e-6 && rel > -15e-6)) slope = defaultSlope;
-  return listings.map((l) => {
-    if (typeof l.km !== "number") return l.price;
-    const adj = l.price + slope * (targetKm - l.km);
-    return Math.round(Math.min(l.price * 1.2, Math.max(l.price * 0.8, adj)));
-  });
+  return price;
 }
 function iqrFilter(prices) {
   if (prices.length < 4) return prices;
@@ -1289,15 +1348,18 @@ function iqrFilter(prices) {
   return filtered.length >= 2 ? filtered : s;
 }
 function robustAverage(prices) {
-  if (!prices.length) return null;
-  const s = iqrFilter(prices);
-  if (s.length <= 12) {
-    const mid = Math.floor(s.length / 2);
-    return Math.round(s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2);
+  if (!prices || !prices.length) return null;
+  const s = [...prices].sort((a, b) => a - b);
+  if (s.length <= 3) {
+    return s[s.length - 1];
   }
-  const trim = Math.max(1, Math.floor(s.length * 0.1));
-  const core = s.slice(trim, s.length - trim);
-  return Math.round(core.reduce((a, b) => a + b, 0) / core.length);
+  if (s.length === 4) {
+    return Math.round((s[2] + s[3]) / 2);
+  }
+  const filtered = iqrFilter(s);
+  if (!filtered.length) return median(s);
+  const mid = Math.floor(filtered.length / 2);
+  return Math.round(filtered.length % 2 ? filtered[mid] : (filtered[mid - 1] + filtered[mid]) / 2);
 }
 function expandDealerUrl(source, make, model, year, page = 1) {
   const m = encodeURIComponent(make);
@@ -1584,26 +1646,27 @@ function pageUrl(src, make, model, year, page) {
   const sep = base.includes("?") ? "&" : "?";
   return `${base}${sep}${param}=${page}`;
 }
-function classifiedParser(cfg, make, model, year, variant) {
+function classifiedParser(cfg, make, model, year, variant, yearTolerance = 1) {
   return (html, selectors) => {
-    const opts = variant ? { variant } : void 0;
+    const opts = { variant, yearTolerance };
     const nd = extractNextDataListings(html, make, model, year, cfg, opts);
     if (nd.length) return nd;
     const cards = extractCardListings(html, make, model, year, cfg, opts);
     if (cards.length) return cards;
-    const jl = extractJsonLd(html, cfg).filter((l) => {
-      return true;
-    });
+    const jl = extractJsonLd(html, cfg);
     if (jl.length) return jl;
     return [];
   };
 }
 async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MARKET) {
   const cfg = market;
-  const baseModel = modelCore(model);
-  const variant = opts.variant || "";
+  const { baseModel: cleanModel, variant: resolvedVariant } = splitModelAndVariant(model, opts.variant);
+  const baseModel = modelCore(cleanModel);
+  const variant = resolvedVariant || opts.variant || "";
   const targetKm = Number(opts.mileage);
-  const cacheModel = variant ? `${model} ${variant}` : model;
+  const subjYear = parseInt(String(year), 10);
+  const coreVariant = simplifyVariant(variant);
+  const cacheModel = variant ? `${cleanModel} ${variant}` : cleanModel;
   const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, targetKm);
   const cached = cacheGet(key);
   if (cached) return cached;
@@ -1656,68 +1719,84 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
   const dealerListings = dealerResults.flatMap((r) => r.listings);
   const dealerSources = dealerResults.map(({ name, count, avg }) => ({ name, count, avg }));
   const kmOf = (ls) => median(ls.map((l) => l.km).filter((k) => typeof k === "number"));
-  if (dealerListings.length >= DEALER_FINAL_THRESHOLD2) {
-    const adjusted = adjustForMileage(dealerListings, targetKm);
-    const data2 = {
-      averageRetailPrice: robustAverage(adjusted),
-      listingsFound: adjusted.length,
-      fallbackRequired: false,
-      sources: dealerSources,
-      currency: cfg.currency,
-      distanceUnit: cfg.distanceUnit,
-      mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && dealerListings.some((l) => typeof l.km === "number"),
-      sampleMedianKm: kmOf(dealerListings)
-    };
-    cachePut(key, data2);
-    return data2;
-  }
   const sources = buildSourcesFor(cfg);
-  const parse = classifiedParser(cfg, make, baseModel, y, variant);
-  const perSource = await Promise.all(
-    sources.map(async (src) => {
-      const acc = [];
-      for (let p = 1; p <= CLASSIFIEDS_PAGES2; p++) {
-        if (budgetLeft() <= 0) break;
-        const url = pageUrl(src, make, baseModel, y, p);
-        let listings = [];
-        try {
-          const html = await fetchPageForParsing(url, cfg);
-          if (html) listings = parse(html, src.selectors);
-        } catch (err) {
-          console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
+  const runClassifiedPass = async (queryModel, queryYear, queryVariant, tolerance = 1) => {
+    const parse = classifiedParser(cfg, make, queryModel, queryYear, queryVariant, tolerance);
+    const passResults = await Promise.all(
+      sources.map(async (src) => {
+        const acc = [];
+        for (let p = 1; p <= CLASSIFIEDS_PAGES2; p++) {
+          if (budgetLeft() <= 0) break;
+          const url = pageUrl(src, make, queryModel, queryYear, p);
+          let listings = [];
+          try {
+            const html = await fetchPageForParsing(url, cfg);
+            if (html) listings = parse(html, src.selectors);
+          } catch (err) {
+            console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
+          }
+          if (listings.length === 0) break;
+          acc.push(...listings);
         }
-        if (listings.length === 0) break;
-        acc.push(...listings);
-      }
-      const seen = /* @__PURE__ */ new Set();
-      const deduped = acc.filter((l) => {
-        const k = `${l.price}|${l.km ?? ""}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
-      return { name: src.name, listings: deduped };
-    })
-  );
-  const classifiedListings = [];
+        return { name: src.name, listings: acc };
+      })
+    );
+    return passResults;
+  };
+  let classifiedListings = [];
   const sourcesOutput = [];
-  for (const { name, listings } of perSource) {
+  const stage1Results = await runClassifiedPass(baseModel, y, variant, 0);
+  for (const { name, listings } of stage1Results) {
     classifiedListings.push(...listings);
-    const prices = listings.map((l) => l.price);
-    sourcesOutput.push({ name, count: prices.length, avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null });
+  }
+  if (classifiedListings.length < 3 && coreVariant && coreVariant.toLowerCase() !== variant.toLowerCase()) {
+    const stage2Results = await runClassifiedPass(baseModel, y, coreVariant, 0);
+    for (const { listings } of stage2Results) {
+      classifiedListings.push(...listings);
+    }
+  }
+  if (classifiedListings.length < 3 && Number.isFinite(subjYear)) {
+    const prevYear = String(subjYear - 1);
+    const nextYear = String(subjYear + 1);
+    const [prevResults, nextResults] = await Promise.all([
+      runClassifiedPass(baseModel, prevYear, coreVariant || variant, 0),
+      runClassifiedPass(baseModel, nextYear, coreVariant || variant, 0)
+    ]);
+    for (const { listings } of [...prevResults, ...nextResults]) {
+      classifiedListings.push(...listings);
+    }
+  }
+  const classifiedBySource = /* @__PURE__ */ new Map();
+  for (const l of classifiedListings) {
+    const srcName = l.source || "Classifieds";
+    if (!classifiedBySource.has(srcName)) classifiedBySource.set(srcName, []);
+    classifiedBySource.get(srcName).push(l);
+  }
+  for (const src of sources) {
+    const list = classifiedListings.filter((l) => !l.source || l.source === src.name);
+    const prices = list.map((l) => l.price);
+    sourcesOutput.push({
+      name: src.name,
+      count: prices.length,
+      avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null
+    });
   }
   let serpListings = [];
   const serpModel = variant ? `${baseModel} ${variant}` : baseModel;
   if (dealerListings.length + classifiedListings.length < SERP_TRIGGER_MAX2 && serpConfigured()) {
     serpListings = await fetchSerpListings(make, serpModel, y, cfg);
     if (serpListings.length) {
-      sourcesOutput.push({ name: "Google (SERP)", count: serpListings.length, avg: Math.round(serpListings.reduce((s, l) => s + l.price, 0) / serpListings.length) });
+      sourcesOutput.push({
+        name: "Google (SERP)",
+        count: serpListings.length,
+        avg: Math.round(serpListings.reduce((s, l) => s + l.price, 0) / serpListings.length)
+      });
     }
   }
   const combined = [...dealerListings, ...classifiedListings, ...serpListings];
   const crossSeen = /* @__PURE__ */ new Set();
   const allListings = combined.filter((l) => {
-    const k = `${l.price}|${l.km ?? ""}`;
+    const k = `${l.price}|${l.km ?? ""}|${l.year ?? ""}`;
     if (crossSeen.has(k)) return false;
     crossSeen.add(k);
     return true;
@@ -1761,24 +1840,33 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     cachePut(key, data2);
     return data2;
   }
-  const adjustedAll = adjustForMileage(allListings, targetKm);
-  const avgRetail = robustAverage(adjustedAll);
-  const range = calcPriceRange(adjustedAll);
-  const confidence = calcConfidenceScore(adjustedAll);
+  const adjustedComps = allListings.map((l) => {
+    let p = l.price;
+    if (l.year && Number.isFinite(subjYear)) {
+      p = adjustForYearGap(p, l.year, subjYear);
+    }
+    if (l.title && variant) {
+      p = adjustForTrim(p, l.title, variant);
+    }
+    return p;
+  });
+  const avgRetail = robustAverage(adjustedComps);
+  const range = calcPriceRange(adjustedComps);
+  const confidence = calcConfidenceScore(adjustedComps);
   const tradeEst = avgRetail != null ? Math.round(avgRetail * 0.85) : null;
   const data = {
     averageRetailPrice: avgRetail,
     tradeEstimate: tradeEst,
     priceRange: range,
     confidenceScore: confidence,
-    listingsFound: adjustedAll.length,
+    listingsFound: adjustedComps.length,
     fallbackRequired: dealerListings.length < MIN_DEALER_LISTINGS,
     searchUrl,
     carsUrl,
     sources: finalSources,
     currency: cfg.currency,
     distanceUnit: cfg.distanceUnit,
-    mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && allListings.some((l) => typeof l.km === "number"),
+    mileageAdjusted: false,
     sampleMedianKm: kmOf(allListings)
   };
   cachePut(key, data);

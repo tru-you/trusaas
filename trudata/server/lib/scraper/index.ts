@@ -23,6 +23,7 @@ import {
   fetchSerpListings,
   serpConfigured,
   extractJsonLd,
+  extractCardListings,
   extractNextDataListings,
   extractPrices,
   adjustForMileage,
@@ -30,22 +31,31 @@ import {
   median,
   modelCore,
   buildSourcesFor,
+  simplifyVariant,
+  splitModelAndVariant,
+  adjustForYearGap,
+  adjustForTrim,
 } from "./engine";
 
 // Forward the full public surface so per-app `src/lib/scraper.ts` loses nothing.
 export * from "./engine";
 
 import { sa } from "./markets/sa";
-import { us } from "./markets/us";
 import { uk } from "./markets/uk";
 import { housingZa } from "./markets/housing";
 
-export const markets = { za: sa, us, uk, housingZa };
+export const markets = { za: sa, uk, housingZa };
+const ALLOWED_MARKETS = (process.env.MARKETS || '').split(',').map(s => s.trim()).filter(Boolean);
+const filteredMarkets: Record<string, MarketConfig> = ALLOWED_MARKETS.length
+  ? Object.fromEntries(Object.entries(markets).filter(([id]) => ALLOWED_MARKETS.includes(id)))
+  : markets;
+export { filteredMarkets as activeMarkets };
 export { sa };
 
 export type { MarketConfig, FetchValuationOptions, ValuationResult, Listing, SourceResult, DealerSource };
 
 const DEFAULT_MARKET: MarketConfig = sa;
+// TODO: export from engine.ts to avoid drift
 const CACHE_TTL_MS = Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1000;
 const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
 const MIN_DEALER_LISTINGS = Number(process.env.SCRAPER_MIN_DEALER_LISTINGS) || 3;
@@ -67,12 +77,20 @@ function cacheGet(key: string): ValuationResult | null {
   if (Date.now() - e.ts > CACHE_TTL_MS) { cache.delete(key); return null; }
   return e.data;
 }
-function cachePut(key: string, data: ValuationResult): void { cache.set(key, { data, ts: Date.now() }); }
+const MAX_CACHE_SIZE = Number(process.env.SCRAPER_MAX_CACHE_SIZE) || 500;
+function cachePut(key: string, data: ValuationResult): void {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const oldest = cache.keys().next().value;
+    if (oldest) cache.delete(oldest);
+  }
+  cache.set(key, { data, ts: Date.now() });
+}
 
 export function clearValuationCache(): void { cache.clear(); }
 
 /* ── helpers ──────────────────────────────────── */
 
+// TODO: export from engine.ts
 async function mapPool<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>): Promise<R[]> {
   const out = new Array<R>(items.length);
   let next = 0;
@@ -97,18 +115,17 @@ function pageUrl(src: ScraperSource, make: string, model: string, year: string, 
 }
 
 /** Classifieds parser for a market: Next.js __NEXT_DATA__ → JSON-LD → class scan. */
-function classifiedParser(cfg: MarketConfig, make: string, model: string, year: string) {
+function classifiedParser(cfg: MarketConfig, make: string, model: string, year: string, variant?: string, yearTolerance = 1) {
   return (html: string, selectors: string[]): Listing[] => {
-    const nd = extractNextDataListings(html, make, model, year, cfg);
+    const opts = { variant, yearTolerance };
+    const nd = extractNextDataListings(html, make, model, year, cfg, opts);
     if (nd.length) return nd;
-    return htmlToAnyListings(html, selectors, cfg);
+    const cards = extractCardListings(html, make, model, year, cfg, opts);
+    if (cards.length) return cards;
+    const jl = extractJsonLd(html, cfg);
+    if (jl.length) return jl;
+    return [];
   };
-}
-
-function htmlToAnyListings(html: string, selectors: string[], cfg: MarketConfig): Listing[] {
-  const jl = extractJsonLd(html, cfg);
-  if (jl.length) return jl;
-  return extractPrices(html, selectors, cfg).map((price) => ({ price }));
 }
 
 /* ── main ─────────────────────────────────────── */
@@ -121,9 +138,15 @@ export async function fetchValuation(
   market: MarketConfig = DEFAULT_MARKET,
 ): Promise<ValuationResult> {
   const cfg = market;
-  const baseModel = modelCore(model);
+  const { baseModel: cleanModel, variant: resolvedVariant } = splitModelAndVariant(model, opts.variant);
+  const baseModel = modelCore(cleanModel);
+  const variant = resolvedVariant || opts.variant || "";
   const targetKm = Number(opts.mileage);
-  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug, targetKm);
+  const subjYear = parseInt(String(year), 10);
+  const coreVariant = simplifyVariant(variant);
+
+  const cacheModel = variant ? `${cleanModel} ${variant}` : cleanModel;
+  const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, targetKm);
   const cached = cacheGet(key);
   if (cached) return cached;
 
@@ -180,64 +203,102 @@ export async function fetchValuation(
 
   const kmOf = (ls: Listing[]) => median(ls.map((l) => l.km).filter((k): k is number => typeof k === "number"));
 
-  if (dealerListings.length >= DEALER_FINAL_THRESHOLD) {
-    const adjusted = adjustForMileage(dealerListings, targetKm);
-    const data: ValuationResult = {
-      averageRetailPrice: robustAverage(adjusted),
-      listingsFound: adjusted.length,
-      fallbackRequired: false,
-      sources: dealerSources,
-      currency: cfg.currency,
-      distanceUnit: cfg.distanceUnit,
-      mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && dealerListings.some((l) => typeof l.km === "number"),
-      sampleMedianKm: kmOf(dealerListings),
-      listings: adjusted,
-    };
-    cachePut(key, data);
-    return data;
+  const sources = buildSourcesFor(cfg);
+
+  // Progressive search runner across classified sources
+  const runClassifiedPass = async (queryModel: string, queryYear: string, queryVariant?: string, tolerance = 1) => {
+    const parse = classifiedParser(cfg, make, queryModel, queryYear, queryVariant, tolerance);
+    const passResults = await Promise.all(
+      sources.map(async (src) => {
+        const acc: Listing[] = [];
+        for (let p = 1; p <= CLASSIFIEDS_PAGES; p++) {
+          if (budgetLeft() <= 0) break;
+          const url = pageUrl(src, make, queryModel, queryYear, p);
+          let listings: Listing[] = [];
+          try {
+            const html = await fetchPageForParsing(url, cfg);
+            if (html) listings = parse(html, src.selectors);
+          } catch (err: any) {
+            console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
+          }
+          if (listings.length === 0) break;
+          acc.push(...listings);
+        }
+        return { name: src.name, listings: acc };
+      })
+    );
+    return passResults;
+  };
+
+  // ── STAGE 1: Exact Match (Same Year + Exact Trim) ──
+  let classifiedListings: Listing[] = [];
+  const sourcesOutput: SourceResult[] = [];
+  const stage1Results = await runClassifiedPass(baseModel, y, variant, 0);
+  for (const { name, listings } of stage1Results) {
+    classifiedListings.push(...listings);
   }
 
-  const sources = buildSourcesFor(cfg);
-  const parse = classifiedParser(cfg, make, baseModel, y);
-  const perSource = await Promise.all(
-    sources.map(async (src) => {
-      const acc: Listing[] = [];
-      for (let p = 1; p <= CLASSIFIEDS_PAGES; p++) {
-        if (budgetLeft() <= 0) break;
-        const url = pageUrl(src, make, baseModel, y, p);
-        let listings: Listing[] = [];
-        try {
-          const html = await fetchPageForParsing(url, cfg);
-          if (html) listings = parse(html, src.selectors);
-        } catch (err: any) { console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err); }
-        if (listings.length === 0) break;
-        acc.push(...listings);
-      }
-      const seen = new Set<string>();
-      const deduped = acc.filter((l) => { const k = `${l.price}|${l.km ?? ""}`; if (seen.has(k)) return false; seen.add(k); return true; });
-      return { name: src.name, listings: deduped };
-    }),
-  );
+  // ── STAGE 2: Closest Sibling Variant (Same Year) ──
+  // If exact trim gave < 3 comps, relax to closest sibling trim on the SAME year
+  if (classifiedListings.length < 3 && coreVariant && coreVariant.toLowerCase() !== variant.toLowerCase()) {
+    const stage2Results = await runClassifiedPass(baseModel, y, coreVariant, 0);
+    for (const { listings } of stage2Results) {
+      classifiedListings.push(...listings);
+    }
+  }
 
-  const classifiedListings: Listing[] = [];
-  const sourcesOutput: SourceResult[] = [];
-  for (const { name, listings } of perSource) {
-    classifiedListings.push(...listings);
-    const prices = listings.map((l) => l.price);
-    sourcesOutput.push({ name, count: prices.length, avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null });
+  // ── STAGE 3: Adjacent Year Backup (±1 Year Only) ──
+  // If still < 3 comps, look 1 year either side (year - 1 and year + 1)
+  if (classifiedListings.length < 3 && Number.isFinite(subjYear)) {
+    const prevYear = String(subjYear - 1);
+    const nextYear = String(subjYear + 1);
+    const [prevResults, nextResults] = await Promise.all([
+      runClassifiedPass(baseModel, prevYear, coreVariant || variant, 0),
+      runClassifiedPass(baseModel, nextYear, coreVariant || variant, 0),
+    ]);
+    for (const { listings } of [...prevResults, ...nextResults]) {
+      classifiedListings.push(...listings);
+    }
+  }
+
+  // Compile classified source summary
+  const classifiedBySource = new Map<string, Listing[]>();
+  for (const l of classifiedListings) {
+    const srcName = l.source || "Classifieds";
+    if (!classifiedBySource.has(srcName)) classifiedBySource.set(srcName, []);
+    classifiedBySource.get(srcName)!.push(l);
+  }
+  for (const src of sources) {
+    const list = classifiedListings.filter((l) => !l.source || l.source === src.name);
+    const prices = list.map((l) => l.price);
+    sourcesOutput.push({
+      name: src.name,
+      count: prices.length,
+      avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null,
+    });
   }
 
   let serpListings: Listing[] = [];
+  const serpModel = variant ? `${baseModel} ${variant}` : baseModel;
   if (dealerListings.length + classifiedListings.length < SERP_TRIGGER_MAX && serpConfigured()) {
-    serpListings = await fetchSerpListings(make, baseModel, y, cfg);
+    serpListings = await fetchSerpListings(make, serpModel, y, cfg);
     if (serpListings.length) {
-      sourcesOutput.push({ name: "Google (SERP)", count: serpListings.length, avg: Math.round(serpListings.reduce((s, l) => s + l.price, 0) / serpListings.length) });
+      sourcesOutput.push({
+        name: "Google (SERP)",
+        count: serpListings.length,
+        avg: Math.round(serpListings.reduce((s, l) => s + l.price, 0) / serpListings.length),
+      });
     }
   }
 
   const combined = [...dealerListings, ...classifiedListings, ...serpListings];
   const crossSeen = new Set<string>();
-  const allListings = combined.filter((l) => { const k = `${l.price}|${l.km ?? ""}`; if (crossSeen.has(k)) return false; crossSeen.add(k); return true; });
+  const allListings = combined.filter((l) => {
+    const k = `${l.price}|${l.km ?? ""}|${l.year ?? ""}`;
+    if (crossSeen.has(k)) return false;
+    crossSeen.add(k);
+    return true;
+  });
   const finalSources = [...dealerSources, ...sourcesOutput];
 
   const searchUrl = cfg.searchUrl(make, baseModel, y);
@@ -245,24 +306,76 @@ export async function fetchValuation(
     ? cfg.secondaryUrl?.(make, baseModel, y)
     : undefined;
 
+  function calcConfidenceScore(prices: number[]): number {
+    const n = prices.length;
+    if (n === 0) return 0;
+    if (n === 1) return 30;
+    const avg = prices.reduce((a, b) => a + b, 0) / n;
+    const variance = prices.reduce((a, b) => a + (b - avg) ** 2, 0) / n;
+    const stdDev = Math.sqrt(variance);
+    const cv = avg > 0 ? stdDev / avg : 0.5;
+    const base = n >= 15 ? 85 : n >= 5 ? 70 : 45;
+    const penalty = Math.min(20, Math.round(cv * 80));
+    return Math.max(15, Math.min(99, base - penalty + (n >= 20 ? 5 : 0)));
+  }
+
+  function calcPriceRange(prices: number[]): { low: number | null; high: number | null } {
+    if (!prices.length) return { low: null, high: null };
+    const sorted = [...prices].sort((a, b) => a - b);
+    return { low: sorted[0], high: sorted[sorted.length - 1] };
+  }
+
   if (allListings.length === 0) {
-    const data: ValuationResult = { averageRetailPrice: null, listingsFound: 0, fallbackRequired: true, currency: cfg.currency, distanceUnit: cfg.distanceUnit, searchUrl, carsUrl, sources: finalSources, mileageAdjusted: false, sampleMedianKm: null, listings: [] };
+    const data: ValuationResult = {
+      averageRetailPrice: null,
+      tradeEstimate: null,
+      priceRange: { low: null, high: null },
+      confidenceScore: 0,
+      listingsFound: 0,
+      fallbackRequired: true,
+      currency: cfg.currency,
+      distanceUnit: cfg.distanceUnit,
+      searchUrl,
+      carsUrl,
+      sources: finalSources,
+      mileageAdjusted: false,
+      sampleMedianKm: null,
+    };
     cachePut(key, data);
     return data;
   }
 
-  const adjustedAll = adjustForMileage(allListings, targetKm);
+  // Apply mathematical Year-Gap adjustment (±3.5%/yr) and Trim differential adjustment (±7%) to each comp
+  const adjustedComps = allListings.map((l) => {
+    let p = l.price;
+    if (l.year && Number.isFinite(subjYear)) {
+      p = adjustForYearGap(p, l.year, subjYear);
+    }
+    if (l.title && variant) {
+      p = adjustForTrim(p, l.title, variant);
+    }
+    return p;
+  });
+
+  const avgRetail = robustAverage(adjustedComps);
+  const range = calcPriceRange(adjustedComps);
+  const confidence = calcConfidenceScore(adjustedComps);
+  const tradeEst = avgRetail != null ? Math.round(avgRetail * 0.85) : null;
+
   const data: ValuationResult = {
-    averageRetailPrice: robustAverage(adjustedAll),
-    listingsFound: adjustedAll.length,
+    averageRetailPrice: avgRetail,
+    tradeEstimate: tradeEst,
+    priceRange: range,
+    confidenceScore: confidence,
+    listingsFound: adjustedComps.length,
     fallbackRequired: dealerListings.length < MIN_DEALER_LISTINGS,
-    searchUrl, carsUrl,
+    searchUrl,
+    carsUrl,
     sources: finalSources,
     currency: cfg.currency,
     distanceUnit: cfg.distanceUnit,
-    mileageAdjusted: Number.isFinite(targetKm) && targetKm > 0 && allListings.some((l) => typeof l.km === "number"),
+    mileageAdjusted: false,
     sampleMedianKm: kmOf(allListings),
-    listings: adjustedAll,
   };
   cachePut(key, data);
   return data;

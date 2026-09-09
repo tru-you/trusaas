@@ -27,7 +27,7 @@ import { fetchValuation } from './src/lib/scraper';
 import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from '../packages/market-scraper/index';
 import { lookupRegistration, lookupCarHistory, regLookupConfigured, regLookupProvider, historyCheckEnabled } from '../packages/reg-lookup';
 
-const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
+const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'remote').toLowerCase();
 const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || 'https://scraper.tru-saas.com').replace(/\/+$/, '');
 const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
 const INSTANCE_VERTICAL = (process.env.VERTICAL || 'cars').toLowerCase();
@@ -2466,23 +2466,37 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
     mileage: Number.isFinite(km) && km > 0 ? Math.round(km) : undefined,
   };
   try {
-    const data = VALUATION_ENGINE === 'remote'
-      ? await fetchRemoteValuation(
+    let data;
+    if (VALUATION_ENGINE === 'remote') {
+      try {
+        data = await fetchRemoteValuation(
           String(make),
           String(model),
           String(year),
           valuationOpts,
           INSTANCE_MARKET,
-        )
-      : VALUATION_ENGINE === 'package'
-      ? await pkgFetchValuation(
+        );
+      } catch (remErr: any) {
+        console.warn('[valuation] remote failed, falling back to package engine:', remErr?.message || remErr);
+        data = await pkgFetchValuation(
           String(make),
           String(model),
           String(year),
           valuationOpts,
           (pkgMarkets as Record<string, any>)[INSTANCE_MARKET] || pkgMarkets.za,
-        )
-      : await fetchValuation(String(make), String(model), String(year), valuationOpts);
+        );
+      }
+    } else if (VALUATION_ENGINE === 'package') {
+      data = await pkgFetchValuation(
+        String(make),
+        String(model),
+        String(year),
+        valuationOpts,
+        (pkgMarkets as Record<string, any>)[INSTANCE_MARKET] || pkgMarkets.za,
+      );
+    } else {
+      data = await fetchValuation(String(make), String(model), String(year), valuationOpts);
+    }
     res.json(data);
   } catch (err: any) {
     console.error('[valuation] failed:', err?.message || err);
