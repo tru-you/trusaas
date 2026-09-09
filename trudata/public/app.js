@@ -1481,3 +1481,53 @@ document.addEventListener('click', (e) => {
     catRes.classList.add('hidden');
   }
 });
+
+// Cyber Glass Workbench View Toggles & API Sandbox Handlers
+const btnTabTable = document.getElementById('btn-tab-table');
+const btnTabJson = document.getElementById('btn-tab-json');
+const tableContainer = document.getElementById('table-container');
+const jsonViewerContainer = document.getElementById('json-viewer-container');
+const btnCopyEndpoint = document.getElementById('btn-copy-endpoint');
+const btnExportCsv = document.getElementById('btn-export-csv');
+
+if (btnTabTable && btnTabJson && tableContainer && jsonViewerContainer) {
+  btnTabTable.addEventListener('click', () => {
+    btnTabTable.className = 'px-3 py-1 bg-sky-600 text-white font-semibold border border-slate-950 brutal-shadow-sm';
+    btnTabJson.className = 'px-3 py-1 bg-white hover:bg-slate-100 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm';
+    tableContainer.classList.remove('hidden');
+    jsonViewerContainer.classList.add('hidden');
+  });
+
+  btnTabJson.addEventListener('click', () => {
+    btnTabJson.className = 'px-3 py-1 bg-sky-600 text-white font-semibold border border-slate-950 brutal-shadow-sm';
+    btnTabTable.className = 'px-3 py-1 bg-white hover:bg-slate-100 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm';
+    jsonViewerContainer.classList.remove('hidden');
+    tableContainer.classList.add('hidden');
+  });
+}
+
+if (btnCopyEndpoint) {
+  btnCopyEndpoint.addEventListener('click', () => {
+    const curlCmd = 'curl -X POST https://data.tru-saas.com/api/valuation/quick -H "Content-Type: application/json" -d \'{"query":"Apex Auto Investments"}\'';
+    navigator.clipboard.writeText(curlCmd);
+    if (typeof showToast === 'function') {
+      showToast('cURL API Endpoint copied to clipboard.', 'success');
+    }
+  });
+}
+
+if (btnExportCsv) {
+  btnExportCsv.addEventListener('click', () => {
+    const csvContent = 'Make,Model,VIN,ListedPrice,BookValue,Delta,VIRScore,DaysBilled\nToyota,Hilux 2.8 GD-6 4x4,AHTBA3CD901284719,589900,565000,4.4%,112/114,14\nFord,Ranger 2.0 Bi-Turbo,AFAPXXMJ2P61000,519950,530000,-1.9%,108/114,28\nBMW,320i M Sport,WBA5R7103P22500,729000,698000,4.4%,114/114,6\n';
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trudata_extraction_export.csv';
+    a.click();
+    if (typeof showToast === 'function') {
+      showToast('CSV export downloaded successfully.', 'success');
+    }
+  });
+}
+

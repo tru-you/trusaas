@@ -43,10 +43,14 @@ function monthly(p,d,t){d=(d==null?.1:d);t=t||72;var r=.1175/12;return Math.roun
    Keyed on the DMS stock number (car.tag) so it stays stable. */
 var SITE = "https://www.carsoncaledon.co.za";
 function carShareUrl(car){
+  var stock = car.tag || car.stockNumber || car.id || "";
+  if(stock && stock !== "Live"){
+    return SITE + "/vehicle/?stock=" + encodeURIComponent(stock);
+  }
   var img = car.img || (Array.isArray(car.images) ? car.images.filter(Boolean)[0] : "") || "";
   var q = [];
   function add(k,v){ if(v!=null && v!=="") q.push(k+"="+encodeURIComponent(v)); }
-  add("stock",   car.tag);
+  if(stock) add("stock", stock);
   add("year",    car.yr);
   add("make",    car.make);
   add("name",    car.name);

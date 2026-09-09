@@ -123,6 +123,10 @@ services:
         value: brightdata
       - key: SERP_ZONE
         sync: false
+      - key: VALUATION_ENGINE
+        value: remote
+      - key: SCRAPER_REMOTE_URL
+        value: https://scraper.tru-saas.com
 
   # ── 1b. TruInspect — AI damage detection / PDF inspection reports ─────────
   - type: web
@@ -216,6 +220,10 @@ services:
         value: brightdata
       - key: SERP_ZONE
         sync: false
+      - key: VALUATION_ENGINE
+        value: remote
+      - key: SCRAPER_REMOTE_URL
+        value: https://scraper.tru-saas.com
 
   # ── 2. TruFlow Mobile — standalone Premium companion app ────────────────────
   #
@@ -381,6 +389,10 @@ services:
         value: brightdata
       - key: SERP_ZONE
         sync: false
+      - key: VALUATION_ENGINE
+        value: remote
+      - key: SCRAPER_REMOTE_URL
+        value: https://scraper.tru-saas.com
 
   # ── 4. TruChat API — hosted DeepSeek chat brain for static sites ───────────
   #   trusaas-chat.onrender.com → marketing bot + any HTML dealer embed.

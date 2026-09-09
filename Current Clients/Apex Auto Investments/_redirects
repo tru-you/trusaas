@@ -1,0 +1,8 @@
+/vehicle      /vehicle.html   200
+/vehicle/*    /vehicle.html   200
+/inventory    /stock.html     301
+/inventory/*  /stock.html     301
+/cars         /stock.html     301
+/pre-owned-cars /stock.html   301
+/about-us     /#why           301
+/contact-us   /#visit         301

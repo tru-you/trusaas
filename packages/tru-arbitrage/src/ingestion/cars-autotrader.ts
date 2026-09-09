@@ -104,8 +104,8 @@ export async function fetchAutoTraderNewest(): Promise<RawFbListing[]> {
       
       // Extract price from [class*="price"] or raw text
       const rawPriceText = $c.find('[class*="price"]').first().text() || $c.text();
-      const priceMatch = rawPriceText.match(/R\s?([0-9\s\u00a0]+)/);
-      const price = priceMatch ? parseInt(priceMatch[1].replace(/[\s\u00a0]/g, ''), 10) : null;
+      const priceMatch = rawPriceText.match(/R\s?(\d{1,3}(?:[ ,]\d{3}){1,2}|\d{5,7})(?!\s?\d)/i);
+      const price = priceMatch ? parseInt(priceMatch[1].replace(/[^\d]/g, ''), 10) : null;
       if (price == null || price < CONFIG.MIN_VEHICLE_PRICE) return;
 
       const odoMatch = $c.text().match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);

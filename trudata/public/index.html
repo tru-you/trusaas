@@ -1,590 +1,772 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="scroll-smooth" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TruData | South Africa Data Marketplace</title>
-  
-  <meta name="description" content="Search the full TransUnion vehicle catalogue, get live market prices, find business contacts, or run property comps. Pay only for verified results.">
-  <meta name="theme-color" content="#07090E">
-  
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="styles.css">
-  <script src="app.js" defer></script>
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "SoftwareApplication",
-        "name": "TruData",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web",
-        "offers": {
-          "@type": "Offer",
-          "price": "3.00",
-          "priceCurrency": "ZAR",
-          "description": "Pay per verified result"
-        }
-      },
-      {
-        "@type": "Organization",
-        "name": "TruSaaS",
-        "url": "https://trudata.co.za"
-      }
-    ]
-  }
-  </script>
-</head>
-<body>
-  <!-- Toast Container -->
-  <div id="toast-container"></div>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>TruData | South Africa Data Marketplace & Verification Engine</title>
+  <meta name="description" content="Query TransUnion vehicle valuations, Property24 comps, consumer tech pricing, B2B company records, and bank account verifications with zero monthly contracts."/>
+  <meta name="theme-color" content="#F7F4EB"/>
 
-  <!-- Header / Navbar -->
-  <header class="navbar">
-    <nav class="nav-container container">
-      <div class="brand-group">
-        <!-- SVG Logo placeholder for TruData -->
-        <svg class="logo" viewBox="0 0 100 30" width="100" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <text x="0" y="22" fill="#F9FAFB" font-family="'Inter Tight', sans-serif" font-weight="700" font-size="24">Tru<tspan fill="#6366F1">Data</tspan></text>
-        </svg>
-        <span class="beta-badge">BETA</span>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <!-- Typography Trinity -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            background: "#F7F4EB",
+            surface: "#f5f0e6",
+            "surface-container": "#ece7df",
+            "surface-container-low": "#f7f5f0",
+            "surface-container-high": "#e4ded4",
+            "surface-container-highest": "#e4e4e7",
+            primary: "#0284c7",
+            "primary-container": "#0284c7",
+            "on-primary": "#ffffff",
+            secondary: "#52525b",
+            tertiary: "#d97706",
+            outline: "#09090b",
+            "outline-variant": "#d4d4d8",
+            "on-surface": "#0f172a",
+            "on-surface-variant": "#3f3f46"
+          },
+          borderRadius: {
+            DEFAULT: "0px",
+            lg: "2px",
+            xl: "4px",
+            full: "9999px"
+          },
+          fontFamily: {
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Geist", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    
+    /* Cyber Glass & Neo-Brutalist Shadow Token System */
+    .brutal-shadow {
+      box-shadow: 4px 4px 0px 0px #09090b;
+    }
+    .brutal-shadow-sm {
+      box-shadow: 2px 2px 0px 0px #09090b;
+    }
+    .brutal-shadow-lg {
+      box-shadow: 6px 6px 0px 0px #09090b;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 4px 4px 0px 0px #09090b, inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
+    }
+    .glass-card-sm {
+      background: rgba(255, 255, 255, 0.70);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 2px 2px 0px 0px #09090b, inset 0 1px 1px 0 rgba(255, 255, 255, 0.75);
+    }
+    .terminal-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .terminal-scroll::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .terminal-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    /* Legacy modal state compatibility */
+    .modal.hidden { display: none !important; }
+    .modal {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(9, 9, 11, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; p: 1rem;
+    }
+    .modal-content {
+      background: #F7F4EB; border: 2px solid #09090b;
+      box-shadow: 6px 6px 0px 0px #09090b;
+      padding: 2rem; max-width: 560px; width: 100%; position: relative;
+    }
+    .modal-lg { max-width: 680px; }
+    .close-modal {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: 1px solid #09090b; font-size: 1.25rem;
+      width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .pack-option {
+      border: 1.5px solid #09090b; padding: 1rem; margin-bottom: 0.75rem;
+      background: rgba(255, 255, 255, 0.8); cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 2px 2px 0px 0px #09090b; transition: transform 0.1s ease;
+    }
+    .pack-option.selected {
+      background: #e0f2fe; border-color: #0284c7;
+      box-shadow: 4px 4px 0px 0px #0284c7;
+    }
+    .pack-badge {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+      background: #d97706; color: #fff; padding: 2px 6px; border: 1px solid #09090b;
+      position: absolute; top: -10px; right: 12px;
+    }
+  </style>
+
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="app.js" defer></script>
+</head>
+<body class="bg-background text-on-surface font-body antialiased min-h-screen selection:bg-cyan-200 selection:text-slate-900">
+  
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[99999] flex flex-col gap-2"></div>
+
+  <!-- 1. Header / Command Dock -->
+  <header class="sticky top-0 z-50 bg-[#F7F4EB]/90 backdrop-blur-md border-b-2 border-slate-950">
+    <div class="max-w-[1440px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand & Status -->
+      <div class="flex items-center gap-3">
+        <a href="#" class="flex items-center gap-2 text-slate-950 no-underline">
+          <div class="w-8 h-8 bg-sky-600 border border-slate-950 flex items-center justify-center font-display font-bold text-white brutal-shadow-sm">
+            T
+          </div>
+          <span class="font-display font-bold text-xl tracking-tight">Tru<span class="text-sky-600">Data</span></span>
+        </a>
+        <span class="hidden sm:inline-block font-mono text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-amber-100 text-amber-900 border border-slate-950 brutal-shadow-sm">
+          LIVE DATA ENGINE
+        </span>
       </div>
-      <div class="nav-links desktop-only">
-        <a href="#hero" class="nav-link" data-target="vehicles">Vehicles</a>
-        <a href="#hero" class="nav-link" data-target="electronics">Electronics</a>
-        <a href="#hero" class="nav-link" data-target="property">Property</a>
-        <a href="#hero" class="nav-link" data-target="business">Business Finder</a>
-        <a href="#hero" class="nav-link" data-target="bureau">Bureau Reports</a>
-        <a href="#hero" class="nav-link" data-target="safepay">SafePay</a>
-        <a href="#pricing" class="nav-link">Pricing</a>
-      </div>
-      <div class="nav-actions desktop-only">
-        <div id="wallet-pill" class="wallet-pill" title="Your Credit Wallet">
-          <span class="wallet-icon">⚡</span>
+
+      <!-- Navigation Links -->
+      <nav class="hidden lg:flex items-center gap-1 font-display font-medium text-xs tracking-tight">
+        <a href="#hero" class="px-3 py-1.5 hover:bg-slate-200 border border-transparent hover:border-slate-950 transition-all text-slate-800">Vehicles</a>
+        <a href="#hero" class="px-3 py-1.5 hover:bg-slate-200 border border-transparent hover:border-slate-950 transition-all text-slate-800">Electronics</a>
+        <a href="#hero" class="px-3 py-1.5 hover:bg-slate-200 border border-transparent hover:border-slate-950 transition-all text-slate-800">Property</a>
+        <a href="#hero" class="px-3 py-1.5 hover:bg-slate-200 border border-transparent hover:border-slate-950 transition-all text-slate-800">SafePay</a>
+        <a href="#hero" class="px-3 py-1.5 hover:bg-slate-200 border border-transparent hover:border-slate-950 transition-all text-slate-800">Business Finder</a>
+        <a href="#hero" class="px-3 py-1.5 hover:bg-slate-200 border border-transparent hover:border-slate-950 transition-all text-slate-800">Bureau Reports</a>
+        <a href="#pricing" class="px-3 py-1.5 hover:bg-slate-200 border border-transparent hover:border-slate-950 transition-all text-slate-800">Pricing</a>
+      </nav>
+
+      <!-- Credit Wallet & Actions -->
+      <div class="flex items-center gap-3">
+        <!-- Credit Wallet Pill -->
+        <div id="wallet-pill" title="Your Credit Balance" class="cursor-pointer font-mono text-xs font-semibold bg-white px-3 py-1.5 border border-slate-950 brutal-shadow-sm flex items-center gap-2 hover:bg-sky-50 transition-colors">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span id="wallet-balance-text">Loading...</span>
         </div>
-        <button id="btn-buy-credits" class="btn-secondary btn-sm">Buy Credits</button>
-        <button class="btn-primary" onclick="document.getElementById('console-card')?.scrollIntoView({behavior:'smooth'})">Try Free Search</button>
+
+        <button id="btn-buy-credits" class="font-display font-semibold text-xs px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white border border-slate-950 brutal-shadow-sm active:translate-x-0.5 active:translate-y-0.5 transition-all">
+          Buy Credits
+        </button>
+
+        <button onclick="document.getElementById('console-card')?.scrollIntoView({behavior:'smooth'})" class="hidden sm:inline-flex font-display font-semibold text-xs px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow-sm active:translate-x-0.5 active:translate-y-0.5 transition-all">
+          Console Search
+        </button>
       </div>
-      <button id="hamburger-btn" class="mobile-menu-btn mobile-only" aria-label="Menu">
-        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-    </nav>
+    </div>
   </header>
 
-  <main>
-    <!-- 1. Hero Landing Section -->
-    <section id="hero" class="hero-section">
-      <div class="container hero-container">
-        <div class="hero-text-col">
-          <span class="pill-badge">SOUTH AFRICA &middot; DATA MARKETPLACE &amp; VERIFICATION TERMINAL</span>
-          <h1>Real market data.<br><span style="color: var(--accent-volt, #6366F1);">Pay only for results.</span></h1>
-          <p class="hero-subtext">South Africa's instant verification search engine. Vehicle prices, property comps, tech asset valuations, B2B lead audits &amp; TransUnion bank verification &mdash; zero monthly contract required.</p>
+  <!-- Sub-Nav Pillar Filter Dock -->
+  <div class="border-b border-slate-950 bg-slate-100/60 px-4 md:px-6 py-2">
+    <div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4 overflow-x-auto">
+      <div class="flex items-center gap-2 font-mono text-xs">
+        <button class="px-3 py-1 bg-sky-600 text-white border border-slate-950 brutal-shadow-sm font-medium">
+          Search Console
+        </button>
+        <button class="px-3 py-1 bg-white hover:bg-slate-50 text-slate-900 border border-slate-950 brutal-shadow-sm font-medium">
+          Live Inspector
+        </button>
+        <button class="px-3 py-1 bg-white hover:bg-slate-50 text-slate-900 border border-slate-950 brutal-shadow-sm font-medium">
+          Data Grid
+        </button>
+        <button class="px-3 py-1 bg-white hover:bg-slate-50 text-slate-900 border border-slate-950 brutal-shadow-sm font-medium">
+          Credit Wallet
+        </button>
+      </div>
+
+      <div class="hidden md:flex items-center gap-4 font-mono text-[11px] text-slate-600">
+        <span>Cluster: <strong class="text-slate-900">JHB-01</strong></span>
+        <span>Throughput: <strong class="text-slate-900">420K VINs/h</strong></span>
+        <span>Latency: <strong class="text-slate-900">24ms</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <main id="hero" class="max-w-[1440px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-8">
+
+    <!-- 2. Hero Workbench Grid (Tri-Pane Layout) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start" id="console-card">
+      
+      <!-- Left Control Rail (Query & Pillar Controls) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <div class="glass-card border-1.5 border-slate-950 p-5 md:p-6 space-y-5">
           
-          <div class="hero-trust-row">
-            <div class="trust-item"><span class="check-icon">✓</span> TransUnion Certified Partner</div>
-            <div class="trust-item"><span class="check-icon">✓</span> Live AutoTrader &amp; Property24 Comps</div>
-            <div class="trust-item"><span class="check-icon">✓</span> PayFast Secure Checkout</div>
-            <div class="trust-item highlight"><span class="bolt-icon">⚡</span> R0 Billed on Empty Searches</div>
+          <div class="space-y-2">
+            <span class="font-mono text-[11px] font-semibold uppercase tracking-wider text-sky-800 px-2 py-0.5 bg-sky-100 border border-slate-950 inline-block">
+              HIGH-THROUGHPUT ENGINE &middot; 420K
+            </span>
+            <h1 class="font-display font-bold text-2xl md:text-3xl text-slate-950 tracking-tight uppercase leading-tight">
+              South Africa's Instant Verification &amp; Data Search Engine.
+            </h1>
+            <p class="font-body text-xs md:text-sm text-slate-700 leading-relaxed">
+              Query TransUnion vehicle valuations, Property24 comps, consumer tech pricing, B2B company records, and bank account verifications with zero monthly contracts.
+            </p>
           </div>
 
-          <div class="hero-cta-group">
-            <button class="btn-primary btn-lg" onclick="document.getElementById('console-card')?.scrollIntoView({behavior:'smooth'})">Try Free Search Now &rarr;</button>
-            <a href="#pricing" class="btn-secondary btn-lg" style="width: auto; text-align: center;">View Credit Pricing</a>
+          <!-- Product Pillar Action Selector Tabs -->
+          <div class="grid grid-cols-3 gap-2 font-mono text-[11px]">
+            <button class="px-2 py-2 bg-sky-600 text-white font-semibold border border-slate-950 brutal-shadow-sm text-center">
+              VEHICLES (1 CR)
+            </button>
+            <button class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center">
+              BUREAU (3 CR)
+            </button>
+            <button class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center">
+              SAFEPAY (3 CR)
+            </button>
+          </div>
+
+          <!-- Input Field Deck -->
+          <div class="space-y-3">
+            <label class="block font-mono text-xs font-semibold text-slate-900 uppercase">
+              Query Target (URL, VIN, Suburb, or Registration ID)
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="query-input" placeholder="https://www.apexinvest.co.za/ or VIN: AHTBA3CD90..." value="https://www.apexinvest.co.za/" class="flex-1 font-mono text-xs bg-white border border-slate-950 px-3 py-2.5 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600"/>
+              <button class="font-mono text-xs font-bold px-3 py-2 bg-white border border-slate-950 brutal-shadow-sm hover:bg-slate-100">
+                CURL
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Trigger Button -->
+          <button id="btn-run-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
+            <span>RUN SEARCH QUERY</span>
+            <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">1 CREDIT</span>
+          </button>
+
+          <!-- Quick Presets -->
+          <div class="space-y-2 pt-2 border-t border-slate-300">
+            <span class="font-mono text-[10px] font-semibold text-slate-600 uppercase tracking-wider block">
+              QUICK TARGET PRESETS:
+            </span>
+            <div class="flex flex-wrap gap-2 font-mono text-[11px]">
+              <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-950 text-slate-900 brutal-shadow-sm">
+                Apex Auto Investments (Burt Drive)
+              </button>
+              <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-950 text-slate-900 brutal-shadow-sm">
+                AutoTrader ZA Floor
+              </button>
+              <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-950 text-slate-900 brutal-shadow-sm">
+                TransUnion eValue8 Valuation
+              </button>
+              <button class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-950 text-slate-900 brutal-shadow-sm">
+                Cars.co.za Scraper
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Right Side: Live Interactive Teaser Card -->
-        <div class="hero-visual-col">
-          <div class="live-sample-card">
-            <div class="sample-badge">LIVE MARKET FEED</div>
-            <div class="sample-title">2020 Toyota Hilux 2.4 GD-6 Single Cab</div>
-            <div class="sample-metrics">
-              <div class="s-metric">
-                <span class="s-label">Est. Retail Value</span>
-                <span class="s-val text-volt">R 475,000</span>
+        <!-- Quota & Developer Developer Info Deck -->
+        <div class="glass-card-sm border-1.5 border-slate-950 p-4 space-y-2">
+          <div class="flex items-center justify-between font-mono text-xs">
+            <span class="font-semibold text-slate-900">INSTANT DEVELOPER QUOTA</span>
+            <span class="text-sky-700 font-bold">1,000 Free Credits / mo</span>
+          </div>
+          <p class="font-body text-xs text-slate-700">
+            Start querying South African market endpoints with complimentary developer credits. Scale volume on-demand at low pay-as-you-go rates.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Center & Right Canvas (Telemetry, Inspector, & Execution Stack) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Top Telemetry Inspector Deck -->
+        <div class="glass-card border-1.5 border-slate-950 p-5 md:p-6 space-y-5">
+          
+          <div class="flex items-center justify-between border-b border-slate-950 pb-3">
+            <div>
+              <span class="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
+                CRAWLER INSPECTOR
+              </span>
+              <h2 class="font-display font-bold text-lg md:text-xl text-slate-950 uppercase tracking-tight">
+                EXTRACTION INSPECTOR &amp; LIVE TELEMETRY
+              </h2>
+            </div>
+            <div class="font-mono text-right text-xs">
+              <span class="block text-slate-500">DOM RENDERED</span>
+              <strong class="text-slate-900 font-bold">42 VEHICLES</strong>
+            </div>
+          </div>
+
+          <!-- Status & Portfolio Metrics Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm space-y-1">
+              <span class="font-mono text-[10px] font-semibold text-slate-500 uppercase block">HTTP STATUS</span>
+              <div class="font-mono font-bold text-lg text-slate-950 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                200 OK
               </div>
-              <div class="s-metric">
-                <span class="s-label">Est. Trade-In (85%)</span>
-                <span class="s-val">R 403,750</span>
+              <span class="font-mono text-[10px] text-slate-600 block">Anti-bot: clean</span>
+            </div>
+
+            <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm space-y-1">
+              <span class="font-mono text-[10px] font-semibold text-slate-500 uppercase block">ROBOTS.TXT</span>
+              <div class="font-mono font-bold text-lg text-emerald-700">
+                Compliant
               </div>
+              <span class="font-mono text-[10px] text-slate-600 block">Crawl honored</span>
             </div>
-            <div class="sample-bar">
-              <div class="sample-bar-fill"></div>
+
+            <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm space-y-1">
+              <span class="font-mono text-[10px] font-semibold text-slate-500 uppercase block">AGGREGATE VALUATION</span>
+              <div class="font-mono font-bold text-lg text-sky-800">
+                R 18,450,000
+              </div>
+              <span class="font-mono text-[10px] text-slate-600 block">+3.8% vs TransUnion book</span>
             </div>
-            <div class="sample-footer">
-              <span>Sampled: 42 Active Comps</span>
-              <span class="confidence-tag">HIGH CONFIDENCE</span>
+
+          </div>
+
+          <!-- Live Pipeline Terminal Log -->
+          <div class="space-y-2">
+            <span class="font-mono text-[11px] font-semibold text-slate-900 uppercase block">
+              PIPELINE EXECUTION STREAM
+            </span>
+            <div class="bg-slate-950 text-slate-100 border border-slate-950 p-4 font-mono text-xs space-y-1.5 brutal-shadow-sm max-h-36 overflow-y-auto terminal-scroll">
+              <div class="text-slate-400">&gt; Ingesting Apex Auto portal floor... <span class="float-right text-slate-500">0.04s</span></div>
+              <div class="text-slate-400">&gt; Headless Chromium hydration... <span class="float-right text-slate-500">0.12s</span></div>
+              <div class="text-slate-400">&gt; Extracting 17-digit VIN identifiers... <span class="float-right text-slate-500">0.28s</span></div>
+              <div class="text-slate-400">&gt; TransUnion eValue8 Book Delta calculation... <span class="float-right text-slate-500">0.41s</span></div>
+              <div class="text-emerald-400 font-semibold">&gt; Extraction schema verified (42/42) <span class="float-right text-emerald-400">DONE</span></div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Main search omnibox -->
-      <div id="console-card" class="container">
-        <div class="console-header">
-          <h3>⚡ Instant Market Search Terminal</h3>
-          <p>Select a vertical and enter your search parameters below.</p>
         </div>
-        <div class="engine-tabs">
-          <button class="tab active" data-engine="vehicles">🚗 Vehicles</button>
-          <button class="tab" data-engine="electronics">💻 Electronics</button>
-          <button class="tab" data-engine="property">🏠 Property</button>
-          <button class="tab" data-engine="business">🏢 Business Finder</button>
-          <button class="tab" data-engine="bureau">📋 Bureau Reports</button>
-          <button class="tab" data-engine="safepay">🔒 SafePay</button>
-          <button class="tab" data-engine="startup">📊 Startup Intel</button>
-        </div>
-        
-        <form class="search-form" id="search-vehicles">
-          <div class="vertical-sub-tabs" id="vehicle-verticals">
-            <button type="button" class="sub-tab active" data-v="cars">🚗 Cars &amp; SUVs</button>
-            <button type="button" class="sub-tab" data-v="moto">🏍️ Motorcycles</button>
-            <button type="button" class="sub-tab" data-v="marine">⛵ Marine / Boats</button>
-            <button type="button" class="sub-tab" data-v="trucks">🚛 Trucks &amp; Commercial</button>
-            <button type="button" class="sub-tab" data-v="caravans">🏕️ Caravans &amp; Trailers</button>
-            <button type="button" class="sub-tab" data-v="yellowmetal">🚜 Yellow Metal &amp; Ag</button>
+
+        <!-- Structured Data Table Deck -->
+        <div class="glass-card border-1.5 border-slate-950 p-5 md:p-6 space-y-4">
+          
+          <!-- Data Controls Header -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-950 pb-3">
+            <div class="flex items-center gap-2 font-mono text-xs">
+              <button id="btn-tab-table" class="px-3 py-1 bg-sky-600 text-white font-semibold border border-slate-950 brutal-shadow-sm">
+                Structured Table (42)
+              </button>
+              <button id="btn-tab-json" class="px-3 py-1 bg-white hover:bg-slate-100 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm">
+                JSON Schema
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2 font-mono text-xs">
+              <button id="btn-export-csv" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-900 border border-slate-950 brutal-shadow-sm">
+                Export CSV
+              </button>
+              <button id="btn-sync-crm" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-900 border border-slate-950 brutal-shadow-sm">
+                Sync CRM
+              </button>
+              <button id="btn-copy-endpoint" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-900 border border-slate-950 brutal-shadow-sm">
+                Copy Endpoint
+              </button>
+            </div>
           </div>
-          <div class="form-inputs-row">
-            <select id="vehicle-make">
-              <option value="">Select Make...</option>
-            </select>
-            <select id="vehicle-model" disabled>
-              <option value="">Select Model...</option>
-            </select>
-            <select id="vehicle-variant" disabled>
-              <option value="">Select Variant...</option>
-            </select>
-            <select id="vehicle-year" disabled>
-              <option value="">Select Year...</option>
-            </select>
-            <button id="btn-search" class="btn-primary" disabled>Search Market</button>
+
+          <!-- Structured Results Grid -->
+          <div id="table-container" class="overflow-x-auto">
+            <table class="w-full text-left font-mono text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-950 text-white uppercase text-[10px] tracking-wider">
+                  <th class="p-2.5 border-r border-slate-800">Make &amp; Model</th>
+                  <th class="p-2.5 border-r border-slate-800">VIN / Identifier</th>
+                  <th class="p-2.5 border-r border-slate-800 text-right">Listed Price</th>
+                  <th class="p-2.5 border-r border-slate-800 text-right">Book Value</th>
+                  <th class="p-2.5 border-r border-slate-800 text-center">Delta %</th>
+                  <th class="p-2.5 border-r border-slate-800 text-center">VIR Score</th>
+                  <th class="p-2.5 text-right">Days Billed</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-950 bg-white">
+                
+                <tr class="hover:bg-sky-50 transition-colors">
+                  <td class="p-2.5 font-semibold text-slate-950">
+                    2022 Toyota Hilux 2.8 GD-6 4x4
+                    <span class="block text-[10px] font-normal text-slate-500">Apex Burt Drive &middot; 48,200 km</span>
+                  </td>
+                  <td class="p-2.5 text-slate-700">AHTBA3CD90...</td>
+                  <td class="p-2.5 text-right font-bold text-slate-950">R 589,900</td>
+                  <td class="p-2.5 text-right text-slate-600">R 565,000</td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950 font-bold">+4.4%</span>
+                  </td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-sky-100 text-sky-800 border border-slate-950 font-bold">112 / 114</span>
+                  </td>
+                  <td class="p-2.5 text-right text-slate-600">14d</td>
+                </tr>
+
+                <tr class="hover:bg-sky-50 transition-colors">
+                  <td class="p-2.5 font-semibold text-slate-950">
+                    2021 Ford Ranger 2.0 Bi-Turbo Wildtrak
+                    <span class="block text-[10px] font-normal text-slate-500">Apex Burt Drive &middot; 61,000 km</span>
+                  </td>
+                  <td class="p-2.5 text-slate-700">AFAPXXMJ2P...</td>
+                  <td class="p-2.5 text-right font-bold text-slate-950">R 519,950</td>
+                  <td class="p-2.5 text-right text-slate-600">R 530,000</td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-rose-100 text-rose-800 border border-slate-950 font-bold">-1.9%</span>
+                  </td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-sky-100 text-sky-800 border border-slate-950 font-bold">108 / 114</span>
+                  </td>
+                  <td class="p-2.5 text-right text-slate-600">28d</td>
+                </tr>
+
+                <tr class="hover:bg-sky-50 transition-colors">
+                  <td class="p-2.5 font-semibold text-slate-950">
+                    2023 BMW 320i M Sport (G20 LCI)
+                    <span class="block text-[10px] font-normal text-slate-500">Apex Main Port &middot; 22,500 km</span>
+                  </td>
+                  <td class="p-2.5 text-slate-700">WBA5R7103P...</td>
+                  <td class="p-2.5 text-right font-bold text-slate-950">R 729,000</td>
+                  <td class="p-2.5 text-right text-slate-600">R 698,000</td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950 font-bold">+4.4%</span>
+                  </td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-sky-100 text-sky-800 border border-slate-950 font-bold">114 / 114</span>
+                  </td>
+                  <td class="p-2.5 text-right text-slate-600">6d</td>
+                </tr>
+
+                <tr class="hover:bg-sky-50 transition-colors">
+                  <td class="p-2.5 font-semibold text-slate-950">
+                    2020 Volkswagen Polo GTI 2.0 TSI
+                    <span class="block text-[10px] font-normal text-slate-500">Apex Burt Drive &middot; 74,300 km</span>
+                  </td>
+                  <td class="p-2.5 text-slate-700">AAVZZZAWZ...</td>
+                  <td class="p-2.5 text-right font-bold text-slate-950">R 369,900</td>
+                  <td class="p-2.5 text-right text-slate-600">R 372,000</td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-rose-100 text-rose-800 border border-slate-950 font-bold">-0.5%</span>
+                  </td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-sky-100 text-sky-800 border border-slate-950 font-bold">104 / 114</span>
+                  </td>
+                  <td class="p-2.5 text-right text-slate-600">41d</td>
+                </tr>
+
+                <tr class="hover:bg-sky-50 transition-colors">
+                  <td class="p-2.5 font-semibold text-slate-950">
+                    2022 Isuzu D-Max 3.0 Ddi V-Cross 4x4
+                    <span class="block text-[10px] font-normal text-slate-500">Apex Burt Drive &middot; 39,100 km</span>
+                  </td>
+                  <td class="p-2.5 text-slate-700">AATRT87JLN...</td>
+                  <td class="p-2.5 text-right font-bold text-slate-950">R 649,000</td>
+                  <td class="p-2.5 text-right text-slate-600">R 620,000</td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950 font-bold">+4.7%</span>
+                  </td>
+                  <td class="p-2.5 text-center">
+                    <span class="px-1.5 py-0.5 bg-sky-100 text-sky-800 border border-slate-950 font-bold">111 / 114</span>
+                  </td>
+                  <td class="p-2.5 text-right text-slate-600">19d</td>
+                </tr>
+
+              </tbody>
+            </table>
           </div>
-        </form>
 
-        <form class="search-form hidden" id="search-electronics">
-          <select id="electronics-category" style="flex: 1; min-width: 160px;">
-            <option value="all">All Tech &amp; Assets</option>
-            <option value="laptops">Laptops &amp; MacBooks</option>
-            <option value="phones">Smartphones &amp; iPhones</option>
-            <option value="tablets">Tablets &amp; iPads</option>
-            <option value="gaming">Gaming &amp; Consoles</option>
-            <option value="audio">Audio &amp; Cameras</option>
-            <option value="appliances">Appliances</option>
-          </select>
-          <input type="text" placeholder="e.g. MacBook Pro M2, iPhone 15 Pro 128GB, PS5 Slim..." id="electronics-query" style="flex: 2; min-width: 240px;">
-          <button class="btn-primary" id="btn-search-electronics">Get Value (1 Credit)</button>
-        </form>
+          <!-- Syntax-Highlighted JSON Schema Viewer Container (Hidden by Default) -->
+          <div id="json-viewer-container" class="hidden bg-slate-950 text-sky-300 p-4 font-mono text-xs border border-slate-950 brutal-shadow-sm max-h-96 overflow-y-auto">
+            <pre><code>{
+  "status": 200,
+  "data_source": "TransUnion eValue8 + Live Floor Scraper",
+  "currency": "ZAR",
+  "records_count": 42,
+  "portfolio_aggregate": {
+    "total_listed": 18450000,
+    "total_book": 17775000,
+    "delta_percentage": 3.8
+  },
+  "items": [
+    {
+      "stock_id": "APX-9281",
+      "year": 2022,
+      "make": "Toyota",
+      "model": "Hilux 2.8 GD-6 4x4",
+      "mileage_km": 48200,
+      "listed_price": 589900,
+      "transunion_book": 565000,
+      "vir_score": "112/114",
+      "vin": "AHTBA3CD901284719"
+    }
+  ]
+}</code></pre>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 3. Pricing & Credit Economy Section -->
+    <section id="pricing" class="glass-card border-1.5 border-slate-950 p-6 md:p-8 space-y-6">
+      <div class="space-y-2 border-b border-slate-950 pb-4">
+        <span class="font-mono text-[11px] font-semibold text-slate-600 uppercase tracking-wider block">
+          TRANSPARENT CREDIT WALLET ECONOMY
+        </span>
+        <h2 class="font-display font-bold text-2xl text-slate-950 uppercase tracking-tight">
+          Simple Credit Pricing. No Hidden Monthly Subscriptions.
+        </h2>
+        <p class="font-body text-sm text-slate-700">
+          Purchase credits on-demand and use them across all 5 data pillars. Unused credits never expire.
+        </p>
+      </div>
+
+      <!-- Credit Packs Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        <form class="search-form hidden" id="search-property">
-          <select id="property-type">
-            <option value="Any">Any Property Type</option>
-            <option value="house">House</option>
-            <option value="apartment">Apartment / Flat</option>
-            <option value="townhouse">Townhouse</option>
-            <option value="commercial">Commercial</option>
-          </select>
-          <input type="text" placeholder="Enter suburb (e.g. Sandton, Camps Bay)..." id="suburb-search" style="flex:2">
-          <select id="property-mode">
-            <option value="comps">Market Value (Comps)</option>
-            <option value="fsbo">Private Sellers (FSBO)</option>
-          </select>
-          <button class="btn-primary">Search Area</button>
-        </form>
-        
-        <form class="search-form hidden" id="search-business">
-          <input type="text" placeholder="What type of business?" id="business-type">
-          <input type="text" placeholder="City or area" id="business-city">
-          <button class="btn-primary">Find Businesses</button>
-        </form>
-        
-        <form class="search-form hidden" id="search-bureau">
-          <input type="text" placeholder="Enter VIN, registration number, or M&M code..." id="bureau-input">
-          <select id="bureau-type">
-            <option value="valuation">Vehicle Valuation</option>
-            <option value="regcheck">Registration Check</option>
-            <option value="accident">Accident History</option>
-          </select>
-          <button class="btn-primary">Run Check (3 Credits)</button>
-        </form>
-        
-        <form class="search-form hidden" id="search-safepay">
-          <input type="text" placeholder="Bank account number" id="safepay-account">
-          <input type="text" placeholder="Branch code (e.g. 250655)" id="safepay-branch">
-          <input type="text" placeholder="ID number or CIPC registration" id="safepay-id">
-          <input type="text" placeholder="Initials (e.g. JM)" id="safepay-initials">
-          <input type="text" placeholder="Surname" id="safepay-surname">
-          <button class="btn-primary">Verify Account (3 Credits)</button>
-        </form>
-
-        <form class="search-form hidden" id="search-startup">
-          <input type="text" placeholder="Target Sector / Product Industry (e.g. B2B SaaS, FinTech, Car Dealer DMS)" id="startup-sector" style="flex: 2; min-width: 240px;">
-          <select id="startup-stage" style="flex: 1; min-width: 140px;">
-            <option value="pre-seed">Pre-Seed / Idea</option>
-            <option value="seed">Seed Stage</option>
-            <option value="series-a">Series A</option>
-          </select>
-          <button class="btn-primary" id="btn-search-startup">Generate Pitch Dossier (15 Credits)</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- Stats Banner -->
-    <section class="stats-banner">
-      <div class="container stats-grid">
-        <div class="stat-item">
-          <span class="stat-number">45,000+</span>
-          <span class="stat-label">Market Prices Indexed Daily</span>
+        <!-- Pay-As-You-Go Pack -->
+        <div class="bg-white border-1.5 border-slate-950 p-6 space-y-4 brutal-shadow flex flex-col justify-between">
+          <div class="space-y-2">
+            <span class="font-mono text-xs font-semibold text-slate-500 uppercase">PAY-AS-YOU-GO</span>
+            <div class="font-display font-bold text-3xl text-slate-950">R 199</div>
+            <div class="font-mono text-sm font-bold text-sky-800">15 Credits</div>
+            <p class="font-body text-xs text-slate-600">R13.27 per credit &middot; Best for individual or occasional verification lookups.</p>
+          </div>
+          <button onclick="openCreditModal('paygo')" class="w-full font-mono text-xs font-bold py-2.5 bg-white hover:bg-slate-100 text-slate-950 border border-slate-950 brutal-shadow-sm">
+            BUY PAY-AS-YOU-GO
+          </button>
         </div>
-        <div class="stat-item">
-          <span class="stat-number">312</span>
-          <span class="stat-label">TransUnion Vehicle Makes</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">99.4%</span>
-          <span class="stat-label">Verified Data Precision</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">R 0</span>
-          <span class="stat-label">Cost on Empty Searches</span>
-        </div>
-      </div>
-    </section>
 
-    <!-- Results Section -->
-    <section id="results" class="hidden">
-      <div class="results-header">
-        <h2 id="results-title">Search Results</h2>
-        <span id="results-count"></span>
-        <span id="results-source"></span>
-      </div>
-      <div id="results-content">
-        <!-- Populated dynamically by app.js -->
-      </div>
-      <div id="results-pricing" class="hidden">
-        <p>We found <strong id="lead-count">0</strong> results.</p>
-        <p>Cost: <strong id="lead-cost">R0</strong></p>
-        <button class="btn-primary" id="btn-order">Order Full Report</button>
-      </div>
-    </section>
+        <!-- Pro Desk Pack (Featured) -->
+        <div class="bg-sky-50 border-2 border-sky-600 p-6 space-y-4 brutal-shadow-lg relative flex flex-col justify-between">
+          <div class="absolute -top-3 right-4 bg-amber-500 text-white font-mono text-[10px] font-bold px-2 py-0.5 border border-slate-950">
+            MOST POPULAR FOR DEALERS
+          </div>
+          <div class="space-y-2">
+            <span class="font-mono text-xs font-semibold text-sky-900 uppercase">PRO DESK</span>
+            <div class="font-display font-bold text-3xl text-slate-950">R 999 <span class="text-xs font-normal text-slate-600">/mo</span></div>
+            <div class="font-mono text-sm font-bold text-sky-900">150 Credits</div>
+            <p class="font-body text-xs text-slate-700">R6.66 per credit &middot; Designed for active car dealerships, brokers, and real estate offices.</p>
+          </div>
+          <button onclick="openCreditModal('pro')" class="w-full font-mono text-xs font-bold py-2.5 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow-sm">
+            BUY PRO DESK PACK
+          </button>
+        </div>
 
-    <!-- Verticals Section -->
-    <section id="verticals">
-      <div class="section-title text-center">
-        <h2>Five Intelligence Pillars. One Terminal.</h2>
-        <p>Everything you need to price assets, verify counterparties, and mine market comps in South Africa.</p>
+        <!-- Enterprise Pack -->
+        <div class="bg-white border-1.5 border-slate-950 p-6 space-y-4 brutal-shadow flex flex-col justify-between">
+          <div class="space-y-2">
+            <span class="font-mono text-xs font-semibold text-slate-500 uppercase">ENTERPRISE</span>
+            <div class="font-display font-bold text-3xl text-slate-950">R 3,499 <span class="text-xs font-normal text-slate-600">/mo</span></div>
+            <div class="font-mono text-sm font-bold text-sky-800">600 Credits</div>
+            <p class="font-body text-xs text-slate-600">R5.83 per credit &middot; High-volume rate for data aggregators, fleets, and agencies.</p>
+          </div>
+          <button onclick="openCreditModal('enterprise')" class="w-full font-mono text-xs font-bold py-2.5 bg-white hover:bg-slate-100 text-slate-950 border border-slate-950 brutal-shadow-sm">
+            BUY ENTERPRISE PACK
+          </button>
+        </div>
+
       </div>
 
-      <div class="vertical-cards">
-        <!-- Card 1 -->
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><path d="M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"></path><line x1="5" y1="13" x2="19" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
-          <h3>Vehicle Market Value</h3>
-          <p>Get live market prices for any vehicle in South Africa.</p>
-          <ul class="features">
-            <li>Search full TransUnion catalogue (312 makes)</li>
-            <li>Prices from AutoTrader &amp; Cars.co.za</li>
-          </ul>
-          <div class="price">1 Credit per search</div>
-          <button class="btn-secondary select-vertical" data-target="vehicles">Search Vehicles</button>
-        </div>
-
-        <!-- Card 2: Electronics & Tech -->
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-          <h3>Electronics &amp; Tech Assets</h3>
-          <p>Live market values for laptops, phones, consoles &amp; appliances.</p>
-          <ul class="features">
-            <li>Real retail &amp; refurbished prices in ZAR</li>
-            <li>Sources from Takealot, iStore, Incredible, Makro</li>
-          </ul>
-          <div class="price">1 Credit per search</div>
-          <button class="btn-secondary select-vertical" data-target="electronics">Get Tech Value</button>
-        </div>
-        
-        <!-- Card 3 -->
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <h3>Property Suburb Comps</h3>
-          <p>See what properties are selling for in any suburb.</p>
-          <ul class="features">
-            <li>Median asking prices &amp; price ranges</li>
-            <li>Active listings from Property24 &amp; Private Property</li>
-          </ul>
-          <div class="price">1 Credit per suburb</div>
-          <button class="btn-secondary select-vertical" data-target="property">Search Suburbs</button>
-        </div>
-        
-        <!-- Card 4 -->
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-          <h3>Business Finder</h3>
-          <p>Find businesses in any city with their contact details and website health.</p>
-          <ul class="features">
-            <li>Google Maps integration</li>
-            <li>Extract phone, email, WhatsApp &amp; audit sites</li>
-          </ul>
-          <div class="price">2 Credits per result</div>
-          <button class="btn-secondary select-vertical" data-target="business">Find Businesses</button>
-        </div>
-        
-        <!-- Card 5 -->
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          <h3>Bureau Reports</h3>
-          <p>Official TransUnion vehicle checks.</p>
-          <ul class="features">
-            <li>Valuation (trade/retail/market value)</li>
-            <li>Registration check (stolen, finance) &amp; accident history</li>
-          </ul>
-          <div class="price">3 Credits per lookup</div>
-          <button class="btn-secondary select-vertical" data-target="bureau">Run Bureau Check</button>
-        </div>
-
-        <!-- Card 6: Startup Intel -->
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-          <h3>Startup Pitch &amp; Valuation</h3>
-          <p>TAM/SAM/SOM market sizing, unit economics &amp; 3-year cohort models.</p>
-          <ul class="features">
-            <li>Investor pitch-deck backup data</li>
-            <li>LTV/CAC, burn multiple &amp; financial runway</li>
-          </ul>
-          <div class="price">15 Credits per report</div>
-          <button class="btn-secondary select-vertical" data-target="startup">Generate Pitch Pack</button>
-        </div>
-
-        <!-- Card 7 -->
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-          <h3>SafePay Bank Verification</h3>
-          <p>Verify bank accounts before accepting payments or deposits.</p>
-          <ul class="features">
-            <li>8-point TransUnion AVS check</li>
-            <li>Account existence, ID match, accepts debits/credits</li>
-            <li>Prevents fake EFT proofs &amp; BEC fraud</li>
-          </ul>
-          <div class="price">3 Credits per check</div>
-          <button class="btn-secondary select-vertical" data-target="safepay">Verify Account</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section id="how-it-works">
-      <h2>How It Works</h2>
-      <div class="steps-strip">
-        <div class="step">
-          <div class="step-number">1</div>
-          <h4>Search</h4>
-          <p>Pick a vertical and enter your search.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <h4>We search</h4>
-          <p>We search multiple sources in real time.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <h4>See results</h4>
-          <p>View exactly what we found before paying.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">4</div>
-          <h4>Pay for results</h4>
-          <p>Only pay for verified data we deliver.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing">
-      <h2>Simple credit pricing</h2>
-      <p>Buy credits, use them on any product. No monthly commitment required.</p>
-
-      <div class="credit-packs">
-        <div class="credit-pack">
-          <h3>Pay-As-You-Go</h3>
-          <div class="price">R199</div>
-          <p>15 Credits</p>
-          <p class="pack-detail">R13.27 per credit</p>
-          <p class="pack-detail">Perfect for once-off lookups</p>
-        </div>
-        <div class="credit-pack featured">
-          <h3>Pro Desk</h3>
-          <div class="price">R999<span>/mo</span></div>
-          <p>150 Credits</p>
-          <p class="pack-detail">R6.66 per credit</p>
-          <p class="pack-detail">For dealers &amp; agents</p>
-        </div>
-        <div class="credit-pack">
-          <h3>Enterprise</h3>
-          <div class="price">R3,499<span>/mo</span></div>
-          <p>600 Credits</p>
-          <p class="pack-detail">R5.83 per credit</p>
-          <p class="pack-detail">For agencies &amp; brokerages</p>
+      <!-- Product Credit Burn Rate Table -->
+      <div class="space-y-3 pt-4 border-t border-slate-300">
+        <h3 class="font-display font-bold text-base text-slate-950 uppercase">
+          Product Credit Burn Rate Table
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs border border-slate-950 bg-white">
+            <thead>
+              <tr class="bg-slate-950 text-white uppercase text-[10px]">
+                <th class="p-2 border-r border-slate-800">Product / Data Pillar</th>
+                <th class="p-2 border-r border-slate-800 text-center">Credit Burn</th>
+                <th class="p-2 text-right">Effective Rate (PAYG)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="p-2 font-medium">Vehicle Market Scrape &amp; Retail Comps</td>
+                <td class="p-2 text-center font-bold text-sky-700">1 Credit</td>
+                <td class="p-2 text-right">R 13.27</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-medium">Property Suburb FSBO &amp; Sales Comps</td>
+                <td class="p-2 text-center font-bold text-sky-700">1 Credit</td>
+                <td class="p-2 text-right">R 13.27</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-medium">Business Website Audit &amp; Technical Score</td>
+                <td class="p-2 text-center font-bold text-sky-700">2 Credits</td>
+                <td class="p-2 text-right">R 26.54</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-medium">TransUnion eValue8 Bureau Valuation</td>
+                <td class="p-2 text-center font-bold text-sky-700">3 Credits</td>
+                <td class="p-2 text-right">R 39.81</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-medium">SafePay TransUnion Bank Account Verification (AVS)</td>
+                <td class="p-2 text-center font-bold text-sky-700">3 Credits</td>
+                <td class="p-2 text-right">R 39.81</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <h3>Credit usage</h3>
-      <table class="pricing-table">
-        <thead><tr><th>Product</th><th>Credits</th></tr></thead>
-        <tbody>
-          <tr><td>Vehicle market value</td><td>1</td></tr>
-          <tr><td>Property suburb comps</td><td>1</td></tr>
-          <tr><td>Business website audit</td><td>2 per result</td></tr>
-          <tr><td>Business contact report</td><td>2 per result</td></tr>
-          <tr><td>SafePay bank verification</td><td>3</td></tr>
-          <tr><td>TransUnion vehicle valuation</td><td>3</td></tr>
-          <tr><td>TransUnion reg check</td><td>3</td></tr>
-          <tr><td>TransUnion accident report</td><td>3</td></tr>
-        </tbody>
-      </table>
-
-      <p class="ceiling-note">Results depend on available data in your area. You will only be billed credits for verified results we can deliver.</p>
     </section>
   </main>
 
   <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-brand">
-        <p>TruData by TruSaaS &middot; &copy; 2026</p>
+  <footer class="border-t-2 border-slate-950 bg-slate-100 py-8 mt-12">
+    <div class="max-w-[1440px] mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-600">
+      <div>
+        <strong class="text-slate-900 font-display">TruData by TruSaaS</strong> &middot; &copy; 2026. All rights reserved.
       </div>
-      <div class="footer-links">
-        <a href="#">About</a>
-        <a href="#">Terms</a>
-        <a href="#">Privacy</a>
-        <a href="#">Contact</a>
-      </div>
-      <div class="footer-disclaimer">
-        <p>Data sourced from AutoTrader, Cars.co.za, Property24, Private Property, and TransUnion.</p>
+      <div class="flex gap-4">
+        <a href="#" class="hover:text-slate-900">Documentation</a>
+        <a href="#" class="hover:text-slate-900">API Specifications</a>
+        <a href="#" class="hover:text-slate-900">Terms of Service</a>
+        <a href="#" class="hover:text-slate-900">Privacy Policy</a>
       </div>
     </div>
   </footer>
+
+  <!-- 4. Modals (PayFast Credit Purchase & Order Modals) -->
 
   <!-- Order Modal -->
   <div id="order-modal" class="modal hidden">
     <div class="modal-content">
       <button class="close-modal">&times;</button>
-      <h2>Complete Your Order</h2>
-      <div class="order-summary" id="order-summary">
-        <!-- Injected summary details -->
-      </div>
-      <form id="order-form">
-        <div class="form-group">
-          <label for="order-name">Full Name</label>
-          <input type="text" id="order-name" required placeholder="e.g. Johan van der Merwe">
+      <h2 class="font-display font-bold text-xl uppercase mb-2">Complete Your Data Order</h2>
+      <div class="order-summary mb-4 font-mono text-xs" id="order-summary"></div>
+      <form id="order-form" class="space-y-4">
+        <div>
+          <label for="order-name" class="block font-mono text-xs font-semibold mb-1">Full Name</label>
+          <input type="text" id="order-name" required placeholder="e.g. Johan van der Merwe" class="w-full font-mono text-xs p-2 bg-white border border-slate-950"/>
         </div>
-        <div class="form-group">
-          <label for="order-email">Email Address</label>
-          <input type="email" id="order-email" required placeholder="name@company.co.za">
+        <div>
+          <label for="order-email" class="block font-mono text-xs font-semibold mb-1">Email Address</label>
+          <input type="email" id="order-email" required placeholder="name@company.co.za" class="w-full font-mono text-xs p-2 bg-white border border-slate-950"/>
         </div>
-        <button type="submit" class="btn-primary btn-block">Confirm Order &amp; Pay via PayFast</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Credit Pack Purchase Modal -->
-  <div id="credit-modal" class="modal hidden">
-    <div class="modal-content modal-lg">
-      <button class="close-modal" id="close-credit-modal">&times;</button>
-      <h2>⚡ Get TruData Credits</h2>
-      <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
-        Credits never expire. Use them across Vehicle Comps, Property FSBO, Business Dossiers, and TransUnion Bureau Checks.
-      </p>
-
-      <div class="credit-pack-selector">
-        <div class="pack-option" data-pack="paygo">
-          <div class="pack-radio"><input type="radio" name="pack-choice" value="paygo" checked></div>
-          <div class="pack-info">
-            <strong>Pay-As-You-Go</strong>
-            <span>15 Credits &middot; R13.27 / credit</span>
-          </div>
-          <div class="pack-price">R 199</div>
-        </div>
-
-        <div class="pack-option selected" data-pack="pro">
-          <div class="pack-badge">MOST POPULAR</div>
-          <div class="pack-radio"><input type="radio" name="pack-choice" value="pro"></div>
-          <div class="pack-info">
-            <strong>Pro Desk</strong>
-            <span>150 Credits &middot; R6.66 / credit (Dealers &amp; Brokers)</span>
-          </div>
-          <div class="pack-price">R 999</div>
-        </div>
-
-        <div class="pack-option" data-pack="enterprise">
-          <div class="pack-radio"><input type="radio" name="pack-choice" value="enterprise"></div>
-          <div class="pack-info">
-            <strong>Enterprise Desk</strong>
-            <span>600 Credits &middot; R5.83 / credit (Agencies &amp; Fleets)</span>
-          </div>
-          <div class="pack-price">R 3,499</div>
-        </div>
-      </div>
-
-      <form id="credit-purchase-form" style="margin-top: 1.5rem;">
-        <div class="form-group">
-          <label for="credit-buyer-name">Full Name / Business Name</label>
-          <input type="text" id="credit-buyer-name" required placeholder="e.g. Pieter Marais">
-        </div>
-        <div class="form-group">
-          <label for="credit-buyer-email">Email Address (Your Wallet ID)</label>
-          <input type="email" id="credit-buyer-email" required placeholder="pieter@dealership.co.za">
-        </div>
-        <button type="submit" class="btn-primary btn-block" id="btn-payfast-checkout">
-          Proceed to PayFast Checkout 🔒
+        <button type="submit" class="w-full font-mono font-bold text-xs py-3 bg-sky-600 text-white border border-slate-950 brutal-shadow">
+          Confirm Order &amp; Pay via PayFast
         </button>
       </form>
     </div>
   </div>
 
-  <!-- Chat Widget -->
-  <div id="chat-widget">
-    <button id="chat-toggle" class="chat-btn" aria-label="Toggle chat">
-      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-    </button>
-    <div id="chat-window" class="hidden">
-      <div class="chat-header">
-        <h3>TruData Assistant</h3>
-        <button id="chat-close">&times;</button>
-      </div>
-      <div class="chat-messages" id="chat-messages">
-        <div class="message bot">
-          <p>Hi! I'm the TruData assistant. Ask me about vehicle prices, property data, or how our products work.</p>
+  <!-- Credit Purchase Modal -->
+  <div id="credit-modal" class="modal hidden">
+    <div class="modal-content modal-lg">
+      <button class="close-modal" id="close-credit-modal">&times;</button>
+      <h2 class="font-display font-bold text-xl uppercase mb-1">Get TruData Credits</h2>
+      <p class="font-body text-xs text-slate-600 mb-4">
+        Credits never expire. Use them across Vehicle Comps, Property FSBO, Business Dossiers, and TransUnion Bureau Checks.
+      </p>
+
+      <div class="credit-pack-selector">
+        <div class="pack-option" data-pack="paygo">
+          <div class="pack-radio"><input type="radio" name="pack-choice" value="paygo" checked/></div>
+          <div class="pack-info font-mono text-xs">
+            <strong class="block text-slate-900">Pay-As-You-Go</strong>
+            <span class="text-slate-600">15 Credits &middot; R13.27 / credit</span>
+          </div>
+          <div class="pack-price font-display font-bold text-base text-slate-950">R 199</div>
+        </div>
+
+        <div class="pack-option selected" data-pack="pro">
+          <div class="pack-badge">MOST POPULAR</div>
+          <div class="pack-radio"><input type="radio" name="pack-choice" value="pro"/></div>
+          <div class="pack-info font-mono text-xs">
+            <strong class="block text-slate-900">Pro Desk</strong>
+            <span class="text-slate-600">150 Credits &middot; R6.66 / credit (Dealers &amp; Brokers)</span>
+          </div>
+          <div class="pack-price font-display font-bold text-base text-slate-950">R 999</div>
+        </div>
+
+        <div class="pack-option" data-pack="enterprise">
+          <div class="pack-radio"><input type="radio" name="pack-choice" value="enterprise"/></div>
+          <div class="pack-info font-mono text-xs">
+            <strong class="block text-slate-900">Enterprise Desk</strong>
+            <span class="text-slate-600">600 Credits &middot; R5.83 / credit (Agencies &amp; Fleets)</span>
+          </div>
+          <div class="pack-price font-display font-bold text-base text-slate-950">R 3,499</div>
         </div>
       </div>
-      <div class="chat-suggestions">
-        <button class="chip">How does pricing work?</button>
-        <button class="chip">Vehicle valuation example</button>
-        <button class="chip">What data sources do you use?</button>
+
+      <form id="credit-purchase-form" class="space-y-4 mt-4">
+        <div>
+          <label for="credit-buyer-name" class="block font-mono text-xs font-semibold mb-1">Full Name / Business Name</label>
+          <input type="text" id="credit-buyer-name" required placeholder="e.g. Pieter Marais" class="w-full font-mono text-xs p-2 bg-white border border-slate-950"/>
+        </div>
+        <div>
+          <label for="credit-buyer-email" class="block font-mono text-xs font-semibold mb-1">Email Address (Your Wallet ID)</label>
+          <input type="email" id="credit-buyer-email" required placeholder="pieter@dealership.co.za" class="w-full font-mono text-xs p-2 bg-white border border-slate-950"/>
+        </div>
+        <button type="submit" class="w-full font-mono font-bold text-xs py-3 bg-amber-500 hover:bg-amber-600 text-white border border-slate-950 brutal-shadow" id="btn-payfast-checkout">
+          Proceed to PayFast Checkout
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Chat Assistant Widget -->
+  <div id="chat-widget" class="fixed bottom-4 right-4 z-50">
+    <button id="chat-toggle" class="w-12 h-12 bg-sky-600 text-white border border-slate-950 brutal-shadow flex items-center justify-center font-mono font-bold text-lg" aria-label="Toggle chat">
+      ?
+    </button>
+    <div id="chat-window" class="hidden fixed bottom-18 right-4 w-80 md:w-96 bg-background border-2 border-slate-950 brutal-shadow-lg p-4 space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-950 pb-2">
+        <h3 class="font-display font-bold text-sm uppercase">TruData Assistant</h3>
+        <button id="chat-close" class="font-mono text-xs px-2 py-0.5 border border-slate-950 bg-white">&times;</button>
       </div>
-      <div class="chat-input-area">
-        <input type="text" id="chat-input" placeholder="Type your message...">
-        <button id="chat-send" class="btn-primary">Send</button>
+      <div class="chat-messages space-y-2 max-h-60 overflow-y-auto font-mono text-xs p-2 bg-white border border-slate-950" id="chat-messages">
+        <div class="message bot text-slate-800">
+          <p>Hi! I am the TruData assistant. Ask me about vehicle prices, property data, or how our products work.</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <input type="text" id="chat-input" placeholder="Type your message..." class="flex-1 font-mono text-xs p-2 bg-white border border-slate-950"/>
+        <button id="chat-send" class="font-mono text-xs font-bold px-3 py-2 bg-sky-600 text-white border border-slate-950">Send</button>
       </div>
     </div>
   </div>
 
   <!-- Cookie Banner -->
-  <div id="cookie-banner" class="banner hidden">
+  <div id="cookie-banner" class="banner hidden fixed bottom-0 inset-x-0 bg-slate-950 text-white p-4 border-t-2 border-slate-950 flex items-center justify-between z-50 font-mono text-xs">
     <p>We use essential cookies for the site to work. No tracking.</p>
-    <button id="cookie-accept" class="btn-secondary">Got it</button>
+    <button id="cookie-accept" class="px-3 py-1 bg-white text-slate-950 font-bold border border-slate-950">Got it</button>
   </div>
+
 </body>
 </html>

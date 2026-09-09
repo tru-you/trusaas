@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+<script>(function(){var t=localStorage.getItem('td-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
 <script>
@@ -168,6 +169,26 @@
   --display:'Fraunces','Fraunces Fallback',Georgia,serif;
   --nav-h:66px;
 }
+[data-theme="dark"]{
+  --ink:#0E1620;
+  --ink-subtle:#152232;
+  --ink-2:#1B2B3F;
+  --white:#F1F5F9;
+  --white-dim:rgba(241,245,249,0.85);
+  --muted:rgba(148,163,184,0.9);
+  --faint:rgba(148,163,184,0.55);
+  --surface-card:#152232;
+  --surface-dark:#0E1620;
+  --surface-dark-card:#1B2B3F;
+  --border:rgba(255,255,255,0.08);
+  --border-glow:rgba(94,234,212,0.25);
+  --glass:rgba(21,34,50,0.85);
+  --glass-line:rgba(255,255,255,0.08);
+  --glass-bg:rgba(21,34,50,0.9);
+  --glass-border:rgba(255,255,255,0.08);
+  --glass-shadow:0 12px 36px -4px rgba(0,0,0,0.4), 0 4px 12px -2px rgba(0,0,0,0.3);
+  --glass-shadow-hover:0 20px 48px -6px rgba(0,0,0,0.5), 0 8px 20px -4px rgba(0,0,0,0.4);
+}
 /* Fallback metrics — keeps layout stable until Fraunces/Inter Tight paint. */
 @font-face{font-family:'Fraunces Fallback';src:local('Georgia');size-adjust:105%;ascent-override:92%;descent-override:22%;line-gap-override:0%;}
 @font-face{font-family:'Inter Tight Fallback';src:local('Arial');size-adjust:107%;ascent-override:90%;descent-override:22%;line-gap-override:0%;}
@@ -194,12 +215,18 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .scroll-prog-fill{height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),#5EEAD4);box-shadow:0 0 8px rgba(13,148,136,.3);transform:scaleX(0);transform-origin:left;will-change:transform;}
 
 
-.nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.08);border-radius:99px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:1160px;width:calc(100% - 32px);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .4s;}
-.nav.nav--hidden{transform:translateX(-50%) translateY(-120%);opacity:0;pointer-events:none;}
+.nav{position:fixed;top:0;left:0;right:0;width:100%;max-width:100%;border-radius:0;transform:none;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,40px);height:68px;background:rgba(248,245,238,0.96);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 4px 20px rgba(0,0,0,.05);transition:transform .4s cubic-bezier(.25,.46,.45,.94),background .3s;}
+[data-theme="dark"] .nav{background:rgba(14,22,32,0.96);border-bottom:1px solid rgba(255,255,255,.08);box-shadow:0 4px 24px rgba(0,0,0,.3);}
+.nav.scrolled{background:rgba(248,245,238,0.96);border-color:rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(0,0,0,.12);}
+[data-theme="dark"] .nav.scrolled{background:rgba(14,22,32,0.98);border-bottom:1px solid rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.nav.nav--hidden{transform:translateY(-120%);opacity:0;pointer-events:none;}
 .nav-brand{display:flex;align-items:center;color:var(--white);font-weight:800;font-size:22px;letter-spacing:-.02em;flex-shrink:0;}
 .nav-links{display:flex;align-items:center;gap:18px;font-size:13px;color:var(--white-dim);flex-shrink:1;}
-.nav-links a{transition:color .2s;position:relative;padding-bottom:2px;white-space:nowrap;}
+.nav-links a{transition:color .2s;position:relative;padding-bottom:2px;white-space:nowrap;color:var(--white-dim);}
 .nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease;}
+.nav-links a:hover{color:var(--white);}
+[data-theme="dark"] .nav-links a{color:rgba(241,245,249,0.85);}
+[data-theme="dark"] .nav-links a:hover{color:#fff;}
 .nav-links a:hover::after{right:0;}
 .nav-links a[aria-current="page"]{color:var(--cyan);}
 .nav-links a[aria-current="page"]::after{right:0;}
@@ -218,6 +245,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .curr-toggle button.active{background:var(--cyan);color:#fff;}
 .nav-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.1em;}
 .nav-status .dot{width:5px;height:5px;border-radius:50%;background:#0D9488;box-shadow:0 0 6px rgba(13,148,136,.4);}
+/* Burger */
 .nav-burger{display:none;width:38px;height:38px;border-radius:12px;border:1px solid rgba(0,0,0,.08);align-items:center;justify-content:center;flex:none;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(243,240,231,.9));cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06),0 1px 0 rgba(255,255,255,.8) inset;transition:all .25s ease;}
 .nav-burger span,.nav-burger span::before,.nav-burger span::after{display:block;width:16px;height:2px;background:#1E293B;border-radius:2px;transition:transform .25s,top .25s,background .25s;}
 .nav-burger span{position:relative;}
@@ -228,14 +256,67 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .nav.open .nav-burger span{background:transparent;}
 .nav.open .nav-burger span::before{top:0;transform:rotate(45deg);}
 .nav.open .nav-burger span::after{top:0;transform:rotate(-45deg);}
+/* Mobile dropdown */
 .nav-mobile{display:none;position:absolute;top:calc(100% + 14px);left:0;right:0;padding:12px;background:rgba(248,245,238,0.95);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,.4);border-radius:24px;box-shadow:0 20px 40px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.05), inset 0 1px 0 rgba(255,255,255,.8);opacity:0;visibility:hidden;transform:translateY(-12px) scale(0.98);transform-origin:top center;transition:opacity .3s cubic-bezier(.22,1,.36,1),transform .3s cubic-bezier(.22,1,.36,1),visibility .3s;}
-.nav-mobile a{display:block;padding:12px 16px;border-radius:12px;font-size:14.5px;color:var(--white-dim);font-weight:500;}
+.nav-mobile a{display:block;padding:12px 16px;border-radius:12px;font-size:14.5px;color:var(--white-dim);font-weight:500;text-decoration:none;}
 .nav-mobile a:hover{background:rgba(251,249,243,.7);color:var(--white);box-shadow:inset 0 1px 0 rgba(255,255,255,.8);}
 .nav-mobile a.active{color:var(--cyan);background:rgba(13,148,136,.06);}
-.nav-mobile-cta{margin-top:6px;text-align:center;background:var(--cyan);color:#fff!important;font-weight:600;}
+.nav-mobile-cta{margin-top:6px;text-align:center;background:var(--cyan)!important;color:#fff!important;font-weight:600!important;border-radius:12px!important;}
 .nav.open .nav-mobile{opacity:1;visibility:visible;transform:translateY(0) scale(1);}
 .nav-mobile a{opacity:0;transform:translateX(-12px);transition:opacity .35s ease,transform .35s ease,background .2s,color .2s;}
 .nav.open .nav-mobile a{opacity:1;transform:translateX(0);}
+
+.theme-toggle{width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(0,0,0,.04);color:#1E293B;cursor:pointer;display:grid;place-items:center;transition:all .25s ease;flex-shrink:0;}
+.theme-toggle:hover{border-color:var(--cyan);color:var(--cyan);transform:scale(1.05);}
+.theme-toggle svg{width:18px;height:18px;}
+[data-theme="dark"] .theme-toggle{background:rgba(255,255,255,.06);color:#F1F5F9;border-color:rgba(255,255,255,.1);}
+[data-theme="dark"] .theme-toggle:hover{border-color:var(--cyan);color:var(--cyan);}
+[data-theme="dark"] .nav-burger{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+[data-theme="dark"] .nav-burger span,[data-theme="dark"] .nav-burger span::before,[data-theme="dark"] .nav-burger span::after{background:#F1F5F9;}
+[data-theme="dark"] .nav-mobile{background:rgba(14,22,32,0.98);border-color:rgba(255,255,255,.1);box-shadow:0 20px 40px rgba(0,0,0,.6);}
+[data-theme="dark"] .nav-mobile a{color:rgba(241,245,249,0.85);}
+[data-theme="dark"] .nav-mobile a:hover{background:rgba(255,255,255,.08);color:#fff;}
+[data-theme="dark"] .curr-bar{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);}
+[data-theme="dark"] .curr-btn{color:var(--muted);}
+[data-theme="dark"] .curr-btn:hover{color:#fff;}
+[data-theme="dark"] .curr-btn.active{background:var(--cyan);color:#fff;}
+[data-theme="dark"] .hero-sandbox-btn{background:linear-gradient(135deg,#152232,#1E2D40);border-color:rgba(94,234,212,0.4);color:#5EEAD4;}
+[data-theme="dark"] .card-cta.ghost{background:#152232;border-color:rgba(255,255,255,0.12);color:var(--white);}
+[data-theme="dark"] .card-cta.ghost:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-soft);}
+[data-theme="dark"] .card-toggle{background:rgba(13,148,136,.12);color:#5EEAD4;border-color:rgba(94,234,212,.2);}
+[data-theme="dark"] .card.pro-card .card-toggle{color:#FBBF24;border-color:rgba(212,148,42,.3);background:rgba(212,148,42,.12);}
+[data-theme="dark"] .card.pro-card .card-toggle:hover{background:rgba(212,148,42,.2);border-color:var(--amber);}
+[data-theme="dark"] .compare-table-container{background:#152232;border-color:rgba(255,255,255,0.08);}
+[data-theme="dark"] .compare-table thead th{background:#182536;color:#FFFFFF;border-bottom-color:rgba(255,255,255,0.1);}
+[data-theme="dark"] .compare-table thead th.col-pro{background:rgba(212,148,42,0.14);border-color:rgba(212,148,42,0.3);color:#FBBF24;}
+[data-theme="dark"] .compare-cat-head td{background:#152232;color:#5EEAD4;border-top-color:rgba(255,255,255,0.08);}
+[data-theme="dark"] .compare-table th, [data-theme="dark"] .compare-table td{border-bottom-color:rgba(255,255,255,0.06);}
+[data-theme="dark"] .compare-feat-name{color:#F1F5F9;}
+[data-theme="dark"] .compare-feat-sub{color:rgba(148,163,184,0.85);}
+[data-theme="dark"] .compare-check{color:#0D9488;}
+[data-theme="dark"] .compare-dash{color:rgba(148,163,184,0.45);}
+[data-theme="dark"] .compare-table td.col-pro{background:rgba(212,148,42,0.05);border-color:rgba(212,148,42,0.18);}
+[data-theme="dark"] .compare-table tbody tr:hover td{background:rgba(11,124,114,0.08);}
+[data-theme="dark"] .compare-table tbody tr:hover td.col-pro{background:rgba(212,148,42,0.12);}
+[data-theme="dark"] .compare-table tfoot td{background:#182536;}
+[data-theme="dark"] .compare-pill{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1);color:var(--muted);}
+[data-theme="dark"] .compare-pill.pro{background:rgba(212,148,42,0.18);border-color:rgba(212,148,42,0.35);color:#FBBF24;}
+[data-theme="dark"] .compare-cta-btn.ghost{background:#152232;border-color:rgba(255,255,255,0.12);color:#F1F5F9;}
+[data-theme="dark"] .sandbox-dialog{background:#0E1620;border-color:rgba(255,255,255,0.12);box-shadow:0 32px 80px -16px rgba(0,0,0,.7);}
+[data-theme="dark"] .sandbox-close{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#F1F5F9;}
+[data-theme="dark"] .sandbox-card{background:#152232;border-color:rgba(255,255,255,0.08);}
+[data-theme="dark"] .sandbox-card.featured{background:linear-gradient(180deg,rgba(11,124,114,0.15) 0%,#152232 40%);border-color:rgba(11,124,114,0.4);}
+[data-theme="dark"] .sandbox-card-pill{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.08);color:var(--muted);}
+[data-theme="dark"] .sandbox-foot{border-top-color:rgba(255,255,255,0.08);}
+[data-theme="dark"] .trust{background:#111A24;border-color:rgba(255,255,255,0.08);}
+[data-theme="dark"] .trust-item .n{color:#5EEAD4;}
+[data-theme="dark"] .trust-item p{color:var(--white-dim);}
+[data-theme="dark"] .footer, [data-theme="dark"] footer{background:#0B0F17 !important;border-top-color:rgba(255,255,255,0.08) !important;}
+[data-theme="dark"] .btt{background:rgba(21,34,50,0.85);border-color:rgba(255,255,255,0.1);}
+[data-theme="dark"] .faq-item{background:var(--surface-card);border-color:var(--border);}
+[data-theme="dark"] .demo-link{background:var(--surface-card);border-color:var(--border);}
+[data-theme="dark"] .demo-icon{background:rgba(11,124,114,0.2);color:#5EEAD4;}
+[data-theme="dark"] .cta-box{background:linear-gradient(135deg,#152232 0%,#0E1620 100%);border-color:rgba(255,255,255,0.08);}
 
 @media(max-width:1120px){
   .nav{padding:7px 14px;gap:10px;}
@@ -252,8 +333,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 @media(max-width:540px){
   .nav-cta{display:none;}
 }
-}
-@media(max-width:640px){.nav{width:calc(100% - 24px);padding:8px 14px;}}
+@media(max-width:640px){footer, .footer{padding-bottom:90px !important;} .nav{width:calc(100% - 24px);padding:8px 14px;}}
 
 /* Hero */
 .hero{position:relative;z-index:2;padding:130px 24px 44px;text-align:center;max-width:960px;margin:0 auto;}
@@ -286,13 +366,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 
 .cards-standalone{grid-template-columns:repeat(4,1fr);max-width:1440px;}
 @media(max-width:1180px){.cards-standalone{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:640px){.cards-standalone{grid-template-columns:1fr;}}
+@media(max-width:640px){footer, .footer{padding-bottom:90px !important;} .cards-standalone{grid-template-columns:1fr;}}
 
 .card{position:relative;padding:36px 28px 28px;border-radius:22px;background:var(--surface-card);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .35s ease,box-shadow .35s ease;display:flex;flex-direction:column;}
 .card:hover{transform:translateY(-4px);border-color:rgba(11,124,114,.35);box-shadow:var(--glass-shadow-hover);}
 
 /* TruPro Recommended Badge & Glow */
 .card.pro-card{
+  overflow: visible !important;
   border: 2px solid rgba(212, 148, 42, 0.55);
   background: linear-gradient(180deg, rgba(212, 148, 42, 0.07) 0%, var(--surface-card) 26%);
   box-shadow: 0 16px 44px -8px rgba(212, 148, 42, 0.28), var(--glass-shadow);
@@ -303,21 +384,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 }
 .card-badge-pop{
   position: absolute;
-  top: -12px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, #D4942A, #B87319);
   color: #fff;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: .14em;
   text-transform: uppercase;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: 100px;
   box-shadow: 0 4px 16px rgba(212, 148, 42, 0.45);
   white-space: nowrap;
-  z-index: 10;
+  z-index: 20;
   line-height: 1.2;
 }
 
@@ -384,12 +465,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .compare-header p{font-size:15px;color:var(--white-dim);line-height:1.6;}
 .compare-table-container{background:var(--surface-card);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow);overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .compare-table{width:100%;border-collapse:collapse;text-align:left;min-width:780px;}
-.compare-table th, .compare-table td{padding:16px 20px;border-bottom:1px solid rgba(0,0,0,0.06);vertical-align:middle;}
-.compare-table thead th{background:#FAF8F5;font-family:var(--sans);font-weight:700;font-size:15px;color:var(--white);padding:24px 20px;position:sticky;top:0;z-index:2;border-bottom:2px solid rgba(0,0,0,0.08);}
+.compare-table thead th{background:var(--surface-card);font-family:var(--sans);font-weight:700;font-size:15px;color:var(--white);padding:20px 20px;border-bottom:2px solid rgba(0,0,0,0.08);}
+[data-theme="dark"] .compare-table thead th{background:#152232;border-bottom-color:rgba(255,255,255,0.1);color:#fff;}
 .compare-table thead th:first-child{width:32%;border-top-left-radius:24px;}
 .compare-table thead th.col-pro{background:rgba(212, 148, 42, 0.08);border-left:1px solid rgba(212, 148, 42, 0.2);border-right:1px solid rgba(212, 148, 42, 0.2);}
 .compare-table thead th:last-child{border-top-right-radius:24px;}
 .compare-cat-head td{background:#F1ECE1;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);font-weight:700;padding:12px 20px;border-top:1px solid rgba(0,0,0,0.06);}
+[data-theme="dark"] .compare-cat-head td{background:#0E1620;color:#5EEAD4;border-top-color:rgba(255,255,255,0.08);}
 .compare-feat-name{font-size:14px;font-weight:600;color:var(--white);display:block;}
 .compare-feat-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px;}
 .compare-table tbody tr:hover td{background:rgba(11, 124, 114, 0.025);}
@@ -400,7 +482,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .compare-dash{color:var(--faint);font-family:var(--mono);font-size:16px;}
 .compare-pill{display:inline-block;font-size:12px;font-family:var(--mono);padding:3px 8px;border-radius:6px;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.06);color:var(--muted);}
 .compare-pill.pro{background:rgba(212, 148, 42, 0.12);border-color:rgba(212, 148, 42, 0.25);color:#8C5B09;font-weight:600;}
-.compare-table tfoot td{padding:22px 20px;background:#FAF8F5;border-bottom:0;}
+.compare-table tfoot td{padding:22px 20px;background:var(--surface-card);border-bottom:0;}
+[data-theme="dark"] .compare-table tfoot td{background:#152232;}
 .compare-cta-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px 16px;border-radius:100px;font-size:13px;font-weight:600;text-decoration:none;transition:all .25s ease;}
 .compare-cta-btn.primary{background:var(--cyan);color:#fff;box-shadow:0 4px 14px -4px var(--cyan-glow);}
 .compare-cta-btn.primary:hover{background:var(--cyan-hover);transform:translateY(-2px);box-shadow:0 6px 20px -4px var(--cyan-glow);}
@@ -448,7 +531,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 @keyframes fabPulse{0%{box-shadow:0 0 0 0 rgba(59,191,178,.6)}70%{box-shadow:0 0 0 10px rgba(59,191,178,0)}100%{box-shadow:0 0 0 0 rgba(59,191,178,0)}}
 .demo-fab .fab-arrow{transition:transform .2s;display:inline-block;}
 .demo-fab:hover .fab-arrow{transform:translateX(4px);}
-@media(max-width:640px){.demo-fab{padding:12px 22px 12px 16px;font-size:11px;bottom:16px;}}
+@media(max-width:640px){footer, .footer{padding-bottom:90px !important;} .demo-fab{padding:12px 22px 12px 16px;font-size:11px;bottom:16px;}}
 
 /* Standalone section */
 /* ─── INTERNATIONAL PRICING TABLE ──────────────── */
@@ -474,7 +557,547 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .compare-table .yes{color:var(--cyan);font-weight:600;}
 .compare-table .no{color:var(--faint);}
 .compare-table tr:hover td{background:rgba(11,124,114,.03);}
-@media(max-width:640px){.compare-table{font-size:12px;}.compare-table th,.compare-table td{padding:10px 8px;}}
+
+/* ─── MOBILE COMPARISON MATRIX SWITCHER ───────── */
+.compare-mobile-selector {
+  display: none;
+  margin: 0 auto 24px;
+  background: rgba(0,0,0,.04);
+  padding: 4px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  gap: 4px;
+  max-width: 480px;
+}
+[data-theme="dark"] .compare-mobile-selector {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.1);
+}
+.cmp-tab-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s ease;
+  white-space: nowrap;
+}
+.cmp-tab-btn.active {
+  background: #fff;
+  color: var(--white);
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+[data-theme="dark"] .cmp-tab-btn.active {
+  background: var(--surface-dark-card);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.4);
+}
+.cmp-tab-btn[data-cmp-col="pro"].active {
+  color: #8C5B09;
+}
+[data-theme="dark"] .cmp-tab-btn[data-cmp-col="pro"].active {
+  color: #FBBF24;
+}
+
+@media(max-width: 768px) {
+  .compare-mobile-selector {
+    display: flex;
+  }
+  .compare-table-container {
+    padding: 6px;
+    border-radius: 18px;
+  }
+  .compare-table {
+    min-width: 100% !important;
+    font-size: 13px;
+  }
+  .compare-table th, .compare-table td {
+    padding: 12px 10px;
+  }
+  .compare-table thead th {
+    padding: 16px 10px;
+    font-size: 13.5px;
+  }
+  .compare-table tfoot td {
+    padding: 14px 10px;
+  }
+  
+  /* Single-plan column isolation for maximum readability */
+  .compare-table[data-cmp-active="start"] th:nth-child(3),
+  .compare-table[data-cmp-active="start"] td:nth-child(3),
+  .compare-table[data-cmp-active="start"] th:nth-child(4),
+  .compare-table[data-cmp-active="start"] td:nth-child(4) {
+    display: none;
+  }
+  .compare-table[data-cmp-active="start"] th:nth-child(2),
+  .compare-table[data-cmp-active="start"] td:nth-child(2) {
+    display: table-cell;
+    width: 48%;
+  }
+
+  .compare-table[data-cmp-active="pro"] th:nth-child(2),
+  .compare-table[data-cmp-active="pro"] td:nth-child(2),
+  .compare-table[data-cmp-active="pro"] th:nth-child(4),
+  .compare-table[data-cmp-active="pro"] td:nth-child(4) {
+    display: none;
+  }
+  .compare-table[data-cmp-active="pro"] th:nth-child(3),
+  .compare-table[data-cmp-active="pro"] td:nth-child(3) {
+    display: table-cell;
+    width: 48%;
+  }
+
+  .compare-table[data-cmp-active="ent"] th:nth-child(2),
+  .compare-table[data-cmp-active="ent"] td:nth-child(2),
+  .compare-table[data-cmp-active="ent"] th:nth-child(3),
+  .compare-table[data-cmp-active="ent"] td:nth-child(3) {
+    display: none;
+  }
+  .compare-table[data-cmp-active="ent"] th:nth-child(4),
+  .compare-table[data-cmp-active="ent"] td:nth-child(4) {
+    display: table-cell;
+    width: 48%;
+  }
+
+  .compare-table[data-cmp-active="all"] {
+    min-width: 760px !important;
+  }
+  .compare-table[data-cmp-active="all"] th,
+  .compare-table[data-cmp-active="all"] td {
+    display: table-cell !important;
+  }
+
+  .compare-table th:first-child,
+  .compare-table td:first-child {
+    width: 52% !important;
+  }
+}
+
+/* ═══ DEALERASSIST AI VOICE HUB & RESOURCE SUITE ═══ */
+.dealer-assist-section {
+  position: relative;
+  z-index: 2;
+  padding: clamp(60px, 8vw, 100px) 0;
+  max-width: none;
+  margin: 0;
+  display: block;
+}
+.dealer-assist-inner {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 32px);
+}
+.dealer-assist-head {
+  text-align: center;
+  max-width: 840px;
+  margin: 0 auto clamp(36px, 5vw, 54px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.dealer-assist-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: var(--cyan-soft);
+  border: 1px solid var(--border-glow);
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-weight: 600;
+}
+.dealer-assist-title {
+  font-family: var(--display);
+  font-size: clamp(28px, 3.4vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.025em;
+  color: var(--white);
+}
+.dealer-assist-lede {
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 720px;
+}
+.dealer-assist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(20px, 3vw, 36px);
+  align-items: stretch;
+}
+@media (max-width: 960px) {
+  .dealer-assist-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.assist-card {
+  background: #FBF9F3 !important;
+  border: 1px solid rgba(60, 50, 30, 0.15) !important;
+  border-radius: 20px;
+  padding: clamp(24px, 3vw, 36px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="dark"] .assist-card {
+  background: #152232 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.assist-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+}
+.assist-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #0D9488;
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  padding: 5px 12px;
+  border-radius: 99px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+.assist-card-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0D9488;
+  box-shadow: 0 0 6px rgba(13, 148, 136, 0.6);
+}
+.assist-card-h3 {
+  font-family: var(--display);
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+.assist-card-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.assist-features-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.assist-pill {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--white);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+[data-theme="dark"] .assist-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #F1F5F9;
+}
+.assist-sim-box {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+[data-theme="dark"] .assist-sim-box {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.assist-sim-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.assist-sim-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.assist-prompt-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+[data-theme="dark"] .assist-prompt-btn {
+  background: #1B2B3F;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #F1F5F9;
+}
+.assist-prompt-btn:hover {
+  border-color: var(--cyan);
+  transform: translateX(2px);
+}
+.assist-prompt-btn.active {
+  background: rgba(13, 148, 136, 0.08);
+  border-color: #0D9488;
+  color: #0D9488;
+  font-weight: 600;
+}
+[data-theme="dark"] .assist-prompt-btn.active {
+  background: rgba(13, 148, 136, 0.2);
+  border-color: #5EEAD4;
+  color: #5EEAD4;
+}
+.assist-prompt-btn .ic {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.assist-sim-response {
+  background: #FFFFFF;
+  border: 1px solid rgba(13, 148, 136, 0.3);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.08);
+}
+[data-theme="dark"] .assist-sim-response {
+  background: #0E1620;
+  border-color: rgba(94, 234, 212, 0.3);
+}
+.assist-sim-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #0D9488;
+  font-weight: 700;
+}
+[data-theme="dark"] .assist-sim-tag {
+  color: #5EEAD4;
+}
+#assistSimText {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--white);
+  font-style: italic;
+}
+.assist-sim-delivery {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #0D9488;
+  font-weight: 600;
+  background: rgba(13, 148, 136, 0.08);
+  padding: 4px 10px;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+[data-theme="dark"] .assist-sim-delivery {
+  color: #5EEAD4;
+  background: rgba(13, 148, 136, 0.2);
+}
+.call-guard {
+  margin-top: 10px;
+  text-align: center;
+}
+.call-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1E2836, #0F172A);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.call-btn:hover {
+  background: linear-gradient(135deg, #0D9488, #09685F);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.3);
+}
+.call-note {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Resource Suite Card Actions */
+.suite-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.suite-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+[data-theme="dark"] .suite-action-card {
+  background: #1B2B3F;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.suite-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--cyan);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.suite-action-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.suite-action-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.04);
+  display: grid;
+  place-items: center;
+  color: var(--white);
+}
+[data-theme="dark"] .suite-action-icon {
+  background: rgba(255, 255, 255, 0.06);
+  color: #F1F5F9;
+}
+.suite-action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.suite-action-title {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.25;
+}
+[data-theme="dark"] .suite-action-title {
+  color: #FFFFFF;
+}
+.suite-action-sub {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+.suite-action-arrow {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 700;
+  transition: transform 0.2s ease;
+}
+.suite-action-card:hover .suite-action-arrow {
+  transform: translateX(3px);
+  color: var(--cyan);
+}
+.suite-primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0B7C72, #065A53);
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  border: none;
+  box-shadow: 0 4px 16px -4px rgba(11, 124, 114, 0.5);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+.suite-primary-btn:hover {
+  background: linear-gradient(135deg, #0F766E, #065A53);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(11, 124, 114, 0.6);
+}
+.assist-trust-strip {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+@media (max-width: 640px) {
+  .assist-trust-strip {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
 
 /* Trust */
 .trust{position:relative;z-index:2;border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06);background:#EAE6DA;padding:60px 24px;}
@@ -484,16 +1107,25 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 .trust-item p{font-size:13.5px;color:var(--white-dim);line-height:1.5;}
 
 /* FAQ */
-.faq{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:100px 24px;}
-.faq h2{font-size:clamp(26px,3vw,36px);font-weight:600;letter-spacing:-.02em;text-align:center;margin-bottom:48px;}
-.faq-item{border-bottom:1px solid var(--glass-line);}
-.faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;padding:22px 0;background:none;border:none;color:var(--white);font-family:var(--sans);font-size:16px;font-weight:500;text-align:left;cursor:pointer;}
+.faq{position:relative;z-index:2;max-width:800px;margin:0 auto;padding:clamp(60px, 8vw, 100px) 24px;}
+.faq h2{font-size:clamp(26px,3vw,36px);font-weight:600;letter-spacing:-.02em;text-align:center;margin-bottom:36px;color:var(--white);}
+.faq-item{background:#FBF9F3;border:1px solid var(--border);border-radius:18px;margin-bottom:14px;padding:0 24px;transition:border-color .25s ease,box-shadow .25s ease,transform .25s ease;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.03);}
+.faq-item:hover{border-color:var(--cyan-soft);box-shadow:0 6px 20px -8px var(--cyan-glow);transform:translateY(-1px);}
+.faq-item.open{border-color:rgba(13,148,136,.35);box-shadow:0 8px 24px -10px var(--cyan-glow);}
+.faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;padding:20px 0;background:none;border:none;color:var(--white);font-family:var(--sans);font-size:16px;font-weight:600;text-align:left;cursor:pointer;line-height:1.4;outline:none;}
 .faq-q:hover{color:var(--cyan);}
 .faq-q:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px;}
-.faq-q .plus{font-family:var(--mono);font-size:18px;color:var(--cyan);transition:transform .3s;}
+.faq-q .plus{font-family:var(--mono);font-size:20px;color:var(--cyan);transition:transform .3s ease;flex-shrink:0;margin-left:16px;}
 .faq-item.open .plus{transform:rotate(45deg);}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;color:var(--white-dim);font-size:14.5px;line-height:1.6;}
-.faq-item.open .faq-a{max-height:300px;padding-bottom:22px;}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(0.16, 1, 0.3, 1),padding .35s ease,opacity .3s ease;color:var(--muted);font-size:14.5px;line-height:1.65;opacity:0;}
+.faq-item.open .faq-a{max-height:400px;padding-bottom:20px;opacity:1;}
+
+[data-theme="dark"] .faq-item{background:#152232;border-color:rgba(255,255,255,.08);color:var(--white);box-shadow:0 4px 16px rgba(0,0,0,.2);}
+[data-theme="dark"] .faq-item:hover{border-color:rgba(94,234,212,.3);box-shadow:0 8px 24px -10px rgba(94,234,212,.2);}
+[data-theme="dark"] .faq-item.open{border-color:rgba(94,234,212,.4);box-shadow:0 8px 28px -8px rgba(0,0,0,.5);}
+[data-theme="dark"] .faq-q{color:#F1F5F9;}
+[data-theme="dark"] .faq-q:hover{color:#5EEAD4;}
+[data-theme="dark"] .faq-a{color:rgba(241,245,249,0.78);}
 
 /* CTA */
 .cta{position:relative;z-index:2;padding:100px 24px;text-align:center;background:radial-gradient(ellipse 60% 100% at 50% 50%,rgba(13,148,136,.04),transparent);border-top:1px solid rgba(0,0,0,.06);}
@@ -540,45 +1172,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offse
 
 /* Focus visible everywhere */
 a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px;}
-/* Nav — matches homepage */
-.nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;background:rgba(248,245,238,0.97);border:1px solid rgba(0,0,0,.08);border-radius:99px;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:1160px;width:calc(100% - 32px);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .4s;}
-.nav.scrolled{background:rgba(248,245,238,0.96);border-color:rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(0,0,0,.12);}
-.nav-brand{display:flex;align-items:center;color:var(--white);height:100%;flex-shrink:0;}
-.logo-3d{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1;}
-.logo-3d .tru{background:linear-gradient(180deg,#1E293B 0%,#334155 50%,#64748B 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none;}
-.logo-3d .dealer{background:linear-gradient(180deg,#0D9488 0%,#0F766E 50%,#115E59 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none;}
-.nav-links{display:flex;align-items:center;gap:18px;font-size:13px;color:var(--white-dim);flex-shrink:1;}
-.nav-links a{transition:color .2s;position:relative;padding-bottom:2px;white-space:nowrap;}
-.nav-links a::after{content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--cyan);transition:right .25s ease;}
-.nav-links a:hover{color:var(--white);}
-.nav-links a:hover::after,.nav-links a.active::after{right:0;}
-.nav-links a.active{color:var(--cyan);}
-.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.nav-sandbox-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;font-weight:600;padding:7px 13px;background:var(--cyan);border:1px solid var(--cyan);border-radius:100px;color:#fff;cursor:pointer;transition:all .25s ease;white-space:nowrap;box-shadow:0 4px 14px -3px rgba(11,124,114,.4);text-decoration:none;}
-.nav-sandbox-btn .dot{width:6px;height:6px;border-radius:50%;background:#5EEAD4;box-shadow:0 0 8px rgba(94,234,212,.8);animation:pulseDot 2s infinite;}
-@keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.5;}}
-.nav-sandbox-btn:hover{background:#0F766E;border-color:#0F766E;transform:translateY(-1px);box-shadow:0 6px 20px -4px rgba(11,124,114,.5);}
-.nav-cta{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:7px 14px;background:var(--white);border:1px solid var(--white);border-radius:100px;color:var(--ink);white-space:nowrap;transition:all .25s cubic-bezier(.22,1,.36,1);font-weight:600;text-decoration:none;}
-.nav-cta:hover{background:var(--cyan);border-color:var(--cyan);color:#fff;transform:translateY(-1px);}
-/* Burger */
-.nav-burger{display:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--glass-line);align-items:center;justify-content:center;flex:none;background:none;cursor:pointer;}
-.nav-burger span,.nav-burger span::before,.nav-burger span::after{display:block;width:16px;height:1.5px;background:var(--white);transition:transform .25s,top .25s,background .25s;}
-.nav-burger span{position:relative;}
-.nav-burger span::before,.nav-burger span::after{content:'';position:absolute;left:0;}
-.nav-burger span::before{top:-5px;} .nav-burger span::after{top:5px;}
-.nav.open .nav-burger span{background:transparent;}
-.nav.open .nav-burger span::before{top:0;transform:rotate(45deg);}
-.nav.open .nav-burger span::after{top:0;transform:rotate(-45deg);}
-/* Mobile dropdown */
-.nav-mobile{display:none;position:absolute;top:calc(100% + 14px);left:0;right:0;padding:12px;background:rgba(248,245,238,0.97);border:1px solid rgba(0,0,0,.08);border-radius:24px;box-shadow:0 20px 40px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.05);opacity:0;visibility:hidden;transform:translateY(-12px) scale(0.98);transform-origin:top center;transition:opacity .3s cubic-bezier(.22,1,.36,1),transform .3s cubic-bezier(.22,1,.36,1),visibility .3s;}
-.nav-mobile a{display:block;padding:12px 16px;border-radius:12px;font-size:14.5px;color:var(--white-dim);font-weight:500;text-decoration:none;}
-.nav-mobile a:hover{background:rgba(11,124,114,.02);color:var(--white);}
-.nav-mobile a.active{color:var(--cyan);background:rgba(11,124,114,.06);}
-.nav-mobile-cta{margin-top:6px;text-align:center;background:var(--cyan)!important;color:#fff!important;font-weight:600!important;border-radius:12px!important;}
-/* Responsive */
-@media(max-width:1120px){.nav{padding:7px 14px;gap:10px;}.nav-links{gap:12px;font-size:12px;}.nav-cta{padding:6px 11px;font-size:10px;}.nav-sandbox-btn{padding:6px 10px;font-size:10.5px;}}
-@media(max-width:960px){.nav-links{display:none;}.nav{padding:6px 14px;width:calc(100% - 20px);}.nav-burger{display:flex;}.nav-mobile{display:block;}.nav.open .nav-mobile{opacity:1;visibility:visible;transform:translateY(0) scale(1);}}
-@media(max-width:540px){.nav-cta{display:none;}}
 
 /* ═══ PREMIUM SITE-WIDE EFFECTS ═══ */
 
@@ -586,13 +1179,25 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 h1, h2, h3, .section-title, .section-h2, .mod-panel-title, .hero-h1 {
   position: relative;
 }
-h1 .accent, h1 em, h2 .accent, h2 em, .hero-h1 .accent {
-  background: linear-gradient(90deg, var(--cyan,#0B7C72) 0%, #5EEAD4 48%, var(--cyan,#0B7C72) 100%);
-  background-size: 200% 100%;
+h1 .accent, h1 em, h2 .accent, h2 em, h3 .accent, h3 em, .hero-h1 .accent, .section-h2 .accent, .final h2 .accent, .section-title .accent {
+  display: inline-block;
+  padding-right: 0.15em;
+  padding-bottom: 0.04em;
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  background: linear-gradient(135deg, #0B7C72 0%, #0D9488 25%, #14B8A6 48%, #0F766E 72%, #0B7C72 100%);
+  background-size: 240% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: headingShimmer 4s ease-in-out infinite;
+  animation: headingShimmer 5s ease-in-out infinite;
+}
+[data-theme="dark"] h1 .accent, [data-theme="dark"] h1 em, [data-theme="dark"] h2 .accent, [data-theme="dark"] h2 em, [data-theme="dark"] .hero-h1 .accent {
+  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 30%, #2DD4BF 60%, #0D9488 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 @keyframes headingShimmer {
   0%, 100% { background-position: 0% 50%; }
@@ -623,7 +1228,7 @@ h1 .accent, h1 em, h2 .accent, h2 em, .hero-h1 .accent {
 .grid-4 > *:nth-child(6) { transition-delay: 0.35s; }
 
 /* 3D Tilt on cards — perspective hover */
-.card, .table-wrap, .cta-box, .pricing-card, .pkg-card, .feature-card, .faq-item {
+.card, .table-wrap, .cta-box, .pricing-card, .pkg-card, .feature-card {
   transform-style: preserve-3d;
   transition: transform 0.4s cubic-bezier(.22,1,.36,1), box-shadow 0.4s ease;
 }
@@ -652,18 +1257,8 @@ h1 .accent, h1 em, h2 .accent, h2 em, .hero-h1 .accent {
   position: relative;
   overflow: hidden;
 }
-
-/* FAQ items — expand with spring */
-.faq-item {
-  position: relative;
-  overflow: hidden;
-  border-radius: 16px !important;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-.faq-item:hover {
-  transform: translateY(-3px) scale(1.005);
-  box-shadow: 0 12px 28px -8px rgba(11,124,114,.12);
-  border-color: rgba(11,124,114,.2) !important;
+.card.pro-card, .pricing-card.pro-card, .pkg-card.pro-card {
+  overflow: visible !important;
 }
 
 /* Table rows — highlight sweep */
@@ -720,13 +1315,8 @@ html { scroll-behavior: smooth; }
 
 /* ═══ SENIOR UI POLISH ═══ */
 
-/* Nav — accommodate bigger logo, more premium feel */
-.nav { padding: 8px 18px; }
-.nav-brand img { filter: drop-shadow(0 2px 4px rgba(0,0,0,.08)); transition: transform .3s ease; }
-.nav-brand:hover img { transform: scale(1.03); }
-
-/* Nav entrance */
-@keyframes navSlideIn { from { transform: translateX(-50%) translateY(-20px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+/* Nav entrance — full width */
+@keyframes navSlideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .nav { animation: navSlideIn 0.6s cubic-bezier(.22,1,.36,1) forwards; }
 
 /* Card depth — multi-layer realistic shadows */
@@ -902,8 +1492,26 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
 }
 
 
+/* Terminal Dark Mode Overrides */
+[data-theme="dark"] .trust{background:#111A24 !important;border-color:rgba(255,255,255,0.08) !important;}
+[data-theme="dark"] .trust-item .n{color:#5EEAD4 !important;}
+[data-theme="dark"] .trust-item p{color:rgba(241,245,249,0.85) !important;}
+[data-theme="dark"] footer, [data-theme="dark"] .footer{background:#0B0F17 !important;border-top-color:rgba(255,255,255,0.08) !important;}
+[data-theme="dark"] footer p, [data-theme="dark"] .footer p{color:rgba(148,163,184,0.7) !important;}
+[data-theme="dark"] td:not(.highlight){color:rgba(241,245,249,0.85) !important;}
+[data-theme="dark"] .compare-feat-name{color:#F1F5F9 !important;}
+[data-theme="dark"] .compare-feat-sub{color:rgba(148,163,184,0.85) !important;}
+[data-theme="dark"] .compare-cat-head td{background:#152232 !important;color:#5EEAD4 !important;border-top-color:rgba(255,255,255,0.08) !important;}
+[data-theme="dark"] .compare-table thead th{background:#182536 !important;color:#FFFFFF !important;border-bottom-color:rgba(255,255,255,0.1) !important;}
+[data-theme="dark"] .compare-table thead th.col-pro{background:rgba(212,148,42,0.14) !important;border-color:rgba(212,148,42,0.3) !important;color:#FBBF24 !important;}
+[data-theme="dark"] .compare-table tfoot td{background:#182536 !important;}
+[data-theme="dark"] .compare-cta-btn.ghost{background:#152232 !important;border-color:rgba(255,255,255,0.12) !important;color:#F1F5F9 !important;}
+[data-theme="dark"] .assist-card{background:#152232 !important;border-color:rgba(255,255,255,0.08) !important;box-shadow:0 10px 30px rgba(0,0,0,0.3) !important;}
+[data-theme="dark"] .suite-action-card{background:#1B2B3F !important;border-color:rgba(255,255,255,0.08) !important;}
+[data-theme="dark"] .suite-action-title{color:#FFFFFF !important;}
+
 /* Nav logo responsive */
-@media(max-width:540px){ .nav-brand img { height:28px !important; } }
+@media(max-width:540px){.nav-brand img{height:36px !important;width:auto;}}
 </style>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
@@ -914,7 +1522,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
 <div class="scroll-prog"><div class="scroll-prog-fill" id="prog"></div></div>
 
 <nav class="nav" id="mainNav">
-  <a href="index.html" class="nav-brand"><img src="trudealer-nav-logo.webp" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
+  <a href="index.html" class="nav-brand"><img src="trudealer-nav-logo.svg" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
   <div class="nav-links">
     <a href="index.html">Cars</a>
     <a href="moto.html">Moto</a>
@@ -925,7 +1533,8 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     <a href="faq.html">FAQ</a>
   </div>
   <div class="nav-right">
-    <a href="https://premium.tru-saas.com" class="nav-sandbox-btn" target="_blank" rel="noopener"><span class="dot"></span> Live Sandbox</a>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode"></button>
+    <a href="https://premium.tru-saas.com" class="nav-sandbox-btn" target="_blank" rel="noopener"><span class="dot"></span> Live Demo</a>
     <a href="demo.html" class="nav-cta">Book Demo &rarr;</a>
     <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
   </div>
@@ -940,7 +1549,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     <a href="trudealer-vs-vmg.html">vs VMG</a>
     <a href="trudealer-vs-autoxloo.html">vs AutoXloo</a>
     <a href="uk.html">UK Market</a>
-    <a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Live Sandbox</a>
+    <a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Live Demo</a>
     <a href="demo.html" class="nav-mobile-cta">Book a walkthrough &rarr;</a>
   </div>
 </nav>
@@ -957,9 +1566,9 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
       <button class="curr-btn" data-c="USD" onclick="setC('USD')">USD $</button>
       <button class="curr-btn active" data-c="ZAR" onclick="setC('ZAR')">ZAR R</button>
     </div>
-    <button type="button" class="hero-sandbox-btn open-sandbox-btn" data-open-sandbox>
+    <button type="button" class="hero-sandbox-btn open-sandbox-btn" data-open-sandbox data-open-demo>
       <span class="dot"></span>
-      Try Live Sandbox Studio ↗
+      Try Live Demo Studio ↗
     </button>
   </div>
 </section>
@@ -991,14 +1600,14 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
       <div class="card-cancel">No unit cap · Cancel anytime · Keep your data</div>
     </div>
 
-    <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20get%20started%20with%20TruStart%20(R1%2C599%2Fmo)" class="card-cta ghost" target="_blank" rel="noopener">Get Started with TruStart</a>
+    <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20get%20started%20with%20TruStart%20(R1%2C599%2Fmo)" class="card-cta ghost" target="_blank" rel="noopener">Get Started with TruStart</a>
     <div class="card-div"></div>
     <button class="card-toggle" onclick="this.closest('.card').classList.toggle('open')">What's included <span class="chevron">▾</span></button>
     <ul class="card-features">
       <li>Your branded dealer website — unlimited vehicle listings</li>
       <li>TruInspect condition &amp; trade-in appraisal reports (3 templates)</li>
       <li>TruLens AI guided photo capture (1 user) + 360° orbit spins</li>
-      <li>DeepSeek AI chat on your site + WhatsApp</li>
+      <li>DealerAssist™ AI sales chat on your site + WhatsApp</li>
       <li>Mobile stock management app — add, edit, sold anywhere</li>
       <li>Interactive website widgets — finance calc, test drive booking, affordability</li>
       <li>6-stage buyer lead pipeline</li>
@@ -1031,7 +1640,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
       <div class="card-cancel amber-sub">Month-to-month · 20–80+ units/mo · Cancel anytime</div>
     </div>
 
-    <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20book%20a%20TruPro%20demo%20and%20claim%20the%2050%25%20setup%20discount" class="card-cta pro-cta" target="_blank" rel="noopener">Book TruPro Demo &amp; Claim 50% Off</a>
+    <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20book%20a%20TruPro%20demo%20and%20claim%20the%2050%25%20setup%20discount" class="card-cta pro-cta" target="_blank" rel="noopener">Book TruPro Demo &amp; Claim 50% Off</a>
     <div class="card-div"></div>
     <button class="card-toggle" onclick="this.closest('.card').classList.toggle('open')">What's included <span class="chevron">▾</span></button>
     <ul class="card-features">
@@ -1072,7 +1681,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
       <div class="card-cancel">Annual agreement · Dedicated engineering &amp; SLA</div>
     </div>
 
-    <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20discuss%20TruEnterprise%20for%20our%20dealership%20group" class="card-cta ghost" target="_blank" rel="noopener">Discuss TruEnterprise</a>
+    <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20discuss%20TruEnterprise%20for%20our%20dealership%20group" class="card-cta ghost" target="_blank" rel="noopener">Discuss TruEnterprise</a>
     <div class="card-div"></div>
     <button class="card-toggle" onclick="this.closest('.card').classList.toggle('open')">What's included <span class="chevron">▾</span></button>
     <ul class="card-features">
@@ -1097,7 +1706,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
       <h3>Need Custom Automotive Engineering?</h3>
       <p>Custom DMS integrations, internal auction bidding portals, automated stock sourcing feeds, or proprietary white-label apps. If it touches automotive retail, our Cape Town engineering team builds it.</p>
     </div>
-    <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20discuss%20a%20custom%20automotive%20software%20build" class="bespoke-cta" target="_blank" rel="noopener">
+    <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20discuss%20a%20custom%20automotive%20software%20build" class="bespoke-cta" target="_blank" rel="noopener">
       Scope a Custom Project →
     </a>
   </div>
@@ -1111,8 +1720,16 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     <p>Everything clearly laid out. No hidden line items or surprise add-ons. Compare modules, capabilities, and infrastructure across our three dealership packages.</p>
   </div>
 
+  <!-- Mobile Plan Selector Tabs -->
+  <div class="compare-mobile-selector" role="tablist" aria-label="Select Package to Compare">
+    <button type="button" class="cmp-tab-btn" data-cmp-col="start" role="tab" aria-selected="false">TruStart</button>
+    <button type="button" class="cmp-tab-btn active" data-cmp-col="pro" role="tab" aria-selected="true">★ TruPro</button>
+    <button type="button" class="cmp-tab-btn" data-cmp-col="ent" role="tab" aria-selected="false">Enterprise</button>
+    <button type="button" class="cmp-tab-btn" data-cmp-col="all" role="tab" aria-selected="false">All</button>
+  </div>
+
   <div class="compare-table-container">
-    <table class="compare-table" aria-label="TruDealer Package Feature Comparison">
+    <table class="compare-table" id="pkgCompareTable" data-cmp-active="pro" aria-label="TruDealer Package Feature Comparison">
       <thead>
         <tr>
           <th>Capability / Feature</th>
@@ -1297,14 +1914,14 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
         </tr>
         <tr>
           <td>
-            <span class="compare-feat-name">DeepSeek AI WhatsApp Sales Agent</span>
+            <span class="compare-feat-name">DealerAssist™ AI WhatsApp Sales Agent</span>
             <span class="compare-feat-sub">24/7 AI chat answering vehicle specs &amp; booking tests</span>
           </td>
           <td>
             <span class="compare-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Web &amp; WhatsApp AI Chat</span>
           </td>
           <td class="col-pro">
-            <span class="compare-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 24/7 DeepSeek AI + Diary Booking</span>
+            <span class="compare-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 24/7 DealerAssist™ AI + Diary Booking</span>
           </td>
           <td>
             <span class="compare-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Multi-Agent WhatsApp Routing</span>
@@ -1411,13 +2028,13 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
         <tr>
           <td></td>
           <td>
-            <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20get%20started%20with%20TruStart%20(R1%2C599%2Fmo)" class="compare-cta-btn ghost" target="_blank" rel="noopener">Choose TruStart</a>
+            <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20get%20started%20with%20TruStart%20(R1%2C599%2Fmo)" class="compare-cta-btn ghost" target="_blank" rel="noopener">Choose TruStart</a>
           </td>
           <td class="col-pro">
-            <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20book%20a%20TruPro%20demo%20and%20claim%20the%2050%25%20setup%20discount" class="compare-cta-btn pro-btn" target="_blank" rel="noopener">Choose TruPro ★</a>
+            <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20book%20a%20TruPro%20demo%20and%20claim%20the%2050%25%20setup%20discount" class="compare-cta-btn pro-btn" target="_blank" rel="noopener">Choose TruPro ★</a>
           </td>
           <td>
-            <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20discuss%20TruEnterprise%20for%20our%20dealership%20group" class="compare-cta-btn ghost" target="_blank" rel="noopener">Choose Enterprise</a>
+            <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20discuss%20TruEnterprise%20for%20our%20dealership%20group" class="compare-cta-btn ghost" target="_blank" rel="noopener">Choose Enterprise</a>
           </td>
         </tr>
       </tfoot>
@@ -1558,32 +2175,181 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
   </div>
 </section>
 
-<!-- Callback Request Form -->
-<section class="request" id="request" style="max-width:640px;margin:0 auto;padding:64px 20px 8px;text-align:center;">
-  <h2 class="reveal">Prefer we call you?</h2>
-  <p class="reveal">Leave your details and our team gets back to you the same day — usually within the hour. Straight to your dealership, no ticket queue.</p>
-  <div id="tru-form-inline" class="reveal" style="max-width:560px;margin:28px auto 0;text-align:left;"></div>
-</section>
-<script src="tru-form.js"
-        data-dealer="TruDealer"
-        data-slug="true-cars"
-        data-flow="https://premium.tru-saas.com"
-        data-wa="27620502091"
-        data-accent="#0D9488"
-        data-theme="light"
-        data-mode="inline"
-        data-target="#tru-form-inline"
-        data-heading="Request a callback"
-        data-subheading="Tell us about your dealership — we'll be in touch today."
-        data-fields="location"
-        data-brand="TruDealer"></script>
+<section class="dealer-assist-section" id="book">
+  <div class="dealer-assist-inner">
+    <div class="dealer-assist-head reveal">
+      <span class="dealer-assist-eyebrow"><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--cyan);display:inline-block;box-shadow:0 0 6px var(--cyan);"></span> The TruDealer Ecosystem · Custom Built</span>
+      <h2 class="dealer-assist-title">Never Miss a Buyer. <span class="accent">24/7 AI Voice, Bookings &amp; Leads.</span></h2>
+      <p class="dealer-assist-lede">Custom-trained on your inventory, trade-in rules, and dealership calendar. DealerAssist answers after-hours phone calls, books test drives directly into your DMS, and pushes qualified lead alerts straight to sales reps on WhatsApp in real time.</p>
+    </div>
 
-<!-- Bottom CTA Section -->
-<section class="cta">
-  <h2 class="reveal">Still not sure which package fits?</h2>
-  <p class="reveal">Book a 25-minute walkthrough. We will run your actual inventory through the platform and tell you honestly which tier fits your lot.</p>
-  <a href="https://cal.com/pgdebeer" target="_blank" class="cta-btn reveal">Book a walkthrough →</a>
-  <div class="cta-sub reveal">Or chat with our team: <a href="https://wa.me/27620502091" style="color:#0D9488;">WhatsApp Support →</a></div>
+    <div class="dealer-assist-grid reveal">
+      <!-- Card 1: Interactive DealerAssist AI Voice & Receptionist -->
+      <div class="assist-card">
+        <div>
+          <div class="assist-card-badge"><span class="dot"></span> Live AI Voice Receptionist</div>
+          <h3 class="assist-card-h3">DealerAssist™ AI Voice Hub</h3>
+          <p class="assist-card-desc">Inbound phone calls answered in under 2 rings with human clarity, live stock lookup, and automated WhatsApp appointment confirmations.</p>
+
+          <div class="assist-features-pills">
+            <span class="assist-pill"><span class="dot"></span> 24/7 AI Receptionist</span>
+            <span class="assist-pill"><span class="dot"></span> Test Drive Bookings</span>
+            <span class="assist-pill"><span class="dot"></span> WhatsApp &amp; SMS Dispatch</span>
+            <span class="assist-pill"><span class="dot"></span> Trade-In Valuations</span>
+          </div>
+
+          <!-- Interactive Simulator Box -->
+          <div class="assist-sim-box">
+            <div class="assist-sim-head">
+              <span>Interactive Caller Simulator</span>
+              <span>Tap a question below ↓</span>
+            </div>
+            <div class="assist-sim-prompts" id="assistSimPrompts">
+              <button type="button" class="assist-prompt-btn active" data-res="&quot;Hi! Yes, the 2021 Toyota Hilux 2.8 GD-6 4x4 is available on the floor in Cape Town at R549,900. I can reserve a test drive for you this Saturday at 10:30 AM — would you like me to send confirmation and directions to your WhatsApp?&quot;" data-del="Test Drive Booked in TruFlow DMS · Lead Dispatched to Sales WhatsApp">
+                <span>&ldquo;Can I book a test drive for the 2021 Hilux this Saturday?&rdquo;</span>
+                <span class="ic">01 →</span>
+              </button>
+              <button type="button" class="assist-prompt-btn" data-res="&quot;Based on current live market comps and TransUnion retail averages, your 2019 VW Polo 1.0 TSI Comfortline (approx 75,000 km) has an estimated trade-in range of R185,000 – R205,000. Would you like our manager to prepare an appraisal?&quot;" data-del="Trade Valuation Report Generated · Lead Assigned to Used Car Buyer">
+                <span>&ldquo;What is my 2019 VW Polo trade-in worth?&rdquo;</span>
+                <span class="ic">02 →</span>
+              </button>
+              <button type="button" class="assist-prompt-btn" data-res="&quot;Yes! The 2022 BMW 320d M Sport with 42,000 km is on the floor with a 100-point TruInspect condition report (Grade A). I can share the 360° spin and video walkthrough right now to your mobile.&quot;" data-del="VIR Report Link &amp; Video Walkaround Pushed to Customer Phone">
+                <span>&ldquo;Is the 2022 BMW 320d M Sport still available?&rdquo;</span>
+                <span class="ic">03 →</span>
+              </button>
+            </div>
+
+            <div class="assist-sim-response" id="assistSimResponse">
+              <span class="assist-sim-tag">DealerAssist Voice AI Response:</span>
+              <div id="assistSimText">&ldquo;Hi! Yes, the 2021 Toyota Hilux 2.8 GD-6 4x4 is available on the floor in Cape Town at R549,900. I can reserve a test drive for you this Saturday at 10:30 AM — would you like me to send confirmation and directions to your WhatsApp?&rdquo;</div>
+              <div class="assist-sim-delivery" id="assistSimDelivery">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Test Drive Booked in TruFlow DMS · Lead Dispatched to Sales WhatsApp</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guarded call dial button -->
+        <div class="call-guard" id="callGuard" data-tel="+44 7476 995694" data-arm-seconds="4">
+          <button type="button" class="call-btn" aria-live="polite">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span class="call-label">Call our after-hours AI agent — tap to reveal</span>
+          </button>
+          <p class="call-note">Live TruVoice demo · Answers after-hours calls within 2 rings · Standard rates apply</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Walkthrough & Resource Suite -->
+      <div class="assist-card">
+        <div>
+          <div class="assist-card-badge" style="color:var(--cyan);background:var(--cyan-soft);border-color:var(--border-glow);"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan);"></span> Complete Dealer Stack</div>
+          <h3 class="assist-card-h3">Watch It Run on Your Dealership</h3>
+          <p class="assist-card-desc">25 minutes on Zoom or Google Meet with the creator. See the exact stack that powers Tru-Cars — with your branding, your currency, and your live floor stock loaded.</p>
+
+          <div class="suite-actions-list">
+            <a href="demo.html" class="suite-action-card" style="background:var(--cyan-soft);border-color:var(--cyan);">
+              <div class="suite-action-left">
+                <div class="suite-action-icon" style="background:var(--cyan);color:#fff;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title" style="color:var(--cyan);font-weight:700;">See Demo All Our Modules ↗</span>
+                  <span class="suite-action-sub">Live interactive widgets &amp; standalone tools</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow" style="font-size:18px;">↗</span>
+            </a>
+
+            <a href="/guides/index.html" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">All Field Guides &amp; Manuals</span>
+                  <span class="suite-action-sub">Step-by-step manuals for TruLens, Inspect &amp; Flow</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">→</span>
+            </a>
+
+            <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">Book 25-Min Walkthrough</span>
+                  <span class="suite-action-sub">Pick a slot on Paul's live calendar (Zoom/Meet)</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">→</span>
+            </a>
+
+            <a href="/brochure.html" target="_blank" rel="noopener" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">View Interactive Brochure</span>
+                  <span class="suite-action-sub">Full product architecture, tiers &amp; ROI</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">→</span>
+            </a>
+
+            <a href="/trudealer-brochure.pdf" download="TruDealer-Brochure-2026.pdf" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">Download PDF Brochure</span>
+                  <span class="suite-action-sub">Official 2026 dealer specification sheet (PDF)</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">↓</span>
+            </a>
+
+            <a href="https://wa.me/447476995694?text=Hi%20Paul%2C%20I%27d%20like%20to%20chat%20about%20TruDealer%20for%20my%20dealership" target="_blank" rel="noopener" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon" style="color:#22C55E;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.05-1.08l-.29-.17-3.01.79.8-2.93-.19-.3a8.21 8.21 0 0 1-1.26-4.37c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.59c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.07-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.76-1.85-.2-.48-.4-.42-.56-.42h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">Instant WhatsApp Connect</span>
+                  <span class="suite-action-sub">Direct founder line · Fast responses</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">↗</span>
+            </a>
+          </div>
+
+          <a class="suite-primary-btn" href="https://cal.com/pgdebeer" target="_blank" rel="noopener">
+            <span>Schedule 25-Min Live Demo (or 24h Access) →</span>
+          </a>
+
+          <div class="assist-trust-strip">
+            <span>14-Day Risk-Free Trial</span>
+            <span>Zero Long-Term Lock-in</span>
+            <span>24h Fast Setup</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;padding-top:32px;margin-top:40px;border-top:1px solid var(--border-glow);font-size:12px;color:var(--muted);font-family:var(--mono);">
+      <a href="/brochure.html" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;display:inline-flex;align-items:center;gap:5px;">View Interactive Brochure ↗</a>
+      <span style="opacity:0.3;">·</span>
+      <a href="/trudealer-brochure.pdf" download="TruDealer-Brochure-2026.pdf" style="color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px;">Download PDF (2026 Spec) ↓</a>
+      <span style="opacity:0.3;">·</span>
+      <span>10 Working Days to Go Live</span>
+      <span style="opacity:0.3;">·</span>
+      <span>14-Day Risk-Free Trial</span>
+    </div>
+  </div>
 </section>
 </main>
 
@@ -1653,8 +2419,8 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     </div>
 
     <div class="sandbox-foot">
-      <span>💡 Pre-configured with active demo stock and simulated leads.</span>
-      <span>Need a private walkthrough? <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener">Book a 25-min demo</a> or <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20a%20demo" target="_blank" rel="noopener">Chat on WhatsApp</a></span>
+      <span>Pre-configured with active demo stock and simulated leads.</span>
+      <span>Need a private walkthrough? <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener">Book a 25-min demo</a> or <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20a%20demo" target="_blank" rel="noopener">Chat on WhatsApp</a></span>
     </div>
   </div>
 </div>
@@ -1754,7 +2520,7 @@ setC(guess.toUpperCase());
   }
 
   document.addEventListener('click', function(e){
-    var trigger = e.target.closest && e.target.closest('[data-open-sandbox], .open-sandbox-btn');
+    var trigger = e.target.closest && e.target.closest('[data-open-sandbox data-open-demo], .open-sandbox-btn');
     if (trigger) {
       openSandbox(e);
     }
@@ -1920,7 +2686,7 @@ setC(guess.toUpperCase());
 </script>
 
 <!-- TruBook — files walkthrough bookings to the true-cars DMS; intercepts legacy cal.com links -->
-<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
+<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="447476995694" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
 <script>
 (function(){
   function openBook(e){ if(e){e.preventDefault();} if(window.TruBook){TruBook.open({mode:'walkthrough'});} else {window.open('https://cal.com/pgdebeer','_blank','noopener');} }
@@ -1958,12 +2724,160 @@ setC(guess.toUpperCase());
   });
 })();
 </script>
+
+<!-- Mobile Comparison Matrix Tabs Script -->
 <script>
-// Lazy image fade-in
-document.querySelectorAll('img[loading="lazy"]').forEach(function(img){
-  if(img.complete){img.classList.add('loaded');}
-  else{img.addEventListener('load',function(){img.classList.add('loaded');});}
-});
+(function(){
+  var table = document.getElementById('pkgCompareTable');
+  var btns = document.querySelectorAll('.cmp-tab-btn');
+  if(!table || !btns.length) return;
+
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-cmp-col') || 'pro';
+      table.setAttribute('data-cmp-active', col);
+      btns.forEach(function(b){
+        var isMatch = b === btn;
+        b.classList.toggle('active', isMatch);
+        b.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+      });
+    });
+  });
+})();
+</script>
+
+<!-- DealerAssist Simulator & Guarded Call -->
+<script>
+(function(){
+  // Simulator prompt buttons
+  var prompts = document.querySelectorAll('.assist-prompt-btn');
+  var textEl = document.getElementById('assistSimText');
+  var delEl = document.getElementById('assistSimDelivery');
+  
+  if(prompts.length && textEl){
+    prompts.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        prompts.forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        var res = btn.getAttribute('data-res');
+        var del = btn.getAttribute('data-del');
+        if(res){
+          textEl.innerHTML = '&ldquo;' + res.replace(/^["“”]|["“”]$/g, '') + '&rdquo;';
+        }
+        if(del && delEl){
+          var span = delEl.querySelector('span');
+          if(span) span.textContent = del;
+        }
+      });
+    });
+  }
+
+  // Guarded call: two-step confirm before dialling
+  var g = document.getElementById('callGuard');
+  if(!g) return;
+  var callBtn = g.querySelector('.call-btn');
+  var label = g.querySelector('.call-label');
+  var tel = (g.dataset.tel || '').trim();
+  var armWindow = (parseInt(g.dataset.armSeconds,10) || 4) * 1000;
+  var armed = false, timer = null;
+  var pretty = tel ? tel.replace(/(\+?\d{2})(\d{2})(\d{3})(\d{4})/, '$1 $2 $3 $4') : '';
+
+  function disarm(){
+    armed = false;
+    g.classList.remove('armed');
+    label.textContent = tel ? 'Call our after-hours AI agent — tap to reveal'
+                            : 'After-hours sales agent — number coming soon';
+    if(timer){ clearTimeout(timer); timer = null; }
+  }
+
+  callBtn.addEventListener('click', function(e){
+    if(!e.isTrusted) return;
+    if(!tel){ label.textContent = 'After-hours sales agent — number coming soon'; return; }
+
+    if(!armed){
+      armed = true;
+      g.classList.add('armed');
+      label.textContent = 'Call ' + pretty + ' — tap again to dial';
+      timer = setTimeout(disarm, armWindow);
+      return;
+    }
+    disarm();
+    window.location.href = 'tel:' + tel.replace(/\s+/g,'');
+  });
+
+  disarm();
+})();
+</script>
+<script>
+// Theme toggle logic
+(function(){
+  var SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  var MOON_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  var root = document.documentElement;
+  var theme = localStorage.getItem('td-theme') || 'dark';
+  var toggles = document.querySelectorAll('.theme-toggle');
+
+  function applyTheme(t) {
+    theme = t;
+    root.setAttribute('data-theme', t);
+    localStorage.setItem('td-theme', t);
+    toggles.forEach(function(btn){
+      btn.innerHTML = t === 'dark' ? SUN_ICON : MOON_ICON;
+      btn.setAttribute('aria-label', t === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+    });
+  }
+
+  applyTheme(theme);
+
+  toggles.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      applyTheme(theme === 'dark' ? 'light' : 'dark');
+    });
+  });
+
+  // Nav scroll & mobile
+  var nav = document.getElementById('mainNav');
+  var burger = document.getElementById('navBurger');
+  var mobile = document.getElementById('navMobile');
+  if (nav) {
+    var lastY = 0, ticking = false;
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        window.requestAnimationFrame(function() {
+          var y = window.scrollY;
+          if (y > 80 && y > lastY) {
+            nav.style.transform = 'translateY(-120%)';
+          } else {
+            nav.style.transform = 'translateY(0)';
+          }
+          if (y > 80) {
+            nav.classList.add('scrolled');
+          } else {
+            nav.classList.remove('scrolled');
+          }
+          lastY = y;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+  if (burger && nav && mobile) {
+    burger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var isOpen = nav.classList.toggle('open');
+      burger.setAttribute('aria-expanded', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    });
+    document.addEventListener('click', function(e) {
+      if (nav.classList.contains('open') && !nav.contains(e.target)) {
+        nav.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+})();
 </script>
 </body>
 </html>

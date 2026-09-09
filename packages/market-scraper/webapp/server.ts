@@ -14,8 +14,34 @@
  * Public by design: no auth, CORS open, per-IP throttle. The paid Unlocker/SERP
  * tiers only engage when the owning instance has configured a key.
  */
+import * as fs from "fs";
+import * as path from "path";
+
+for (const envPath of [
+  path.join(__dirname, "..", ".env"),
+  path.join(__dirname, ".env"),
+  path.join(process.cwd(), ".env"),
+]) {
+  if (fs.existsSync(envPath)) {
+    try {
+      const lines = fs.readFileSync(envPath, "utf-8").split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+        const [k, ...v] = trimmed.split("=");
+        const key = k.trim();
+        const val = v.join("=").trim().replace(/^["']|["']$/g, "");
+        if (key && !process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    } catch {}
+  }
+}
+
 import express from "express";
 import { fetchValuation, markets, activeMarkets } from "../index";
+import { listMakes, listModels, listVariants } from "../../tru-arbitrage/src/engine/catalogue";
 
 const PORT = Number(process.env.PORT || 4300);
 const API_KEY = process.env.API_KEY || "";
@@ -74,11 +100,40 @@ app.get("/api/markets", (_req, res) => {
   res.json(Object.keys(activeMarkets).map((id) => ({ id, label: LABELS[id] || id })));
 });
 
-app.post("/api/valuation", async (req, res) => {
+app.get("/api/catalogue/makes", (req, res) => {
+  try {
+    res.json({ makes: listMakes("cars") });
+  } catch {
+    res.json({ makes: ["Toyota", "Volkswagen", "Ford", "BMW", "Mercedes-Benz", "Hyundai", "Nissan", "Audi", "Kia", "Isuzu", "Mazda", "Renault", "Suzuki", "Havill", "Chery"] });
+  }
+});
+
+app.get("/api/catalogue/models", (req, res) => {
+  try {
+    const make = String(req.query.make || "").trim();
+    if (!make) return res.status(400).json({ error: "make is required" });
+    res.json({ models: listModels("cars", make) });
+  } catch {
+    res.json({ models: [] });
+  }
+});
+
+app.get("/api/catalogue/variants", (req, res) => {
+  try {
+    const make = String(req.query.make || "").trim();
+    const model = String(req.query.model || "").trim();
+    if (!make || !model) return res.status(400).json({ error: "make and model are required" });
+    res.json({ variants: listVariants("cars", make, model) });
+  } catch {
+    res.json({ variants: [] });
+  }
+});
+
+app.post(["/api/valuation", "/valuation", "/scraper/valuation", "/api/scraper/valuation"], async (req, res) => {
   const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
   if (throttled(ip)) return res.status(429).json({ error: "Too many requests — slow down." });
   try {
-    const { make, model, year, mileage, market, location } = req.body || {};
+    const { make, model, variant, year, mileage, market, location } = req.body || {};
     if (!make || !model || !year) {
       return res.status(400).json({ error: "make, model, and year are required" });
     }
@@ -87,6 +142,7 @@ app.post("/api/valuation", async (req, res) => {
     const m = cfg.id === "housingZa" ? (location || make) : make;
     const data = await fetchValuation(String(m), String(model), String(year), {
       mileage: Number(mileage) || undefined,
+      variant: variant ? String(variant) : undefined,
     }, cfg);
     res.json(data);
   } catch (err: any) {

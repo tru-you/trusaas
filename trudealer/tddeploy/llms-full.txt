@@ -62,7 +62,7 @@ All widgets in `packages/standalone/` are vanilla JavaScript, shadow-DOM encapsu
         data-dealer="Caledon Motors"
         data-slug="caledon-motors"
         data-accent="#0B7C72"
-        data-wa="27620502091"></script>
+        data-wa="447476995694"></script>
 ```
 
 ### Supported Widget Types:

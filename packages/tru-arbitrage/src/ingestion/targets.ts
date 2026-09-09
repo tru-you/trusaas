@@ -19,7 +19,7 @@ import { findCardYear } from '../engine/year';
 import { modelCore } from '../engine/valuation';
 import { titleCaseVehicle } from '../engine/tu-matcher';
 
-const PRICE_RE = /R\s?((?:\d{1,3}(?:[ ,]\d{3})+|\d{6,7}))/i;
+const PRICE_RE = /R\s?(\d{1,3}(?:[ ,]\d{3}){1,2}|\d{5,7})(?!\s?\d)/i;
 const KM_RE = /(\d{1,3}(?:[ ,]\d{3})?)\s?km/i;
 const DISPLACEMENT_RE = /[0-9]\.[0-9]/;
 // Field separators that glue onto the model in AutoTrader's concatenated text

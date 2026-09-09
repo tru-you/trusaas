@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    // Rewrite path parameter to vehicle.html preserving query string
+    var target = '/vehicle.html' + window.location.search;
+    window.location.replace(target);
+  </script>
+</head>
+<body>
+  <p>Redirecting to vehicle details... <a href="/vehicle.html">Click here if not redirected</a>.</p>
+</body>
+</html>

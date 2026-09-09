@@ -1,0 +1,23 @@
+# Cars on Caledon
+
+> Trusted independent dealership offering inspected pre-owned vehicles, bank finance, and trade-ins.
+
+## Business Overview
+- **Official Website**: https://www.carsoncaledon.co.za
+- **Entity Type**: AutoDealer
+- **Direct Inquiries / Phone**: +27618759389
+
+- **Physical Address**: 257 Caledon Street, Kariega, Eastern Cape
+
+## Canonical Services & Offerings
+- Live inventory, transparent pricing, and instant quote validation.
+- Direct-to-WhatsApp verified inquiry pipeline.
+- Certified inspection and background validation on all listed items.
+
+## Key Index Links
+- Homepage / Showroom: https://www.carsoncaledon.co.za/
+- Catalog / Inventory: https://www.carsoncaledon.co.za/stock.html
+- Contact & Inquiries: https://www.carsoncaledon.co.za/contact.html
+
+## Machine Readability Note
+All product and business data on https://www.carsoncaledon.co.za is structured natively using Schema.org (AutoDealer, Product, Offer) and verified Open Graph social tags.

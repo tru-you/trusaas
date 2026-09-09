@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+<script>(function(){var t=localStorage.getItem('td-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
 <script>
@@ -127,14 +128,39 @@
 :root{
   --ink:#F3F0E7;--ink-2:#0F1923;--white:#14141F;--white-dim:rgba(20,20,31,.78);
   --muted:rgba(64,78,100,.92);--faint:rgba(64,78,100,.58);
-  --cyan:#0B7C72;--cyan-soft:rgba(13,148,136,.18);--cyan-glow:rgba(13,148,136,.2);
+  --cyan:#0B7C72;--cyan-lit:#0D9488;--cyan-soft:rgba(13,148,136,.18);--cyan-glow:rgba(13,148,136,.2);
   --border:rgba(0,0,0,.08);--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
   --sans:'Inter Tight','Inter',system-ui,-apple-system,sans-serif;
   --display:'Fraunces','Inter Tight',Georgia,serif;
 }
+
+[data-theme="dark"] {
+  --ink:#0E1620;--ink-2:#152232;--white:#F1F5F9;--white-dim:rgba(241,245,249,.82);
+  --muted:#94A3B8;--faint:#64748B;
+  --cyan:#0D9488;--cyan-lit:#5EEAD4;--cyan-soft:rgba(13,148,136,.25);--cyan-glow:rgba(13,148,136,.35);
+  --border:rgba(255,255,255,.08);
+}
+[data-theme="dark"] body{background:var(--ink);color:var(--white);}
+[data-theme="dark"] .nav{background:rgba(14,22,32,0.96);border-bottom-color:rgba(255,255,255,.08);box-shadow:0 4px 20px rgba(0,0,0,.4);}
+[data-theme="dark"] .nav.scrolled{background:rgba(14,22,32,0.98);border-color:rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+[data-theme="dark"] .nav-mobile{background:rgba(14,22,32,0.98);border-color:rgba(255,255,255,.1);box-shadow:0 20px 40px rgba(0,0,0,.6);}
+[data-theme="dark"] details{background:#152232;border-color:rgba(255,255,255,.08);}
+[data-theme="dark"] details[open]{background:#152232;border-color:var(--cyan);box-shadow:0 8px 24px -10px var(--cyan-glow);}
+[data-theme="dark"] details summary{color:#F1F5F9;}
+[data-theme="dark"] details p,[data-theme="dark"] details ul{color:var(--muted);}
+[data-theme="dark"] details b{color:#FFFFFF;}
+[data-theme="dark"] .cat-header{color:#FFFFFF;border-bottom-color:rgba(255,255,255,.1);}
+[data-theme="dark"] footer{background:#0A0F18;border-top-color:rgba(255,255,255,.08);}
+[data-theme="dark"] .theme-toggle{background:rgba(255,255,255,.06);color:#F1F5F9;border-color:rgba(255,255,255,.1);}
+
+/* Theme toggle button */
+.theme-toggle{width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(0,0,0,.04);color:#1E293B;cursor:pointer;display:grid;place-items:center;transition:all .25s ease;flex-shrink:0;}
+.theme-toggle:hover{border-color:var(--cyan);color:var(--cyan);transform:scale(1.05);}
+.theme-toggle svg{width:18px;height:18px;}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;scroll-padding-top:90px;}
-body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;width:100%;max-width:100vw;}
 a{color:inherit;text-decoration:none;}
 ::selection{background:var(--cyan);color:#fff;}
 a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px;}
@@ -167,9 +193,9 @@ footer{padding:60px 0 40px;border-top:1px solid var(--border);margin-top:80px;fo
 .footer-col h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--white);margin-bottom:14px;}
 .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
 .footer-col a:hover{color:var(--cyan);}
-@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){footer, .footer{padding-bottom:90px !important;} .footer-grid{grid-template-columns:1fr 1fr;}}
 /* Nav — matches homepage */
-.nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;background:rgba(248,245,238,0.97);border:1px solid rgba(0,0,0,.08);border-radius:99px;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:1160px;width:calc(100% - 32px);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .4s;}
+.nav{position:fixed;top:0;left:0;right:0;width:100%;max-width:100%;border-radius:0;transform:none;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,40px);height:68px;background:rgba(248,245,238,0.96);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 4px 20px rgba(0,0,0,.05);transition:transform .4s cubic-bezier(.25,.46,.45,.94),background .3s;}
 .nav.scrolled{background:rgba(248,245,238,0.96);border-color:rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(0,0,0,.12);}
 .nav-brand{display:flex;align-items:center;color:var(--white);height:100%;flex-shrink:0;}
 .logo-3d{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1;}
@@ -218,13 +244,25 @@ footer{padding:60px 0 40px;border-top:1px solid var(--border);margin-top:80px;fo
 h1, h2, h3, .section-title, .section-h2, .mod-panel-title, .hero-h1 {
   position: relative;
 }
-h1 .accent, h1 em, h2 .accent, h2 em, .hero-h1 .accent {
-  background: linear-gradient(90deg, var(--cyan,#0B7C72) 0%, #5EEAD4 48%, var(--cyan,#0B7C72) 100%);
-  background-size: 200% 100%;
+h1 .accent, h1 em, h2 .accent, h2 em, h3 .accent, h3 em, .hero-h1 .accent, .section-h2 .accent, .final h2 .accent, .section-title .accent {
+  display: inline-block;
+  padding-right: 0.15em;
+  padding-bottom: 0.04em;
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  background: linear-gradient(135deg, #0B7C72 0%, #0D9488 25%, #14B8A6 48%, #0F766E 72%, #0B7C72 100%);
+  background-size: 240% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: headingShimmer 4s ease-in-out infinite;
+  animation: headingShimmer 5s ease-in-out infinite;
+}
+[data-theme="dark"] h1 .accent, [data-theme="dark"] h1 em, [data-theme="dark"] h2 .accent, [data-theme="dark"] h2 em, [data-theme="dark"] .hero-h1 .accent {
+  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 30%, #2DD4BF 60%, #0D9488 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 @keyframes headingShimmer {
   0%, 100% { background-position: 0% 50%; }
@@ -352,13 +390,8 @@ html { scroll-behavior: smooth; }
 
 /* ═══ SENIOR UI POLISH ═══ */
 
-/* Nav — accommodate bigger logo, more premium feel */
-.nav { padding: 8px 18px; }
-.nav-brand img { filter: drop-shadow(0 2px 4px rgba(0,0,0,.08)); transition: transform .3s ease; }
-.nav-brand:hover img { transform: scale(1.03); }
-
-/* Nav entrance */
-@keyframes navSlideIn { from { transform: translateX(-50%) translateY(-20px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+/* Nav entrance — full width */
+@keyframes navSlideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .nav { animation: navSlideIn 0.6s cubic-bezier(.22,1,.36,1) forwards; }
 
 /* Card depth — multi-layer realistic shadows */
@@ -535,13 +568,13 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
 
 
 /* Nav logo responsive */
-@media(max-width:540px){ .nav-brand img { height:28px !important; } }
+@media(max-width:540px){.nav-brand img{height:36px !important;width:auto;}}
 </style>
 </head>
 <body>
 
 <nav class="nav" id="mainNav">
-  <a href="index.html" class="nav-brand"><img src="trudealer-nav-logo.webp" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
+  <a href="index.html" class="nav-brand"><img src="trudealer-nav-logo.svg" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
   <div class="nav-links">
     <a href="index.html">Cars</a>
     <a href="moto.html">Moto</a>
@@ -550,25 +583,29 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     <a href="caravans.html">Caravans</a>
     <a href="packages.html">Pricing</a>
     <a href="faq.html" class="active">FAQ</a>
+    <a href="trudealer-vs-vmg.html">vs VMG</a>
   </div>
   <div class="nav-right">
-    <a href="https://premium.tru-saas.com" class="nav-sandbox-btn" target="_blank" rel="noopener"><span class="dot"></span> Live Sandbox</a>
+    <a href="https://premium.tru-saas.com" class="nav-sandbox-btn" target="_blank" rel="noopener"><span class="dot"></span> Live Demo</a>
     <a href="demo.html" class="nav-cta">Book Demo &rarr;</a>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
     <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
   </div>
   <div class="nav-mobile" id="navMobile">
-    <a href="index.html">Cars</a>
-    <a href="moto.html">Moto</a>
-    <a href="marine.html">Marine</a>
-    <a href="commercial.html">Commercial</a>
-    <a href="caravans.html">Caravans</a>
-    <a href="packages.html">Pricing</a>
-    <a href="faq.html">FAQ</a>
-    <a href="trudealer-vs-vmg.html">vs VMG</a>
-    <a href="trudealer-vs-autoxloo.html">vs AutoXloo</a>
-    <a href="uk.html">UK Market</a>
-    <a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Live Sandbox</a>
-    <a href="demo.html" class="nav-mobile-cta">Book a walkthrough &rarr;</a>
+    <a href="index.html">Cars &amp; Auto</a>
+    <a href="moto.html">TruDealer Moto</a>
+    <a href="marine.html">Boats &amp; Marine</a>
+    <a href="commercial.html">Commercial Trucks</a>
+    <a href="caravans.html">Caravans &amp; Trailers</a>
+    <a href="packages.html">Pricing Packages</a>
+    <a href="faq.html" class="active">Master FAQ</a>
+    <a href="trudealer-vs-vmg.html">TruDealer vs VMG</a>
+    <a href="trudealer-vs-autoxloo.html">TruDealer vs AutoXloo</a>
+    <a href="uk.html">UK Market (United Kingdom)</a>
+    <a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Live Demo ↗</a>
+    <a href="demo.html" class="nav-mobile-cta">Book a Walkthrough &rarr;</a>
   </div>
 </nav>
 
@@ -576,78 +613,135 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
   <section class="hero">
     <div class="badge"><span class="dot"></span> Master Knowledge Base</div>
     <h1>Frequently Asked <em>Questions</em></h1>
-    <p class="hero-p">Everything independent dealerships ask about TruDealer — software architecture, pricing tiers, TransUnion eValue8, mobile capture, and multi-verticals.</p>
+    <p class="hero-p">Everything independent dealerships ask about TruDealer — our 8 core modules, pricing tiers, TransUnion eValue8 integration, mobile capture, and multi-vertical DMS support.</p>
+    
+    <!-- Quick Category Jump -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 auto 48px;max-width:880px;">
+      <a href="#platform" class="nav-sandbox-btn" style="background:rgba(13,148,136,.12);color:var(--cyan);border:1px solid var(--cyan-soft);box-shadow:none;"><span class="dot"></span> Platform</a>
+      <a href="#modules" class="nav-sandbox-btn" style="background:rgba(13,148,136,.12);color:var(--cyan);border:1px solid var(--cyan-soft);box-shadow:none;"><span class="dot"></span> 8 Core Modules</a>
+      <a href="#pricing" class="nav-sandbox-btn" style="background:rgba(13,148,136,.12);color:var(--cyan);border:1px solid var(--cyan-soft);box-shadow:none;"><span class="dot"></span> Pricing</a>
+      <a href="#transunion" class="nav-sandbox-btn" style="background:rgba(13,148,136,.12);color:var(--cyan);border:1px solid var(--cyan-soft);box-shadow:none;"><span class="dot"></span> TransUnion</a>
+      <a href="#verticals" class="nav-sandbox-btn" style="background:rgba(13,148,136,.12);color:var(--cyan);border:1px solid var(--cyan-soft);box-shadow:none;"><span class="dot"></span> Verticals</a>
+      <a href="#compliance" class="nav-sandbox-btn" style="background:rgba(13,148,136,.12);color:var(--cyan);border:1px solid var(--cyan-soft);box-shadow:none;"><span class="dot"></span> CPA &amp; Onboarding</a>
+    </div>
   </section>
 
   <!-- Group 1: General & Platform -->
-  <section class="faq-category">
-    <h2 class="cat-header"><span class="cat-icon"></span> The TruDealer Platform</h2>
+  <section class="faq-category" id="platform" style="scroll-margin-top:100px;">
+    <h2 class="cat-header">The TruDealer Platform</h2>
     <div class="faq-list">
-      <details open>
+      <details>
         <summary>What is TruDealer?</summary>
-        <p>TruDealer is an all-in-one vertical SaaS platform built specifically for independent dealerships in South Africa. It brings together vehicle photography (TruLens PWA), condition reports with inspector e-signatures (TruInspect), a full dealer management system with deal jackets (TruFlow), floor staff mobile companion (TruFlow Mobile), AI WhatsApp sales agent (TruChat), and high-converting website widgets into a unified monthly subscription.</p>
+        <p>TruDealer is an all-in-one vertical SaaS platform built specifically for independent dealerships in South Africa and international launch markets. It unifies vehicle photography (TruLens PWA), digital condition reports with inspector e-signatures (TruInspect), a full dealer management system with deal jackets (TruFlow), floor staff mobile companion (TruFlow Mobile), 24/7 AI WhatsApp sales assistant (TruChat with DealerAssist™), multi-channel syndication (TruSocial), live market valuation radar (TruTrade), and high-converting drop-in website widgets into a unified monthly subscription.</p>
       </details>
       <details>
-        <summary>Is TruDealer a full DMS or just an inspection tool?</summary>
+        <summary>Is TruDealer a full DMS or just a photo/inspection tool?</summary>
         <p>Both. The <b>TruPro</b> and <b>TruEnterprise</b> tiers include a complete cloud DMS (TruFlow) with stock management, OTP deal jackets (Offer to Purchase, Tax Invoice, Delivery Handover, Proforma), commission calculations, settlement tracking, and Codat cloud accounting sync (Xero, QuickBooks, Sage).</p>
       </details>
       <details>
         <summary>Do my staff need to install an app from the Google Play Store or Apple App Store?</summary>
-        <p>No. TruLens and TruInspect are Progressive Web Apps (PWAs). They run directly in the mobile browser (Chrome, Safari) on any Android phone or iPhone, install to the home screen with one tap, and work offline even in basement parking lots or remote areas with zero cell signal.</p>
+        <p>No. TruLens, TruInspect, and TruFlow Mobile are Progressive Web Apps (PWAs). They run directly in the mobile browser (Chrome, Safari) on any Android phone or iPhone, install to the home screen with one tap, and work offline even in basement parking lots or remote areas with zero cell signal.</p>
+      </details>
+      <details>
+        <summary>How is TruDealer different from legacy DMS providers like VMG or AutoXloo?</summary>
+        <p>Legacy systems were built in the 2000s as slow desktop software with expensive mandatory per-seat licenses, lengthy annual lock-in contracts, and disjointed bolt-ons. TruDealer was engineered from the ground up for modern mobile workflows: instant cloud PWA capture, automated 360° vehicle spins, forensic CPA condition reports, live market price intelligence, and transparent month-to-month billing with zero per-seat fees.</p>
       </details>
     </div>
   </section>
 
-  <!-- Group 2: Pricing & Contracts -->
-  <section class="faq-category">
-    <h2 class="cat-header"><span class="cat-icon">💳</span> Pricing, Fees & Contracts</h2>
+  <!-- Group 2: The 8 Core Modules -->
+  <section class="faq-category" id="modules" style="scroll-margin-top:100px;">
+    <h2 class="cat-header">The 8 Core Modules Explained</h2>
+    <div class="faq-list">
+      <details>
+        <summary>1. TruShowroom — High-Converting Dealer Websites</summary>
+        <p>TruShowroom is our edge-rendered dealer storefront architecture. It features sub-second page loads, real-time inventory filtering, interactive finance sliders (TruAfford &amp; TruRepay), 1-tap WhatsApp lead triggers with pre-filled vehicle cards, and structured Schema.org / AEO indexing so AI search bots (ChatGPT, Claude, Perplexity) recommend your stock directly.</p>
+      </details>
+      <details>
+        <summary>2. TruLens — 28-Shot Guided Studio &amp; 360° Orbit Spin</summary>
+        <p>TruLens turns any mobile phone into a professional automotive photography studio. It uses ghost-overlay angle guides to ensure yard staff capture consistent, perfect shots every time (28 angles for cars, 14 angles for motorcycles). Features include automated background replacement, studio lighting enhancements, dealer watermarks, and instant 360° interactive exterior spin generation.</p>
+      </details>
+      <details>
+        <summary>3. TruInspect — Digital Condition Reports (VIR) &amp; Damage Tagger</summary>
+        <p>TruInspect provides forensic digital inspection reports. Inspectors tap interactive 2D vehicle schematics to tag scratch, dent, and paint defects with photos and severity ratings. It includes a 5-point tyre tread scanner, mechanical checklist, and drawn inspector e-signatures, generating a tamper-proof PDF condition report that shields dealers from voetstoots disputes under the Consumer Protection Act (CPA).</p>
+      </details>
+      <details>
+        <summary>4. TruFlow DMS — Deal Jackets, Invoicing &amp; Accounting Sync</summary>
+        <p>TruFlow is our central dealership management hub. It tracks your complete inventory pipeline, calculates profit margins and salesman commissions, generates SARS-compliant tax invoices and proformas, manages OTP deal jackets, and syncs seamlessly with Xero, QuickBooks, and Sage via Codat.</p>
+      </details>
+      <details>
+        <summary>5. TruFlow Mobile — Floor Staff Pocket Companion</summary>
+        <p>TruFlow Mobile puts your entire inventory in the palm of your sales team. Sales reps on the floor can scan VIN barcodes, look up specs and pricing instantly, log walk-in buyer enquiries, generate trade-in valuations on the fly, and share rich vehicle cards directly to buyer WhatsApp chats with one tap.</p>
+      </details>
+      <details>
+        <summary>6. TruChat &amp; DealerAssist™ — 24/7 AI Sales Receptionist</summary>
+        <p>TruChat is an intelligent automotive sales bot powered by DealerAssist™ AI. It answers customer queries 24/7, checks live vehicle stock, explains finance options, pre-qualifies buyers, and routes high-intent buyer leads directly to your sales team's WhatsApp in real time.</p>
+      </details>
+      <details>
+        <summary>7. TruSocial — 1-Click Multi-Channel Inventory Syndication</summary>
+        <p>TruSocial eliminates double-entry by automatically publishing newly shot inventory across social platforms. With one click, push formatted vehicle cards, specs, and DealerAssist™ copywriting to Facebook Marketplace, Instagram, and Google Business Profile.</p>
+      </details>
+      <details>
+        <summary>8. TruTrade &amp; Live Market Price Intelligence Radar</summary>
+        <p>TruTrade provides live market price intelligence. It scans live retail pricing across the market to compute realistic market curves, days-to-sell estimates, and trade-in valuations, backed by TransUnion eValue8 data. Combined with TruLive, it allows remote buyers to join interactive video walkthroughs of any car in stock.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Group 3: Pricing & Contracts -->
+  <section class="faq-category" id="pricing" style="scroll-margin-top:100px;">
+    <h2 class="cat-header">Pricing, Fees &amp; Contracts</h2>
     <div class="faq-list">
       <details>
         <summary>How much does TruDealer cost?</summary>
-        <p>TruDealer offers two transparent monthly plans:</p>
+        <p>TruDealer offers two transparent monthly plans with no long-term lock-in:</p>
         <ul>
-          <li><b>TruStart (R1,599/month):</b> Single rooftop, unlimited stock units, PWA photo capture studio, condition reports, AI chat, and website integration. Zero setup fee.</li>
-          <li><b>TruPro (R3,599/month):</b> Full DMS, OTP deal jackets, live market scraper valuation, all 8 standalone widgets, and Codat accounting. Setup is R4,500 (R2,250 if signed within 48h of demo).</li>
-          <li><b>TruEnterprise (R3,599/rooftop/month):</b> Multi-branch dealer groups, custom white-label, dedicated API endpoints, SLA, and voice AI.</li>
+          <li><b>TruStart (R1,599/month):</b> Single rooftop, unlimited stock units, PWA photo capture studio (TruLens), digital condition reports (TruInspect), AI chat widget (TruChat), and full website integration. <b>Zero setup fee.</b></li>
+          <li><b>TruPro (R3,599/month):</b> Complete dealership stack — full TruFlow DMS, OTP deal jackets, live market price intelligence radar, all 8 standalone widgets, and Codat cloud accounting sync. Standard setup is R4,500, discounted to <b>R2,250</b> if signed within 48 hours of a demo.</li>
+          <li><b>TruEnterprise (R3,599/rooftop/month):</b> Multi-branch dealer groups, custom white-label branding, dedicated API endpoints, custom SLA, and priority onboarding.</li>
         </ul>
       </details>
       <details>
         <summary>Are there long-term contracts or lock-ins?</summary>
-        <p>No. TruDealer operates on a month-to-month license. You can cancel anytime without cancellation penalties. Your vehicle data and inspection reports can be exported at any time.</p>
+        <p>No. TruDealer operates entirely on a transparent month-to-month license. You can cancel at any time with 30 days notice and zero cancellation penalties. Your vehicle data and inspection reports can be exported at any time in standard formats.</p>
       </details>
       <details>
         <summary>Do you charge extra per user or per seat?</summary>
-        <p>No per-seat fees on photo capture or trade-in appraisals. All your yard photographers and workshop inspectors can capture and inspect stock without buying extra licenses.</p>
+        <p>No per-seat fees on photo capture, workshop inspections, or floor staff usage. All your photographers, inspectors, and sales reps can use the platform on their own mobile devices without paying extra user licenses.</p>
       </details>
     </div>
   </section>
 
-  <!-- Group 3: TransUnion & Data -->
-  <section class="faq-category">
-    <h2 class="cat-header"><span class="cat-icon"></span> TransUnion eValue8 & Imagin8 Lookups</h2>
+  <!-- Group 4: TransUnion & Data -->
+  <section class="faq-category" id="transunion" style="scroll-margin-top:100px;">
+    <h2 class="cat-header">TransUnion eValue8 &amp; Imagin8 Lookups</h2>
     <div class="faq-list">
       <details>
-        <summary>What TransUnion calls are free vs chargeable?</summary>
-        <p>TruDealer provides unlimited flat-fee make and model catalogue queries (<code>getModels</code>) and vehicle technical specifications (<code>getStaticInfo</code>). Chargeable checks (TransUnion retail/trade valuations, Natis police/finance registration clearance, and accident insurance claims history) are bundle-gated and deduct from your dealership's pre-funded bundle balance.</p>
+        <summary>What TransUnion lookups are free vs chargeable?</summary>
+        <p>TruDealer includes <b>unlimited, flat-fee</b> make and model catalogue lookups (<code>getModels</code>) and complete vehicle technical specifications (<code>getStaticInfo</code>). Chargeable checks (TransUnion trade/retail valuations, Natis registration/police clearance, and insurance accident claim history) are bundle-gated and deduct from your dealership's pre-funded bundle balance.</p>
       </details>
       <details>
         <summary>How do bundle top-ups work?</summary>
-        <p>Dealership admins can top up check bundles directly from TruFlow Premium. Bundles are stored in a central ledger and accessible across all connected apps (TruLens and TruInspect) seamlessly.</p>
+        <p>Dealership admins can purchase valuation and history check bundles directly from TruFlow Premium. Bundles are managed in a central dealership ledger and accessible across all connected mobile apps (TruLens and TruInspect) seamlessly.</p>
+      </details>
+      <details>
+        <summary>Can we connect our own TransUnion account?</summary>
+        <p>Yes. Dealerships that already hold direct TransUnion commercial accounts can input their own API credentials in Dealership Settings to route queries through their corporate billing.</p>
       </details>
     </div>
   </section>
 
-  <!-- Group 4: Multi-Verticals -->
-  <section class="faq-category">
-    <h2 class="cat-header"><span class="cat-icon">️</span> Multi-Vertical Support (Motorcycles, Boats, Trucks, Caravans)</h2>
+  <!-- Group 5: Multi-Verticals -->
+  <section class="faq-category" id="verticals" style="scroll-margin-top:100px;">
+    <h2 class="cat-header">Multi-Vertical Support (Motorcycles, Boats, Trucks, Caravans)</h2>
     <div class="faq-list">
       <details>
         <summary>Can I use TruDealer for a motorcycle dealership?</summary>
-        <p>Yes. <b>TruDealer Moto</b> is fully live across all 4 apps. It includes a 14-angle motorcycle photo studio, 6-phase motorcycle VIR (fork seals, frame integrity, chain/sprocket wear, 2-tyre depth), TransUnion superbike catalogue lookups, and dedicated "Book a Demo Ride" website widgets.</p>
+        <p>Yes. <b>TruDealer Moto</b> is fully live across all 4 apps. It includes a 14-angle motorcycle photo studio (cockpit, tank, chain/sprocket, exhaust, engine casings), a 6-phase motorcycle VIR (fork seals, frame integrity, 2-tyre depth), TransUnion superbike catalogue lookups, and dedicated "Book a Demo Ride" website widgets.</p>
       </details>
       <details>
         <summary>What about boats, commercial trucks, and caravans?</summary>
-        <p>Following TruDealer Moto, we have planned dedicated verticals for <b>TruDealer Marine</b> (boats & jetskis), <b>TruDealer Commercial</b> (heavy trucks & yellow metal), and <b>TruDealer Caravans</b> (campers & trailers). These are on our product roadmap and dealerships can register for early access.</p>
+        <p>Following TruDealer Moto, we are rolling out dedicated vertical skins for <b>TruDealer Marine</b> (boats &amp; jetskis), <b>TruDealer Commercial</b> (heavy trucks &amp; yellow metal), and <b>TruDealer Caravans</b> (campers &amp; trailers). Dealerships can register for early access to receive vertical-specific appraisal templates and catalogue filters.</p>
       </details>
       <details>
         <summary>Can a dealership sell multiple verticals simultaneously?</summary>
@@ -656,43 +750,50 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     </div>
   </section>
 
-  <!-- Group 5: Onboarding & Compliance -->
-  <section class="faq-category">
-    <h2 class="cat-header"><span class="cat-icon">🛡️</span> Onboarding, Legal & CPA Compliance</h2>
+  <!-- Group 6: Onboarding & Compliance -->
+  <section class="faq-category" id="compliance" style="scroll-margin-top:100px;">
+    <h2 class="cat-header">Onboarding, Legal &amp; CPA Compliance</h2>
     <div class="faq-list">
       <details>
-        <summary>How fast can our yard go live?</summary>
-        <p>Most dealerships are up and running within 24 to 48 hours. Because TruDealer runs on cloud PWA architecture, there is zero software to install on dealer PCs. We import your active inventory list via spreadsheet or automated feed so you don't lose a day of business.</p>
+        <summary>How fast can our dealership go live?</summary>
+        <p>Most dealerships are up and running within 24 to 48 hours. Because TruDealer runs on cloud PWA architecture, there is zero hardware to install and no server downtime. We import your active inventory list via CSV, spreadsheet, or automated feed so you don't lose a day of selling.</p>
       </details>
       <details>
         <summary>How does TruDealer protect dealers under the Consumer Protection Act (CPA)?</summary>
         <p>Every TruInspect VIR condition report generates a permanent, timestamped PDF documenting all pre-existing cosmetic flaws, mechanical checks, and tyre depths, signed off with the inspector's drawn e-signature. This provides unshakeable proof of vehicle condition at point of sale, preventing voetstoots disputes.</p>
       </details>
+      <details>
+        <summary>Is customer data protected under POPIA and GDPR?</summary>
+        <p>Yes. All buyer personal identifiable information (PII), OTP records, and financial details are encrypted in transit and at rest in ISO 27001-certified European cloud infrastructure in full alignment with POPIA and GDPR requirements.</p>
+      </details>
     </div>
   </section>
 
   <!-- Final CTA -->
-  <section style="text-align:center;padding:60px 0 40px;">
-    <h2 style="font-family:var(--display);font-size:clamp(30px,4vw,46px);margin-bottom:16px;">Have a question we haven't answered?</h2>
-    <p style="font-size:17px;color:var(--muted);max-width:540px;margin:0 auto 28px;">Chat directly with Paul or schedule an interactive live demo of the entire stack.</p>
-    <a href="demo.html" class="nav-cta" style="font-size:14px;padding:12px 28px;background:var(--cyan);color:#fff;border-radius:100px;">Book a 15-Minute Demo →</a>
+  <section class="cta-box" style="margin-top:40px;padding:48px 24px;">
+    <h2 style="font-family:var(--display);font-size:clamp(24px,3.5vw,38px);margin-bottom:12px;font-weight:500;">Have a question we haven't answered?</h2>
+    <p style="font-size:15px;color:var(--muted);max-width:520px;margin:0 auto 24px;line-height:1.6;">Schedule an interactive 25-minute live walkthrough with the founder with your cars and branding loaded, or chat with us on WhatsApp.</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
+      <a href="demo.html" class="nav-cta" style="font-size:13px;padding:12px 26px;background:linear-gradient(135deg,#0B7C72,#065A53);color:#fff;border-radius:100px;">Book a 25-Minute Demo &rarr;</a>
+      <a href="https://wa.me/447476995694?text=Hi%20Paul%2C%20I%20have%20a%20question%20about%20TruDealer" target="_blank" rel="noopener" class="nav-sandbox-btn" style="padding:11px 22px;font-size:13px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22c55e;">Chat on WhatsApp &rarr;</a>
+    </div>
   </section>
 </main>
 
 <footer>
   <div class="container footer-grid">
     <div>
-      <div style="font-weight:800;font-size:20px;margin-bottom:10px;"><span style="color:#1E293B;">Tru</span><span style="color:var(--cyan);">Dealer</span></div>
-      <p>The modern operating system for independent dealerships in South Africa. Built in Cape Town.</p>
+      <div style="font-weight:800;font-size:20px;margin-bottom:10px;"><span style="color:var(--white);">Tru</span><span style="color:var(--cyan);">Dealer</span></div>
+      <p>The modern automotive operating system for independent dealerships. Built in Cape Town, deployed globally.</p>
     </div>
     <div class="footer-col">
       <h4>Verticals</h4>
       <ul>
-        <li><a href="index.html">Cars & Auto</a></li>
+        <li><a href="index.html">Cars &amp; Auto</a></li>
         <li><a href="moto.html">Motorcycles (Live)</a></li>
-        <li><a href="marine.html">Boats & Marine</a></li>
+        <li><a href="marine.html">Boats &amp; Marine</a></li>
         <li><a href="commercial.html">Commercial Trucks</a></li>
-        <li><a href="caravans.html">Caravans & Trailers</a></li>
+        <li><a href="caravans.html">Caravans &amp; Trailers</a></li>
       </ul>
     </div>
     <div class="footer-col">
@@ -708,7 +809,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
       <h4>Connect</h4>
       <ul>
         <li><a href="demo.html">Book a Demo</a></li>
-        <li><a href="https://wa.me/27620502091">WhatsApp Support</a></li>
+        <li><a href="https://wa.me/447476995694" target="_blank" rel="noopener">WhatsApp Support</a></li>
         <li><a href="llms.txt">AI Documentation</a></li>
         <li><a href="sitemap.xml">Sitemap</a></li>
       </ul>
@@ -716,39 +817,75 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
   </div>
 </footer>
 
+<!-- Floating WhatsApp FAB -->
+<div class="wa-fab" id="waFab" style="position:fixed;bottom:24px;right:24px;z-index:61;display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+  <div class="wa-fab-menu" role="menu" aria-hidden="true" style="display:flex;flex-direction:column;gap:6px;opacity:0;pointer-events:none;transition:all .25s ease;">
+    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:100px;background:rgba(21,34,50,.92);border:1px solid rgba(255,255,255,.12);color:var(--white);text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:12px;">
+      <span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(13,148,136,.2);color:var(--cyan);font-weight:700;font-size:10px;">UK</span>
+      <span style="display:flex;flex-direction:column;line-height:1.15;"><b>United Kingdom</b><span style="font-size:8.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);">WhatsApp Support</span></span>
+    </a>
+    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp South Africa" style="display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:100px;background:rgba(21,34,50,.92);border:1px solid rgba(255,255,255,.12);color:var(--white);text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:12px;">
+      <span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(13,148,136,.2);color:var(--cyan);font-weight:700;font-size:10px;">ZA</span>
+      <span style="display:flex;flex-direction:column;line-height:1.15;"><b>South Africa</b><span style="font-size:8.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);">WhatsApp Support</span></span>
+    </a>
+  </div>
+  <button type="button" class="wa-fab-trigger" id="waFabToggle" aria-expanded="false" aria-controls="waFab" aria-label="Contact us — choose option" style="width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:rgba(21,34,50,.85);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.15);cursor:pointer;box-shadow:0 8px 24px rgba(13,148,136,.35);">
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--cyan);"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
+  </button>
+</div>
+
 <script>
+// Mobile Nav & Burger
 (function(){
   var b=document.getElementById('navBurger'),n=document.getElementById('mainNav');
   if(b&&n){b.addEventListener('click',function(){n.classList.toggle('open');b.setAttribute('aria-expanded',n.classList.contains('open'));});}
   document.addEventListener('click',function(e){if(n&&!n.contains(e.target))n.classList.remove('open');});
 })();
-</script>
-<script>
+
+// WhatsApp FAB
 (function(){
-  // Scroll reveal — make elements visible when they enter viewport
-  var obs = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}
-    });
-  },{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
+  var fab=document.getElementById('waFab');
+  var toggle=document.getElementById('waFabToggle');
+  if(!fab||!toggle)return;
+  var menu=fab.querySelector('.wa-fab-menu');
+  function setOpen(open){
+    fab.classList.toggle('open',open);
+    toggle.setAttribute('aria-expanded',open?'true':'false');
+    if(menu){
+      menu.style.opacity = open ? '1' : '0';
+      menu.style.pointerEvents = open ? 'auto' : 'none';
+      menu.style.transform = open ? 'none' : 'translateY(8px)';
+    }
+  }
+  toggle.addEventListener('click',function(e){e.stopPropagation();setOpen(!fab.classList.contains('open'));});
+  document.addEventListener('click',function(e){if(!fab.contains(e.target))setOpen(false);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false);});
+  fab.querySelectorAll('.wa-fab-opt').forEach(function(a){a.addEventListener('click',function(){setOpen(false);});});
+})();
+
+// Theme Toggle
+(function(){
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  var SUN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  var MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
   
-  var selectors = '.card,.table-wrap,.cta-box,.badge,.hero-actions,.hero-p,.faq-item,.section-head,.section-lede,.footer-grid,.pricing-card,.pkg-card,.feature-card,.grid-2>*,.grid-3>*,.grid-4>*,.reveal';
-  document.querySelectorAll(selectors).forEach(function(el){
-    if(!el.classList.contains('visible'))obs.observe(el);
-  });
-  
-  // Mouse tilt on cards — subtle 3D follow
-  document.querySelectorAll('.card,.pricing-card,.pkg-card,.feature-card').forEach(function(card){
-    card.addEventListener('mousemove',function(e){
-      var r=card.getBoundingClientRect();
-      var x=(e.clientX-r.left)/r.width-.5;
-      var y=(e.clientY-r.top)/r.height-.5;
-      card.style.transform='perspective(800px) rotateX('+(-y*6)+'deg) rotateY('+(x*6)+'deg) translateY(-6px)';
+  var cur = localStorage.getItem('td-theme') || 'dark';
+  function apply(t){
+    cur = t;
+    root.setAttribute('data-theme', t);
+    localStorage.setItem('td-theme', t);
+    if(toggle){
+      toggle.innerHTML = t === 'dark' ? SUN : MOON;
+      toggle.setAttribute('aria-label', t === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+    }
+  }
+  apply(cur);
+  if(toggle){
+    toggle.addEventListener('click', function(){
+      apply(cur === 'dark' ? 'light' : 'dark');
     });
-    card.addEventListener('mouseleave',function(){
-      card.style.transform='perspective(800px) rotateX(0) rotateY(0) translateY(0)';
-    });
-  });
+  }
 })();
 </script>
 <script>

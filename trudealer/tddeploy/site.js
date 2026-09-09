@@ -1,22 +1,34 @@
 (function() {
   'use strict';
 
-  // 1. THEME TOGGLE
+  // 1. THEME TOGGLE — single source of truth. Key: 'td-theme', default: dark.
+  // Icon convention: dark mode shows sun (tap for light), light mode shows moon (tap for dark).
+  const SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  const MOON_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+
   function initTheme() {
     const root = document.documentElement;
     let theme = localStorage.getItem('td-theme') || 'dark';
-    root.setAttribute('data-theme', theme);
 
     const blobs = document.querySelectorAll('.ambient-blob');
-    blobs.forEach(b => b.style.display = theme === 'dark' ? 'block' : 'none');
-
     const toggles = document.querySelectorAll('.theme-toggle');
+
+    function applyTheme(t) {
+      theme = t;
+      root.setAttribute('data-theme', t);
+      localStorage.setItem('td-theme', t);
+      blobs.forEach(b => b.style.display = t === 'dark' ? 'block' : 'none');
+      toggles.forEach(btn => {
+        btn.innerHTML = t === 'dark' ? SUN_ICON : MOON_ICON;
+        btn.setAttribute('aria-label', t === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+      });
+    }
+
+    applyTheme(theme);
+
     toggles.forEach(btn => {
       btn.addEventListener('click', () => {
-        theme = theme === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('td-theme', theme);
-        root.setAttribute('data-theme', theme);
-        blobs.forEach(b => b.style.display = theme === 'dark' ? 'block' : 'none');
+        applyTheme(theme === 'dark' ? 'light' : 'dark');
       });
     });
   }
@@ -180,20 +192,35 @@
       let replyText = null;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        const res = await fetch('https://chat.tru-saas.com/api/chat', {
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
+        
+        // Try local Netlify serverless function first
+        let res = await fetch('/.netlify/functions/truchat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            app: 'website',
-            messages: chatHistory.slice(-6),
+            messages: chatHistory.slice(-8),
             dealerName: 'TruDealer'
           }),
           signal: controller.signal
-        });
+        }).catch(() => null);
+
+        // Fallback to chat.tru-saas.com if netlify function isn't available
+        if (!res || !res.ok) {
+          res = await fetch('https://chat.tru-saas.com/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              app: 'website',
+              messages: chatHistory.slice(-6),
+              dealerName: 'TruDealer'
+            }),
+            signal: controller.signal
+          }).catch(() => null);
+        }
         clearTimeout(timeoutId);
 
-        if (res.ok) {
+        if (res && res.ok) {
           const data = await res.json();
           if (data && (data.reply || data.message || data.text)) {
             replyText = data.reply || data.message || data.text;
@@ -328,8 +355,141 @@
     });
   }
 
-  // Init all on DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
+  // 11. MOBILE BOTTOM BAR POPOUT PANELS
+  function initPopouts() {
+    const chatBtn = document.getElementById('chatBtn');
+    const chatPanel = document.getElementById('chatPanel');
+    const chatClose = document.getElementById('chatClose');
+    const enquireBtn = document.getElementById('enquireBtn');
+    const enquirePanel = document.getElementById('enquirePanel');
+    const enquireClose = document.getElementById('enquireClose');
+
+    function openPanel(panel) {
+      document.querySelectorAll('.popout-panel').forEach(p => p.classList.remove('active'));
+      panel.classList.add('active');
+    }
+    function closeAllPanels() {
+      document.querySelectorAll('.popout-panel').forEach(p => p.classList.remove('active'));
+    }
+
+    if (chatBtn && chatPanel) {
+      chatBtn.addEventListener('click', () => {
+        if (chatPanel.classList.contains('active')) { closeAllPanels(); } else { openPanel(chatPanel); }
+      });
+    }
+    if (chatClose) chatClose.addEventListener('click', closeAllPanels);
+    if (enquireBtn && enquirePanel) {
+      enquireBtn.addEventListener('click', () => {
+        if (enquirePanel.classList.contains('active')) { closeAllPanels(); } else { openPanel(enquirePanel); }
+      });
+    }
+    if (enquireClose) enquireClose.addEventListener('click', closeAllPanels);
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.popout-panel') && !e.target.closest('.bar-btn')) closeAllPanels();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAllPanels();
+    });
+  }
+
+  // 12. DEALERASSIST INTERACTIVE SIMULATOR
+  function initDealerAssistSim() {
+    const container = document.getElementById('assistSimPrompts');
+    if (!container) return;
+    const btns = container.querySelectorAll('.assist-prompt-btn');
+    const textEl = document.getElementById('assistSimText');
+    const delEl = document.getElementById('assistSimDelivery');
+
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const response = btn.getAttribute('data-res');
+        const delivery = btn.getAttribute('data-del');
+        if (textEl && response) {
+          textEl.innerHTML = response;
+        }
+        if (delEl && delivery) {
+          delEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>' + delivery + '</span>';
+        }
+      });
+    });
+  }
+
+  // 13. HORIZONTAL DRAG & WHEEL SCROLL FOR STRIPS
+  function initHorizontalScrolls() {
+    const scrollers = document.querySelectorAll('.vertical-strip, .mod-tabs-nav');
+    scrollers.forEach(el => {
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+
+      el.addEventListener('mousedown', (e) => {
+        if (e.target.closest('a') && Math.abs(e.movementX || 0) < 2) return;
+        isDown = true;
+        el.classList.add('dragging');
+        startX = e.pageX - el.offsetLeft;
+        scrollLeft = el.scrollLeft;
+      });
+      el.addEventListener('mouseleave', () => {
+        isDown = false;
+        el.classList.remove('dragging');
+      });
+      el.addEventListener('mouseup', () => {
+        isDown = false;
+        el.classList.remove('dragging');
+      });
+      el.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - el.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        el.scrollLeft = scrollLeft - walk;
+      });
+
+      el.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+          if ((e.deltaY > 0 && el.scrollLeft < el.scrollWidth - el.clientWidth) ||
+              (e.deltaY < 0 && el.scrollLeft > 0)) {
+            e.preventDefault();
+            el.scrollLeft += e.deltaY;
+          }
+        }
+      }, { passive: false });
+    });
+  }
+
+  // 13. BEFORE / AFTER COMPARISON MOBILE TABS
+  function initBeforeAfterTabs() {
+    const tabBtns = document.querySelectorAll('.cds-tab-btn');
+    if (!tabBtns.length) return;
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-cds-target');
+        tabBtns.forEach(b => {
+          const isActive = b === btn;
+          b.classList.toggle('active', isActive);
+          b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        const colBefore = document.getElementById('cdsColBefore') || document.querySelector('.cds-col.before');
+        const colAfter = document.getElementById('cdsColAfter') || document.querySelector('.cds-col.after');
+
+        if (target === 'before') {
+          if (colBefore) colBefore.classList.add('active');
+          if (colAfter) colAfter.classList.remove('active');
+        } else {
+          if (colAfter) colAfter.classList.add('active');
+          if (colBefore) colBefore.classList.remove('active');
+        }
+      });
+    });
+  }
+
+  // Init all on DOM ready or immediately if already loaded
+  function start() {
     injectBlobs();
     initTheme();
     initNav();
@@ -340,6 +500,17 @@
     initReveal();
     initMobileSticky();
     initNavActive();
-  });
+    initPopouts();
+    initDealerAssistSim();
+    initHorizontalScrolls();
+    initBeforeAfterTabs();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
 
 })();
+

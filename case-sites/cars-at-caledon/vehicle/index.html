@@ -215,118 +215,177 @@
     var params = new URLSearchParams(window.location.search);
     function p(k, d) { var v = params.get(k); return (v == null || v === "") ? d : v; }
 
-    // ---- Shared car data (falls back to a demo car if opened bare) ----
-    var stock   = p('stock', '');
-    var name    = p('name', '2023 Toyota Fortuner 2.8 GD-6');
-    var make    = p('make', '');
-    var variant = p('variant', '');
-    var year    = p('year', '2023');
-    var priceRaw= p('price', '459900');
-    var kmRaw   = p('km', '45000');
-    var trans   = p('trans', '');
-    var fuel    = p('fuel', '');
-    var body    = p('body', '');
-    var img     = p('img', '../coc-splash-v2.jpg');
-
-    var priceNum = parseInt(String(priceRaw).replace(/\D/g, ''), 10) || 0;
-    var priceFmt = 'R ' + priceNum.toLocaleString('en-ZA');
-    var kmDigits = String(kmRaw).replace(/\D/g, '');
-    var kmFmt    = kmDigits ? (parseInt(kmDigits, 10).toLocaleString('en-ZA') + ' km') : String(kmRaw);
-
-    // Build a clean title without duplicating the make if it's already in the name
-    var titleParts = (make && name && name.toLowerCase().indexOf(make.toLowerCase()) === 0)
-      ? [year, name] : [year, make, name];
-    var fullTitle = titleParts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
-
-    // ---- Paint the page ----
-    document.getElementById('vTitle').textContent = fullTitle;
-    document.getElementById('vPrice').textContent = priceFmt;
-    document.getElementById('vSub').textContent   = [year, trans, fuel, kmFmt].filter(Boolean).join(' · ');
-    var vImg = document.getElementById('vImg');
-    vImg.src = img; vImg.alt = fullTitle;
-    document.getElementById('specYear').textContent  = year || '—';
-    document.getElementById('specKm').textContent    = kmFmt || '—';
-    document.getElementById('specTrans').textContent = trans || '—';
-    document.getElementById('specFuel').textContent  = fuel || '—';
-
-    // ---- SEO: per-car title, description, canonical, OG ----
-    document.title = fullTitle + ' — ' + priceFmt + ' | Cars on Caledon';
-    var desc = fullTitle + ' for sale at Cars on Caledon, Kariega — ' + priceFmt +
-               (kmFmt ? (', ' + kmFmt) : '') + (trans ? (', ' + trans) : '') + (fuel ? (', ' + fuel) : '') +
-               '. Inspected stock, bank finance and trade-ins welcome.';
-    var mDesc = document.querySelector('meta[name="description"]');
-    if (mDesc) mDesc.setAttribute('content', desc);
-
-    var absImg = /^https?:/i.test(img) ? img : (SITE + '/' + img.replace(/^(\.\.\/)+/, ''));
-    function setMeta(id, val) { var m = document.getElementById(id); if (m) m.setAttribute('content', val); }
-    setMeta('ogTitle', fullTitle + ' — ' + priceFmt);
-    setMeta('ogDesc', desc);
-    setMeta('ogImage', absImg);
-
-    var canonHref = stock ? (SITE + '/vehicle/?stock=' + encodeURIComponent(stock)) : (SITE + '/vehicle/');
-    // Only add these if the server/edge layer hasn't already — avoids a duplicate
-    // canonical / og:url once the vehicle-og edge function is live.
-    if (!document.querySelector('link[rel="canonical"]')) {
-      var canon = document.createElement('link');
-      canon.rel = 'canonical'; canon.href = canonHref;
-      document.head.appendChild(canon);
-    }
-    if (!document.querySelector('meta[property="og:url"]')) {
-      var ogUrl = document.createElement('meta');
-      ogUrl.setAttribute('property', 'og:url'); ogUrl.setAttribute('content', canonHref);
-      document.head.appendChild(ogUrl);
+    // 1. Check for preloaded car injected by Netlify Edge Function
+    var preloaded = null;
+    var preloadedScript = document.getElementById("__PRELOADED_CAR__");
+    if (preloadedScript) {
+      try { preloaded = JSON.parse(preloadedScript.textContent); } catch (e) {}
     }
 
-    // ---- Structured data: schema.org Car + Offer (rich results) ----
-    var ld = {
-      "@context": "https://schema.org", "@type": "Car",
-      "name": fullTitle, "url": canonHref, "image": absImg,
-      "brand": make ? { "@type": "Brand", "name": make } : undefined,
-      "model": variant || undefined,
-      "vehicleModelDate": year || undefined,
-      "sku": stock || undefined,
-      "fuelType": fuel || undefined,
-      "vehicleTransmission": trans || undefined,
-      "bodyType": body || undefined,
-      "mileageFromOdometer": kmDigits ? { "@type": "QuantitativeValue", "value": parseInt(kmDigits, 10), "unitCode": "KMT" } : undefined,
-      "offers": {
-        "@type": "Offer", "priceCurrency": "ZAR", "price": priceNum || undefined,
-        "availability": "https://schema.org/InStock", "itemCondition": "https://schema.org/UsedCondition",
-        "seller": { "@type": "AutoDealer", "name": "Cars on Caledon", "areaServed": "Kariega, Eastern Cape" }
+    var stock = p('stock', '');
+    if (!stock) {
+      var m = window.location.pathname.match(/^\/vehicle\/([^/?#]+)/i);
+      if (m && !m[1].includes('.') && m[1].toLowerCase() !== 'index') {
+        stock = decodeURIComponent(m[1]);
       }
-    };
-    (function clean(o) { Object.keys(o).forEach(function (k) { if (o[k] === undefined) delete o[k]; else if (o[k] && typeof o[k] === 'object') clean(o[k]); }); })(ld);
-    // Skip if the edge function already emitted a JSON-LD block in the raw HTML.
-    if (!document.querySelector('script[type="application/ld+json"]')) {
-      var ldEl = document.createElement('script');
-      ldEl.type = 'application/ld+json'; ldEl.textContent = JSON.stringify(ld);
-      document.head.appendChild(ldEl);
     }
 
-    // ---- WhatsApp CTA ----
-    var waMsg = "Hi Cars on Caledon — I'm interested in the " + fullTitle + " (" + priceFmt + ")" +
-                (stock ? (" [stock " + stock + "]") : "") + ". Is it still available?";
-    document.getElementById('vWa').href = "https://wa.me/27618759389?text=" + encodeURIComponent(waMsg);
+    function hydrate(car) {
+      car = car || {};
+      var sStock   = car.stockNumber || car.sku || stock || '';
+      var sMake    = car.make || '';
+      var sName    = car.model || car.name || (sMake ? sMake : 'Quality Pre-Owned Vehicle');
+      var sVariant = car.trim || car.variant || '';
+      var sYear    = car.year || car.yr || '';
+      var sPrice   = Number(car.price) || 0;
+      var sKm      = car.mileage != null ? car.mileage : (car.km || '');
+      var sTrans   = car.transmission || car.trans || '';
+      var sFuel    = car.fuelType || car.fuel || '';
+      var sBody    = car.bodyType || car.body || '';
+      var sImg     = car.heroImage || (Array.isArray(car.images) && car.images[0]) || car.img || '../coc-splash-v2.jpg';
 
-    // Exposed for the booking widget's inline onclick
-    window.getCarData = function () {
-      return { y: year, make: make, name: name, priceLabel: priceFmt, img: img, stock: stock };
-    };
+      var priceNum = parseInt(String(sPrice).replace(/\D/g, ''), 10) || 0;
+      var priceFmt = priceNum ? ('R ' + priceNum.toLocaleString('en-ZA')) : '';
+      var kmDigits = String(sKm).replace(/\D/g, '');
+      var kmFmt    = kmDigits ? (parseInt(kmDigits, 10).toLocaleString('en-ZA') + ' km') : (String(sKm) || '—');
 
-    // ---- Load TruLoader with THIS car's finance config ----
-    var loader = document.createElement('script');
-    loader.src = "../tru-loader.js";
-    loader.setAttribute("data-dealer", "Cars on Caledon");
-    loader.setAttribute("data-slug", "true-cars");
-    loader.setAttribute("data-flow", "https://premium.tru-saas.com");
-    loader.setAttribute("data-wa", "27618759389");
-    loader.setAttribute("data-accent", "#23419A");
-    loader.setAttribute("data-widgets", "afford,repay,form,chat,book");
-    loader.setAttribute("data-repay-mode", "inline");
-    loader.setAttribute("data-repay-target", "#finance-calc");
-    loader.setAttribute("data-repay-price", String(priceNum || 459900));
-    loader.setAttribute("data-repay-vehicle", fullTitle);
-    document.body.appendChild(loader);
+      var titleParts = (sMake && sName && sName.toLowerCase().indexOf(sMake.toLowerCase()) === 0)
+        ? [sYear, sName] : [sYear, sMake, sName];
+      var fullTitle = titleParts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim() || 'Quality Pre-Owned Vehicle';
+
+      // Paint Page
+      document.getElementById('vTitle').textContent = fullTitle;
+      document.getElementById('vPrice').textContent = priceFmt || 'Price on request';
+      document.getElementById('vSub').textContent   = [sYear, sTrans, sFuel, kmFmt !== '—' ? kmFmt : ''].filter(Boolean).join(' · ');
+      var vImg = document.getElementById('vImg');
+      if (vImg) { vImg.src = sImg; vImg.alt = fullTitle; }
+      document.getElementById('specYear').textContent  = sYear || '—';
+      document.getElementById('specKm').textContent    = kmFmt || '—';
+      document.getElementById('specTrans').textContent = sTrans || '—';
+      document.getElementById('specFuel').textContent  = sFuel || '—';
+
+      // Canonical link
+      var canonHref = sStock ? (SITE + '/vehicle/?stock=' + encodeURIComponent(sStock)) : (SITE + '/vehicle/');
+      document.title = fullTitle + (priceFmt ? (' — ' + priceFmt) : '') + ' | Cars on Caledon';
+
+      var desc = fullTitle + ' for sale at Cars on Caledon, Kariega' +
+                 (priceFmt ? (' — ' + priceFmt) : '') +
+                 (kmFmt !== '—' ? (', ' + kmFmt) : '') + (sTrans ? (', ' + sTrans) : '') + (sFuel ? (', ' + sFuel) : '') +
+                 '. Inspected stock, bank finance and trade-ins welcome.';
+      var mDesc = document.querySelector('meta[name="description"]');
+      if (mDesc) mDesc.setAttribute('content', desc);
+
+      var absImg = /^https?:/i.test(sImg) ? sImg : (SITE + '/' + sImg.replace(/^(\.\.\/)+/, ''));
+      function setMeta(id, val) { var el = document.getElementById(id); if (el) el.setAttribute('content', val); }
+      setMeta('ogTitle', fullTitle + (priceFmt ? (' — ' + priceFmt) : ''));
+      setMeta('ogDesc', desc);
+      setMeta('ogImage', absImg);
+
+      if (!document.querySelector('link[rel="canonical"]')) {
+        var canon = document.createElement('link');
+        canon.rel = 'canonical'; canon.href = canonHref;
+        document.head.appendChild(canon);
+      }
+      if (!document.querySelector('meta[property="og:url"]')) {
+        var ogUrl = document.createElement('meta');
+        ogUrl.setAttribute('property', 'og:url'); ogUrl.setAttribute('content', canonHref);
+        document.head.appendChild(ogUrl);
+      }
+
+      // WhatsApp CTA (1-tap qualified lead)
+      var waMsg = "Hi Cars on Caledon! I'm interested in this " + fullTitle +
+                  (sStock ? (" (Stock #" + sStock + ")") : "") +
+                  (priceFmt ? (" listed at " + priceFmt) : "") +
+                  ". Link: " + canonHref + " Is it still available?";
+      document.getElementById('vWa').href = "https://wa.me/27618759389?text=" + encodeURIComponent(waMsg);
+
+      window.getCarData = function () {
+        return { y: sYear, make: sMake, name: sName, priceLabel: priceFmt, img: sImg, stock: sStock };
+      };
+
+      // TruLoader Universal Suite
+      var loader = document.createElement('script');
+      loader.src = "../tru-loader.js";
+      loader.setAttribute("data-dealer", "Cars on Caledon");
+      loader.setAttribute("data-slug", "true-cars");
+      loader.setAttribute("data-flow", "https://premium.tru-saas.com");
+      loader.setAttribute("data-wa", "27618759389");
+      loader.setAttribute("data-accent", "#23419A");
+      loader.setAttribute("data-widgets", "afford,repay,form,chat,book,share");
+      loader.setAttribute("data-repay-mode", "inline");
+      loader.setAttribute("data-repay-target", "#finance-calc");
+      loader.setAttribute("data-repay-price", String(priceNum || 200000));
+      loader.setAttribute("data-repay-vehicle", fullTitle);
+      document.body.appendChild(loader);
+    }
+
+    // Fast path: edge function already injected preloaded data
+    if (preloaded && (preloaded.model || preloaded.make || preloaded.stockNumber)) {
+      hydrate(preloaded);
+      return;
+    }
+
+    // Fallback path: If query string has vehicle parameters, hydrate immediately
+    var hasQueryParams = params.get('name') || params.get('make') || params.get('price');
+    if (hasQueryParams) {
+      hydrate({
+        stockNumber: stock,
+        make: p('make', ''),
+        model: p('name', ''),
+        trim: p('variant', ''),
+        year: p('year', ''),
+        price: p('price', '0'),
+        mileage: p('km', ''),
+        transmission: p('trans', ''),
+        fuelType: p('fuel', ''),
+        bodyType: p('body', ''),
+        heroImage: p('img', '')
+      });
+      return;
+    }
+
+    // Direct live API lookup if only ?stock=... was given and not preloaded
+    if (stock) {
+      document.getElementById('vTitle').textContent = 'Loading vehicle details…';
+      fetch('https://premium.tru-saas.com/api/public/stock?dealer=cars-on-caledon')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var list = Array.isArray(data.vehicles) ? data.vehicles : (Array.isArray(data) ? data : []);
+          var target = String(stock).toLowerCase().replace(/[^a-z0-9]/g, '');
+          var found = list.find(function (v) {
+            var s1 = String(v.stockNumber || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            var s2 = String(v.id || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            return s1 === target || s2 === target;
+          });
+          if (found) {
+            hydrate(found);
+          } else {
+            hydrate({
+              stockNumber: stock,
+              make: 'Cars on Caledon',
+              model: 'Vehicle Inquiry (Stock #' + stock + ')',
+              price: 0
+            });
+          }
+        })
+        .catch(function () {
+          hydrate({
+            stockNumber: stock,
+            make: 'Cars on Caledon',
+            model: 'Vehicle Inquiry',
+            price: 0
+          });
+        });
+      return;
+    }
+
+    // Bare /vehicle/ visit without stock or query parameters
+    hydrate({
+      stockNumber: '',
+      make: 'Cars on Caledon',
+      model: 'Quality Pre-Owned Vehicles',
+      price: 0
+    });
   })();
   </script>
 </body>

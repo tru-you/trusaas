@@ -403,7 +403,7 @@
           '<div class="tv-big">' + money(r.low) + " – " + money(r.high) + "</div>" +
           '<div class="tv-range">Verified against ' + (r.listingsFound || 0) + " live market listing" + ((r.listingsFound === 1) ? "" : "s") +
             (r.mileageAdjusted ? " · mileage-adjusted" : "") + "</div>" +
-          '<p class="tv-hint">📄 Your trade-in report is ready — we’ll send it to you on WhatsApp.</p>' +
+          '<p class="tv-hint">Your trade-in report is ready — we’ll send it to you on WhatsApp.</p>' +
           "</div>";
       } else {
         resultBlock =

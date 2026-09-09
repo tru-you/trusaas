@@ -21,50 +21,54 @@
    muted text, one dusty red for destructive. ── */
 :root{
   --ink:#06080D; --ink-2:#0D1117; --ink-3:#161B22; --ink-4:#21262D;
-  --border:#30363D; --border-2:#6E7681;
-  --paper:#E8EAE6; --dim:rgba(232,234,230,.72); --muted:rgba(232,234,230,.55); --faint:rgba(232,234,230,.32);
+  --border:#30363D; --border-2:#6E7681; --border-subtle:rgba(255,255,255,.08);
+  --paper:#E8EAE6; --dim:rgba(232,234,230,.78); --muted:rgba(232,234,230,.55); --faint:rgba(232,234,230,.35);
   --cyan:#4FE3DC; --cyan-500:#3ECFC8; --cyan-300:#7FF0EA; --cyan-800:#22807C;
-  --cyan-soft:rgba(79,227,220,.35); --cyan-faint:rgba(79,227,220,.08); --cyan-surface:rgba(79,227,220,.1);
-  --danger:#B86A6A; --danger-faint:rgba(184,106,106,.14);
-  --glass:rgba(232,234,230,.055); --glass-line:rgba(232,234,230,.14); --glass-line2:rgba(232,234,230,.14);
+  --cyan-soft:rgba(79,227,220,.35); --cyan-faint:rgba(79,227,220,.08); --cyan-surface:rgba(79,227,220,.12);
+  --danger:#E5534B; --danger-dark:#A8322D; --danger-faint:rgba(229,83,75,.14); --danger-border:rgba(229,83,75,.28);
+  --glass:rgba(232,234,230,.055); --glass-line:rgba(232,234,230,.12); --glass-line2:rgba(232,234,230,.12);
   --sans:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --r-sm:8px; --r:12px; --r-card:18px; --r-pill:100px; --btn-r:12px;
   --shadow-card:0 1px 0 rgba(232,234,230,.06) inset, 0 18px 40px -28px rgba(0,0,0,.8);
   --shadow-lift:0 1px 0 rgba(232,234,230,.09) inset, 0 26px 50px -28px rgba(0,0,0,.9);
-  --nav-h:60px; --top-h:54px; --ease:cubic-bezier(.22,1,.36,1); --kb:0px;
+  --shadow-modal:0 24px 64px -12px rgba(0,0,0,.92), 0 0 0 1px rgba(255,255,255,.08);
+  --nav-h:60px; --top-h:54px; --ease:cubic-bezier(.16,1,.3,1); --kb:0px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
 body{font-family:var(--sans);color:var(--paper);background:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden;}
 img{display:block;max-width:100%;}
 button,input,textarea{font-family:inherit;}
-/* Keyboard focus is visible only where it exists (tab/keyboard users) —
-   pointer taps never flash a ring. */
+/* Keyboard focus is visible only where it exists (tab/keyboard users) */
 :focus{outline:none;}
 :focus-visible{outline:2px solid var(--cyan-soft);outline-offset:2px;border-radius:4px;}
 
 /* full-viewport app; dvh with vh fallback for older iOS */
 .app{position:fixed;inset:0;height:100vh;height:100dvh;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--ink);}
 
-/* Buttons — Premium "Button System 2026" */
+/* Buttons — Premium "Button System 2026" with high-tactile spring physics */
 .btn-primary{background:var(--cyan-500);color:var(--ink);border:none;border-radius:var(--btn-r);font-family:var(--sans);font-weight:600;cursor:pointer;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 5px 0 var(--cyan-800), 0 10px 22px -8px rgba(0,0,0,.95);transition:background .12s ease, box-shadow .09s ease, transform .09s ease;}
-.btn-primary:active{transform:translateY(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 1px 0 var(--cyan-800), 0 2px 4px -2px rgba(0,0,0,.9);}
+.btn-primary:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 1px 0 var(--cyan-800), 0 2px 4px -2px rgba(0,0,0,.9);}
 .btn-primary:disabled{background:rgba(232,234,230,.08);color:var(--faint);box-shadow:none;transform:none;cursor:not-allowed;}
+.btn-danger{background:var(--danger);color:#FFFFFF;border:none;border-radius:var(--btn-r);font-family:var(--sans);font-weight:600;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24), 0 4px 0 var(--danger-dark), 0 10px 22px -8px rgba(229,83,75,.5);transition:background .12s ease, box-shadow .09s ease, transform .09s ease;}
+.btn-danger:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 1px 0 var(--danger-dark), 0 2px 4px -2px rgba(0,0,0,.9);}
+.btn-danger:disabled{background:rgba(232,234,230,.08);color:var(--faint);box-shadow:none;transform:none;cursor:not-allowed;}
 .tru-btn-secondary{background:var(--ink-3);border:1px solid var(--border);box-shadow:inset 0 1px 0 rgba(232,234,230,.10), 0 4px 0 var(--ink);color:var(--paper);border-radius:var(--btn-r);font-family:var(--sans);font-weight:500;cursor:pointer;transition:background .12s ease, box-shadow .09s ease, transform .09s ease;}
 .tru-btn-secondary:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink), 0 2px 4px -2px rgba(0,0,0,.9);}
 .tru-btn-ghost{background:transparent;border:1px solid transparent;box-shadow:none;color:var(--dim);border-radius:var(--btn-r);font-family:var(--sans);font-weight:500;cursor:pointer;transition:background .12s ease, color .12s ease, border-color .12s ease;}
 .tru-btn-ghost:active{background:rgba(232,234,230,.06);color:var(--paper);}
-.tru-btn-ghost.danger{color:var(--danger);background:var(--danger-faint);border-color:rgba(184,106,106,.22);}
-.tru-btn-ghost.danger:active{background:rgba(184,106,106,.25);}
-button:not(.btn-primary):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost):not([class*="no-lift"]){transition:box-shadow .2s,transform .15s;}
-button:not(.btn-primary):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost):not([class*="no-lift"]):active{box-shadow:0 2px 8px rgba(79,227,220,.12),0 0 0 1px rgba(79,227,220,.06);transform:translateY(-1px);}
+.tru-btn-ghost.danger{color:var(--danger);background:var(--danger-faint);border-color:var(--danger-border);}
+.tru-btn-ghost.danger:active{background:rgba(229,83,75,.25);}
+button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost):not([class*="no-lift"]){transition:box-shadow .2s,transform .15s;}
+button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost):not([class*="no-lift"]):active{box-shadow:0 2px 8px rgba(79,227,220,.12),0 0 0 1px rgba(79,227,220,.06);transform:translateY(-1px);}
 
 /* Top bar */
 .top{flex-shrink:0;display:flex;align-items:center;gap:11px;padding:0 16px;padding-top:env(safe-area-inset-top);
   height:calc(var(--top-h) + env(safe-area-inset-top));border-bottom:1px solid var(--glass-line);
-  background:rgba(6,8,13,.72);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);position:relative;z-index:5;}
+  background:rgba(6,8,13,.78);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);position:relative;z-index:5;}
 .brand{display:flex;align-items:center;gap:10px;min-width:0;}
 .mark{width:29px;height:29px;flex-shrink:0;}
 .brand .who{display:flex;flex-direction:column;min-width:0;line-height:1.12;}
@@ -80,6 +84,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost)
 .screen{display:none;padding:18px 16px 8px;}
 .screen.on{display:block;animation:screenIn .32s var(--ease);}
 @keyframes screenIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes modalScaleIn{from{opacity:0;transform:scale(.94) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
 
 .h-hi{font-size:22px;font-weight:600;letter-spacing:-.015em;line-height:1.15;}
 .h-sub{color:var(--muted);font-size:13px;margin-top:4px;}
@@ -90,40 +95,36 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost)
 .sec-h .link + .link{margin-left:8px;}
 
 .kgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:20px;}
-.tile{border-radius:var(--r-card);padding:15px 16px 14px;background:var(--ink-2);border:1px solid var(--glass-line2);box-shadow:var(--shadow-card);}
+.tile{border-radius:var(--r-card);padding:15px 16px 14px;background:var(--ink-2);border:1px solid var(--glass-line2);box-shadow:var(--shadow-card);transition:transform .18s var(--ease), border-color .18s ease;}
+.tile:active{transform:scale(.985);}
 .tile .kl{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--muted);}
 .tile .kn{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1;margin-top:11px;font-variant-numeric:tabular-nums;}
 .tile .kd{font-size:12px;margin-top:7px;color:var(--muted);} .tile.acc .kn{color:var(--cyan);}
-/* The one to-do tile on Home gets the accent hairline; .acc colours the number,
-   a different signal, so the two can coexist. */
+/* The one to-do tile on Home gets the accent hairline */
 .tile.need{border-color:var(--cyan-soft);}
 
 .stack{display:flex;flex-direction:column;gap:10px;}
 .card{background:var(--ink-2);border:1px solid var(--glass-line2);border-radius:var(--r-card);box-shadow:var(--shadow-card);}
 .lead{display:flex;gap:13px;padding:14px;align-items:center;cursor:pointer;transition:.15s var(--ease);}
 .lead:active{transform:scale(.985);background:var(--glass);}
-.lav{width:44px;height:44px;border-radius:var(--r);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;color:rgba(232,234,230,.72);background:rgba(232,234,230,.055);border:1px solid rgba(232,234,230,.14);}
+.lav{width:44px;height:44px;border-radius:var(--r);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;color:rgba(232,234,230,.78);background:rgba(232,234,230,.055);border:1px solid rgba(232,234,230,.14);}
 .lead .lb{flex:1;min-width:0;}
 .lead .lnm{font-weight:600;font-size:15px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lead .li{font-size:12.5px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lead .lm{display:flex;gap:8px;align-items:center;margin-top:7px;font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.03em;flex-wrap:wrap;}
 .lead .lm .src{color:var(--cyan);}
-.qa{width:38px;height:38px;border-radius:var(--r);flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--glass);color:var(--dim);text-decoration:none;}
-.qa svg{width:17px;height:17px;} .qa.wa{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint);}
+.qa{width:42px;height:42px;border-radius:var(--r);flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--glass);color:var(--dim);text-decoration:none;transition:transform .12s ease, background .12s ease;}
+.qa:active{transform:scale(.92);}
+.qa svg{width:18px;height:18px;} .qa.wa{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint);}
 
-.pill{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.03em;padding:3px 8px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.pill{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.03em;padding:4px 9px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
 .pill.dot::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;}
-/* The .dot pulse-dot (brand status) sets width/height:6px + box-shadow + a
-   pulse animation. When that class lands on a status pill (.pill.*.dot), the
-   fixed size + global box-sizing:border-box collapses the pill to a 6px
-   sliver and clips its text. Neutralise the size/animation there — the pill's
-   own ::before dot above is what draws the status dot. */
 .pill.dot{width:auto;height:auto;box-shadow:none;animation:none;}
-.pill.cyan{background:var(--cyan-surface);color:var(--cyan);}
+.pill.cyan{background:var(--cyan-surface);color:var(--cyan);border:1px solid rgba(79,227,220,.25);}
 .pill.neutral{background:var(--glass);color:var(--dim);border:1px solid var(--glass-line);}
-.pill.mute{background:rgba(232,234,230,.06);color:var(--muted);}
-.pill.dust{background:var(--danger-faint);color:var(--danger);}
-.pill.glass{background:rgba(6,8,13,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--paper);border:1px solid var(--glass-line2);}
+.pill.mute{background:rgba(232,234,230,.06);color:var(--muted);border:1px solid rgba(232,234,230,.1);}
+.pill.dust{background:var(--danger-faint);color:var(--danger);border:1px solid var(--danger-border);}
+.pill.glass{background:rgba(6,8,13,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--paper);border:1px solid var(--glass-line2);}
 
 .toolbar{position:sticky;top:0;z-index:4;padding:8px 16px 12px;margin:-18px -16px 4px;background:linear-gradient(180deg,var(--ink) 64%,transparent);}
 .search{display:flex;align-items:center;gap:9px;padding:0 13px;height:44px;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--border);}
@@ -156,23 +157,27 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost)
 .empty svg{width:38px;height:38px;color:var(--faint);margin-bottom:12px;}
 .empty .t{font-weight:600;font-size:15px;color:var(--dim);} .empty .s{font-size:13px;margin-top:5px;}
 
-.nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;align-items:stretch;z-index:20;background:rgba(13,17,23,.85);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border-top:1px solid var(--glass-line);}
+.nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;align-items:stretch;z-index:20;background:rgba(13,17,23,.88);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);border-top:1px solid var(--glass-line);}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--faint);cursor:pointer;transition:.2s var(--ease);background:none;border:none;padding:0;}
 .tab svg{width:22px;height:22px;transition:.2s var(--ease);} .tab span{font-size:12px;font-weight:500;}
 .tab.on{color:var(--cyan);} .tab.on svg{transform:translateY(-1px);} .tab:active{transform:scale(.9);}
 
-.scrim{position:absolute;inset:0;z-index:40;background:rgba(4,6,10,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s var(--ease);}
+.scrim{position:absolute;inset:0;z-index:40;background:rgba(4,6,10,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .3s var(--ease);}
 .scrim.open{opacity:1;pointer-events:auto;}
 .sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;max-height:92%;display:flex;flex-direction:column;background:var(--ink-2);border-top-left-radius:24px;border-top-right-radius:24px;border-top:1px solid var(--glass-line2);box-shadow:0 -30px 60px -30px rgba(0,0,0,.9);transform:translateY(101%);transition:transform .38s var(--ease);will-change:transform;}
 .sheet.open{transform:translateY(0);}
-.grab{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;touch-action:none;}
-.grab::before{content:"";width:38px;height:5px;border-radius:3px;background:var(--border);}
+.grab{padding:12px 0 6px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;touch-action:none;}
+.grab::before{content:"";width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.18);}
 .sheet-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 18px 20px;}
-.sheet-foot{flex-shrink:0;padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:10px;border-top:1px solid var(--glass-line);background:var(--ink-2);}
+.sheet-foot{flex-shrink:0;padding:12px 18px max(14px, env(safe-area-inset-bottom, 14px));display:flex;align-items:center;gap:10px;border-top:1px solid var(--glass-line);background:var(--ink-2);box-sizing:border-box;width:100%;}
 
-/* Modal Overlay System — Keyboard aware */
-.modal-ov{position:fixed;inset:0;z-index:100;background:rgba(4,6,10,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s var(--ease);}
-.modal-box{width:100%;max-width:440px;max-height:calc(92vh - var(--kb, 0px));max-height:calc(92dvh - var(--kb, 0px));overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--ink-2);border-top-left-radius:24px;border-top-right-radius:24px;border-top:1px solid var(--glass-line2);padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -30px 60px -30px rgba(0,0,0,.9);animation:screenIn .28s var(--ease);display:flex;flex-direction:column;}
+/* Modal Dialog System — Pro Max Centered Card with Zero Squashing */
+.modal-ov{position:fixed;inset:0;z-index:100;background:rgba(4,6,10,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s var(--ease);}
+.modal-box{width:100%;max-width:390px;max-height:calc(90vh - var(--kb, 0px));max-height:calc(90dvh - var(--kb, 0px));overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--ink-2);border-radius:20px;border:1px solid var(--border);padding:22px 20px;box-shadow:var(--shadow-modal);animation:modalScaleIn .25s var(--ease);display:flex;flex-direction:column;margin:auto;}
+.modal-title{font-size:18px;font-weight:700;letter-spacing:-.015em;color:var(--paper);line-height:1.25;margin-bottom:6px;}
+.modal-msg{font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:14px;}
+.modal-actions{display:flex;gap:10px;margin-top:16px;width:100%;flex-shrink:0;}
+.modal-actions button{flex:1 1 0%;min-width:0;height:48px;min-height:48px;font-size:14.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
 .vhero{height:198px;border-radius:16px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:13px;margin-top:6px;background:var(--ink-3);}
@@ -189,7 +194,7 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost)
 .sw::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:var(--muted);transition:.24s var(--ease);}
 .sw.on{background:var(--cyan-faint);border-color:var(--cyan-soft);} .sw.on::after{transform:translateX(20px);background:var(--cyan);}
 .seg{display:flex;gap:6px;background:var(--ink-3);border:1px solid var(--glass-line);border-radius:var(--r);padding:4px;}
-.seg button{flex:1;border:none;background:none;color:var(--muted);font-weight:500;font-size:13px;padding:9px 4px;border-radius:var(--r-sm);cursor:pointer;transition:.2s var(--ease);}
+.seg button{flex:1;min-height:38px;border:none;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:8px 4px;border-radius:var(--r-sm);cursor:pointer;transition:.2s var(--ease);}
 .seg button.on{background:var(--glass);color:var(--paper);box-shadow:var(--shadow-card);}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
 .field{margin-bottom:11px;}
@@ -200,10 +205,14 @@ button:not(.btn-primary):not(.mvbtn):not(.tru-btn-secondary):not(.tru-btn-ghost)
 .meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
 .mchip{font-family:var(--mono);font-size:12px;color:var(--dim);background:var(--ink-3);border:1px solid var(--glass-line);padding:6px 10px;border-radius:var(--r-sm);}
 .mchip b{color:var(--paper);font-weight:600;}
-.close{position:absolute;top:13px;left:13px;z-index:3;width:34px;height:34px;border-radius:50%;background:rgba(6,8,13,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--glass-line2);color:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.close svg{width:17px;height:17px;}
-.foot-save{flex:1;height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;}
-.foot-save svg{width:18px;height:18px;} .foot-del{flex:0 0 48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:var(--btn-r);} .foot-del svg{width:18px;height:18px;}
+.close{position:absolute;top:13px;left:13px;z-index:3;width:38px;height:38px;border-radius:50%;background:rgba(6,8,13,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--glass-line2);color:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s ease;}
+.close:active{transform:scale(.92);}
+.close svg{width:18px;height:18px;}
+.foot-save{flex:1 1 auto;min-width:0;height:48px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14.5px;font-weight:600;white-space:nowrap;}
+.foot-save svg{width:18px;height:18px;flex-shrink:0;}
+.foot-del{flex:0 0 48px;min-width:48px;width:48px;height:48px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--btn-r);background:var(--danger-faint);border:1px solid var(--danger-border);color:var(--danger);cursor:pointer;transition:background .15s ease, border-color .15s ease, transform .1s ease;}
+.foot-del:active{transform:translateY(2px);background:rgba(229,83,75,.25);}
+.foot-del svg{width:19px;height:19px;flex-shrink:0;}
 
 /* select styling to match inputs */
 .field select{width:100%;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:12px 34px 12px 13px;color:var(--paper);font-size:15px;outline:none;-webkit-appearance:none;appearance:none;
@@ -1297,8 +1306,15 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       showModal({title:"Delete "+name+"?",message:"This removes it from your inventory"+(cv.source==="trulens"?" and its TruLens photos":"")+". This can’t be undone.",confirmLabel:"Delete",danger:true}).then(function(ok){
         if(!ok)return;
         api("DELETE","/api/inventory/"+cv.id).then(function(){
-          cachedStock=cachedStock.filter(function(x){return x.id!==cv.id;});toast(name+" deleted");renderHome();renderStock();closeSheet();
-        }).catch(function(){toast("Couldn't delete — check connection",true);});
+          cachedStock=cachedStock.filter(function(x){return x.id!==cv.id;});
+          curId=null;
+          toast(name+" deleted");
+          renderHome();
+          renderStock();
+          closeSheet();
+        }).catch(function(err){
+          toast((err&&err.message)||"Couldn't delete — check connection",true);
+        });
       });
     });
     $("#shareBtn").addEventListener("click",function(){var cv=curVeh()||v;if(cv)shareVehicle(cv);});
@@ -1401,13 +1417,13 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       var ov=document.createElement("div");ov.className="modal-ov";
       var box=document.createElement("div");box.className="modal-box";
       box.innerHTML=
-        '<div style="font-weight:600;font-size:18px;letter-spacing:-0.01em;margin-bottom:2px">Edit contact details</div>'+
-        '<div style="font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:4px">Update contact info for '+esc(nm)+'</div>'+
+        '<div class="modal-title">Edit contact details</div>'+
+        '<div class="modal-msg">Update contact info for '+esc(nm)+'</div>'+
         '<div class="field"><label>Phone number</label><input id="editPhone" type="tel" placeholder="Phone number" value="'+esc(phone)+'" autocomplete="off"></div>'+
         '<div class="field"><label>Email address</label><input id="editEmail" type="email" placeholder="Email address" value="'+esc(email)+'" autocomplete="off"></div>'+
-        '<div style="display:flex;gap:10px;margin-top:8px">'+
-        '<button type="button" class="tru-btn-secondary" id="editCancel" style="flex:1;height:46px;font-size:14.5px">Cancel</button>'+
-        '<button type="button" class="btn-primary" id="editSave" style="flex:1;height:46px;font-size:14.5px">Save changes</button>'+
+        '<div class="modal-actions">'+
+        '<button type="button" class="tru-btn-secondary" id="editCancel">Cancel</button>'+
+        '<button type="button" class="btn-primary" id="editSave">Save changes</button>'+
         '</div>';
       ov.appendChild(box);document.body.appendChild(ov);
       function closeEdit(){if(ov.parentNode)document.body.removeChild(ov);}
@@ -1890,13 +1906,13 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
     return new Promise(function(resolve){
       var ov=document.createElement("div");ov.className="modal-ov";
       var box=document.createElement("div");box.className="modal-box";
-      var h='<div style="font-weight:600;font-size:18px;letter-spacing:-0.01em;margin-bottom:2px">'+esc(opts.title)+'</div>';
-      if(opts.message)h+='<div style="font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:8px">'+esc(opts.message)+'</div>';
-      if(opts.input){h+='<div class="field" style="margin-bottom:6px"><input class="modal-inp" style="width:100%;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;color:var(--paper);font-size:15px;outline:none;" placeholder="'+esc(opts.placeholder||"")+'" value="'+esc(opts.defaultValue||"")+'"></div>';}
-      h+='<div style="display:flex;gap:10px;margin-top:10px">';
-      h+='<button type="button" class="tru-btn-secondary modal-cancel" style="flex:1;height:46px;font-size:14.5px">Cancel</button>';
-      var dc=opts.danger?"background:var(--danger);color:#fff;":"";
-      h+='<button type="button" class="btn-primary modal-ok" style="flex:1;height:46px;font-size:14.5px;'+dc+'">'+esc(opts.confirmLabel||"Confirm")+'</button>';
+      var h='<div class="modal-title">'+esc(opts.title)+'</div>';
+      if(opts.message)h+='<div class="modal-msg">'+esc(opts.message)+'</div>';
+      if(opts.input){h+='<div class="field" style="margin-bottom:12px"><input class="modal-inp" style="width:100%;height:46px;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:0 14px;color:var(--paper);font-size:15px;outline:none;" placeholder="'+esc(opts.placeholder||"")+'" value="'+esc(opts.defaultValue||"")+'"></div>';}
+      var okClass=opts.danger?"btn-danger modal-ok":"btn-primary modal-ok";
+      h+='<div class="modal-actions">';
+      h+='<button type="button" class="tru-btn-secondary modal-cancel">Cancel</button>';
+      h+='<button type="button" class="'+okClass+'">'+esc(opts.confirmLabel||"Confirm")+'</button>';
       h+='</div>';
       box.innerHTML=h;
       ov.appendChild(box);document.body.appendChild(ov);
@@ -1925,18 +1941,18 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
     });
 
     box.innerHTML=
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">'+
-        '<div style="font-weight:600;font-size:18px;letter-spacing:-0.01em">Walk-in lead</div>'+
-        '<button type="button" class="ld-x modal-x" aria-label="Close" style="width:30px;height:30px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'+
+        '<div class="modal-title" style="margin-bottom:0">Walk-in lead</div>'+
+        '<button type="button" class="ld-x modal-x" aria-label="Close" style="width:34px;height:34px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>'+
       '</div>'+
-      '<div style="font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:4px">Capture a customer from the showroom floor into your CRM.</div>'+
+      '<div class="modal-msg" style="margin-bottom:12px">Capture a customer from the showroom floor into your CRM.</div>'+
       '<div class="field"><label>Customer name *</label><input class="wi-name" type="text" placeholder="e.g. Sipho Ndlovu" autocomplete="off" autofocus></div>'+
       '<div class="field"><label>Phone number</label><input class="wi-phone" type="tel" placeholder="e.g. 082 123 4567" autocomplete="off"></div>'+
       '<div class="field"><label>Vehicle of interest (optional)</label><select class="wi-veh">'+vehOptions+'</select></div>'+
       '<div class="field"><label>Notes (optional)</label><input class="wi-notes" type="text" placeholder="e.g. Interested in finance / trade-in" autocomplete="off"></div>'+
-      '<div style="display:flex;gap:10px;margin-top:8px">'+
-        '<button type="button" class="tru-btn-secondary modal-cancel" style="flex:1;height:46px;font-size:14.5px">Cancel</button>'+
-        '<button type="button" class="btn-primary modal-ok" id="wiSubmit" style="flex:1;height:46px;font-size:14.5px">Add lead</button>'+
+      '<div class="modal-actions">'+
+        '<button type="button" class="tru-btn-secondary modal-cancel">Cancel</button>'+
+        '<button type="button" class="btn-primary modal-ok" id="wiSubmit">Add lead</button>'+
       '</div>';
 
     ov.appendChild(box);document.body.appendChild(ov);

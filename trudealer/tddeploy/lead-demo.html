@@ -285,7 +285,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .bar-chevron{color:rgba(255,255,255,.25);font-size:16px;transition:color .2s;}
 .bar-launch:hover .bar-chevron{color:#3BBFB2;}
 /* Nav — matches homepage */
-.nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;background:rgba(248,245,238,0.97);border:1px solid rgba(0,0,0,.08);border-radius:99px;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 8px 32px rgba(0,0,0,.08);max-width:1160px;width:calc(100% - 32px);transition:transform .4s cubic-bezier(.25,.46,.45,.94),opacity .4s;}
+.nav{position:fixed;top:0;left:0;right:0;width:100%;max-width:100%;border-radius:0;transform:none;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,40px);height:68px;background:rgba(248,245,238,0.96);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 4px 20px rgba(0,0,0,.05);transition:transform .4s cubic-bezier(.25,.46,.45,.94),background .3s;}
 .nav.scrolled{background:rgba(248,245,238,0.96);border-color:rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(0,0,0,.12);}
 .nav-brand{display:flex;align-items:center;color:var(--white);height:100%;flex-shrink:0;}
 .logo-3d{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1;}
@@ -332,13 +332,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 h1, h2, h3, .section-title, .section-h2, .mod-panel-title, .hero-h1 {
   position: relative;
 }
-h1 .accent, h1 em, h2 .accent, h2 em, .hero-h1 .accent {
-  background: linear-gradient(90deg, var(--cyan,#0B7C72) 0%, #5EEAD4 48%, var(--cyan,#0B7C72) 100%);
-  background-size: 200% 100%;
+h1 .accent, h1 em, h2 .accent, h2 em, h3 .accent, h3 em, .hero-h1 .accent, .section-h2 .accent, .final h2 .accent, .section-title .accent {
+  display: inline-block;
+  padding-right: 0.15em;
+  padding-bottom: 0.04em;
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  background: linear-gradient(135deg, #0B7C72 0%, #0D9488 25%, #14B8A6 48%, #0F766E 72%, #0B7C72 100%);
+  background-size: 240% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: headingShimmer 4s ease-in-out infinite;
+  animation: headingShimmer 5s ease-in-out infinite;
+}
+[data-theme="dark"] h1 .accent, [data-theme="dark"] h1 em, [data-theme="dark"] h2 .accent, [data-theme="dark"] h2 em, [data-theme="dark"] .hero-h1 .accent {
+  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 30%, #2DD4BF 60%, #0D9488 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 @keyframes headingShimmer {
   0%, 100% { background-position: 0% 50%; }
@@ -472,7 +484,7 @@ html { scroll-behavior: smooth; }
 .nav-brand:hover img { transform: scale(1.03); }
 
 /* Nav entrance */
-@keyframes navSlideIn { from { transform: translateX(-50%) translateY(-20px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+@keyframes navSlideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .nav { animation: navSlideIn 0.6s cubic-bezier(.22,1,.36,1) forwards; }
 
 /* Card depth — multi-layer realistic shadows */
@@ -653,7 +665,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
 </style>
 
 <nav class="nav" id="mainNav">
-  <a href="index.html" class="nav-brand"><img src="trudealer-nav-logo.webp" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
+  <a href="index.html" class="nav-brand"><img src="trudealer-nav-logo.svg" alt="TruDealer" height="36" style="height:36px;width:auto;"></a>
   <div class="nav-links">
     <a href="index.html" class="active">Cars</a>
     <a href="moto.html">Moto</a>
@@ -664,7 +676,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     <a href="faq.html">FAQ</a>
   </div>
   <div class="nav-right">
-    <a href="https://premium.tru-saas.com" class="nav-sandbox-btn" target="_blank" rel="noopener"><span class="dot"></span> Live Sandbox</a>
+    <a href="https://premium.tru-saas.com" class="nav-sandbox-btn" target="_blank" rel="noopener"><span class="dot"></span> Live Demo</a>
     <a href="demo.html" class="nav-cta">Book Demo &rarr;</a>
     <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
   </div>
@@ -679,7 +691,7 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     <a href="trudealer-vs-vmg.html">vs VMG</a>
     <a href="trudealer-vs-autoxloo.html">vs AutoXloo</a>
     <a href="uk.html">UK Market</a>
-    <a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Live Sandbox</a>
+    <a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Live Demo</a>
     <a href="demo.html" class="nav-mobile-cta">Book a walkthrough &rarr;</a>
   </div>
 </nav>

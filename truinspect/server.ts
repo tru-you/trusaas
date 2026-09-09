@@ -11,14 +11,35 @@ import { fetchValuation } from './src/lib/scraper';
 /* Market-aware engine (UK/US-ready) behind a kill-switch:
  *   VALUATION_ENGINE=legacy  → the in-tree SA fork (production default)
  *   VALUATION_ENGINE=package → shared packages/market-scraper engine
+ *   VALUATION_ENGINE=remote  → standalone Hetzner market-scraper API (recommended)
  * MARKET (default 'za') picks the market config on the package engine.
  * Dealer-level market lands with the market substrate; instance env for now. */
 import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from '../packages/market-scraper/index';
 import { lookupRegistration, lookupCarHistory, regLookupConfigured, regLookupProvider, historyCheckEnabled } from '../packages/reg-lookup';
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'legacy').toLowerCase();
+const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || 'https://scraper.tru-saas.com').replace(/\/+$/, '');
 const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
 const INSTANCE_VERTICAL = (process.env.VERTICAL || 'cars').toLowerCase();
+
+async function fetchRemoteValuation(
+  make: string,
+  model: string,
+  year: string,
+  opts: { mileage?: number; vin?: string; variant?: string; dealerSlug?: string },
+  market = 'za'
+): Promise<any> {
+  const res = await fetch(`${SCRAPER_REMOTE_URL}/api/valuation`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ make, model, year, market, ...opts }),
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!res.ok) {
+    throw new Error(`Remote scraper HTTP ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
 import {
   initPhotoStore,
   mediaDir,
@@ -1581,7 +1602,15 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
       dealerSlug,
       mileage: subjectKm,
     };
-    const data = VALUATION_ENGINE === 'package'
+    const data = VALUATION_ENGINE === 'remote'
+      ? await fetchRemoteValuation(
+          String(make),
+          String(model),
+          String(year),
+          valuationOpts,
+          INSTANCE_MARKET,
+        )
+      : VALUATION_ENGINE === 'package'
       ? await pkgFetchValuation(
           String(make),
           String(model),

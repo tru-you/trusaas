@@ -19,7 +19,7 @@ TruDealer features true bi-directional data flow across the entire dealership:
    - Live scraper comps for Cars.co.za and AutoTrader.
    - CPA (Consumer Protection Act) and POPIA compliant.
    - Pricing: TruStart R1,599/month | TruPro R3,599/month.
-   - WhatsApp Support: +27 62 050 2091.
+   - WhatsApp Support: +44 7476 995694.
 
 2. **United Kingdom (GBP)**:
    - Fully operational in the UK. Low-latency Frankfurt cloud hosting, British Pound (£ GBP) billing, imperial distance metrics (Miles).
@@ -63,4 +63,4 @@ TruDealer features true bi-directional data flow across the entire dealership:
 - Master FAQ: https://trudealer.tru-saas.com/faq.html
 - Pricing: https://trudealer.tru-saas.com/packages.html
 - Field Guides: https://trudealer.tru-saas.com/guides/
-- Contact: sales@tru-saas.com | ZA: +27 62 050 2091 | UK: +44 7476 995694
+- Contact: sales@tru-saas.com | ZA: +44 7476 995694 | UK: +44 7476 995694

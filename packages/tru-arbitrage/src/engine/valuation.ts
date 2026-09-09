@@ -150,7 +150,7 @@ export function extractCssComps(html: string, make?: string, model?: string, yea
     const cardYear = findCardYear(parentText, make);
     if (year !== undefined && !yearInBand(cardYear, year, yearTol)) return;
 
-    const match = parentText.match(/R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,7})/i);
+    const match = parentText.match(/R\s?(\d{1,3}(?:[ ,]\d{3}){1,2}|\d{5,7})(?!\s?\d)/i);
     if (!match) return;
     const price = cleanNumber(match[1]);
     if (!price || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) return;
@@ -233,7 +233,7 @@ export function extractCardComps(html: string, make: string, model: string, year
     const modelOk = !modelKey || lower.includes(modelKey);
     if (!makeOk || !modelOk) return;
 
-    const priceMatch = text.match(/R\s?((?:\d{1,3}(?:[ ,]\d{3})+|\d{6,7}))/i);
+    const priceMatch = text.match(/R\s?(\d{1,3}(?:[ ,]\d{3}){1,2}|\d{5,7})(?!\s?\d)/i);
     if (!priceMatch) return;
     const price = cleanNumber(priceMatch[1]);
     if (price == null || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) return;

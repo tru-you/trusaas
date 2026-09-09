@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Pre-Owned Vehicle Detail | Apex Auto Investments</title>
+  <meta name="description" content="View vehicle specs, 114-point VIR® inspection score, bank finance simulation, and trade-in valuation at Apex Auto Investments in Newton Park, Gqeberha (PE).">
+
+  <meta property="og:locale" content="en_ZA">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Apex Auto Investments">
+  <meta property="og:title" content="Quality Pre-Owned Vehicle | Apex Auto Investments">
+  <meta property="og:description" content="Inspected vehicle for sale at Apex Auto Investments, Gqeberha. Multi-bank finance approved.">
+  <meta property="og:image" content="https://www.apexinvest.co.za/og-card.jpg">
+
+  <link rel="stylesheet" href="assets/css/showroom.css">
+
+  <script src="tru-loader.js?v=3"
+          data-dealer="Apex Auto Investments"
+          data-slug="apex-wholesale-investments"
+          data-flow="https://flow.tru-saas.com"
+          data-wa="27726047878"
+          data-accent="#E8611A"
+          data-brand="Apex Auto"
+          data-theme="light"
+          data-widgets="form,share,book,afford,repay"
+          data-repay-target="#vdpFinanceCalc"
+          data-share-site="https://www.apexinvest.co.za"
+          data-share-vehicle-path="vehicle.html"></script>
+
+  <style>
+    .vdp-layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 36px; align-items: start; }
+    .vdp-gallery { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+    .vdp-hero-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: var(--slate-100); }
+    .vdp-filmstrip { display: flex; gap: 10px; padding: 14px; overflow-x: auto; background: var(--slate-50); border-top: 1px solid var(--rule); }
+    .vdp-thumb { width: 80px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; opacity: 0.7; transition: all 0.2s; }
+    .vdp-thumb.is-active, .vdp-thumb:hover { border-color: var(--apex-orange); opacity: 1; }
+    
+    .vdp-rail { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; position: sticky; top: 90px; }
+    .vdp-price { font-family: var(--display); font-size: 2.2rem; font-weight: 800; color: var(--graphite-950); }
+    .vdp-repay { font-family: var(--mono); font-size: 0.95rem; color: var(--apex-orange); font-weight: 600; margin-bottom: 20px; }
+    
+    .spec-grid-8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0; }
+    .spec-tile { background: var(--slate-50); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; text-align: center; }
+    .spec-tile-val { font-family: var(--display); font-size: 1rem; font-weight: 700; color: var(--graphite-950); }
+    .spec-tile-lbl { font-family: var(--mono); font-size: 0.7rem; color: var(--graphite-500); text-transform: uppercase; }
+
+    .vir-card { background: var(--graphite-950); color: #fff; border-radius: 16px; padding: 28px; margin: 28px 0; }
+    .vir-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .vir-score-ring { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--apex-orange); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 1.3rem; font-weight: 800; color: var(--apex-orange); }
+    
+    @media (max-width: 960px) { .vdp-layout { grid-template-columns: 1fr; } .spec-grid-8 { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="coc-skip">Skip to main content</a>
+
+  <div id="site-topbar"></div>
+  <div id="site-header"></div>
+
+  <main id="main-content" class="section">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div style="font-family: var(--mono); font-size: 0.8rem; color: var(--graphite-500); margin-bottom: 20px;">
+        <a href="index.html" style="color: var(--graphite-500); text-decoration: none;">Home</a> &nbsp;/&nbsp;
+        <a href="stock.html" style="color: var(--graphite-500); text-decoration: none;">Pre-Owned Stock</a> &nbsp;/&nbsp;
+        <span id="vdpBreadcrumbTitle" style="color: var(--apex-orange);">Loading Vehicle...</span>
+      </div>
+
+      <div class="vdp-layout">
+        <!-- Main Column (Left) -->
+        <div>
+          <!-- Hero Gallery -->
+          <div class="vdp-gallery">
+            <img id="vdpMainImg" src="" alt="Vehicle Photo" class="vdp-hero-img" onerror="this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80'">
+            <div id="vdpFilmstrip" class="vdp-filmstrip"></div>
+          </div>
+
+          <!-- 8 Highlights Specs Grid -->
+          <div class="spec-grid-8">
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spYear">----</div>
+              <div class="spec-tile-lbl">Year Model</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spKm">-- km</div>
+              <div class="spec-tile-lbl">Mileage</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spTrans">----</div>
+              <div class="spec-tile-lbl">Transmission</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spFuel">----</div>
+              <div class="spec-tile-lbl">Fuel Type</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spBody">----</div>
+              <div class="spec-tile-lbl">Body Shape</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spColor">White</div>
+              <div class="spec-tile-lbl">Colour</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spVir">92 / 100</div>
+              <div class="spec-tile-lbl">VIR® Score</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val">Verified</div>
+              <div class="spec-tile-lbl">Title & History</div>
+            </div>
+          </div>
+
+          <!-- VIR Condition Assessment Card -->
+          <div class="vir-card">
+            <div class="vir-header">
+              <div>
+                <div style="font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; color: var(--apex-orange); letter-spacing: 0.1em; margin-bottom: 4px;">TruInspect Condition Report</div>
+                <h3 style="color:#fff; font-size: 1.4rem;">114-Point Verified Inspection</h3>
+              </div>
+              <div class="vir-score-ring" id="virRingVal">92</div>
+            </div>
+            <p style="color: var(--slate-300); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6;">
+              This vehicle has passed our comprehensive mechanical, electrical, bodywork, and road safety evaluation at 17b Burt Drive.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; font-family: var(--mono); font-size: 0.82rem;">
+              <div>Mechanical: <strong style="color:var(--apex-orange);">PASS</strong></div>
+              <div>Electrical: <strong style="color:var(--apex-orange);">PASS</strong></div>
+              <div>Body & Structure: <strong style="color:var(--apex-orange);">PASS</strong></div>
+            </div>
+          </div>
+
+          <!-- Description & Highlights -->
+          <div style="background: var(--white); border: 1px solid var(--rule); border-radius: 16px; padding: 28px; margin-bottom: 28px;">
+            <h3 style="font-size: 1.25rem; margin-bottom: 12px;">Dealer Notes & Highlights</h3>
+            <p id="vdpNotes" style="color: var(--graphite-600); line-height: 1.6;">
+              Hand-picked pre-owned vehicle in excellent condition. Full multi-point inspection verified. Financing available with ABSA, WesBank, Standard Bank, and Nedbank MFC. Trade-ins welcome.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sticky Sidebar Buy Rail (Right) -->
+        <aside class="vdp-rail">
+          <div style="font-family: var(--mono); font-size: 0.78rem; color: var(--graphite-500); text-transform: uppercase; margin-bottom: 4px;" id="vdpStockNo">Stock # APX-001</div>
+          <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 14px; line-height: 1.2;" id="vdpTitle">Vehicle Title</h1>
+
+          <div class="vdp-price" id="vdpPrice">R 0</div>
+          <div class="vdp-repay" id="vdpRepay">Est. R 0 / mo</div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+            <a id="vdpWaBtn" href="#" target="_blank" class="btn btn-wa btn-lg" style="width:100%;">
+              WhatsApp About This Car
+            </a>
+            <a href="#vdpFinanceCalc" class="btn btn-primary btn-lg" style="width:100%;">
+              Apply for Bank Finance
+            </a>
+            <button type="button" id="vdpShareBtn" class="btn btn-outline" style="width:100%;">
+              Share This Vehicle
+            </button>
+          </div>
+
+          <!-- Market Comparison Badge -->
+          <div style="background: var(--slate-50); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 24px;">
+            <span style="font-family: var(--mono); font-size: 0.72rem; color: var(--graphite-500); text-transform: uppercase; display: block; margin-bottom: 4px;">Market Appraisal</span>
+            <strong style="color: var(--apex-orange); font-size: 0.95rem;">Competitive Market Price</strong>
+          </div>
+
+          <!-- In-Page Finance Calculator Target -->
+          <div id="vdpFinanceCalc"></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/showroom-data.js"></script>
+  <script src="assets/js/showroom.js"></script>
+  <script src="assets/js/vdp-page.js"></script>
+</body>
+</html>

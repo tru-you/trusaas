@@ -23,6 +23,7 @@ import {
   fetchSerpListings,
   serpConfigured,
   extractJsonLd,
+  extractCardListings,
   extractNextDataListings,
   extractPrices,
   adjustForMileage,
@@ -110,18 +111,26 @@ function pageUrl(src: ScraperSource, make: string, model: string, year: string, 
 }
 
 /** Classifieds parser for a market: Next.js __NEXT_DATA__ → JSON-LD → class scan. */
-function classifiedParser(cfg: MarketConfig, make: string, model: string, year: string) {
+function classifiedParser(cfg: MarketConfig, make: string, model: string, year: string, variant?: string) {
   return (html: string, selectors: string[]): Listing[] => {
-    const nd = extractNextDataListings(html, make, model, year, cfg);
+    const opts = variant ? { variant } : undefined;
+    const nd = extractNextDataListings(html, make, model, year, cfg, opts);
     if (nd.length) return nd;
-    return htmlToAnyListings(html, selectors, cfg);
+    // Card extraction with vehicle validation
+    const cards = extractCardListings(html, make, model, year, cfg, opts);
+    if (cards.length) return cards;
+    // JSON-LD fallback — filter by vehicle name/description to avoid featured/promoted cars
+    const jl = extractJsonLd(html, cfg).filter(l => {
+      // JSON-LD doesn't carry enough context for make/model filtering by itself,
+      // but if we got here it means cards and Next.js both failed — likely bot-blocked.
+      // Return what we have (JSON-LD at least validates @type=Car and price bounds).
+      return true;
+    });
+    if (jl.length) return jl;
+    // DO NOT fall back to raw price regex — it scrapes featured/sidebar cars
+    // with zero make/model/year validation, causing massive overvaluations.
+    return [];
   };
-}
-
-function htmlToAnyListings(html: string, selectors: string[], cfg: MarketConfig): Listing[] {
-  const jl = extractJsonLd(html, cfg);
-  if (jl.length) return jl;
-  return extractPrices(html, selectors, cfg).map((price) => ({ price }));
 }
 
 /* ── main ─────────────────────────────────────── */
@@ -135,8 +144,11 @@ export async function fetchValuation(
 ): Promise<ValuationResult> {
   const cfg = market;
   const baseModel = modelCore(model);
+  const variant = opts.variant || "";
   const targetKm = Number(opts.mileage);
-  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug, targetKm);
+  // Use raw model + variant for cache key so different trims get separate entries
+  const cacheModel = variant ? `${model} ${variant}` : model;
+  const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, targetKm);
   const cached = cacheGet(key);
   if (cached) return cached;
 
@@ -210,7 +222,7 @@ export async function fetchValuation(
   }
 
   const sources = buildSourcesFor(cfg);
-  const parse = classifiedParser(cfg, make, baseModel, y);
+  const parse = classifiedParser(cfg, make, baseModel, y, variant);
   const perSource = await Promise.all(
     sources.map(async (src) => {
       const acc: Listing[] = [];
@@ -240,8 +252,10 @@ export async function fetchValuation(
   }
 
   let serpListings: Listing[] = [];
+  // SERP benefits from variant detail (Google handles natural language well)
+  const serpModel = variant ? `${baseModel} ${variant}` : baseModel;
   if (dealerListings.length + classifiedListings.length < SERP_TRIGGER_MAX && serpConfigured()) {
-    serpListings = await fetchSerpListings(make, baseModel, y, cfg);
+    serpListings = await fetchSerpListings(make, serpModel, y, cfg);
     if (serpListings.length) {
       sourcesOutput.push({ name: "Google (SERP)", count: serpListings.length, avg: Math.round(serpListings.reduce((s, l) => s + l.price, 0) / serpListings.length) });
     }

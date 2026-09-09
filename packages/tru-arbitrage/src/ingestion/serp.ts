@@ -21,7 +21,7 @@ import { CONFIG } from '../config';
 import { db } from '../storage/db';
 import { fetchHtmlWithFallback } from '../engine/fetch-html';
 
-const PRICE_SCAN_RE = /R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,7})/i;
+const PRICE_SCAN_RE = /R\s?(\d{1,3}(?:[ ,]\d{3}){1,2}|\d{5,7})(?!\s?\d)/i;
 
 const DEFAULT_CITIES = [
   'Johannesburg', 'Pretoria', 'Cape Town', 'Durban', 'Sandton', 'Midrand',

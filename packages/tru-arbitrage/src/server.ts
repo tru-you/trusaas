@@ -387,8 +387,9 @@ export function startServer(port = CONFIG.PORT) {
   return app.listen(port, () => {
     console.log(`🚀 [TruRadar Engine] Listening on port ${port}`);
 
-    // ── Auto-scan scheduler ──────────────────────────────────────────────
-    if (CONFIG.AUTO_SCAN_ENABLED) {
+    // ── Auto-scan scheduler (default OFF — set AUTO_SCAN_ENABLED=1 to enable) ──
+    const isAutoScanEnabled = /^(1|true|yes)$/i.test(process.env.AUTO_SCAN_ENABLED || '');
+    if (isAutoScanEnabled) {
       let autoScanRunning = false;
       const intervalHrs = (CONFIG.SCAN_INTERVAL_MS / 3600000).toFixed(1);
       console.log(`📡 [auto-scan] Scheduled every ${intervalHrs}h for all active dealers`);

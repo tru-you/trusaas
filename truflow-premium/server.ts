@@ -1955,6 +1955,10 @@ app.post("/api/inventory", (req: any, res) => {
  *  dealership could PUT or DELETE another dealership's stock by id alone. */
 function mayTouchVehicle(v: any, auth: any): boolean {
   if (!auth || auth.role === "admin") return true;
+  if (auth.dealershipId === "demo") {
+    // Demo sessions can manage demo stock or legacy untagged stock
+    return !v?.dealershipId || v.dealershipId === "demo";
+  }
   return !!v?.dealershipId && v.dealershipId === auth.dealershipId;
 }
 
@@ -2401,20 +2405,28 @@ app.delete("/api/inventory/:id", (req: any, res) => {
       (d: any) => d.vehicleId === target.id && d.status === "Signed",
     ).length,
   };
+  const isDemo = req.auth?.dealershipId === "demo";
   const sealedTotal = Object.values(sealed).reduce((n, c) => n + c, 0);
   if (sealedTotal > 0) {
-    /* No archived-unit exemption. Archiving does not retract the sale, it only
-       retires the car from the floor — so an archived unit with an invoice
-       against it is exactly what this guard exists to protect. Exempting them
-       let a dealer archive a documented sale and then delete it, which is the
-       one outcome archiving was introduced to prevent. */
-    return res.status(409).json({
-      error: "This sale is recorded here — archive the vehicle instead of deleting it.",
-      recorded: sealed,
-    });
+    if (!isDemo) {
+      /* No archived-unit exemption for live dealers. Archiving does not retract the sale, it only
+         retires the car from the floor — so an archived unit with an invoice
+         against it is exactly what this guard exists to protect. Exempting them
+         let a dealer archive a documented sale and then delete it, which is the
+         one outcome archiving was introduced to prevent. */
+      return res.status(409).json({
+        error: "This sale is recorded here — archive the vehicle instead of deleting it.",
+        recorded: sealed,
+      });
+    }
   }
 
   state.vehicles = state.vehicles.filter((v: any) => v.id !== req.params.id);
+
+  if (isDemo) {
+    state.invoices = (state.invoices || []).filter((i: any) => i.vehicleId !== req.params.id);
+    state.agreements = (state.agreements || []).filter((a: any) => a.vehicleId !== req.params.id);
+  }
 
   /* Take the vehicle's dependants with it. Deleting the row alone left leads,
      tasks and DocHub documents pointing at an id that no longer resolves — the
@@ -6594,14 +6606,35 @@ import { fetchValuation } from "./src/lib/scraper";
 /* Market-aware engine (UK/US-ready) behind a kill-switch:
  *   VALUATION_ENGINE=legacy  → the in-tree SA fork (production default)
  *   VALUATION_ENGINE=package → shared packages/market-scraper engine
+ *   VALUATION_ENGINE=remote  → standalone Hetzner market-scraper API (recommended)
  * MARKET (default 'za') picks the market config. The public trade-estimate
  * route forces the package engine for any non-ZA market regardless of the
  * switch — the legacy fork is SA-only by definition. */
 import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from "../packages/market-scraper/index";
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || "legacy").toLowerCase();
+const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || "https://scraper.tru-saas.com").replace(/\/+$/, "");
 const INSTANCE_MARKET = (process.env.MARKET || "za").toLowerCase();
 const INSTANCE_VERTICAL = (process.env.VERTICAL || "cars").toLowerCase();
+
+async function fetchRemoteValuation(
+  make: string,
+  model: string,
+  year: string,
+  opts: { mileage?: number; vin?: string; variant?: string; dealerSlug?: string },
+  market = "za"
+): Promise<any> {
+  const res = await fetch(`${SCRAPER_REMOTE_URL}/api/valuation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ make, model, year, market, ...opts }),
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!res.ok) {
+    throw new Error(`Remote scraper HTTP ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
 
 const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
@@ -6900,7 +6933,15 @@ app.post("/api/valuation", authenticate, async (req: any, res) => {
     const valuationOpts = {
       mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
     };
-    const data = VALUATION_ENGINE === "package"
+    const data = VALUATION_ENGINE === "remote"
+      ? await fetchRemoteValuation(
+          String(make),
+          String(model),
+          String(year),
+          valuationOpts,
+          INSTANCE_MARKET,
+        )
+      : VALUATION_ENGINE === "package"
       ? await pkgFetchValuation(
           String(make),
           String(model),
@@ -7027,8 +7068,9 @@ app.post("/api/public/trade-estimate", async (req: any, res) => {
      * takes the package engine regardless of the kill-switch. */
     const requestedMarket = String((req.body || {}).market || INSTANCE_MARKET).toLowerCase();
     const marketCfg = (pkgMarkets as Record<string, any>)[requestedMarket] || pkgMarkets.za;
-    const usePkg = VALUATION_ENGINE === "package" || marketCfg.id !== "za";
-    const data = usePkg
+    const data = VALUATION_ENGINE === "remote"
+      ? await fetchRemoteValuation(String(make), String(model), String(year), valuationOpts, requestedMarket)
+      : (VALUATION_ENGINE === "package" || marketCfg.id !== "za")
       ? await pkgFetchValuation(String(make), String(model), String(year), valuationOpts, marketCfg)
       : await fetchValuation(String(make), String(model), String(year), valuationOpts);
     const retail = data.averageRetailPrice;

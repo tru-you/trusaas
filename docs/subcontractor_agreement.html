@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TruDealer — Subcontractor Agreement</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   TRUDEALER BROCHURE
+   Geometry: mm · Type: pt · Spacing scale: 4pt base
+   ═══════════════════════════════════════════════ */
+@page{size:A4 portrait;margin:0;}
+
+:root{
+  /* Paper */
+  --paper:#F5F1E8;
+  --paper-2:#EBE5D8;
+  --paper-3:#E1DACB;
+  /* Ink (dark panels use brand near-black) */
+  --night:#080C14;
+  --night-2:#0F1621;
+  --ink:#121A26;
+  --ink-2:#3A4553;
+  --muted:#6E6656;
+  --faint:#A79D8C;
+  --line:rgba(18,26,38,.14);
+  --line-soft:rgba(18,26,38,.07);
+  /* Brand */
+  --cyan:#07889B;          /* print-safe cyan */
+  --cyan-lit:#00E0F5;      /* screen cyan for dark panels */
+  --amber:#B07A26;
+  /* Type */
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  /* Spacing scale — 4pt base */
+  --s1:4pt; --s2:8pt; --s3:12pt; --s4:16pt; --s5:24pt; --s6:32pt; --s7:44pt;
+  /* Page geometry */
+  --pad-x:17mm; --pad-t:16mm; --pad-b:20mm;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--paper-3);}
+body{
+  background:var(--paper-3);color:var(--ink);
+  font-family:var(--sans);font-size:9.5pt;line-height:1.48;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-feature-settings:"kern","liga","ss01";
+}
+a{color:inherit;text-decoration:none;}
+img{display:block;max-width:100%;}
+
+/* Display type */
+h1,h2,h3,h4{font-family:var(--display);font-weight:400;color:var(--ink);letter-spacing:-.03em;}
+h1{font-variation-settings:"opsz" 144,"SOFT" 30;line-height:1;}
+h2{font-variation-settings:"opsz" 144,"SOFT" 30;line-height:1.06;}
+h3{font-variation-settings:"opsz" 72,"SOFT" 30;line-height:1.14;}
+h4{font-variation-settings:"opsz" 48,"SOFT" 30;line-height:1.18;}
+em{
+  font-family:var(--display);font-style:italic;color:var(--cyan);
+  font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;
+}
+
+/* ─── PAGE SHELL ─────────────────────────────── */
+.doc{width:210mm;margin:0 auto;}
+.page{
+  position:relative;width:210mm;min-height:297mm;
+  padding:var(--pad-t) var(--pad-x) var(--pad-b);
+  background:var(--paper);overflow:hidden;
+  break-after:page;page-break-after:always;
+}
+.page:last-child{break-after:auto;page-break-after:auto;}
+/* Warm tint wash — very subtle, keeps cream from looking flat */
+.page::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(70% 45% at 12% 8%,rgba(176,122,38,.045),transparent 60%),
+    radial-gradient(60% 40% at 92% 94%,rgba(7,136,155,.04),transparent 60%);
+}
+.page > *{position:relative;z-index:1;}
+
+/* ─── RUNNING HEAD / FOOT ────────────────────── */
+.rh{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:var(--s2);margin-bottom:var(--s5);
+  border-bottom:1px solid var(--line);
+}
+.rh-mark{display:flex;align-items:center;gap:6pt;}
+.rh-mark svg{width:13pt;height:13pt;flex:none;}
+.rh-mark .wm{font-family:var(--sans);font-size:11pt;font-weight:700;letter-spacing:-.03em;line-height:1;}
+.rh-mark .wm .t{color:var(--ink);}
+.rh-mark .wm .d{color:var(--cyan);}
+.rh-sec{font-family:var(--mono);font-size:6.8pt;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+
+.rf{
+  position:absolute;left:var(--pad-x);right:var(--pad-x);bottom:11mm;
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding-top:var(--s2);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:6.5pt;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);
+}
+.rf .n{color:var(--ink);font-weight:500;}
+
+/* ─── SHARED ATOMS ───────────────────────────── */
+.eyebrow{
+  font-family:var(--mono);font-size:7pt;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--cyan);font-weight:500;
+}
+.eyebrow.amber{color:var(--amber);}
+.eyebrow.dim{color:var(--muted);}
+
+.lead{margin-bottom:var(--s5);}
+.lead .eyebrow{margin-bottom:var(--s2);}
+.lead h2{font-size:23pt;margin-bottom:var(--s2);text-wrap:balance;max-width:158mm;}
+.lead h2 em{font-size:23pt;}
+.lead p{font-size:9.8pt;line-height:1.5;color:var(--ink-2);max-width:150mm;text-wrap:pretty;}
+
+.hr{height:1px;background:var(--line);margin:var(--s5) 0;}
+.hr-bold{height:1.6pt;background:var(--ink);width:44pt;margin:var(--s3) 0;}
+.fine{font-size:7.6pt;line-height:1.45;color:var(--muted);}
+
+/* ─── TOOLBAR (screen only) ──────────────────── */
+.tools{
+  position:fixed;top:12pt;right:12pt;z-index:200;display:flex;gap:7pt;
+  font-family:var(--sans);
+}
+.tools button,.tools a{
+  padding:8pt 14pt;border-radius:100pt;border:1.2pt solid var(--ink);
+  background:var(--paper);color:var(--ink);font-size:9.4pt;font-weight:600;
+  cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:6pt;
+  box-shadow:0 4pt 16pt -7pt rgba(18,26,38,.45);
+}
+.tools .go{background:var(--cyan);border-color:var(--cyan);color:#fff;}
+.tools button:hover,.tools a:hover{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.tools svg{width:13pt;height:13pt;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ─── CONTRACT STYLES ────────────────────────── */
+.contract-text h3 {
+  font-size: 13pt;
+  margin-top: 16pt;
+  margin-bottom: 8pt;
+  font-family: var(--sans);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+.contract-text p {
+  margin-bottom: 8pt;
+  font-size: 9.8pt;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.contract-text ul {
+  margin-bottom: 8pt;
+  padding-left: 16pt;
+  color: var(--ink-2);
+  font-size: 9.8pt;
+  line-height: 1.5;
+}
+.contract-text li {
+  margin-bottom: 4pt;
+}
+.sign-block {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30pt;
+}
+.sign-col {
+  width: 45%;
+}
+.sign-col p {
+  margin-bottom: 12pt;
+  font-size: 9.8pt;
+  color: var(--ink-2);
+}
+.sign-line {
+  border-bottom: 1px solid var(--ink);
+  margin-top: 24pt;
+  margin-bottom: 8pt;
+  width: 100%;
+}
+
+@media screen{
+  body{padding:16pt 0 32pt;}
+  .page{box-shadow:0 6pt 30pt -12pt rgba(18,26,38,.4);margin-bottom:10pt;}
+}
+
+/* ─── PRINT ──────────────────────────────────── */
+@media print{
+  html,body{background:#fff;padding:0;}
+  .tools{display:none!important;}
+  .doc{width:auto;}
+  .page{
+    width:210mm;height:297mm;min-height:0;margin:0;box-shadow:none;
+    break-after:page;page-break-after:always;
+  }
+  .page:last-child{break-after:auto;page-break-after:auto;}
+  *,*::before,*::after{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  tr{break-inside:avoid;}
+  h2,h3,h4{break-after:avoid;}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;left:-9999px;" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="rhC1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8"/><stop offset="100%" stop-color="#121A26"/>
+    </linearGradient>
+    <linearGradient id="rhC2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22B8CC"/><stop offset="100%" stop-color="#065F73"/>
+    </linearGradient>
+    <linearGradient id="cvChrome" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="30%" stop-color="#CBD5E1"/>
+      <stop offset="65%" stop-color="#64748B"/><stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="cvCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/><stop offset="35%" stop-color="#38BDF8"/>
+      <stop offset="70%" stop-color="#00F2FE"/><stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="tools">
+  <button type="button" onclick="window.print()">
+    <svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg>
+    Print / Save as PDF
+  </button>
+</div>
+
+<div class="doc">
+
+<!-- PAGE 1 -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">Subcontractor Agreement</span>
+  </div>
+
+  <div class="lead">
+    <h2>Subcontractor Agreement</h2>
+  </div>
+  
+  <div class="contract-text">
+    <p>This Subcontractor Agreement ("Agreement") is entered into as of <strong>September 8, 2026</strong> ("Effective Date") by and between:</p>
+    
+    <div style="margin: 16pt 0; padding: 12pt; background: rgba(255,255,255,0.4); border: 1px solid var(--line); border-radius: 4pt;">
+      <p style="margin-bottom: 4pt;"><strong>Company:</strong> TruDealer ("Company")</p>
+      <p style="margin-bottom: 0;"><strong>Subcontractor:</strong> Mr. Carelle Stapelfeldt, ID Number: 7408315221083 ("Subcontractor")</p>
+    </div>
+
+    <h3>1. SERVICES</h3>
+    <p><strong>1.1 Duties.</strong> The Subcontractor agrees to provide sales and lead generation services for TruDealer. The primary responsibility is to contact a minimum of thirty (30) or more dealerships per day to set up product demonstrations ("Demos"). This encompasses all supported dealership verticals, including but not limited to cars, motorcycles, and trucks.</p>
+    <p><strong>1.2 Markets.</strong> The Subcontractor is authorized to operate within the South African (SA) and United Kingdom (UK) markets.</p>
+    <p><strong>1.3 Company Resources.</strong> TruDealer will provide the Subcontractor with lead lists and access to the Company's CRM. CRM access will be granted following the completion of the first training session, scheduled for Thursday, the 10th at 1:00 PM.</p>
+    <p><strong>1.4 Branding.</strong> All communications, presentations, and outreach must be conducted strictly utilizing TruDealer branding and in accordance with the Company's brand guidelines.</p>
+
+    <h3>2. TERM AND TRIAL PERIOD</h3>
+    <p><strong>2.1 Trial Period.</strong> This Agreement is subject to an initial three (3) month trial period beginning on the Effective Date.</p>
+    <p><strong>2.2 Review.</strong> At the conclusion of the 3-month trial period, the Subcontractor's performance will be reviewed to determine ongoing engagement.</p>
+    <p><strong>2.3 Termination.</strong> During or after the trial period, either party may terminate this Agreement with reasonable written notice.</p>
+
+    <h3>3. COMPENSATION</h3>
+    <p><strong>3.1 Commission Structure.</strong> The Subcontractor's compensation is strictly commission-based, structured as follows:</p>
+    <ul>
+      <li><strong>Setup Fee:</strong> Forty percent (40%) of the setup fee for each successfully closed deal originating from the Subcontractor's efforts.</li>
+      <li><strong>Monthly Recurring Revenue (MRR):</strong> Twenty-five percent (25%) of the monthly recurring revenue for each successfully closed deal, payable for the duration the client remains active and paying.</li>
+    </ul>
+    <p><strong>3.2 Payment Terms.</strong> Commissions will be calculated and paid out in accordance with the Company's standard commission payment schedule.</p>
+
+    <h3>4. NON-COMPETITION AND NON-SOLICITATION</h3>
+    <p><strong>4.1 Non-Competition.</strong> During the term of this Agreement and for a period of one (1) year following the termination of this Agreement, the Subcontractor shall not, directly or indirectly, engage in, represent, or provide services to any business that directly competes with TruDealer's dealership software and services within the SA and UK markets.</p>
+    <p><strong>4.2 Non-Solicitation.</strong> For the same one (1) year period, the Subcontractor agrees not to solicit any clients, active prospects, dealerships, or employees of TruDealer for competing business purposes.</p>
+
+    <h3>5. CONFIDENTIALITY</h3>
+    <p><strong>5.1 Confidential Information.</strong> The Subcontractor will have access to proprietary lead lists, CRM data, pricing, and business strategies ("Confidential Information").</p>
+    <p><strong>5.2 Non-Disclosure.</strong> The Subcontractor agrees to keep all Confidential Information strictly confidential and not use it for any purpose outside the scope of providing services under this Agreement, during and after the term of engagement. Upon termination, all lead lists and CRM access must be relinquished.</p>
+  </div>
+
+  <div class="rf"><span>© TruDealer</span><span class="n">01 / 02</span></div>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page">
+  <div class="rh">
+    <div class="rh-mark">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#rhC1)"/>
+        <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#rhC2)"/>
+      </svg>
+      <span class="wm"><span class="t">Tru</span><span class="d">Dealer</span></span>
+    </div>
+    <span class="rh-sec">Subcontractor Agreement</span>
+  </div>
+
+  <div class="contract-text">
+    <h3>6. INTELLECTUAL PROPERTY AND DATA SECURITY</h3>
+    <p><strong>6.1 Company Property.</strong> All materials, including but not limited to lead lists, CRM data, training materials, marketing collateral, and brand assets provided by TruDealer remain the exclusive property of TruDealer.</p>
+    <p><strong>6.2 Intellectual Property Rights.</strong> Any materials, ideas, processes, or sales strategies developed by the Subcontractor in connection with the services provided under this Agreement ("Work Product") shall become the sole intellectual property of TruDealer. The Subcontractor agrees not to claim any ownership rights over such Work Product.</p>
+    <p><strong>6.3 Theft and Misappropriation.</strong> The Subcontractor explicitly agrees that any unauthorized use, export, downloading, or transferring of TruDealer's lead lists, CRM data, proprietary software, or client information for personal gain, or to the benefit of a third party, constitutes intellectual property theft and a material breach of this Agreement. </p>
+    <p><strong>6.4 Return of Materials.</strong> Upon termination of this Agreement for any reason, the Subcontractor must immediately return or permanently destroy all copies of Confidential Information, client data, and Company property in their possession, and certify such destruction if requested by the Company. TruDealer will immediately revoke all CRM and system access upon termination.</p>
+
+    <h3>7. INDEPENDENT CONTRACTOR STATUS</h3>
+    <p><strong>7.1 Status.</strong> The Subcontractor is an independent contractor, not an employee, partner, or agent of TruDealer. The Subcontractor is solely responsible for their own taxes, benefits, and expenses.</p>
+
+    <h3>8. ACKNOWLEDGMENTS</h3>
+    <p>By signing below, both parties acknowledge they have read, understood, and agreed to the terms outlined in this Agreement.</p>
+    
+    <div class="hr"></div>
+    <p>IN WITNESS WHEREOF, the parties have executed this Agreement as of the Effective Date.</p>
+
+    <div class="sign-block">
+      <div class="sign-col">
+        <p><strong>TruDealer</strong></p>
+        <div class="sign-line"></div>
+        <p>By:</p>
+        <div class="sign-line"></div>
+        <p>Name:</p>
+        <div class="sign-line"></div>
+        <p>Title:</p>
+        <div class="sign-line"></div>
+        <p>Date:</p>
+      </div>
+      <div class="sign-col">
+        <p><strong>SUBCONTRACTOR</strong></p>
+        <div class="sign-line"></div>
+        <p>Signature:</p>
+        <div style="margin-top:24pt; margin-bottom:8pt; font-size: 9.8pt; color: var(--ink-2);">
+          <strong>Name:</strong> Mr. Carelle Stapelfeldt
+        </div>
+        <div style="margin-bottom:8pt; font-size: 9.8pt; color: var(--ink-2);">
+          <strong>ID Number:</strong> 7408315221083
+        </div>
+        <div class="sign-line"></div>
+        <p>Date:</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="rf"><span>© TruDealer</span><span class="n">02 / 02</span></div>
+</section>
+
+</div>
+</body>
+</html>

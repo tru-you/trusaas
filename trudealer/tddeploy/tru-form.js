@@ -9,7 +9,7 @@
  *           data-dealer="True Cars"
  *           data-slug="true-cars"
  *           data-flow="https://premium.tru-saas.com"
- *           data-wa="27620502091"
+ *           data-wa="447476995694"
  *           data-accent="#1466E0"
  *           data-fields="vehicle,tradein,finance,location"></script>
  *
@@ -323,6 +323,7 @@
     "box-shadow:0 10px 26px -10px rgba(16,185,129,.45)}",
     ".tf-btn-wa:hover{filter:brightness(1.08);transform:translateY(-2px)}",
     ".tf-btn-wa:disabled{opacity:.55;pointer-events:none}",
+    ".tf-btn svg,.tf-btn-wa svg{width:16px!important;height:16px!important;min-width:16px!important;max-width:16px!important;max-height:16px!important;flex-shrink:0!important;display:inline-block!important;vertical-align:middle!important}",
     ".tf-btn-ghost{",
     "background:var(--tf-fill);color:#fff;border:1px solid var(--tf-edge)}",
     ".tf-btn-ghost:hover{background:var(--tf-hair)}",

@@ -1,30 +1,8 @@
 // netlify/edge-functions/vehicle-og.js
 //
-// TEMPLATE — ships with the TruShare package. Copy into a dealer site at
-// netlify/edge-functions/vehicle-og.js and edit the SITE CONFIG block below.
-// Nothing else in this file is dealer-specific.
-//
-// WHY THIS FILE IS NOT OPTIONAL.
-// Link-unfurl bots (WhatsApp, Facebook, iMessage, Slack, LinkedIn, Telegram)
-// read ONLY the raw HTML meta tags — they never run the page's JavaScript.
-// Without this, every TruShare button still works and every shared car
-// unfurls as the generic site card, which is the whole value gone.
-//
-// This runs before /vehicle/ is served, reads the car data TruShare already
-// put in the query string, and rewrites the <head>. No feed lookup: the share
-// URL carries the car. Humans are unaffected — same HTML, page script still runs.
-//
-// Register it in netlify.toml:
-//   [[edge_functions]]
-//     path = "/vehicle"
-//     function = "vehicle-og"
-//   [[edge_functions]]
-//     path = "/vehicle/*"
-//     function = "vehicle-og"
-//   (Two entries so both /vehicle and /vehicle/ are covered.)
-//
-// Edge functions ship via the Netlify CLI or a Git-connected deploy ONLY.
-// Netlify Drop / drag-and-drop silently strips them.
+// Dynamic Open Graph Social Preview for True Cars.
+// Resolves vehicles from the live dealer feed using clean stock parameters (?stock=... or /vehicle/:stock)
+// or fallback query parameters, rewrites <head> meta tags, and injects preloaded car data.
 
 /* ─────────── SITE CONFIG — the only lines you edit ─────────── */
 const SITE      = "https://www.true-cars.co.za";  // no trailing slash
@@ -45,16 +23,121 @@ const esc = (s) =>
 
 const clean = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
 
-// Group digits with spaces (en-ZA style) without relying on Intl/ICU,
-// which is not fully available in the edge runtime.
+// Group digits with spaces (en-ZA style)
 const groupNum = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
-export default async function (request, context) {
-  const q = new URL(request.url).searchParams;
+// In-memory feed cache in the Deno edge isolate (60s TTL)
+let cachedFeed = null;
+let cacheExpiry = 0;
 
-  // Nothing to personalise → let Netlify serve the static page untouched.
-  const hasCar = ["stock", "name", "price", "img"].some((k) => q.get(k));
-  if (!hasCar) return;
+async function getStockFeed() {
+  const now = Date.now();
+  if (cachedFeed && now < cacheExpiry) return cachedFeed;
+
+  const endpoints = [
+    "https://premium.tru-saas.com/api/public/stock?dealer=true-cars",
+    "https://trusaas-premium.onrender.com/api/public/stock?dealer=true-cars"
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 3500);
+      const res = await fetch(url, {
+        signal: ctrl.signal,
+        headers: { "Accept": "application/json" }
+      });
+      clearTimeout(timer);
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data.vehicles) ? data.vehicles : (Array.isArray(data) ? data : []);
+        if (list.length > 0) {
+          cachedFeed = list;
+          cacheExpiry = now + 60000;
+          return list;
+        }
+      }
+    } catch (_) {}
+  }
+  return cachedFeed || [];
+}
+
+function findCarInFeed(feed, stockQuery) {
+  if (!feed || !feed.length || !stockQuery) return null;
+  const target = String(stockQuery).toLowerCase().replace(/[^a-z0-9]/g, "");
+  return feed.find((v) => {
+    const s1 = String(v.stockNumber || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const s2 = String(v.id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    return s1 === target || s2 === target;
+  }) || null;
+}
+
+export default async function (request, context) {
+  const url = new URL(request.url);
+  const q = url.searchParams;
+
+  // Extract stock from query param ?stock=... or path /vehicle/:stock
+  let stock = clean(q.get("stock"));
+  if (!stock) {
+    const pathMatch = url.pathname.match(/^\/vehicle\/([^/?#]+)/i);
+    if (pathMatch && !pathMatch[1].includes(".") && pathMatch[1].toLowerCase() !== "index") {
+      stock = clean(decodeURIComponent(pathMatch[1]));
+    }
+  }
+
+  // Check if we have any car identifier or query data
+  const hasParamData = ["name", "price", "img"].some((k) => q.get(k));
+  if (!stock && !hasParamData) {
+    return; // Bare /vehicle/ request -> serve untouched
+  }
+
+  // Attempt feed lookup if stock is known
+  let feedMatch = null;
+  if (stock) {
+    const feed = await getStockFeed();
+    feedMatch = findCarInFeed(feed, stock);
+  }
+
+  let make = "";
+  let name = "";
+  let year = "";
+  let variant = "";
+  let trans = "";
+  let fuel = "";
+  let body = "";
+  let rawImg = "";
+  let priceNum = 0;
+  let kmDigits = "";
+  let fullCarObject = null;
+
+  if (feedMatch) {
+    make = clean(feedMatch.make);
+    name = clean([feedMatch.model, feedMatch.trim].filter(Boolean).join(" ") || feedMatch.make || "Vehicle");
+    year = clean(feedMatch.year);
+    variant = clean(feedMatch.trim || feedMatch.variant);
+    trans = clean(feedMatch.transmission);
+    fuel = clean(feedMatch.fuelType || feedMatch.fuel);
+    body = clean(feedMatch.bodyType || feedMatch.body);
+    rawImg = feedMatch.heroImage || (Array.isArray(feedMatch.images) && feedMatch.images[0]) || "";
+    priceNum = parseInt(String(feedMatch.price || "").replace(/\D/g, ""), 10) || 0;
+    kmDigits = String(feedMatch.mileage || feedMatch.km || "").replace(/\D/g, "");
+    fullCarObject = feedMatch;
+  } else {
+    make = clean(q.get("make"));
+    name = clean(q.get("name"));
+    year = clean(q.get("year"));
+    variant = clean(q.get("variant"));
+    trans = clean(q.get("trans"));
+    fuel = clean(q.get("fuel"));
+    body = clean(q.get("body"));
+    rawImg = q.get("img") || "";
+    priceNum = parseInt(String(q.get("price") || "").replace(/\D/g, ""), 10) || 0;
+    kmDigits = String(q.get("km") || "").replace(/\D/g, "");
+  }
+
+  if (!name && !make && !priceNum && !stock) {
+    return;
+  }
 
   const response = await context.next();
   if (!(response.headers.get("content-type") || "").includes("text/html")) {
@@ -62,30 +145,15 @@ export default async function (request, context) {
   }
   let html = await response.text();
 
-  // ---- Per-car values from the share URL ----
-  const make = clean(q.get("make"));
-  const name = clean(q.get("name"));
-  const year = clean(q.get("year"));
-  const variant = clean(q.get("variant"));
-  const stock = clean(q.get("stock"));
-  const trans = clean(q.get("trans"));
-  const fuel = clean(q.get("fuel"));
-  const body = clean(q.get("body"));
-
-  const priceNum = parseInt(String(q.get("price") || "").replace(/\D/g, ""), 10) || 0;
   const priceFmt = priceNum ? "R " + groupNum(priceNum) : "";
-
-  const kmDigits = String(q.get("km") || "").replace(/\D/g, "");
   const kmFmt = kmDigits ? groupNum(parseInt(kmDigits, 10)) + " km" : "";
 
-  // Drop the make if the name already leads with it.
   const parts =
     make && name && name.toLowerCase().startsWith(make.toLowerCase())
       ? [year, name]
       : [year, make, name];
   const title = clean(parts.filter(Boolean).join(" ")) || "Quality Pre-Owned Vehicle";
 
-  const rawImg = q.get("img") || "";
   const img = /^https?:/i.test(rawImg)
     ? rawImg
     : rawImg
@@ -143,7 +211,21 @@ export default async function (request, context) {
   };
   const ldJson = JSON.stringify(ld).replace(/</g, "\\u003c");
 
-  // ---- Rewrite the existing head tags (matched to /vehicle/ markup) ----
+  const clientPayload = fullCarObject || {
+    stockNumber: stock,
+    make,
+    model: name,
+    trim: variant,
+    year,
+    price: priceNum,
+    mileage: kmDigits,
+    transmission: trans,
+    fuelType: fuel,
+    bodyType: body,
+    heroImage: img
+  };
+  const payloadJson = JSON.stringify(clientPayload).replace(/</g, "\\u003c");
+
   html = html
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${esc(ogTitle)} | ${esc(DEALER)}</title>`)
     .replace(/(<meta\s+name="description"[^>]*\scontent=")[^"]*(")/i, `$1${esc(desc)}$2`)
@@ -151,13 +233,6 @@ export default async function (request, context) {
     .replace(/(<meta\s+property="og:description"[^>]*\scontent=")[^"]*(")/i, `$1${esc(desc)}$2`)
     .replace(/(<meta\s+property="og:image"[^>]*\scontent=")[^"]*(")/i, `$1${esc(img)}$2`);
 
-  // ---- Add the tags the static page doesn't already carry ----
-  // og:image:width/height are DECLARED, not measured. Facebook renders the
-  // small card on a first share until it has fetched and sized the image
-  // itself — which is the share that matters, because that is the one the
-  // dealer is watching. Declaring 1200x630 makes it commit to the large card
-  // immediately. Feed photos are 4:3 (1600x1200 measured), so the platform
-  // centre-crops to fill; the car survives that, sky and tarmac do not.
   const inject =
     `<meta property="og:url" content="${esc(canonical)}">` +
     `<meta property="og:image:width" content="1200">` +
@@ -168,11 +243,11 @@ export default async function (request, context) {
     `<meta name="twitter:description" content="${esc(desc)}">` +
     `<meta name="twitter:image" content="${esc(img)}">` +
     `<link rel="canonical" href="${esc(canonical)}">` +
-    `<script type="application/ld+json">${ldJson}</script>`;
+    `<script type="application/ld+json">${ldJson}</script>` +
+    `<script id="__PRELOADED_CAR__" type="application/json">${payloadJson}</script>`;
+
   html = html.replace(/<\/head>/i, inject + "</head>");
 
-  // Body length changed and it's no longer whatever encoding the origin used;
-  // drop those headers so Netlify re-computes them.
   const headers = new Headers(response.headers);
   headers.delete("content-length");
   headers.delete("content-encoding");

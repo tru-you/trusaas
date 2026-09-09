@@ -49,7 +49,8 @@
     html, body {
       height: 100%;
       width: 100%;
-      overflow: hidden;
+      max-width: 100vw;
+      overflow-x: hidden !important;
       background: var(--bg-dark);
       color: #F8F5EE;
       font-family: var(--font-sans);
@@ -1047,9 +1048,9 @@
     .styled-card-box {
       background: var(--card-box-bg, rgba(9, 14, 23, 0.92));
       border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 22px;
-      padding: 26px 30px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+      border-radius: 18px;
+      padding: 16px 20px;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.65);
       width: 100%;
       box-sizing: border-box;
       display: block;
@@ -1058,12 +1059,12 @@
 
     /* Vehicle Title & Subtitle Hierarchy — Explicit Line Margins */
     .vehicle-title-wrap {
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       display: block;
     }
     .vehicle-hero-title {
       font-family: var(--font-sans);
-      font-size: 46px;
+      font-size: 32px;
       font-weight: 900;
       line-height: 1.18;
       letter-spacing: -0.025em;
@@ -1074,11 +1075,11 @@
     }
     .vehicle-variant-subtitle {
       font-family: var(--font-sans);
-      font-size: 19px;
+      font-size: 14px;
       font-weight: 600;
       color: #CBD5E1;
       line-height: 1.35;
-      margin-top: 6px;
+      margin-top: 4px;
       word-break: break-word;
     }
 
@@ -1086,14 +1087,14 @@
     .vehicle-price-row {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-top: 14px;
-      margin-bottom: 14px;
+      margin-top: 8px;
+      margin-bottom: 8px;
     }
     .vehicle-price-main {
       font-family: var(--font-sans);
-      font-size: 44px;
+      font-size: 32px;
       font-weight: 900;
       line-height: 1.15;
       color: var(--primary-bright);
@@ -1102,12 +1103,12 @@
     }
     .vehicle-install-pill {
       font-family: var(--font-mono);
-      font-size: 13.5px;
+      font-size: 12px;
       font-weight: 800;
       background: rgba(245, 158, 11, 0.2);
       border: 1px solid #F59E0B;
       color: #FCD34D;
-      padding: 6px 16px;
+      padding: 4px 12px;
       border-radius: 100px;
       white-space: nowrap;
       display: inline-block;
@@ -1117,25 +1118,25 @@
     .spec-pill-deck {
       display: flex;
       flex-wrap: wrap;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .spec-pill-item {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      margin-right: 8px;
-      margin-bottom: 8px;
-      padding: 8px 16px;
+      gap: 6px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      padding: 5px 12px;
       background: rgba(18, 26, 40, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 100px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       color: #E2E8F0;
       white-space: nowrap;
       line-height: 1;
     }
-    .spec-pill-item svg { width: 14px; height: 14px; stroke: var(--primary-bright); fill: none; }
+    .spec-pill-item svg { width: 13px; height: 13px; stroke: var(--primary-bright); fill: none; }
 
     /* Price Drop Template */
     .price-old-strike {
@@ -1736,6 +1737,9 @@
     @media (max-width: 860px) {
       html, body {
         overflow-y: auto !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
         height: auto !important;
         min-height: 100% !important;
       }
@@ -1744,10 +1748,14 @@
         padding: 8px 12px;
         flex-wrap: wrap;
         gap: 8px;
+        max-width: 100vw !important;
+        overflow-x: hidden;
+        box-sizing: border-box;
       }
       .header-center-toggles {
         order: 3;
         width: 100%;
+        max-width: 100%;
         overflow-x: auto;
         padding-bottom: 2px;
         -webkit-overflow-scrolling: touch;
@@ -1761,22 +1769,29 @@
         flex-direction: column-reverse !important;
         height: auto !important;
         min-height: calc(100vh - 100px);
+        max-width: 100vw !important;
         overflow: visible !important;
+        overflow-x: hidden !important;
       }
       aside.sidebar {
         width: 100% !important;
+        max-width: 100vw !important;
         height: auto !important;
         max-height: none !important;
         border-right: none !important;
         border-top: 1px solid var(--panel-border);
+        overflow-x: hidden !important;
       }
       .tab-content {
         max-height: 550px;
         overflow-y: auto !important;
+        overflow-x: hidden !important;
       }
       section.viewport-container {
         height: 52vh !important;
         min-height: 360px !important;
+        max-width: 100vw !important;
+        overflow: hidden !important;
         flex: none !important;
       }
       .zoom-toolbar {
@@ -1789,7 +1804,15 @@
         left: 12px !important;
         right: 12px !important;
         bottom: 12px !important;
-        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        width: auto !important;
+      }
+      .pwa-install-banner {
+        left: 12px !important;
+        right: 12px !important;
+        bottom: 12px !important;
+        max-width: calc(100vw - 24px) !important;
+        width: auto !important;
       }
     }
 
@@ -1823,6 +1846,110 @@
       .video-modal-card {
         padding: 20px 16px !important;
         width: 94% !important;
+      }
+    }
+
+    /* Floating Glassmorphic PWA Install Banner */
+    .pwa-install-banner {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 99999;
+      background: rgba(9, 14, 23, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: none;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(13, 148, 136, 0.25);
+      animation: slideUpPwa 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: calc(100vw - 48px);
+    }
+    @keyframes slideUpPwa {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pwa-banner-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      background: #03060B;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .pwa-banner-icon img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
+    .pwa-banner-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .pwa-banner-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #FFF;
+      line-height: 1.2;
+    }
+    .pwa-banner-sub {
+      font-size: 11px;
+      color: #94A3B8;
+      margin-top: 2px;
+      line-height: 1.2;
+    }
+    .pwa-banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .btn-pwa-banner-install {
+      background: linear-gradient(135deg, var(--primary) 0%, #064E48 100%);
+      border: 1px solid var(--primary-bright);
+      color: #FFF;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-pwa-banner-install:hover {
+      filter: brightness(1.15);
+      transform: scale(1.02);
+    }
+    .btn-pwa-banner-close {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      border-radius: 4px;
+    }
+    .btn-pwa-banner-close:hover {
+      color: #FFF;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    @media (max-width: 560px) {
+      .pwa-install-banner {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        max-width: none;
+        padding: 10px 12px;
       }
     }
   </style>
@@ -3090,9 +3217,9 @@
         setTemplate('tpl-arrival');
         snapCard('bottom-center');
       } else if (index === 1) {
-        // Slide 2: Specs Matrix
+        // Slide 2: Specs Matrix & Features
         setTemplate('tpl-specs');
-        snapCard('center');
+        snapCard('bottom-center');
       } else if (index === 2) {
         // Slide 3: Finance & CTA
         setTemplate('tpl-finance');
@@ -3729,16 +3856,22 @@
         case 'tpl-specs':
           html = `
             <div class="styled-card-box">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px; gap: 10px;">
                 <div class="vehicle-title-wrap" style="margin-bottom: 0;">
-                  <div class="badge-pill" style="margin-bottom: 8px;">EXECUTIVE SPEC HIGHLIGHTS</div>
+                  <div class="badge-pill" style="margin-bottom: 8px;">
+                    <div class="pulse-dot"></div>
+                    <span>EXECUTIVE SPEC HIGHLIGHTS</span>
+                  </div>
                   <div class="vehicle-hero-title" style="font-size: ${titleSize};">${fullVehicleName}</div>
                   ${state.vehicle.variant ? `<div class="vehicle-variant-subtitle">${state.vehicle.variant}</div>` : ''}
                 </div>
-                <div class="vehicle-price-main">${state.vehicle.price}</div>
+                <div style="text-align: right;">
+                  <div class="vehicle-price-main">${state.vehicle.price}</div>
+                  ${state.vehicle.install ? `<div class="vehicle-install-pill" style="margin-top: 4px;">${state.vehicle.install}</div>` : ''}
+                </div>
               </div>
               
-              <div class="spec-matrix-grid">
+              <div class="spec-matrix-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
                 <div class="spec-matrix-cell">
                   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                   <div>
@@ -3761,10 +3894,24 @@
                   </div>
                 </div>
                 <div class="spec-matrix-cell">
-                  <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                   <div>
-                    <strong>Quality Inspected</strong>
-                    <span>Multi-Point Check</span>
+                    <strong>${state.vehicle.pills && state.vehicle.pills[0] ? state.vehicle.pills[0] : 'Full Service History'}</strong>
+                    <span>Service Record</span>
+                  </div>
+                </div>
+                <div class="spec-matrix-cell">
+                  <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                  <div>
+                    <strong>${state.vehicle.pills && state.vehicle.pills[1] ? state.vehicle.pills[1] : 'Factory Warranty'}</strong>
+                    <span>Coverage / Protection</span>
+                  </div>
+                </div>
+                <div class="spec-matrix-cell">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                  <div>
+                    <strong>${state.vehicle.pills && state.vehicle.pills[2] ? state.vehicle.pills[2] : 'Multi-Point Checked'}</strong>
+                    <span>Certified Roadworthy</span>
                   </div>
                 </div>
               </div>
@@ -4371,13 +4518,14 @@
       }
     }
 
-    // High-Resolution 60FPS Video Reel Generator (MediaRecorder / Canvas Stream)
+    // High-Resolution 30FPS Video Reel Generator (MediaRecorder / Canvas Stream)
     async function exportMotionVideo() {
       const banner = document.getElementById('banner');
       const pod = document.getElementById('banner-scaler-pod');
       const dims = ratioDimensions[state.ratio] || { w: 1080, h: 1920 };
       const durationSec = Number(state.motion.duration) || 6;
-      const totalFrames = durationSec * 60;
+      const fps = 30;
+      const totalFrames = Math.round(durationSec * fps);
 
       const modal = document.getElementById('video-render-modal');
       const progressBar = document.getElementById('video-render-bar');
@@ -4394,7 +4542,7 @@
       if (progressBar) progressBar.style.width = '0%';
       if (percentLabel) percentLabel.textContent = '0%';
       if (timerLabel) timerLabel.textContent = `0.0s / ${durationSec.toFixed(1)}s`;
-      if (statusLabel) statusLabel.textContent = 'Preparing high-resolution video canvas...';
+      if (statusLabel) statusLabel.textContent = 'Preparing video canvas...';
 
       // Temporary element unscaling for crystal clear capture
       const originalTransform = banner.style.transform;
@@ -4410,7 +4558,7 @@
 
       try {
         if (document.fonts) await document.fonts.ready;
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, 100));
 
         // Create recording canvas
         const canvas = document.createElement('canvas');
@@ -4418,7 +4566,7 @@
         canvas.height = dims.h;
         const ctx = canvas.getContext('2d', { alpha: false });
 
-        // Load background image
+        // Load background image safely
         const img = new Image();
         img.crossOrigin = 'anonymous';
         await new Promise((resolve) => {
@@ -4427,43 +4575,45 @@
           img.src = state.vehicle.imgUrl || '';
         });
 
-        // Capture static overlay elements (header, footer, text card, badges)
-        const imgLayer = document.getElementById('banner-img-layer');
-        const origBg = imgLayer.style.backgroundImage;
-        imgLayer.style.backgroundImage = 'none'; // isolate text & overlays
+        // Capture static overlay elements safely
+        let overlayImg = null;
+        try {
+          const imgLayer = document.getElementById('banner-img-layer');
+          const origBg = imgLayer ? imgLayer.style.backgroundImage : '';
+          if (imgLayer) imgLayer.style.backgroundImage = 'none';
 
-        const overlayDataUrl = await htmlToImage.toPng(banner, {
-          width: dims.w,
-          height: dims.h,
-          pixelRatio: 1,
-          cacheBust: true
-        });
-        imgLayer.style.backgroundImage = origBg;
+          const overlayDataUrl = await htmlToImage.toPng(banner, {
+            width: dims.w,
+            height: dims.h,
+            pixelRatio: 1,
+            cacheBust: true
+          });
+          if (imgLayer) imgLayer.style.backgroundImage = origBg;
 
-        const overlayImg = new Image();
-        await new Promise((resolve) => {
-          overlayImg.onload = resolve;
-          overlayImg.onerror = resolve;
-          overlayImg.src = overlayDataUrl;
-        });
+          overlayImg = new Image();
+          await new Promise((resolve) => {
+            overlayImg.onload = resolve;
+            overlayImg.onerror = resolve;
+            overlayImg.src = overlayDataUrl;
+          });
+        } catch (overlayErr) {
+          console.warn('[video export] htmlToImage overlay capture warning:', overlayErr);
+        }
 
-        // Setup MediaRecorder
-        const stream = canvas.captureStream(60);
-        let mimeType = 'video/webm;codecs=vp9';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = 'video/webm;codecs=vp8';
-        }
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = 'video/webm';
-        }
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = 'video/mp4';
-        }
+        // Setup MediaRecorder with cross-browser MIME support
+        const stream = canvas.captureStream(fps);
+        const supportedMime = [
+          'video/mp4;codecs=avc1.42E01E',
+          'video/mp4',
+          'video/webm;codecs=vp9',
+          'video/webm;codecs=vp8',
+          'video/webm'
+        ].find(m => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || 'video/webm';
 
         const recordedChunks = [];
         const recorder = new MediaRecorder(stream, {
-          mimeType: mimeType,
-          videoBitsPerSecond: 8000000 // 8 Mbps high quality
+          mimeType: supportedMime,
+          videoBitsPerSecond: 6000000 // 6 Mbps optimal quality
         });
 
         recorder.ondataavailable = (e) => {
@@ -4474,21 +4624,22 @@
           recorder.onstop = resolve;
         });
 
-        recorder.start();
-        if (statusLabel) statusLabel.textContent = 'Rendering 60FPS motion reel...';
+        recorder.start(100);
+        if (statusLabel) statusLabel.textContent = 'Rendering motion reel...';
 
         const preset = state.motion.preset || 'kenburns';
         const maxZoom = (state.motion.zoomDepth || 110) / 100;
+        const frameIntervalMs = Math.round(1000 / fps);
 
         for (let frame = 0; frame < totalFrames; frame++) {
-          const t = frame / totalFrames; // 0.0 -> 1.0
-          const currentSec = (frame / 60).toFixed(1);
+          const t = frame / totalFrames;
+          const currentSec = (frame / fps).toFixed(1);
 
           // Clear Canvas
           ctx.fillStyle = '#03060B';
           ctx.fillRect(0, 0, dims.w, dims.h);
 
-          // 1. Calculate Ken Burns / Motion Transform
+          // 1. Calculate Motion Transform
           let scale = 1.0;
           let panX = 0;
           let panY = 0;
@@ -4505,7 +4656,7 @@
             panY = dims.h * 0.025 * Math.sin(t * Math.PI * 2 - Math.PI / 2);
           }
 
-          // Draw Image
+          // Draw Vehicle Image
           if (img && img.width > 0) {
             ctx.save();
             const br = (state.filter && state.filter.brightness) ? state.filter.brightness : 100;
@@ -4544,7 +4695,7 @@
           ctx.fillStyle = scrimGrad;
           ctx.fillRect(0, 0, dims.w, dims.h);
 
-          // 3. Draw Overlays (Header, Footer, Floating Card)
+          // 3. Draw Template Overlay
           if (overlayImg && overlayImg.width > 0) {
             ctx.drawImage(overlayImg, 0, 0, dims.w, dims.h);
           }
@@ -4555,17 +4706,16 @@
           if (percentLabel) percentLabel.textContent = `${progressPercent}%`;
           if (timerLabel) timerLabel.textContent = `${currentSec}s / ${durationSec.toFixed(1)}s`;
 
-          if (frame % 3 === 0) {
-            await new Promise(r => setTimeout(r, 8));
-          }
+          // Smooth 30FPS real-time frame delay to feed MediaRecorder
+          await new Promise(r => setTimeout(r, frameIntervalMs));
         }
 
         if (statusLabel) statusLabel.textContent = 'Finalizing video file...';
         recorder.stop();
         await recordingCompletePromise;
 
-        const blob = new Blob(recordedChunks, { type: mimeType });
-        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const blob = new Blob(recordedChunks, { type: supportedMime });
+        const ext = supportedMime.includes('mp4') ? 'mp4' : 'webm';
         const dealerSlug = (state.dealer.name || 'dealership').replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const vehSlug = `${state.vehicle.make}_${state.vehicle.model}`.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const filename = `${dealerSlug}_${vehSlug}_motion_${state.ratio}.${ext}`;
@@ -4782,17 +4932,32 @@
 
     // PWA Service Worker & Install Prompt Handling
     let deferredPWAInstallPrompt = null;
+    function showPWABanner() {
+      if (sessionStorage.getItem('trubrand_pwa_dismissed')) return;
+      if (window.matchMedia('(display-mode: standalone)').matches) return;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'flex';
+    }
+
+    function dismissPWABanner() {
+      sessionStorage.setItem('trubrand_pwa_dismissed', '1');
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'none';
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPWAInstallPrompt = e;
       const btnInstall = document.getElementById('btn-pwa-install');
       if (btnInstall) btnInstall.style.display = 'inline-flex';
+      showPWABanner();
     });
 
     window.addEventListener('appinstalled', () => {
       deferredPWAInstallPrompt = null;
       const btnInstall = document.getElementById('btn-pwa-install');
       if (btnInstall) btnInstall.style.display = 'none';
+      dismissPWABanner();
       showLeadSuccessToast('TruBrand Studio Pro Installed Successfully!');
     });
 
@@ -4804,12 +4969,20 @@
             deferredPWAInstallPrompt = null;
             const btnInstall = document.getElementById('btn-pwa-install');
             if (btnInstall) btnInstall.style.display = 'none';
+            dismissPWABanner();
           }
         });
       } else {
         alert('To install TruBrand Studio Pro, tap Share or Menu in your browser and select "Add to Home Screen" or "Install App".');
       }
     }
+
+    // Auto-prompt PWA on mobile or supported browsers after 3 seconds
+    setTimeout(() => {
+      if (deferredPWAInstallPrompt || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        showPWABanner();
+      }
+    }, 3000);
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -4821,5 +4994,22 @@
       });
     }
   </script>
+
+  <!-- Floating Glassmorphic PWA Install Banner -->
+  <div class="pwa-install-banner" id="pwa-install-banner">
+    <div class="pwa-banner-icon">
+      <img src="assets/icon.svg" alt="TruBrand App">
+    </div>
+    <div class="pwa-banner-text">
+      <div class="pwa-banner-title">Install TruBrand Studio App</div>
+      <div class="pwa-banner-sub">Create 4K vehicle graphics & reels offline</div>
+    </div>
+    <div class="pwa-banner-actions">
+      <button type="button" class="btn-pwa-banner-install" onclick="triggerPWAInstall()">Install</button>
+      <button type="button" class="btn-pwa-banner-close" onclick="dismissPWABanner()" title="Dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
 </body>
 </html>

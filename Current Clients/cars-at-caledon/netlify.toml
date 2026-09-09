@@ -18,3 +18,9 @@
 [[edge_functions]]
   path = "/vehicle/*"
   function = "vehicle-og"
+
+[[redirects]]
+  from = "/vehicle/:stock"
+  to = "/vehicle/?stock=:stock"
+  status = 200
+

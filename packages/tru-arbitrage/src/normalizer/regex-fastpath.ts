@@ -8,7 +8,7 @@ import { loadCatalogue } from '../engine/tu-matcher';
 // gate silently skips. Same fix as engine/year.ts.
 const YEAR_RE = /(?<![0-9])(19\d{2}|20[0-2]\d)(?![0-9])/;
 const PRICE_K_RE = /R?\s?(\d{1,3}(?:\.\d+)?)\s?k\b/i;
-const PRICE_FULL_RE = /R\s?(\d{1,3}(?:[ ,.]\d{3})+|\d{5,7})/i;
+const PRICE_FULL_RE = /R\s?(\d{1,3}(?:[ ,.]\d{3}){1,2}|\d{5,7})(?!\s?\d)/i;
 const MILEAGE_RE = /\b(\d{1,3}(?:[ ,.]\d{3})+|\d{2,3}\s?k|\d{4,6})\s?(?:km|kms|kilometers|kilometres|k)\b/i;
 
 const DAMAGE_KEYWORDS = [

@@ -145,13 +145,16 @@
   function shareUrl(v) {
     v = v || {};
     if (v.url) return v.url;
+    var stock = clean(v.stock || v.id || v.stockNumber);
+    if (stock) {
+      return cfg.site + cfg.vehiclePath + "?stock=" + encodeURIComponent(stock);
+    }
     var isMoto = cfg.vertical === "moto" || v.vertical === "moto";
     var q = [];
     function add(k, val) {
       val = clean(val);
       if (val) q.push(k + "=" + encodeURIComponent(val));
     }
-    add("stock", v.stock);
     add("year", v.year);
     add("make", v.make);
     add("name", v.name);

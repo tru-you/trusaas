@@ -85,4 +85,10 @@ TruCRM/stderr.txt
 call-list.csv
 *.mp4
 *.webm
+scratch/
+*.patch
+*.lnk
+.playwright-mcp/
+
+
 

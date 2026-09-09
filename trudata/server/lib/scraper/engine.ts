@@ -313,7 +313,7 @@ const CIRCUIT_BREAKER_COOLDOWN_MS = 5 * 60 * 1000;
 let workerFailCount = 0;
 let workerCircuitOpenUntil = 0;
 
-async function renderViaWorker(url: string, maxMs?: number): Promise<string | null> {
+export async function renderViaWorker(url: string, maxMs?: number): Promise<string | null> {
   if (WORKER_URLS.length === 0) return null;
   if (Date.now() < workerCircuitOpenUntil) return null;
   const timeoutMs = Math.max(1, Math.min(WORKER_TIMEOUT_MS, maxMs ?? WORKER_TIMEOUT_MS));

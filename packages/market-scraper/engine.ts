@@ -133,6 +133,8 @@ export interface FetchValuationOptions {
   vin?: string;
   dealerSlug?: string;
   mileage?: number;
+  /** Variant/trim string — used for SERP query refinement + title matching but NOT for classifieds URL construction */
+  variant?: string;
 }
 
 /* ────────────────────────────────────────────────
@@ -264,8 +266,13 @@ function escapeRegex(s: string): string {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/* Strip ONLY cosmetic / irrelevant noise from model strings for fuzzy matching.
+ * Price-material trims (GTI, RS, sport, TSI, TDI, 4x4, etc.) are KEPT because
+ * they represent fundamentally different price segments:
+ *   Polo Trendline ~R190k  vs  Polo GTI ~R480k
+ *   Golf Comfortline ~R350k vs Golf R ~R900k */
 const MODEL_NOISE_RE =
-  /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc|kw|hp|bhp)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|gd-6|d-4d|cdti|crdi|hdi|dci|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4x2|4wd|2wd|automatic|auto|manual|fwd|awd|rwd|p\/u|s\/c|d\/c|cab|bakkie|double cab|single cab|super cab|style|storage|extras|bluemotion|quattro|xdrive|sdrive|4matic|mhev|phev|ev|hybrid)\b)/gi;
+  /(?:\b(?:touring|tourer|flagship|executive|luxury|limited|edition|baseline|elegance|comfort|urban|ambition|advance|style|storage|extras|bluemotion|facelift|fl|lci|plus|pack|line|se)\b)/gi;
 export function modelCore(text: string): string {
   const s = String(text || "").trim().toLowerCase();
   if (!s || s === "any" || s === "-") return "";
@@ -293,9 +300,9 @@ function makeVariants(make: string): string[] {
   return [m, ...(MAKE_ALIASES[m] || [])];
 }
 
-const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
+const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 1;
 
-function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number }): boolean {
+function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number; variant?: string }): boolean {
   const t = String(title || "");
   const y = parseInt(String(year), 10);
   const tolerance = opts?.yearTolerance ?? YEAR_TOLERANCE;
@@ -306,6 +313,34 @@ function titleMentionsVehicle(title: string, make: string, model: string, year: 
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), "i").test(t));
   const q = modelCore(model);
   const modelOk = !q || modelCore(t).includes(q);
+
+  // Engine displacement check (e.g. 2.8, 2.4, 1.4, 2.0, 3.0, 3.2) — prevents mixing engine sizes
+  const searchDisp = (match || opts?.variant || model || "").match(/\b(\d\.\d)\b/)?.[1];
+  if (searchDisp) {
+    const titleDisp = t.match(/\b(\d\.\d)\b/)?.[1];
+    if (titleDisp && titleDisp !== searchDisp) return false;
+  }
+
+  // Performance badge separation (GTI, RS, AMG, Golf R, Type R):
+  // If searching for a standard car (e.g. Golf 1.4 TSI), exclude GTI/R comps that double the price
+  const isPerfSearch = /\b(gti|gtd|rs\b|amg\b|type[- ]?r|golf[- ]?r\b)\b/i.test(`${model} ${opts?.variant || ''} ${match || ''}`);
+  if (!isPerfSearch) {
+    const isPerfTitle = /\b(gti|gtd|rs\b|amg\b|type[- ]?r|golf[- ]?r\b)\b/i.test(t);
+    if (isPerfTitle) return false;
+  }
+
+  // Variant token check — if variant specifies key badges/engine tokens (e.g. "1.4", "tsi", "gd-6", "4x4"),
+  // require at least one key token to match in the title to avoid generic/untrimmed cards polluting the sample
+  if (opts?.variant) {
+    const vWords = String(opts.variant).toLowerCase().split(/[\s\-_/]+/).filter(w => w.length >= 2);
+    const keyTokens = vWords.filter(w => /^(?:\d\.\d|gti|gtd|tdi|tsi|tfsi|amg|4x4|4wd|gd-6|d-4d|v6|v8)$/i.test(w));
+    if (keyTokens.length > 0) {
+      const lowerTitle = t.toLowerCase();
+      const hasKeyToken = keyTokens.some(tok => lowerTitle.includes(tok));
+      if (!hasKeyToken) return false;
+    }
+  }
+
   const matchOk = !match || new RegExp(escapeRegex(String(match)), "i").test(t);
   return makeOk && modelOk && matchOk;
 }
@@ -401,9 +436,19 @@ export function parseSerpResults(json: any, make: string, model: string, year: s
   const consider = (title: unknown, snippet: unknown, structuredPrice?: unknown) => {
     const text = `${String(title || "")} ${String(snippet || "")}`.trim();
     if (!text) return;
-    if (!yearTolerant(cfg, text, make, model, year)) return;
+    if (!titleMentionsVehicle(text, make, model, year)) return;
     let price = typeof structuredPrice === "number" ? jsonPrice(structuredPrice, cfg) : null;
-    if (price == null) price = priceFromText(text, cfg);
+    if (price == null) {
+      // Extract ALL prices from snippet text and use median — avoids grabbing
+      // price ceilings from range snippets like "From R89,900 to R549,900"
+      const allPrices = extractPricesFromText(text, cfg);
+      if (allPrices.length === 1) {
+        price = allPrices[0];
+      } else if (allPrices.length > 1) {
+        const sorted = [...allPrices].sort((a, b) => a - b);
+        price = sorted[Math.floor(sorted.length / 2)];
+      }
+    }
     if (price != null) out.push({ price });
   };
   const organic = json.organic_results || json.organic || [];
@@ -570,12 +615,12 @@ function htmlToListings(html: string, selectors: string[], cfg: MarketConfig): L
   return extractPrices(html, selectors, cfg).map((price) => ({ price }));
 }
 
-function yearTolerant(cfg: MarketConfig, title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number }): boolean {
+function yearTolerant(cfg: MarketConfig, title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number; variant?: string }): boolean {
   const fn = cfg.titleMatch || titleMentionsVehicle;
   return fn(title, make, model, year, match, opts);
 }
 
-export function extractCardListings(html: string, make: string, model: string, year: string, cfg: MarketConfig): Listing[] {
+export function extractCardListings(html: string, make: string, model: string, year: string, cfg: MarketConfig, opts?: { variant?: string; yearTolerance?: number }): Listing[] {
   const $ = cheerio.load(html);
   const out: Listing[] = [];
   const seen = new Set<string>();
@@ -592,7 +637,7 @@ export function extractCardListings(html: string, make: string, model: string, y
     const cardText = $c.text().replace(/\s+/g, " ").trim();
     if (cardText.length < 8) return;
 
-    if (!yearTolerant(cfg, cardText, make, model, year, undefined, { yearTolerance: 2 })) return;
+    if (!yearTolerant(cfg, cardText, make, model, year, undefined, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) return;
 
     const priceEl = $c.find('[class^="e-price__"], [class*="price"]').first();
     const price = priceEl.length ? num(priceEl.text()) : priceFromText(cardText, cfg);
@@ -613,7 +658,7 @@ export function extractCardListings(html: string, make: string, model: string, y
   return out;
 }
 
-export function extractNextDataListings(html: string, make: string, model: string, year: string, cfg: MarketConfig): Listing[] {
+export function extractNextDataListings(html: string, make: string, model: string, year: string, cfg: MarketConfig, opts?: { variant?: string; yearTolerance?: number }): Listing[] {
   const $ = cheerio.load(html);
   const raw = $("#__NEXT_DATA__").contents().text() || $("#__NEXT_DATA__").text();
   if (!raw) return [];
@@ -636,8 +681,9 @@ export function extractNextDataListings(html: string, make: string, model: strin
     if (price != null && price >= cfg.minPrice && price <= cfg.maxPrice && (n.make || n.model || n.title)) {
       /* Feeds name the year field differently (year / modelYear / vehicleYear). */
       const yr = n.year ?? n.modelYear ?? n.vehicleYear;
-      const title = String(n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`);
-      if (yearTolerant(cfg, title, make, model, year)) {
+      const variantText = [n.variant, n.variantName, n.derivative, n.trim, n.subTitle, n.subtitle, n.badge, n.engine, n.summary].filter(Boolean).join(" ");
+      const title = `${n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`} ${variantText}`.trim();
+      if (yearTolerant(cfg, title, make, model, year, undefined, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) {
         const key = `${n.reference ?? n.id ?? ""}|${price}`;
         if (!seen.has(key)) {
           seen.add(key);

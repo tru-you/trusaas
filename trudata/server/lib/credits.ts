@@ -25,6 +25,7 @@ export const CREDIT_COSTS: Record<string, number> = {
   'bureau_regcheck': 3,
   'bureau_accident': 3,
   'safepay': 3,
+  'extract': 1,
 };
 
 // Credit pack pricing (ZAR)

@@ -1,6 +1,7 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+<script>(function(){var t=localStorage.getItem('td-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18395587079"></script>
 <script>
@@ -97,7 +98,7 @@
   "contactPoint": [
     {
       "@type": "ContactPoint",
-      "telephone": "+27-62-050-2091",
+      "telephone": "+44-7476-995694",
       "contactType": "sales",
       "availableLanguage": ["English", "Afrikaans"],
       "hoursAvailable": "Mo-Fr 08:00-17:00"
@@ -133,7 +134,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 
-<noscript><style>.reveal{opacity:1!important;transform:none!important;}.scene{height:auto!important;}.scene-pin{position:relative!important;height:auto!important;padding-top:80px!important;padding-bottom:80px!important;}.scene-stage{min-height:300px;}.chapter{opacity:1!important;transform:none!important;}.chapter-line{width:100%!important;}.splash{display:none!important;}.reel{background:#F3F0E7;}.aff-panel{opacity:1!important;transform:none!important;}</style></noscript>
+<noscript><style>.reveal{opacity:1!important;transform:none!important;}.scene{height:auto!important;}.scene-pin{position:relative!important;height:auto!important;padding-top:80px!important;padding-bottom:80px!important;}.scene-stage{min-height:300px;}.chapter{opacity:1!important;transform:none!important;}.chapter-line{width:100%!important;}.splash{display:none!important;}.reel{background:var(--ink);}.aff-panel{opacity:1!important;transform:none!important;}</style></noscript>
 <script src="./image-slot.js"></script>
 <script type="application/ld+json">
 {
@@ -176,7 +177,7 @@
         "TruDealer Moto — specialized motorcycle sales DMS and TransUnion superbike catalogue",
         "TruDealer UK — United Kingdom expansion with £ GBP pricing and cinch.co.uk live comps",
         "TruShowroom — bespoke custom dealer websites with zero templates",
-        "TruChat — 24/7 DeepSeek AI sales assistant with WhatsApp routing",
+        "TruChat — 24/7 DealerAssist™ AI sales assistant with WhatsApp routing",
         "TruLive — 1-on-1 WebRTC video walkarounds & remote trade appraisal",
         "TruTrade — live market scraper valuation & instant trade-in report generator",
         "TruRepay — embedded finance and instalment calculator",
@@ -225,17 +226,23 @@
     <div class="orb o2"></div>
     <div class="orb o3"></div>
   </div>
-
-
-  <canvas id="splash-3d" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;"></canvas>
-
   <div class="splash-stage">
-    <img class="splash-logo" src="trudealer-logo-3d.svg" width="1600" height="720" fetchpriority="high" alt="TruDealer · Future Automotive" style="max-width:clamp(320px,60vw,780px);height:auto;opacity:0;transform:scale(.92);filter:drop-shadow(0 0 60px rgba(0,242,254,.4)) drop-shadow(0 20px 40px rgba(0,0,0,.8));"/>
-    <div class="splash-tag">Built in Cape Town · Deployed anywhere</div>
+    <div class="splash-line f" aria-label="TRUDEALER">
+      <span class="l">T</span><span class="l">R</span><span class="l">U</span><span class="l">D</span><span class="l">E</span><span class="l">A</span><span class="l">L</span><span class="l">E</span><span class="l">R</span>
+    </div>
+    <div class="splash-line a" aria-label="AUTOMOTIVE OS">
+      <span class="l">A</span><span class="l">U</span><span class="l">T</span><span class="l">O</span><span class="l">M</span><span class="l">O</span><span class="l">T</span><span class="l">I</span><span class="l">V</span><span class="l">E</span><span class="l">·</span><span class="l">O</span><span class="l">S</span>
+    </div>
+    <div class="splash-tag">
+      <span>AI CAPTURE</span>
+      <span>·</span>
+      <span>VIR CONDITION</span>
+      <span>·</span>
+      <span>FLOW DMS</span>
+    </div>
   </div>
 
-  <div class="splash-bar"></div>
-  <div class="splash-wipe"></div>
+  <div class="splash-bar"><div class="splash-prog"></div></div>
   <button type="button" class="splash-skip" id="splashSkip" aria-label="Skip intro animation">Skip intro ↓</button>
 </div>
 
@@ -254,8 +261,9 @@
     <a href="trudealer-vs-vmg.html">vs VMG</a>
   </div>
   <div class="nav-right">
-    <button type="button" class="nav-sandbox-btn" data-open-sandbox><span class="dot"></span> Live Sandbox ↗</button>
+    <button type="button" class="nav-sandbox-btn" data-open-sandbox data-open-demo><span class="dot"></span> Live Demo ↗</button>
     <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-cta">Book walkthrough →</a>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle Dark Mode"></button>
     <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile"><span></span></button>
   </div>
 
@@ -272,7 +280,7 @@
     <a href="index.html#roi">ROI Calculator</a>
     <a href="index.html#how">How it works</a>
     <a href="lead-demo.html">How leads work</a>
-    <a href="index.html#sandbox" data-open-sandbox>Live Sandbox ↗</a>
+    <a href="index.html#sandbox" data-open-sandbox data-open-demo>Live Demo ↗</a>
     <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="nav-mobile-cta">Book a walkthrough →</a>
   </div>
 </nav>
@@ -297,19 +305,19 @@
 
   <div class="hero-inner">
     <div>
-      <span class="hero-badge" style="border:none;background:linear-gradient(135deg,#0B7C72,#065A53);color:#fff;cursor:default;overflow:hidden;position:relative;box-shadow:0 4px 16px -4px rgba(11,124,114,.5),0 1px 0 rgba(255,255,255,.15) inset;transform-style:preserve-3d;animation:badgeTilt 4s ease-in-out infinite;letter-spacing:.14em;"><span style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);animation:badgeShimmer 3s ease-in-out infinite;"></span><span style="position:relative;text-shadow:0 1px 2px rgba(0,0,0,.3);">Built by dealers · For dealers</span></span>
+      <span class="hero-badge" style="border:none;background:linear-gradient(135deg,#0B7C72,#065A53);color:#fff;cursor:default;overflow:hidden;position:relative;box-shadow:0 4px 16px -4px rgba(11,124,114,.5),0 1px 0 rgba(255,255,255,.15) inset;transform-style:preserve-3d;animation:badgeTilt 4s ease-in-out infinite;letter-spacing:.14em;"><span style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);animation:badgeShimmer 3s ease-in-out infinite;"></span><span style="position:relative;text-shadow:0 1px 2px rgba(0,0,0,.3);">Built by Dealers · For Independent Dealerships</span></span>
       <h1 class="hero-h1">The Operating System for <span class="accent">Independent Car Dealers</span></h1>
-      <p class="hero-sub">From photo studio and digital condition reports to instant trade-ins, live WhatsApp AI sales, and full DMS invoicing. Built in Cape Town for independent dealers worldwide.</p>
+      <p class="hero-sub">Shoot 360° vehicle listings in 90 seconds, generate dispute-proof VIR condition reports, auto-syndicate stock, and capture 24/7 WhatsApp buyer leads with TransUnion eValue8 valuations.</p>
       <div class="hero-ctas">
-        <button type="button" class="btn btn-primary" data-open-sandbox>
+        <button type="button" class="btn btn-primary" data-open-sandbox data-open-demo>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Try Live Sandbox
+          Try Live Demo
         </button>
         <button type="button" class="btn btn-ghost" id="heroWalkthroughBtn" data-src="assets/brand/truflow-premium-web.mp4?v=1" aria-label="Watch 90s walkthrough video">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
           Watch 90s Walkthrough
         </button>
-        <a class="btn btn-wa" href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20a%20demo" target="_blank" rel="noopener">
+        <a class="btn btn-wa" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20a%20demo" target="_blank" rel="noopener">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.05-1.08l-.29-.17-3.01.79.8-2.93-.19-.3a8.21 8.21 0 0 1-1.26-4.37c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.59c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.07-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.76-1.85-.2-.48-.4-.42-.56-.42h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
           Chat on WhatsApp
         </a>
@@ -336,12 +344,116 @@
     <div class="hero-ticker">
       <span class="dot">●</span> No long-term contracts
       <span>·</span> 24h Setup
-      <span>·</span> TransUnion eValue8 &amp; DeepSeek AI powered
+      <span>·</span> TransUnion eValue8 &amp; DealerAssist™ AI powered
     </div>
   
     <div class="scroll-cue"><span>Scroll to explore</span><div class="mouse"></div></div>
 </div>
 </header>
+
+<style>
+  #stack.section.stack {
+    text-align: center !important;
+    padding-top: 100px !important;
+    padding-bottom: 120px !important;
+  }
+  #stack .eyebrow {
+    text-align: center !important;
+    margin: 0 auto 16px !important;
+    display: block !important;
+  }
+  #stack .section-h2 {
+    text-align: center !important;
+    margin: 0 auto 18px !important;
+    max-width: 900px !important;
+  }
+  #stack .section-lede {
+    text-align: center !important;
+    margin: 0 auto 36px !important;
+    max-width: 820px !important;
+    line-height: 1.7 !important;
+  }
+  #stack .vertical-strip {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+    margin: 0 auto 40px !important;
+    padding: 0 !important;
+  }
+  #stack .vertical-strip-label {
+    font-family: var(--mono) !important;
+    font-size: 11px !important;
+    letter-spacing: .14em !important;
+    text-transform: uppercase !important;
+    color: var(--muted) !important;
+    font-weight: 700 !important;
+    margin-right: 6px !important;
+  }
+  #stack .vertical-strip-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 16px !important;
+    border-radius: 100px !important;
+    background: var(--surface-card, rgba(255,255,255,0.06)) !important;
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.12)) !important;
+    color: var(--white) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all .25s cubic-bezier(.22,1,.36,1) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+  }
+  #stack .vertical-strip-pill:hover {
+    border-color: var(--cyan) !important;
+    color: var(--cyan) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(11,124,114,0.18) !important;
+  }
+  #stack .vertical-strip-pill.active {
+    background: var(--cyan-soft, rgba(11,124,114,0.15)) !important;
+    border-color: var(--cyan) !important;
+    color: var(--cyan-bright, #5EEAD4) !important;
+    box-shadow: 0 4px 16px rgba(11,124,114,0.25) !important;
+  }
+  #stack .vertical-dot-active {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: var(--cyan) !important;
+    box-shadow: 0 0 8px var(--cyan) !important;
+    animation: pulseDot 2s infinite !important;
+  }
+  #stack .vertical-dot-live {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: #34d399 !important;
+    box-shadow: 0 0 6px rgba(52,211,153,0.8) !important;
+  }
+  #stack .vertical-badge-tag {
+    font-family: var(--mono) !important;
+    font-size: 9.5px !important;
+    letter-spacing: .06em !important;
+    text-transform: uppercase !important;
+    padding: 2px 7px !important;
+    border-radius: 100px !important;
+    background: rgba(255,255,255,0.08) !important;
+    color: var(--muted) !important;
+  }
+  #stack .vertical-strip-pill.active .vertical-badge-tag {
+    background: var(--cyan) !important;
+    color: #fff !important;
+  }
+  #stack .mod-tabs-nav {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: fit-content !important;
+    margin-bottom: 36px !important;
+  }
+</style>
 
 <section class="section stack" id="stack">
   <div class="eyebrow reveal">The 8 Core Modules · Interactive Showcase</div>
@@ -349,15 +461,114 @@
   <p class="section-lede reveal">Switch between the 8 foundational modules powering modern independent dealerships. Custom-designed dealer websites with zero templates, 28-shot guided photo capture, digital inspection reports &amp; desktop workspaces, full DMS invoicing, floor staff mobile companion app, 24/7 AI sales agents, 13+ platform social syndication, and live trade-in valuations &amp; video walkarounds &mdash; all unified in one seamless operating system.</p>
 
   <!-- Vertical Selector Strip -->
-  <div class="vertical-strip reveal" style="display:flex;flex-wrap:nowrap;align-items:center;gap:10px;margin:28px auto 36px;padding:10px 18px;background:#FBF9F3;border:1px solid rgba(0,0,0,.08);border-radius:100px;max-width:920px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;box-shadow:0 4px 20px rgba(0,0,0,.04);">
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted,#64748B);margin-right:4px;flex-shrink:0;">Verticals:</span>
-    <a href="#stack" style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;background:linear-gradient(135deg,#0B7C72,#065A53);border:none;color:#fff;font-size:12.5px;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0;box-shadow:0 3px 10px -2px rgba(11,124,114,.35);"><span style="width:6px;height:6px;border-radius:50%;background:#5EEAD4;box-shadow:0 0 8px rgba(94,234,212,.8);"></span>Cars &amp; Auto <span style="font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,.2);padding:2px 6px;border-radius:8px;">Live</span></a>
-    <a href="moto.html" style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;background:rgba(11,124,114,.08);border:1px solid rgba(11,124,114,.2);color:var(--cyan,#0B7C72);font-size:12.5px;font-weight:600;text-decoration:none;transition:all .2s;white-space:nowrap;flex-shrink:0;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 8px rgba(16,185,129,.6);"></span>Motorcycles <span style="font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(16,185,129,.12);color:#059669;padding:2px 6px;border-radius:8px;">Live</span></a>
-    <a href="marine.html" style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);color:var(--muted,#64748B);font-size:12.5px;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;">Boats &amp; Marine <span style="font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.05);padding:2px 6px;border-radius:8px;">Waitlist</span></a>
-    <a href="commercial.html" style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);color:var(--muted,#64748B);font-size:12.5px;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;">Trucks &amp; Heavy <span style="font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.05);padding:2px 6px;border-radius:8px;">Waitlist</span></a>
-    <a href="caravans.html" style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);color:var(--muted,#64748B);font-size:12.5px;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;">Caravans &amp; Trailers <span style="font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.05);padding:2px 6px;border-radius:8px;">Waitlist</span></a>
+  <div class="vertical-strip reveal">
+    <span class="vertical-strip-label">Verticals:</span>
+    <a href="#stack" class="vertical-strip-pill active"><span class="vertical-dot-active"></span>Cars &amp; Auto <span class="vertical-badge-tag">Live</span></a>
+    <a href="moto.html" class="vertical-strip-pill"><span class="vertical-dot-live"></span>Motorcycles <span class="vertical-badge-tag">Live</span></a>
+    <a href="marine.html" class="vertical-strip-pill">Boats &amp; Marine <span class="vertical-badge-tag">Waitlist</span></a>
+    <a href="commercial.html" class="vertical-strip-pill">Trucks &amp; Heavy <span class="vertical-badge-tag">Waitlist</span></a>
+    <a href="caravans.html" class="vertical-strip-pill">Caravans &amp; Trailers <span class="vertical-badge-tag">Waitlist</span></a>
   </div>
-  </div>
+
+  <div class="mod-showcase-container reveal">
+    <!-- Module Tabs Navigation -->
+    <div class="mod-tabs-nav" role="tablist" aria-label="TruDealer Core Modules">
+      <button type="button" class="mod-tab-btn active" role="tab" id="tab-showroom" aria-selected="true" aria-controls="panel-showroom" tabindex="0">
+        <span class="tab-num">01</span>
+        <span class="tab-info">
+          <span class="tab-name">TruShowroom</span>
+          <span class="tab-sub">Custom Websites</span>
+        </span>
+      </button>
+      <button type="button" class="mod-tab-btn" role="tab" id="tab-lens" aria-selected="false" aria-controls="panel-lens" tabindex="-1">
+        <span class="tab-num">02</span>
+        <span class="tab-info">
+          <span class="tab-name">TruLens</span>
+          <span class="tab-sub">28-Shot Studio &amp; Scraper</span>
+        </span>
+      </button>
+      <button type="button" class="mod-tab-btn" role="tab" id="tab-inspect" aria-selected="false" aria-controls="panel-inspect" tabindex="-1">
+        <span class="tab-num">03</span>
+        <span class="tab-info">
+          <span class="tab-name">TruInspect</span>
+          <span class="tab-sub">Condition Reports &amp; Desktop</span>
+        </span>
+      </button>
+      <button type="button" class="mod-tab-btn" role="tab" id="tab-flow" aria-selected="false" aria-controls="panel-flow" tabindex="-1">
+        <span class="tab-num">04</span>
+        <span class="tab-info">
+          <span class="tab-name">TruFlow DMS</span>
+          <span class="tab-sub">Full Inventory &amp; Deals</span>
+        </span>
+      </button>
+      <button type="button" class="mod-tab-btn" role="tab" id="tab-mobile" aria-selected="false" aria-controls="panel-mobile" tabindex="-1">
+        <span class="tab-num">05</span>
+        <span class="tab-info">
+          <span class="tab-name">TruFlow Mobile</span>
+          <span class="tab-sub">Floor Companion App</span>
+        </span>
+      </button>
+      <button type="button" class="mod-tab-btn" role="tab" id="tab-chat" aria-selected="false" aria-controls="panel-chat" tabindex="-1">
+        <span class="tab-num">06</span>
+        <span class="tab-info">
+          <span class="tab-name">TruChat</span>
+          <span class="tab-sub">24/7 AI Sales Agent</span>
+        </span>
+      </button>
+      <button type="button" class="mod-tab-btn" role="tab" id="tab-social" aria-selected="false" aria-controls="panel-social" tabindex="-1">
+        <span class="tab-num">07</span>
+        <span class="tab-info">
+          <span class="tab-name">TruSocial</span>
+          <span class="tab-sub">13+ Social Channels · GBP</span>
+        </span>
+      </button>
+      <button type="button" class="mod-tab-btn" role="tab" id="tab-trade" aria-selected="false" aria-controls="panel-trade" tabindex="-1">
+        <span class="tab-num">08</span>
+        <span class="tab-info">
+          <span class="tab-name">TruTrade &amp; Live</span>
+          <span class="tab-sub">Valuation &amp; Walkaround</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Module Panels -->
+    <div class="mod-panels-wrap">
+      <!-- 01. TruShowroom -->
+      <article class="mod-panel active" id="panel-showroom" role="tabpanel" aria-labelledby="tab-showroom">
+        <div class="mod-panel-info">
+          <div class="mod-panel-tag"><span class="dot"></span> Layer 01 · Custom Dealer Websites (Zero Templates)</div>
+          <h3 class="mod-panel-title">TruShowroom <span class="accent">Custom Storefronts</span></h3>
+          <div class="mod-panel-lede">Bespoke Dealer Storefronts Built for Sub-Second Speed — Zero Generic Templates.</div>
+          <p class="mod-panel-desc">Stand out from portal competitors with a high-speed, custom website built to match your brand identity. Connects live to your DMS inventory, displays verified VIR condition badges, embeds finance calculators, and drives 1-tap WhatsApp leads straight to your sales team.</p>
+          <ul class="mod-features-list">
+            <li class="mod-feature-item">
+              <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>Bespoke Ground-Up Design:</strong> Zero cookie-cutter templates — custom-built for high conversion and instant mobile loading.</span>
+            </li>
+            <li class="mod-feature-item">
+              <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>Zero-Downtime Brand Reskinning:</strong> Moving from an existing provider? We faithfully transition your brand onto TruDealer with zero lost traffic.</span>
+            </li>
+            <li class="mod-feature-item">
+              <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>Live DMS Inventory Feed:</strong> Vehicle stock synchronizes automatically from TruFlow with real-time specs, prices, and status updates.</span>
+            </li>
+            <li class="mod-feature-item">
+              <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>Verified VIR Trust Badges:</strong> Display transparent condition grades (A/B/C/D), damage pins, and 360° spins on every vehicle listing.</span>
+            </li>
+            <li class="mod-feature-item">
+              <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span><strong>1-Tap WhatsApp Lead Tools:</strong> Native affordability sliders, repayment calculators, and 1-tap WhatsApp inquiry buttons on every car.</span>
+            </li>
+          </ul>
+          <div class="mod-panel-actions">
+            <button type="button" class="mod-btn-clip" data-video-src="Features.mp4" data-video-title="TruShowroom — Custom Designed Dealership Storefront" aria-label="Watch TruShowroom demo clip">
+              <svg viewBox="0 0 20 20"><polygon points="5 3 17 10 5 17 5 3"/></svg>
+              Watch Video Walkthrough
+            </button>
+          </div>
+        </div>
         <div class="mod-panel-visual">
           <div class="live-hero-wrap" style="margin-top:0;box-shadow:0 24px 60px -15px rgba(0,0,0,0.6), 0 0 30px -4px rgba(13,148,136,0.3);border-radius:18px;">
             <div class="live-hero-head">
@@ -387,33 +598,33 @@
         <div class="mod-panel-info">
           <div class="mod-panel-tag"><span class="dot"></span> Layer 01 · Capture, 360° Studio &amp; Market Scraper</div>
           <h3 class="mod-panel-title">TruLens <span class="accent">Studio &amp; Valuation</span></h3>
-          <div class="mod-panel-lede">28-Shot Guided PWA + TruOrbit 360° Viewer + Free Live Market Price Scraper.</div>
-          <p class="mod-panel-desc">Turn any smartphone on the lot into a commercial photo studio and pricing radar. Follow intelligent ghost-wireframe guides to capture a full 28-photo set across 3 structured phases in under 90 seconds. Scan licence discs for instant spec auto-fill, check live retail prices across AutoTrader and Cars.co.za via the built-in free market scraper, and sign off sessions with digital photographer e-signatures.</p>
+          <div class="mod-panel-lede">90-Second Mobile Photo Studio + Interactive 360° Orbit Spins + Live Pricing Radar.</div>
+          <p class="mod-panel-desc">Turn any yard smartphone into a commercial photo studio and pricing radar. Intelligent wireframe guides let staff capture a complete 28-photo set in under 90 seconds. Scan licence discs for instant spec auto-fill, compare live competitor market prices in real time, and auto-apply dealer watermarks.</p>
           <ul class="mod-features-list">
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>28 Guided PWA Shots in 3 Phases:</strong> 8 exterior hero angles, 12 exterior spin/details, and 8 interior/dash photos with ghost-wireframe alignment.</span>
+              <span><strong>28 Guided Shots in 90 Seconds:</strong> 8 exterior hero angles, 12 spin details, and 8 interior shots with ghost camera overlays.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Free Live Market Price Scraper:</strong> Pulls real-time competitor retail listings from AutoTrader and Cars.co.za on demand — zero API cost.</span>
+              <span><strong>Live Market Pricing Radar:</strong> Compare real-time competitor retail listings on demand to price stock accurately.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Licence-Disc Barcode Scanning:</strong> Instant vehicle spec lookup via TransUnion eValue8 flat-fee model catalogue.</span>
+              <span><strong>Licence-Disc Barcode Scanning:</strong> Instant vehicle spec auto-fill via TransUnion eValue8 flat-fee model catalogue.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Interactive TruOrbit 360° Spin:</strong> Generates fluid HTML5 pinch-and-rotate viewer embedded directly on listings.</span>
+              <span><strong>Interactive 360° Orbit Spins:</strong> Generate fluid HTML5 pinch-and-rotate virtual tours embedded directly on listings.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Photographer E-Signature &amp; Branding:</strong> Sign off photo sessions digitally; auto-applies dealer watermark and badge overlays.</span>
+              <span><strong>Digital E-Signatures &amp; Watermarks:</strong> Sign off photo sessions digitally with automatic dealer branding and watermark overlays.</span>
             </li>
           </ul>
           <div class="mod-panel-actions">
             <a class="mod-btn-primary" href="https://lens.tru-saas.com" target="_blank" rel="noopener">
-              Open Live Sandbox ↗
+              Open Live Demo ↗
             </a>
             <button type="button" class="mod-btn-clip" data-video-src="Lens Report.mp4" data-video-title="TruLens — AI Capture, Studio Background &amp; 360° Orbit Spin" aria-label="Watch TruLens demo clip">
               <svg viewBox="0 0 20 20"><polygon points="5 3 17 10 5 17 5 3"/></svg>
@@ -455,33 +666,33 @@
         <div class="mod-panel-info">
           <div class="mod-panel-tag"><span class="dot"></span> Layer 01 · Digital VIR, Desktop Manager &amp; Trade-In</div>
           <h3 class="mod-panel-title">TruInspect <span class="accent">Digital VIR &amp; Desktop Workspace</span></h3>
-          <div class="mod-panel-lede">Dual-Interface: Field Worker Mobile PWA + Dealership Manager Desktop Dashboard.</div>
-          <p class="mod-panel-desc">Stop post-delivery arguments before they start. Field workers walk the lot with the mobile PWA to capture 28 photos, log 35 inspection points across 6 vehicle areas, answer 25 disclosure questions, and drop damage pins. Back at the desk, dealership managers review readiness progress in the desktop workspace, manage buyer offers, run TransUnion accident/police checks, and sign off dispute-proof VIR certificates or 7-day trade-in appraisals.</p>
+          <div class="mod-panel-lede">35-Point Mobile Inspection App + Manager Desktop Command Dashboard.</div>
+          <p class="mod-panel-desc">Eliminate post-delivery customer disputes before they start. Yard staff walk the lot with the mobile app to complete 35-point condition checks, log disclosure questions, and tag damage pins. Dealership managers review readiness %, manage buyer offers, run TransUnion accident/police checks, and sign off dispute-proof VIR certificates.</p>
           <ul class="mod-features-list">
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Manager Desktop Workspace:</strong> Complete desktop command centre tracking vehicle readiness %, pricing, customer notes, buyer offers CRM, and document attachments.</span>
+              <span><strong>Manager Desktop Workspace:</strong> Central desktop command centre tracking vehicle readiness %, pricing, customer notes, buyer offers CRM, and document attachments.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Interactive Damage Pin Tagger:</strong> Drop numbered pins manually on 2D blueprint panels with photo evidence, 1-to-5 severity ratings, and estimated repair costs.</span>
+              <span><strong>Interactive Damage Pin Tagger:</strong> Drop precise pins on 2D blueprint panels with photo evidence, severity ratings, and estimated repair costs.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>35-Point Checklist across 6 Areas:</strong> Comprehensive assessment covering bodywork, glass &amp; lighting, interior &amp; electronics, mechanical &amp; powertrain, tyres &amp; brakes, and underbody.</span>
+              <span><strong>35-Point Checklist across 6 Areas:</strong> Comprehensive assessment covering bodywork, glass, interior, mechanical powertrain, tyres &amp; brakes, and underbody.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>TransUnion eValue8 &amp; Police Check:</strong> Live valuation, accident history with claim amounts, and police/finance registration checks.</span>
+              <span><strong>TransUnion eValue8 &amp; Police Check:</strong> Live market valuation, accident history with claim amounts, and police/finance registration checks.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Inspector E-Signature &amp; 7-Day Trade Appraisal:</strong> Sign off digitally on screen; generates audit-ready PDF reports with verified QR codes and WhatsApp links.</span>
+              <span><strong>Inspector E-Signature VIR Reports:</strong> Sign off digitally on screen; generates audit-ready PDF reports with verified QR codes and WhatsApp links.</span>
             </li>
           </ul>
           <div class="mod-panel-actions">
             <a class="mod-btn-primary" href="https://inspect.tru-saas.com" target="_blank" rel="noopener">
-              Open Live Sandbox ↗
+              Open Live Demo ↗
             </a>
             <button type="button" class="mod-btn-clip" data-video-src="Inspect damagetagger.mp4" data-video-title="TruInspect — Panel Damage Tagging &amp; Digital VIR Report" aria-label="Watch TruInspect demo clip">
               <svg viewBox="0 0 20 20"><polygon points="5 3 17 10 5 17 5 3"/></svg>
@@ -523,8 +734,8 @@
         <div class="mod-panel-info">
           <div class="mod-panel-tag"><span class="dot"></span> Layer 02 · Core Dealership Operating System</div>
           <h3 class="mod-panel-title">TruFlow <span class="accent">DMS Command</span></h3>
-          <div class="mod-panel-lede">Full Stock Inventory, F&amp;I Calculator, Deal Invoicing, and Accounting Reconciliation.</div>
-          <p class="mod-panel-desc">The complete cloud DMS built specifically for independent dealerships. Manage your entire lot inventory with live cost tracking and floorplan reconditioning margins. Structure complex vehicle finance deals with live interest &amp; balloon calculations, generate compliant tax invoices and Offer to Purchase (OTP) contracts, and reconcile your floor numbers seamlessly.</p>
+          <div class="mod-panel-lede">Complete Dealership Stock Inventory, F&amp;I Calculator, Deal Invoicing, and Margin Control.</div>
+          <p class="mod-panel-desc">The complete cloud DMS built specifically for independent dealerships. Manage lot inventory with real-time cost tracking and reconditioning margins. Structure complex vehicle finance deals with live interest calculations, generate compliant tax invoices and Offer to Purchase (OTP) contracts, and reconcile your floor numbers seamlessly.</p>
           <ul class="mod-features-list">
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -549,7 +760,7 @@
           </ul>
           <div class="mod-panel-actions">
             <a class="mod-btn-primary" href="https://premium.tru-saas.com?demo=1" target="_blank" rel="noopener">
-              Open Live Sandbox ↗
+              Open Live Demo ↗
             </a>
             <button type="button" class="mod-btn-clip" data-video-src="EDIT DMS.mp4" data-video-title="TruFlow DMS — Stock Inventory, Invoicing &amp; Syndication" aria-label="Watch TruFlow DMS demo clip">
               <svg viewBox="0 0 20 20"><polygon points="5 3 17 10 5 17 5 3"/></svg>
@@ -588,8 +799,8 @@
         <div class="mod-panel-info">
           <div class="mod-panel-tag"><span class="dot"></span> Layer 02 · Floor Staff Mobile Companion (Standalone &amp; in DMS)</div>
           <h3 class="mod-panel-title">TruFlow Mobile <span class="accent">Floor Companion</span></h3>
-          <div class="mod-panel-lede">Native Mobile App on iOS &amp; Android for Yard Staff — Standalone or Included in TruFlow DMS.</div>
-          <p class="mod-panel-desc">Put the power of your entire dealership in your pocket. TruFlow Mobile (<a href="https://app.tru-saas.com" target="_blank" rel="noopener" style="color:var(--cyan);font-weight:600;">app.tru-saas.com</a>) lets floor staff and sales reps walk the lot, add new vehicle arrivals on the fly, take photos, look up live specs and pricing, manage incoming leads, and view buyer deals anywhere. Available as an affordable standalone mobile app for independent sales teams (R399/mo) and fully integrated into TruFlow DMS.</p>
+          <div class="mod-panel-lede">Native Mobile App on iOS &amp; Android for Yard Staff — Standalone or Included in DMS.</div>
+          <p class="mod-panel-desc">Put your entire dealership in your pocket. TruFlow Mobile lets floor staff walk the lot, add new vehicle arrivals on the fly, capture photos, look up live specs and pricing, and manage incoming buyer leads anywhere.</p>
           <ul class="mod-features-list">
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -653,12 +864,12 @@
         <div class="mod-panel-info">
           <div class="mod-panel-tag"><span class="dot"></span> Layer 03 · 24/7 AI Sales Assistant</div>
           <h3 class="mod-panel-title">TruChat <span class="accent">AI Agent</span></h3>
-          <div class="mod-panel-lede">24/7 DeepSeek AI Sales Agent on WhatsApp &amp; Web with Automated Test Drive Booking.</div>
-          <p class="mod-panel-desc">Never lose a late-night buyer inquiry to a competitor. TruChat connects directly to your live vehicle inventory and dealership knowledge base to provide instant, knowledgeable responses on WhatsApp and your website. It answers technical specifications, compares vehicle models, pre-qualifies customer budgets, books test drives directly into rep calendars, and transfers qualified leads with complete chat summaries.</p>
+          <div class="mod-panel-lede">24/7 WhatsApp &amp; Web AI Sales Assistant — Responds in Seconds.</div>
+          <p class="mod-panel-desc">Never lose a late-night buyer inquiry to a competitor. TruChat connects directly to your live vehicle inventory to provide instant, knowledgeable responses on WhatsApp and your website. It answers vehicle specs, compares models, pre-qualifies budgets, books test drives, and routes qualified leads directly to your sales reps.</p>
           <ul class="mod-features-list">
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
-              <span><strong>Trained on Your Live Inventory:</strong> Answers specs, mileage, service history, and pricing using your real-time vehicle database.</span>
+              <span><strong>Synced to Your Live Stock:</strong> Answers specs, mileage, service history, and pricing using your real-time vehicle database.</span>
             </li>
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -678,8 +889,8 @@
             </li>
           </ul>
           <div class="mod-panel-actions">
-            <button type="button" class="mod-btn-primary" data-open-sandbox>
-              Open Live Sandbox ↗
+            <button type="button" class="mod-btn-primary" data-open-sandbox data-open-demo>
+              Open Live Demo ↗
             </button>
             <button type="button" class="mod-btn-clip" data-video-src="Dealer assist.mp4" data-video-title="TruChat AI — 24/7 WhatsApp &amp; Web Sales Assistant" aria-label="Watch TruChat demo clip">
               <svg viewBox="0 0 20 20"><polygon points="5 3 17 10 5 17 5 3"/></svg>
@@ -696,7 +907,7 @@
             <div class="mod-preview-overlay">
               <div class="mod-preview-top">
                 <span class="mod-preview-live"><span class="dot"></span> 24/7 AI SALES</span>
-                <span class="mod-preview-badge">DeepSeek AI</span>
+                <span class="mod-preview-badge">DealerAssist™ AI</span>
               </div>
               <div class="mod-preview-center">
                 <svg viewBox="0 0 20 20"><polygon points="5 3 17 10 5 17 5 3"/></svg>
@@ -721,8 +932,8 @@
         <div class="mod-panel-info">
           <div class="mod-panel-tag"><span class="dot"></span> Layer 03 · Multi-Portal Syndication &amp; Social Auto-Publishing</div>
           <h3 class="mod-panel-title">TruSocial <span class="accent">1-Click Multi-Channel Selling</span></h3>
-          <div class="mod-panel-lede">Instant 1-Click Listing Packs for Facebook Marketplace, Facebook Pages, Instagram, WhatsApp Status, LinkedIn &amp; Google Business.</div>
-          <p class="mod-panel-desc">Stop copying and pasting car details across 10 different tabs or battling expired OAuth tokens. Meta has blocked all third-party APIs from automated posting to Facebook Marketplace — so TruSocial solves this with instant, 1-click marketing packs with algorithmically-compliant titles, formatted specs, zero banned finance triggers, and a 1-click 8-photo studio pack ready to drag-and-drop. Plus 1-click deep links for official Facebook Pages, Instagram carousels, WhatsApp broadcasts, LinkedIn B2B, and Google Business Profile local SEO.</p>
+          <div class="mod-panel-lede">Instant 1-Click Auto-Publishing to 13+ Classified &amp; Social Channels.</div>
+          <p class="mod-panel-desc">Stop copying and pasting car details across 10 different tabs. TruSocial generates instant 1-click listing packs with compliant titles, pre-formatted specs, 8-photo studio packs, and zero banned finance triggers. Publish seamlessly to Facebook Marketplace, Pages, Instagram, WhatsApp Status, LinkedIn, and Google Business Profile.</p>
           <ul class="mod-features-list">
             <li class="mod-feature-item">
               <span class="mod-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -751,7 +962,7 @@
           </ul>
           <div class="mod-panel-actions">
             <a class="mod-btn-primary" href="https://premium.tru-saas.com?demo=1" target="_blank" rel="noopener">
-              Open Live Sandbox ↗
+              Open Live Demo ↗
             </a>
             <button type="button" class="mod-btn-clip" data-video-src="bulk upload lens.mp4" data-video-title="TruSocial — 13+ Platform Multi-Channel Syndication" aria-label="Watch TruSocial demo clip">
               <svg viewBox="0 0 20 20"><polygon points="5 3 17 10 5 17 5 3"/></svg>
@@ -945,50 +1156,171 @@
 
 
 
-<section class="tt-home" id="try-afford">
-  <style>
-    .tt-home{background:#F4F0E8;border-top:1px solid rgba(14,26,38,.08);border-bottom:1px solid rgba(14,26,38,.08);padding:clamp(64px,9vw,120px) 24px}
-    .tt-wrap{max-width:900px;margin:0 auto;text-align:center}
-    .tt-eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#07879A}
-    .tt-home h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(28px,4vw,48px);line-height:1.06;letter-spacing:-.02em;color:#0E1A26;margin:14px auto 0;max-width:16ch}
-    .tt-home h2 em{font-style:italic;color:#07879A}
-    .tt-home p.tt-sub{color:rgba(14,26,38,.72);font-size:16px;line-height:1.6;margin:16px auto 0;max-width:52ch}
-    .tt-tabs{display:inline-flex;gap:6px;margin:32px auto 0;padding:5px;background:#EDE7DA;border:1px solid rgba(14,26,38,.08);border-radius:100px}
-    .tt-tab{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:10px 18px;border-radius:100px;color:rgba(14,26,38,.62);border:0;background:transparent;cursor:pointer;transition:all .25s ease}
-    .tt-tab.active{background:#0E1A26;color:#F4F0E8}
-    .tt-stage{margin:36px auto 0;max-width:460px;min-height:360px}
-    #repay-home .tr-panel{background:#0E1620!important;color:#F8FAFC!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:20px!important;box-shadow:0 12px 36px rgba(0,0,0,0.3)!important;}
-    #repay-home .tr-result{background:rgba(255,255,255,0.04)!important;}
-    #repay-home .tr-price{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.12)!important;}
-    #repay-home .tr-price input,#repay-home select,#repay-home input{color:#F8FAFC!important;}
-    .tt-panel{display:none}
-    .tt-panel.active{display:block;animation:ttIn .4s ease}
-    @keyframes ttIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-    @media(max-width:600px){.tt-tabs{flex-wrap:wrap}}
-  </style>
-  <div class="tt-wrap">
-    <span class="tt-eyebrow">Try it live · no signup</span>
-    <h2>The tools your buyers use — <em>embedded right here.</em></h2>
-    <p class="tt-sub">Not mockups — the live widgets that run on your showroom. Every interaction files a qualified lead in your DMS before the WhatsApp handoff.</p>
-    <div class="tt-tabs" role="tablist">
-      <button class="tt-tab active" data-panel="afford" type="button">Affordability</button>
-      <button class="tt-tab" data-panel="value" type="button">Trade-in value</button>
-      <button class="tt-tab" data-panel="repay" type="button">Repayments</button>
+<section class="dealer-assist-section" id="try-afford">
+  <div class="dealer-assist-inner">
+    <div class="dealer-assist-head reveal">
+      <span class="dealer-assist-eyebrow"><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--cyan);display:inline-block;box-shadow:0 0 6px var(--cyan);"></span> The TruDealer Ecosystem · Custom Built</span>
+      <h2 class="dealer-assist-title">Never Miss a Buyer. <span class="accent">24/7 AI Voice, Bookings &amp; Leads.</span></h2>
+      <p class="dealer-assist-lede">Custom-trained on your inventory, trade-in rules, and dealership calendar. DealerAssist answers after-hours phone calls, books test drives directly into your DMS, and pushes qualified lead alerts straight to sales reps on WhatsApp in real time.</p>
     </div>
-    <div class="tt-stage">
-      <div class="tt-panel active" data-panel="afford"><div id="afford-home"></div></div>
-      <div class="tt-panel" data-panel="value"><div id="value-home"></div></div>
-      <div class="tt-panel" data-panel="repay"><div id="repay-home"></div></div>
+
+    <div class="dealer-assist-grid reveal">
+      <!-- Card 1: Interactive DealerAssist AI Voice & Receptionist -->
+      <div class="assist-card">
+        <div>
+          <div class="assist-card-badge"><span class="dot"></span> Live AI Voice Receptionist</div>
+          <h3 class="assist-card-h3">DealerAssist™ AI Voice Hub</h3>
+          <p class="assist-card-desc">Inbound phone calls answered in under 2 rings with human clarity, live stock lookup, and automated WhatsApp appointment confirmations.</p>
+
+          <div class="assist-features-pills">
+            <span class="assist-pill"><span class="dot"></span> 24/7 AI Receptionist</span>
+            <span class="assist-pill"><span class="dot"></span> Test Drive Bookings</span>
+            <span class="assist-pill"><span class="dot"></span> WhatsApp &amp; SMS Dispatch</span>
+            <span class="assist-pill"><span class="dot"></span> Trade-In Valuations</span>
+          </div>
+
+          <!-- Interactive Simulator Box -->
+          <div class="assist-sim-box">
+            <div class="assist-sim-head">
+              <span>Interactive Caller Simulator</span>
+              <span>Tap a question below ↓</span>
+            </div>
+            <div class="assist-sim-prompts" id="assistSimPrompts">
+              <button type="button" class="assist-prompt-btn active" data-res="&quot;Hi! Yes, the 2021 Toyota Hilux 2.8 GD-6 4x4 is available on the floor in Cape Town at R549,900. I can reserve a test drive for you this Saturday at 10:30 AM — would you like me to send confirmation and directions to your WhatsApp?&quot;" data-del="Test Drive Booked in TruFlow DMS · Lead Dispatched to Sales WhatsApp">
+                <span>&ldquo;Can I book a test drive for the 2021 Hilux this Saturday?&rdquo;</span>
+                <span class="ic">01 →</span>
+              </button>
+              <button type="button" class="assist-prompt-btn" data-res="&quot;Based on current live market comps and TransUnion retail averages, your 2019 VW Polo 1.0 TSI Comfortline (approx 75,000 km) has an estimated trade-in range of R185,000 – R205,000. Would you like our manager to prepare an appraisal?&quot;" data-del="Trade Valuation Report Generated · Lead Assigned to Used Car Buyer">
+                <span>&ldquo;What is my 2019 VW Polo trade-in worth?&rdquo;</span>
+                <span class="ic">02 →</span>
+              </button>
+              <button type="button" class="assist-prompt-btn" data-res="&quot;Yes! The 2022 BMW 320d M Sport with 42,000 km is on the floor with a 100-point TruInspect condition report (Grade A). I can share the 360° spin and video walkthrough right now to your mobile.&quot;" data-del="VIR Report Link &amp; Video Walkaround Pushed to Customer Phone">
+                <span>&ldquo;Is the 2022 BMW 320d M Sport still available?&rdquo;</span>
+                <span class="ic">03 →</span>
+              </button>
+            </div>
+
+            <div class="assist-sim-response" id="assistSimResponse">
+              <span class="assist-sim-tag">DealerAssist Voice AI Response:</span>
+              <div id="assistSimText">&ldquo;Hi! Yes, the 2021 Toyota Hilux 2.8 GD-6 4x4 is available on the floor in Cape Town at R549,900. I can reserve a test drive for you this Saturday at 10:30 AM — would you like me to send confirmation and directions to your WhatsApp?&rdquo;</div>
+              <div class="assist-sim-delivery" id="assistSimDelivery">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Test Drive Booked in TruFlow DMS · Lead Dispatched to Sales WhatsApp</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guarded call dial button -->
+        <div class="call-guard" id="callGuard" data-tel="+44 7476 995694" data-arm-seconds="4">
+          <button type="button" class="call-btn" aria-live="polite">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span class="call-label">Call our after-hours AI agent — tap to reveal</span>
+          </button>
+          <p class="call-note">Live TruVoice demo · Answers after-hours calls within 2 rings · Standard rates apply</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Walkthrough & Resource Suite -->
+      <div class="assist-card">
+        <div>
+          <div class="assist-card-badge" style="color:var(--cyan);background:var(--cyan-soft);border-color:var(--border-glow);"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan);"></span> Complete Dealer Stack</div>
+          <h3 class="assist-card-h3">Watch It Run on Your Dealership</h3>
+          <p class="assist-card-desc">25 minutes on Zoom or Google Meet with the creator. See the exact stack that powers Tru-Cars — with your branding, your currency, and your live floor stock loaded.</p>
+
+          <div class="suite-actions-list">
+            <a href="demo.html" class="suite-action-card" style="background:var(--cyan-soft);border-color:var(--cyan);">
+              <div class="suite-action-left">
+                <div class="suite-action-icon" style="background:var(--cyan);color:#fff;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title" style="color:var(--cyan);font-weight:700;">See Demo All Our Modules ↗</span>
+                  <span class="suite-action-sub">Live interactive widgets &amp; standalone tools</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow" style="font-size:18px;">↗</span>
+            </a>
+
+            <a href="/guides/index.html" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">All Field Guides &amp; Manuals</span>
+                  <span class="suite-action-sub">Step-by-step manuals for TruLens, Inspect &amp; Flow</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">→</span>
+            </a>
+
+            <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">Book 25-Min Walkthrough</span>
+                  <span class="suite-action-sub">Pick a slot on Paul's live calendar (Zoom/Meet)</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">→</span>
+            </a>
+
+            <a href="/brochure.html" target="_blank" rel="noopener" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">View Interactive Brochure</span>
+                  <span class="suite-action-sub">Full product architecture, tiers &amp; ROI</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">→</span>
+            </a>
+
+            <a href="/trudealer-brochure.pdf" download="TruDealer-Brochure-2026.pdf" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">Download PDF Brochure</span>
+                  <span class="suite-action-sub">Official 2026 dealer specification sheet (PDF)</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">↓</span>
+            </a>
+
+            <a href="https://wa.me/447476995694?text=Hi%20Paul%2C%20I%27d%20like%20to%20chat%20about%20TruDealer%20for%20my%20dealership" target="_blank" rel="noopener" class="suite-action-card">
+              <div class="suite-action-left">
+                <div class="suite-action-icon" style="color:#22C55E;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.05-1.08l-.29-.17-3.01.79.8-2.93-.19-.3a8.21 8.21 0 0 1-1.26-4.37c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.59c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.07-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.76-1.85-.2-.48-.4-.42-.56-.42h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
+                </div>
+                <div class="suite-action-text">
+                  <span class="suite-action-title">Instant WhatsApp Connect</span>
+                  <span class="suite-action-sub">Direct founder line · Fast responses</span>
+                </div>
+              </div>
+              <span class="suite-action-arrow">↗</span>
+            </a>
+          </div>
+
+          <a class="suite-primary-btn" href="https://cal.com/pgdebeer" target="_blank" rel="noopener">
+            <span>Schedule 25-Min Live Demo (or 24h Access) →</span>
+          </a>
+
+          <div class="assist-trust-strip">
+            <span>14-Day Risk-Free Trial</span>
+            <span>Zero Long-Term Lock-in</span>
+            <span>24h Fast Setup</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <script>
-  (function(){var s=document.getElementById('try-afford');
-    var tabs=s.querySelectorAll('.tt-tab'),panels=s.querySelectorAll('.tt-panel');
-    tabs.forEach(function(t){t.addEventListener('click',function(){var k=t.getAttribute('data-panel');
-      tabs.forEach(function(x){x.classList.toggle('active',x===t)});
-      panels.forEach(function(pl){pl.classList.toggle('active',pl.getAttribute('data-panel')===k)});
-      window.dispatchEvent(new Event('resize'));});});})();
-  </script>
 </section>
 
 
@@ -1001,15 +1333,13 @@
     <span class="lt-box"><img src="assets/logos/quickbooks.png" alt="QuickBooks"></span>
     <span class="lt-box"><img src="assets/logos/xero.png" alt="Xero"></span>
     <span class="lt-box"><img src="assets/logos/meta.png" alt="Meta"></span>
-    <span class="lt-box"><img src="assets/logos/deepseek.png" alt="DeepSeek"></span>
-    <span class="lt-box"><img src="assets/logos/xai.png" alt="xAI"></span>
+    <span class="lt-box"><img src="assets/logos/zernio.png" alt="Zernio"></span>
     <span class="lt-box"><img src="assets/logos/transunion.png" alt="TransUnion"></span>
     <span class="lt-box"><img src="assets/logos/lightstone.png" alt="Lightstone"></span>
     <span class="lt-box"><img src="assets/logos/quickbooks.png" alt="QuickBooks"></span>
     <span class="lt-box"><img src="assets/logos/xero.png" alt="Xero"></span>
     <span class="lt-box"><img src="assets/logos/meta.png" alt="Meta"></span>
-    <span class="lt-box"><img src="assets/logos/deepseek.png" alt="DeepSeek"></span>
-    <span class="lt-box"><img src="assets/logos/xai.png" alt="xAI"></span>
+    <span class="lt-box"><img src="assets/logos/zernio.png" alt="Zernio"></span>
   </div>
 </div>
 <style>
@@ -1018,9 +1348,9 @@
     mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
   .logo-ticker-track{display:inline-flex;align-items:center;gap:14px;white-space:nowrap;will-change:transform;
     animation:ltMarquee 44s linear infinite}
-  .lt-box{flex:none;display:grid;place-items:center;height:58px;min-width:142px;padding:0 22px;
-    background:#fff;border:1px solid rgba(60,50,30,.1);border-radius:12px;box-shadow:0 2px 8px rgba(60,50,30,.06)}
-  .lt-box img{height:30px;width:auto;max-width:110px;object-fit:contain;display:block}
+  .lt-box, [data-theme="dark"] .lt-box{flex:none;display:grid;place-items:center;height:58px;min-width:142px;padding:0 22px;
+    background:#FBF9F3 !important;border:1px solid rgba(60,50,30,.15) !important;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.18) !important;}
+  .lt-box img, [data-theme="dark"] .lt-box img{height:30px;width:auto;max-width:110px;object-fit:contain;display:block;filter:none !important;opacity:1 !important;}
   @keyframes ltMarquee{to{transform:translateX(-50%)}}
   @media (prefers-reduced-motion: reduce){.logo-ticker-track{animation:none}}
 </style>
@@ -1051,14 +1381,19 @@
     <h2 class="tm-heading">See what one of SA's top dealers <span class="accent">has to say.</span></h2>
   </div>
   <blockquote class="tm-card reveal">
-    <div class="tm-stars" aria-label="Rated 5 stars">★★★★★</div>
+    <div class="tm-header">
+      <div class="tm-logo-wrap">
+        <img src="your-car-guy-logo.png" alt="Your Car Guy" width="160" height="36" class="tm-logo">
+      </div>
+      <div class="tm-stars" aria-label="Rated 5 stars">★★★★★</div>
+    </div>
     <div class="tm-quote">
       <p>TruDealer doesn't just sell you software and leave you to figure things out — they build a relationship, listen to what you need, understand your business and make sure you get the right solution.</p>
     </div>
-    <footer class="tm-attrib">
+    <div class="tm-attrib">
       <div class="tm-who"><strong>Ray Your Car Guy</strong><span class="tm-sep">·</span>Port Elizabeth<span class="tm-sep">·</span>PE's #1 rated dealership</div>
       <a class="tm-source" href="https://share.google/qlbZdhiyLlRdqXERc" target="_blank" rel="noopener"><span class="tm-g-icon" aria-hidden="true"></span> Read the full review on Google →</a>
-    </footer>
+    </div>
   </blockquote>
 </section>
 
@@ -1134,10 +1469,16 @@
       <p class="section-lede" style="margin:0 auto;">Stop patching together five different legacy subscriptions that don't talk to each other. See how TruDealer unifies your whole floor.</p>
     </div>
 
+    <!-- Mobile Switcher Tabs -->
+    <div class="cds-mobile-tabs" id="cdsMobileTabs" role="tablist" aria-label="Compare Before and After">
+      <button type="button" class="cds-tab-btn" data-cds-target="before" role="tab" aria-selected="false">✕ The Old Way</button>
+      <button type="button" class="cds-tab-btn active" data-cds-target="after" role="tab" aria-selected="true">✓ With TruDealer</button>
+    </div>
+
     <div class="cds-grid">
       <!-- BEFORE -->
-      <div class="cds-col before">
-        <div class="cds-col-badge">The Old Way · Fragmented Tools</div>
+      <div class="cds-col before" id="cdsColBefore">
+        <div class="cds-col-badge"><span class="cds-badge-dot"></span>The Old Way · Fragmented Tools</div>
         <h3 class="cds-col-title">Before TruDealer</h3>
         <p class="cds-col-desc">Hours lost to double-entry, slow WordPress sites, and post-delivery arguments.</p>
         <ul class="cds-list">
@@ -1165,8 +1506,8 @@
       </div>
 
       <!-- AFTER -->
-      <div class="cds-col after">
-        <div class="cds-col-badge">The Modern Way · TruDealer Stack</div>
+      <div class="cds-col after active" id="cdsColAfter">
+        <div class="cds-col-badge"><span class="cds-badge-dot"></span>The Modern Way · TruDealer Stack</div>
         <h3 class="cds-col-title">With TruDealer</h3>
         <p class="cds-col-desc">One fast operating system where every car leaves your lot with proof.</p>
         <ul class="cds-list">
@@ -1201,108 +1542,10 @@
 <div class="chapter">
   <div class="chapter-inner">
     <div class="chapter-num">CHAPTER 02</div>
-    <h2 class="chapter-title"><span class="light">Don't take our word.</span> Scroll the platform. <span class="light">Watch it move.</span></h2>
+    <h2 class="chapter-title"><span class="light">Watch the platform work.</span> What a day on the floor looks like.</h2>
     <div class="chapter-line"></div>
   </div>
 </div>
-
-<!-- VIDEO GALLERY — one unified flow -->
-<section class="video-gallery" id="watch">
-  <div class="vg-intro reveal">
-    <div class="eyebrow">The receipts</div>
-    <h2 class="section-h2">Filmed on real stock. <span class="accent">This week.</span></h2>
-    <p class="section-lede">Everything we said above — capture, condition, pricing, the buyer experience — shot on actual cars. Tap any tile to watch.</p>
-  </div>
-
-  <div class="vg-grid" id="vgGrid">
-    <!-- Row 1 · car into the system: capture → condition → report -->
-    <button class="vg-tile" style="--i:0" type="button" data-src="bulk upload lens.mp4" aria-label="Play: bulk upload from phone gallery">
-      <img class="vg-poster" src="bulk-upload-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Capture</span><span class="vg-num">01</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Phone gallery → stock, grouped by month</span>
-    </button>
-    <button class="vg-tile" style="--i:1" type="button" data-src="Lens Report.mp4" aria-label="Play: TruLens report generation">
-      <img class="vg-poster" src="trulens-scan-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Lens Report</span><span class="vg-num">02</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Photo report — branded, ready to list</span>
-    </button>
-    <button class="vg-tile" style="--i:2" type="button" data-src="Inspect damagetagger.mp4" aria-label="Play: damage tagging workflow">
-      <img class="vg-poster" src="truinspect-tagger-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Damage Tagging</span><span class="vg-num">03</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Pin the mark · pick a type · rate 1–5</span>
-    </button>
-    <button class="vg-tile" style="--i:3" type="button" data-src="condition report.mp4" aria-label="Play: condition report generated on the spot">
-      <img class="vg-poster" src="condition-report-short-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Inspection Report</span><span class="vg-num">04</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Report generated on the spot</span>
-    </button>
-    <button class="vg-tile" style="--i:4" type="button" data-src="Tradein Apprasal report.mp4" aria-label="Play: trade-in appraisal report">
-      <img class="vg-poster" src="condition-report-full-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Trade-In Report</span><span class="vg-num">05</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Appraisal report — market price to margin</span>
-    </button>
-
-    <!-- Row 2 · living in the platform: mobile app → guide → trade-in report → AI assist → buyer view -->
-    <button class="vg-tile" style="--i:5" type="button" data-src="Mobile app.mp4" aria-label="Play: the mobile app in action">
-      <img class="vg-poster" src="market-loading-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Mobile App</span><span class="vg-num">06</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Everything from your phone — stock to deals</span>
-    </button>
-    <button class="vg-tile" style="--i:6" type="button" data-src="App Guide.mp4" aria-label="Play: the in-app help guide">
-      <img class="vg-poster" src="appguide-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">In-App Guide</span><span class="vg-num">07</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Built-in help for every workflow</span>
-    </button>
-    <button class="vg-tile" style="--i:7" type="button" data-src="Tradein-sum.mp4" aria-label="Play: trade-in summary and export">
-      <img class="vg-poster" src="tradein-summary-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Trade-In Report</span><span class="vg-num">08</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Trade-in summary — export to PDF, HTML or print</span>
-    </button>
-    <button class="vg-tile" style="--i:8" type="button" data-src="Dealer assist.mp4" aria-label="Play: AI Dealer Assist in-app chat">
-      <img class="vg-poster" src="dealer-assist-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">AI Dealer Assist</span><span class="vg-num">09</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Ask the AI anything — export, quality, damage</span>
-    </button>
-    <button class="vg-tile" style="--i:9" type="button" data-src="TruDealer-Screen-8.mp4" aria-label="Play: what the buyer sees on a live dealer listing">
-      <img class="vg-poster" src="trushowroom-buyer-poster.jpg" alt="" loading="lazy" decoding="async">
-      <span class="vg-chip">Buyer View</span><span class="vg-num">10</span>
-      <span class="vg-play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-      <span class="vg-label">Customer scrolling a live dealer listing</span>
-    </button>
-  </div>
-</section>
-
-<script>
-/* Gallery — IntersectionObserver triggers the wave-reveal exactly once when the grid enters view. */
-(function(){
-  var grid = document.getElementById('vgGrid');
-  if (!grid) return;
-  var tiles = grid.querySelectorAll('.vg-tile');
-
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if (e.isIntersecting) {
-          tiles.forEach(function(t){ t.classList.add('in-view'); });
-          io.disconnect();
-        }
-      });
-    }, {threshold: 0.15});
-    io.observe(grid);
-  } else {
-    tiles.forEach(function(t){ t.classList.add('in-view'); });
-  }
-})();
-</script>
 
 
 <section class="reel" id="reel">
@@ -1312,92 +1555,69 @@
     <p class="section-lede reveal">No sales-deck screenshots. This is the actual software doing its thing — the DMS filling up, an AI chat closing a lead, a buyer working out finance before they even message you.</p>
   </div>
 
-  <!-- Scene 1 · TruFlow DMS -->
+  <!-- Scene 1 · TruLens + TruInspect -->
   <div class="scene" data-scene="1">
     <div class="scene-pin">
       <div class="scene-copy">
-        <div class="scene-num">01 / TRUFLOW · DMS</div>
-        <h3>Your floor, one screen. Stock, leads, deals — all moving.</h3>
-        <p>Everything lives in one place. Your sales team stops switching tabs. You stop chasing spreadsheets. You just watch the day happen while it happens.</p>
-        <div class="scene-caption"><span>Live UI · scroll to advance</span><span class="bar"><span class="bar-fill" data-fill="1"></span></span></div>
+        <div class="scene-num">01 / TRULENS + TRUINSPECT · CAPTURE</div>
+        <h3>90-second photoshoots. Condition reports that write themselves.</h3>
+        <p>Point, shoot, done. TruLens walks your camera through every angle, auto-crops and brands each shot. TruInspect grades the bodywork and writes the report — buyers trust what they can actually see.</p>
+        <div class="scene-caption"><span>Product walkthrough · scroll to advance</span><span class="bar"><span class="bar-fill" data-fill="1"></span></span></div>
       </div>
       <div class="scene-stage">
-        <div style="perspective:1200px;display:flex;align-items:center;justify-content:center">
-          <video data-src="TruFlow%20Premium%20%E2%80%94%20Dealer%20Management%20-%20TruFlow%202026-08-16%2016-08-53.mp4" poster="assets/brand/truflow-demo-poster.jpg" autoplay muted loop playsinline preload="none" class="lazy-vid" aria-hidden="true" style="width:100%;border-radius:16px;transform:rotateY(-3deg) rotateX(2deg);box-shadow:0 20px 60px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)"></video>
+        <div style="perspective:1200px;display:flex;align-items:center;justify-content:center;width:100%;">
+          <div style="width:100%;max-width:260px;aspect-ratio:9/19;border-radius:36px;border:8px solid #141923;background:#000;box-shadow:0 25px 60px -15px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.15);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transform:rotateY(-3deg) rotateX(2deg);">
+            <video data-src="trulive-demo.mp4" poster="trulens.jpg" autoplay muted loop playsinline preload="none" class="lazy-vid" aria-label="TruLens and TruInspect product walkthrough" style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Scene 2 · TruChat -->
+  <!-- Scene 2 · TruFlow DMS -->
   <div class="scene" data-scene="2">
     <div class="scene-pin">
       <div class="scene-copy">
-        <div class="scene-num">02 / TRUCHAT · AI</div>
-        <h3>Your 2am salesperson. Never sleeps, never misses a lead.</h3>
-        <p>It knows your stock, lives on WhatsApp, and hands hot leads to a real person with the full transcript. It doesn't do generic answers — it talks about <em>your</em> cars.</p>
-        <div class="scene-caption"><span>Live conversation · scroll to advance</span><span class="bar"><span class="bar-fill" data-fill="2"></span></span></div>
+        <div class="scene-num">02 / TRUFLOW · DMS</div>
+        <h3>Your floor, one screen. Stock, leads, deals — all moving.</h3>
+        <p>Everything lives in one place. Your sales team stops switching tabs. You stop chasing spreadsheets. You just watch the day happen while it happens.</p>
+        <div style="margin-top:16px;">
+          <a href="#stack" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--cyan);text-decoration:none;padding:6px 14px;border-radius:100px;background:var(--cyan-soft);border:1px solid var(--border-glow);transition:all .2s;">
+            <span>Find out more about our other apps →</span>
+          </a>
+        </div>
+        <div class="scene-caption" style="margin-top:20px;"><span>Live UI · scroll to advance</span><span class="bar"><span class="bar-fill" data-fill="2"></span></span></div>
       </div>
       <div class="scene-stage">
-        <div class="phone">
-          <div class="chat-head">
-            <svg class="avatar tc-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="csChr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="30%" stop-color="#CBD5E1"/><stop offset="65%" stop-color="#64748B"/><stop offset="100%" stop-color="#1E293B"/></linearGradient><linearGradient id="csCy" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E0F2FE"/><stop offset="35%" stop-color="#38BDF8"/><stop offset="70%" stop-color="#00F2FE"/><stop offset="100%" stop-color="#0369A1"/></linearGradient><filter id="csGl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs><circle cx="100" cy="100" r="96" fill="#0B0F17"/><circle cx="100" cy="100" r="82" fill="none" stroke="url(#csCy)" stroke-width="4" filter="url(#csGl)" opacity="0.6"/><circle cx="100" cy="100" r="82" fill="none" stroke="url(#csCy)" stroke-width="2" opacity="0.9"/><path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#csChr)" stroke="#1E293B" stroke-width="1"/><path d="M100 35 L145 60 L125 72 L100 58 Z" fill="#FFFFFF" opacity="0.7"/><path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#csCy)" filter="url(#csGl)" opacity="0.95"/><path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#csCy)"/><line x1="100" y1="35" x2="100" y2="160" stroke="#E0F2FE" stroke-width="2.5" opacity="0.8"/></svg>
-            <div class="name">TruChat · Your Car Guy</div>
-            <div class="st"><span class="d"></span> ONLINE · 24/7</div>
-          </div>
-          <div class="chat-body">
-            <div class="bub u" data-b="1">Hi, is the white Amarok still available?</div>
-            <div class="typing a" data-t="1"><span></span><span></span><span></span></div>
-            <div class="bub a" data-b="2">Yes — 2022 Amarok 3.0 V6, 42,000 km, one owner. R 619,000.<span class="link">→ View 360° &amp; report</span></div>
-            <div class="bub u" data-b="3">Can I get finance on R 90k deposit, 60 months?</div>
-            <div class="typing a" data-t="2"><span></span><span></span><span></span></div>
-            <div class="bub a" data-b="4">On R 619k with R 90k deposit over 60 months, estimate is R 12,480/mo. Prime + 2%. Want me to send it to F&amp;I?</div>
-            <div class="bub u" data-b="5">Yes please. Can I test drive Saturday 10am?</div>
-            <div class="typing a" data-t="3"><span></span><span></span><span></span></div>
-            <div class="bub a" data-b="6">Booked. Our team will confirm shortly.<span class="link">✓ Booked in TruFlow</span></div>
+        <div style="perspective:1200px;display:flex;align-items:center;justify-content:center;width:100%;">
+          <div style="width:100%;max-width:580px;border-radius:16px;border:1px solid rgba(255,255,255,0.15);background:#0f131c;box-shadow:0 25px 70px -20px rgba(0,0,0,0.85);overflow:hidden;position:relative;transform:rotateY(-3deg) rotateX(2deg);">
+            <video data-src="TruFlow%20Premium%20%E2%80%94%20Dealer%20Management%20-%20TruFlow%202026-08-16%2016-08-53.mp4" poster="assets/brand/truflow-demo-poster.jpg" autoplay muted loop playsinline preload="none" class="lazy-vid" aria-hidden="true" style="width:100%;height:auto;display:block;"></video>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Scene 3 · TruAfford -->
+  <!-- Scene 3 · TruShowroom Website -->
   <div class="scene" data-scene="3">
     <div class="scene-pin">
       <div class="scene-copy">
-        <div class="scene-num">03 / TRUAFFORD · MONEY</div>
-        <h3>Buyers figure out what they can afford before they even message you.</h3>
-        <p>Sits on every vehicle page. Slide the deposit, pick a term, see the monthly. When they're happy with the number, the lead drops straight into TruFlow — already qualified.</p>
-        <div class="scene-caption"><span>Live calculator · scroll to advance</span><span class="bar"><span class="bar-fill" data-fill="3"></span></span></div>
-      </div>
-      <div class="scene-stage">
-        <div class="aff-scene" id="aff-scene">
-          <div class="aff-panel">
-            <div class="aff-head">
-              <div class="aff-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3.5"/></svg></div>
-              <div><b>Check Affordability</b><span>Soft pre-qual · no credit hit</span></div>
-            </div>
-            <div class="aff-steps" id="aff-steps"><div class="aff-step-dot on"></div><div class="aff-step-dot"></div><div class="aff-step-dot"></div><div class="aff-step-dot"></div></div>
-            <div class="aff-body" id="aff-body"></div>
-            <div class="aff-foot">Powered by <b>TruDealer</b></div>
-          </div>
+        <div class="scene-num">03 / TRUSHOWROOM · WEBSITE</div>
+        <h3>High-speed dealer websites. Built to turn scrollers into signed buyers.</h3>
+        <p>Your own branded showroom synced live to TruFlow DMS. Sub-second load times, instant WhatsApp lead capture, 360° vehicle tours, and built-in finance calculators. No generic templates.</p>
+        <div style="margin-top:16px;">
+          <a href="https://true-cars.co.za" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;font-weight:600;padding:8px 18px;background:linear-gradient(135deg,#0B7C72,#065A53);border:none;border-radius:100px;color:#fff;text-decoration:none;box-shadow:0 4px 16px -4px rgba(11,124,114,.5),0 1px 0 rgba(255,255,255,.15) inset;transition:all .25s ease;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#5EEAD4;box-shadow:0 0 8px rgba(94,234,212,.9);"></span>
+            <span>View Live Production Site (True-Cars SA) ↗</span>
+          </a>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scene 4 · TruLens + TruInspect -->
-  <div class="scene" data-scene="4">
-    <div class="scene-pin">
-      <div class="scene-copy">
-        <div class="scene-num">04 / TRULENS + TRUINSPECT · CAPTURE</div>
-        <h3>90-second photoshoots. Condition reports that write themselves.</h3>
-        <p>Point, shoot, done. TruLens walks your camera through every angle, auto-crops and brands each shot. TruInspect grades the bodywork and writes the report — buyers trust what they can actually see.</p>
-        <div class="scene-caption"><span>Product walkthrough</span><span class="bar"><span class="bar-fill" data-fill="4"></span></span></div>
+        <div class="scene-caption" style="margin-top:20px;"><span>Customer live experience</span><span class="bar"><span class="bar-fill" data-fill="3"></span></span></div>
       </div>
       <div class="scene-stage">
-        <div style="perspective:1200px;display:flex;align-items:center;justify-content:center">
-          <video data-src="trulive-demo.mp4" poster="trulens.jpg" autoplay muted loop playsinline preload="none" class="lazy-vid" aria-label="TruLens and TruInspect product walkthrough" style="width:100%;max-width:min(480px,calc(100vw - 40px));border-radius:20px;transform:rotateY(-3deg) rotateX(2deg);box-shadow:0 20px 60px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)"></video>
+        <div style="perspective:1200px;display:flex;align-items:center;justify-content:center;width:100%;">
+          <div style="width:100%;max-width:260px;aspect-ratio:9/19;border-radius:36px;border:8px solid #141923;background:#000;box-shadow:0 25px 60px -15px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.15);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transform:rotateY(-3deg) rotateX(2deg);">
+            <video data-src="TruDealer-Screen-8.mp4" poster="trushowroom-buyer-poster.jpg" autoplay muted loop playsinline preload="none" class="lazy-vid" aria-label="Customer scrolling a live dealer listing" style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+          </div>
         </div>
       </div>
     </div>
@@ -1688,9 +1908,9 @@
         <p>Try live sandbox environments loaded with active stock, automated damage reports, and working WhatsApp AI.</p>
       </div>
       <div class="roi-cta-actions">
-        <button type="button" class="btn btn-primary roi-cta-primary open-sandbox-btn" data-open-sandbox>
+        <button type="button" class="btn btn-primary roi-cta-primary open-sandbox-btn" data-open-sandbox data-open-demo>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Unlock Your ROI — Try Live Sandbox
+          Unlock Your ROI — Try Live Demo
         </button>
         <a href="#book" class="btn btn-ghost roi-cta-secondary">
           Book a 25-Min Walkthrough →
@@ -1747,29 +1967,55 @@
   </div>
 </section>
 
-<section class="final" id="book">
-  <h2>Watch it run on a real dealership. Then decide.</h2>
-  <p>25 minutes, the same stack that runs Tru-Cars — but with your currency, your integrations, and your actual stock plugged in.</p>
-  <a class="btn btn-primary" href="https://cal.com/pgdebeer" target="_blank" rel="noopener">Book a walkthrough →</a>
-  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px;">
-    <a class="btn btn-ghost" href="/brochure.html" target="_blank" rel="noopener">View brochure</a>
-    <a class="btn btn-ghost" href="/trudealer-brochure.pdf" download="TruDealer-Brochure-2026.pdf">Download PDF</a>
-  </div>
+<section class="section book-final" id="book" style="padding:80px 32px 60px;max-width:1180px;margin:0 auto;">
+  <div style="position:relative;background:radial-gradient(ellipse at 50% 0%, rgba(0,242,254,0.12), transparent 70%), var(--glass);border:1px solid var(--border-glow);border-radius:24px;padding:60px 40px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,0.4);overflow:hidden;" class="reveal">
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:100px;background:var(--cyan-soft);border:1px solid var(--border-glow);color:var(--cyan);font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:20px;">
+      <span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);"></span> Live 1-on-1 Walkthrough or 24h Test
+    </div>
+    <h2 style="font-size:clamp(30px,4vw,44px);font-weight:700;letter-spacing:-0.03em;color:var(--white);margin:0 auto 16px;max-width:760px;line-height:1.15;">
+      Ready to see what TruDealer looks like <span class="accent">on your floor?</span>
+    </h2>
+    <p style="font-size:16px;line-height:1.6;color:var(--muted);max-width:620px;margin:0 auto 36px;">
+      Schedule a 25-minute live screen share with the founder with your cars and branding loaded, or request 24-hour test access. Zero sales fluff.
+    </p>
 
-  <!-- Guarded call-to-receptionist: two-step confirm before dialling (prevents accidental / bot dials) -->
-  <div class="call-guard" id="callGuard" data-tel="+44 7476 995694" data-arm-seconds="4">
-    <button type="button" class="btn btn-ghost call-btn" aria-live="polite">
-      <span class="call-ic" aria-hidden="true"></span>
-      <span class="call-label">Call our after-hours sales agent — tap to reveal</span>
-    </button>
-    <p class="call-note">Live TruChat Voice demo · our AI agent that answers after hours. Standard call rates apply.</p>
-  </div>
-</section>
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:36px;">
+      <a href="https://cal.com/pgdebeer" target="_blank" rel="noopener" class="suite-primary-btn" style="max-width:320px;margin:0;padding:16px 28px;font-size:14px;">
+        <span>Schedule 25-Min Walkthrough →</span>
+      </a>
+      <a href="demo.html" class="suite-action-card" style="max-width:300px;margin:0;padding:14px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);text-decoration:none;">
+        <div class="suite-action-left">
+          <div class="suite-action-icon" style="background:var(--cyan);color:#000;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <div class="suite-action-text" style="text-align:left;">
+            <span class="suite-action-title" style="color:var(--white);font-size:13px;">Test All Live Widgets ↗</span>
+            <span class="suite-action-sub" style="font-size:11px;">Affordability, TruValue &amp; Chat</span>
+          </div>
+        </div>
+      </a>
+      <a href="https://wa.me/447476995694?text=Hi%20Paul%2C%20I%27d%20like%20to%20test%20TruDealer%20for%20my%20dealership" target="_blank" rel="noopener" class="suite-action-card" style="max-width:280px;margin:0;padding:14px 20px;border-radius:12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.25);text-decoration:none;">
+        <div class="suite-action-left">
+          <div class="suite-action-icon" style="color:#22C55E;background:rgba(34,197,94,0.15);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.05-1.08l-.29-.17-3.01.79.8-2.93-.19-.3a8.21 8.21 0 0 1-1.26-4.37c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.59c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.07-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.76-1.85-.2-.48-.4-.42-.56-.42h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
+          </div>
+          <div class="suite-action-text" style="text-align:left;">
+            <span class="suite-action-title" style="color:var(--white);font-size:13px;">WhatsApp Founder</span>
+            <span class="suite-action-sub" style="font-size:11px;">Fast responses · Direct line</span>
+          </div>
+        </div>
+      </a>
+    </div>
 
-<section style="position:relative;z-index:2;padding:0 32px 60px;max-width:1340px;margin:0 auto;">
-  <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:18px 28px;border-radius:100px;border:1px solid rgba(212,148,42,.2);background:rgba(212,148,42,.05);">
-    <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#D4942A;padding:4px 10px;border-radius:100px;border:1px solid rgba(212,148,42,.3);">Coming soon</span>
-    <span style="font-size:14px;color:var(--muted);">Same stack, new game — <b style="color:var(--white);font-weight:600;">TruProperty</b> takes everything we built for dealers and points it at real estate.</span>
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;padding-top:20px;border-top:1px solid var(--border-glow);font-size:12px;color:var(--muted);font-family:var(--mono);">
+      <a href="/brochure.html" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;display:inline-flex;align-items:center;gap:5px;">View Interactive Brochure ↗</a>
+      <span style="opacity:0.3;">·</span>
+      <a href="/trudealer-brochure.pdf" download="TruDealer-Brochure-2026.pdf" style="color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px;">Download PDF (2026 Spec) ↓</a>
+      <span style="opacity:0.3;">·</span>
+      <span>10 Working Days to Go Live</span>
+      <span style="opacity:0.3;">·</span>
+      <span>14-Day Risk-Free Trial</span>
+    </div>
   </div>
 </section>
 
@@ -1792,34 +2038,33 @@
     <div>
       <h5>Markets &amp; Compare</h5>
       <ul>
-        <li><a href="uk.html">United Kingdom 🇬🇧</a></li>
-        <li><a href="packages.html">South Africa 🇿🇦</a></li>
+        <li><a href="uk.html">United Kingdom</a></li>
+        <li><a href="packages.html">South Africa</a></li>
         <li><a href="trudealer-vs-vmg.html">TruDealer vs VMG</a></li>
         <li><a href="trudealer-vs-autoxloo.html">TruDealer vs AutoXloo</a></li>
         <li><a href="trudealer-vs-dms.html">TruDealer vs DMS</a></li>
       </ul>
     </div>
     <div>
-      <h5>Resources</h5>
+      <h5>Field Guides &amp; Docs</h5>
       <ul>
-        <li><a href="faq.html">Master FAQ</a></li>
-        <li><a href="/guides/">All Field Guides</a></li>
+        <li><a href="/guides/index.html">All Field Guides (Modules)</a></li>
         <li><a href="/guides/trudealer-moto-field-guide.html">Moto Field Guide</a></li>
+        <li><a href="/guides/truflow-mobile-field-guide.html">TruFlow Mobile Guide</a></li>
+        <li><a href="/guides/truinspect-field-guide.html">TruInspect VIR Guide</a></li>
+        <li><a href="faq.html">Master FAQ</a></li>
         <li><a href="/llms.txt">AI Documentation</a></li>
-        <li><a href="/packages.html">Pricing Packages</a></li>
       </ul>
     </div>
     <div>
-      <h5>Talk &amp; Live Proof</h5>
+      <h5>Live Demos &amp; Proof</h5>
       <ul>
-        <li><a href="https://true-cars.co.za" target="_blank" rel="noopener">Live Showroom Demo</a></li>
-        <li><a href="https://premium.tru-saas.com?demo=1" target="_blank" rel="noopener">TruFlow Sandbox ↗</a></li>
-        <li><a href="https://wa.me/447476995694">UK WhatsApp Support</a></li>
-        <li><a href="https://wa.me/27620502091">SA WhatsApp Support</a></li>
-      </ul>
-      <ul>
-        <li><a href="https://wa.me/447476995694">WhatsApp</a></li>
-        <li><a href="mailto:trudealer@tru-saas.com">trudealer@tru-saas.com</a></li>
+        <li><a href="demo.html" style="color:var(--cyan);font-weight:600;">See Demo All Our Modules ↗</a></li>
+        <li><a href="https://true-cars.co.za" target="_blank" rel="noopener">Live Showroom (True-Cars)</a></li>
+        <li><a href="https://premium.tru-saas.com?demo=1" target="_blank" rel="noopener">TruFlow DMS Sandbox ↗</a></li>
+        <li><a href="#roi">ROI Calculator</a></li>
+        <li><a href="packages.html">Pricing Packages</a></li>
+        <li><a href="https://wa.me/447476995694" target="_blank" rel="noopener">WhatsApp Support</a></li>
       </ul>
       <div class="footer-social" aria-label="Follow TruDealer">
         <a href="https://share.google/qlbZdhiyLlRdqXERc" target="_blank" rel="noopener" aria-label="TruDealer on Google">
@@ -1882,6 +2127,22 @@
   <span class="ic"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3M8 13.5h3M8 17h6"/></svg></span>
   <span>Walk Through</span>
 </a>
+
+<div class="wa-fab" id="waFab">
+  <div class="wa-fab-menu" role="menu" aria-hidden="true">
+    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom">
+      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">UK</span>
+      <span class="label"><b>United Kingdom</b><span>WhatsApp Support</span></span>
+    </a>
+    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp South Africa">
+      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">ZA</span>
+      <span class="label"><b>South Africa</b><span>WhatsApp Support</span></span>
+    </a>
+  </div>
+  <button type="button" class="wa-fab-trigger" id="waFabToggle" aria-expanded="false" aria-controls="waFab" aria-label="Contact us — choose option">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
+  </button>
+</div>
 
 <script>
 (function(){
@@ -2079,14 +2340,14 @@
   const localBrain = {
     pricing: 'TruDealer packages start at R 1,599/mo for TruStart (single lot, unlimited listings, capture studio, inspections, mobile stock app, 24/7 AI chat, branded website) and R 3,599/mo for TruPro (full cloud DMS, F&I calculators, live market price scraper, deal jackets, OTPs, SARS tax invoicing). <a href="packages.html" style="color:var(--cyan);text-decoration:underline;">View full packages breakdown →</a>',
     golive: "Ten working days from scope call to live on your domain. Day 1 we scope, days 2–7 we build or reskin to your brand, day 10 you're live with your stock loaded. If we miss the deadline we don't invoice.",
-    start: "Depends on your bottleneck. Lot of stale stock? TruLens 28-shot guided studio. Losing leads after hours? TruChat 24/7 AI. Buyers ghosting on finance? TruShowroom finance sliders. <a href='https://wa.me/27620502091?text=Hi%20Paul%2C%20which%20TruDealer%20module%20is%20best%20for%20my%20dealership%3F' target='_blank' style='color:var(--cyan);text-decoration:underline;'>WhatsApp TruDealer Support</a> to discuss your floor.",
+    start: "Depends on your bottleneck. Lot of stale stock? TruLens 28-shot guided studio. Losing leads after hours? TruChat 24/7 AI. Buyers ghosting on finance? TruShowroom finance sliders. <a href='https://wa.me/447476995694?text=Hi%20Paul%2C%20which%20TruDealer%20module%20is%20best%20for%20my%20dealership%3F' target='_blank' style='color:var(--cyan);text-decoration:underline;'>WhatsApp TruDealer Support</a> to discuss your floor.",
     showroom: "Every TruShowroom is custom-designed from the ground up with 100 Web Vitals speed (see live proof at <a href='https://true-cars.co.za' target='_blank' style='color:var(--cyan);text-decoration:underline;'>www.true-cars.co.za</a>). If you have an existing site, we can faithfully reskin your brand onto TruDealer with zero downtime.",
     dms: "TruFlow DMS includes full vehicle cost tracking, reconditioning expense logging, bank interest & balloon calculations, OTP deal jackets, and compliant SARS tax invoices generated in two clicks.",
     inspect: "TruInspect provides a 35-point condition checklist, interactive damage pin tagger, TransUnion verification checks, and dispute-proof PDF reports signed with digital inspector e-signatures.",
     lens: "TruLens uses on-screen ghost wireframes to guide lot staff through 28 photos across 3 phases in under 90 seconds, with automated TruOrbit 360° spin generation and free market price scraping.",
     global: "Yes — built in Cape Town, deployed anywhere. Multi-currency support, generic F&I rate structures, and EU/ZA data compliance built in.",
-    demo: "Best move — <a href='https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27d%20like%20a%20demo%20of%20TruDealer' target='_blank' style='color:var(--cyan);text-decoration:underline;'>tap here to WhatsApp our team</a> or <a href='#sandbox-strip' onclick='tcClose()' style='color:var(--cyan);text-decoration:underline;'>open the Live Sandbox above</a> to test the stack right now.",
-    default: "Great question! TruDealer gives you custom storefronts, 28-shot photo studio, digital condition reports, full DMS invoicing, and 24/7 AI chat. <a href='https://wa.me/27620502091?text=Hi%20Paul%2C%20I%20have%20a%20question%20about%20TruDealer' target='_blank' style='color:var(--cyan);text-decoration:underline;'>Chat with TruDealer on WhatsApp</a> for immediate answers."
+    demo: "Best move — <a href='https://wa.me/447476995694?text=Hi%20Paul%2C%20I%27d%20like%20a%20demo%20of%20TruDealer' target='_blank' style='color:var(--cyan);text-decoration:underline;'>tap here to WhatsApp our team</a> or <a href='#sandbox-strip' onclick='tcClose()' style='color:var(--cyan);text-decoration:underline;'>open the Live Demo above</a> to test the stack right now.",
+    default: "Great question! TruDealer gives you custom storefronts, 28-shot photo studio, digital condition reports, full DMS invoicing, and 24/7 AI chat. <a href='https://wa.me/447476995694?text=Hi%20Paul%2C%20I%20have%20a%20question%20about%20TruDealer' target='_blank' style='color:var(--cyan);text-decoration:underline;'>Chat with TruDealer on WhatsApp</a> for immediate answers."
   };
 
   function getLocalFallback(q) {
@@ -2712,10 +2973,7 @@ document.querySelectorAll('.scene video,.mc-preview video,.case-preview video').
 })();
 </script>
 <!-- TruBook — files walkthrough bookings to the true-cars DMS; intercepts legacy cal.com links -->
-<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
-<script src="tru-afford.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-mount="#afford-home" data-brand="Powered by TruDealer"></script>
-<script src="truvalue.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-mount="#value-home"></script>
-<script src="tru-repay.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-target="#repay-home" data-price="389900" data-vehicle="2023 VW Polo 1.0 TSI Life" data-heading="Estimate your repayments"></script>
+<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="447476995694" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
 
 <!-- QR CODE SCANNER MODAL FOR MOBILE APPS -->
 <div class="qr-modal" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle" aria-hidden="true">
@@ -2739,10 +2997,6 @@ document.querySelectorAll('.scene video,.mc-preview video,.case-preview video').
 
 
 
-<!-- STICKY MOBILE CONVERSION BAR -->
-<div class="mobile-sticky-bar" id="mobileStickyBar" aria-label="Mobile quick actions">
-  
-</div>
 
 
 <!-- LIVE SANDBOX MODAL -->
@@ -2804,7 +3058,7 @@ document.querySelectorAll('.scene video,.mc-preview video,.case-preview video').
 
     <div class="sandbox-foot">
       <span>Pre-configured with active demo stock and simulated leads.</span>
-      <span>Need a private walkthrough? <a href="#book" class="sandbox-book-link">Book a 15-min demo</a> or <a href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20a%20demo" target="_blank" rel="noopener">Chat on WhatsApp</a></span>
+      <span>Need a private walkthrough? <a href="#book" class="sandbox-book-link">Book a 15-min demo</a> or <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20a%20demo" target="_blank" rel="noopener">Chat on WhatsApp</a></span>
     </div>
   </div>
 </div>
@@ -2946,9 +3200,9 @@ document.querySelectorAll('.scene video,.mc-preview video,.case-preview video').
     }
   }
 
-  // Bind any button/link with data-open-sandbox or class open-sandbox-btn
+  // Bind any button/link with data-open-sandbox data-open-demo or class open-sandbox-btn
   document.addEventListener('click', function(e){
-    var trigger = e.target.closest && e.target.closest('[data-open-sandbox], .open-sandbox-btn');
+    var trigger = e.target.closest && e.target.closest('[data-open-sandbox data-open-demo], .open-sandbox-btn');
     if (trigger) {
       openSandbox(e);
     }
@@ -3309,25 +3563,51 @@ document.querySelectorAll('img[loading="lazy"]').forEach(function(img){
   else{img.addEventListener('load',function(){img.classList.add('loaded');});}
 });
 </script>
-<div class="wa-fab" id="waFab">
-  <div class="wa-fab-menu" role="menu" aria-hidden="true">
-    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp United Kingdom">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">UK</span>
-      <span class="label"><b>United Kingdom</b><span>WhatsApp Support</span></span>
-    </a>
-    <a class="wa-fab-opt" role="menuitem" href="https://wa.me/27620502091?text=Hi%20TruDealer%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener" aria-label="WhatsApp South Africa">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">ZA</span>
-      <span class="label"><b>South Africa</b><span>WhatsApp Support</span></span>
-    </a>
-    <a class="wa-fab-opt" role="menuitem" href="tel:+447476995694" aria-label="AI Receptionist Demo">
-      <span class="flag" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cyan);">AI</span>
-      <span class="label"><b>AI Receptionist</b><span>Demo Call</span></span>
-    </a>
-  </div>
-  <button type="button" class="wa-fab-trigger" id="waFabToggle" aria-expanded="false" aria-controls="waFab" aria-label="Contact us — choose option">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.52 0-10 4.48-10 10 0 1.76.46 3.47 1.32 4.97L2 22l5.14-1.34a9.98 9.98 0 0 0 4.9 1.26h.01c5.52 0 10-4.48 10-10s-4.48-9.9-10.01-9.9zm5.83 14.14c-.25.7-1.44 1.34-2 1.38-.55.04-1.05.24-3.53-.74-2.98-1.18-4.85-4.24-5-4.44-.15-.2-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.44.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.19.01.44-.07.69.52.25.6.85 2.06.92 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.32.39-.45.52-.15.15-.31.32-.13.62.18.3.8 1.31 1.71 2.12 1.17 1.04 2.16 1.36 2.46 1.51.3.15.48.13.66-.08.18-.2.76-.89.97-1.19.2-.3.4-.25.68-.15.28.1 1.75.82 2.05.97.3.15.5.22.57.35.07.13.07.75-.18 1.45z"/></svg>
+<!-- STICKY MOBILE BOTTOM BAR -->
+<div class="mobile-bottom-bar" id="mobileBottomBar">
+  <a href="https://cal.com/pgdebeer" class="bar-btn book" id="bookBarBtn" aria-label="Book Walkthrough" target="_blank" rel="noopener">
+    <div class="bar-btn-inner">
+      <span class="bar-shine"></span>
+      <div class="bar-icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
+        <span class="bar-sparkle">✦</span>
+      </div>
+      <span class="bar-text">Book</span>
+    </div>
+  </a>
+  <button type="button" class="bar-btn chat" id="chatBarBtn" aria-label="TruChat AI" onclick="if(window.tcOpen)tcOpen();">
+    <div class="bar-btn-inner">
+      <span class="bar-shine"></span>
+      <div class="bar-icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="9.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="15" y1="10" x2="15.01" y2="10"/></svg>
+        <span class="bar-sparkle">✦</span>
+        <span class="bar-pulse-dot"></span>
+      </div>
+      <span class="bar-text">AI Chat</span>
+    </div>
   </button>
+  <a href="https://wa.me/447476995694?text=Hi%20TruDealer%2C%20I%27m%20interested%20in%20a%20demo" class="bar-btn whatsapp" aria-label="WhatsApp" target="_blank" rel="noopener">
+    <div class="bar-btn-inner">
+      <span class="bar-shine"></span>
+      <div class="bar-icon-box">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.05-1.08l-.29-.17-3.01.79.8-2.93-.19-.3a8.21 8.21 0 0 1-1.26-4.37c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.59c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.07-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.76-1.85-.2-.48-.4-.42-.56-.42h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
+        <span class="bar-sparkle">✦</span>
+      </div>
+      <span class="bar-text">WhatsApp</span>
+    </div>
+  </a>
+  <a href="tel:+447476995694" class="bar-btn call" aria-label="AI Phone" title="Click to call 24/7 AI Receptionist">
+    <div class="bar-btn-inner">
+      <span class="bar-shine"></span>
+      <div class="bar-icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span class="bar-sparkle">✦</span>
+      </div>
+      <span class="bar-text">AI Phone</span>
+    </div>
+  </a>
 </div>
+
 <script src="site.js" defer></script>
 </body>
 </html>

@@ -70,7 +70,7 @@ export const CONFIG = {
   SCRAPER_YEAR_TOLERANCE: Math.max(0, Number(process.env.SCRAPER_YEAR_TOLERANCE) || 2),
   DATA_DIR: process.env.DATA_DIR || './data',
 
-  // Auto-scan schedule
-  AUTO_SCAN_ENABLED: process.env.AUTO_SCAN_ENABLED !== '0',
+  // Auto-scan schedule (default OFF — only runs when explicitly triggered or AUTO_SCAN_ENABLED=1)
+  AUTO_SCAN_ENABLED: /^(1|true|yes)$/i.test(process.env.AUTO_SCAN_ENABLED || ''),
   SCAN_INTERVAL_MS: Number(process.env.SCAN_INTERVAL_MS) || 4 * 60 * 60 * 1000, // 4 hours
 };

@@ -797,6 +797,8 @@ var init_crawler = __esm({
 });
 
 // webapp/server.ts
+var fs4 = __toESM(require("fs"));
+var path5 = __toESM(require("path"));
 var import_express = __toESM(require("express"));
 
 // engine.ts
@@ -891,7 +893,7 @@ function median(nums) {
 function escapeRegex(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-var MODEL_NOISE_RE = /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc|kw|hp|bhp)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|gd-6|d-4d|cdti|crdi|hdi|dci|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4x2|4wd|2wd|automatic|auto|manual|fwd|awd|rwd|p\/u|s\/c|d\/c|cab|bakkie|double cab|single cab|super cab|style|storage|extras|bluemotion|quattro|xdrive|sdrive|4matic|mhev|phev|ev|hybrid)\b)/gi;
+var MODEL_NOISE_RE = /(?:\b(?:touring|tourer|flagship|executive|luxury|limited|edition|baseline|elegance|comfort|urban|ambition|advance|style|storage|extras|bluemotion|facelift|fl|lci|plus|pack|line|se)\b)/gi;
 function modelCore(text) {
   const s = String(text || "").trim().toLowerCase();
   if (!s || s === "any" || s === "-") return "";
@@ -916,7 +918,7 @@ function makeVariants(make) {
   const m = String(make).toLowerCase().trim();
   return [m, ...MAKE_ALIASES[m] || []];
 }
-var YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
+var YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 1;
 function titleMentionsVehicle(title, make, model, year, match, opts) {
   const t = String(title || "");
   const y = parseInt(String(year), 10);
@@ -928,6 +930,25 @@ function titleMentionsVehicle(title, make, model, year, match, opts) {
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), "i").test(t));
   const q = modelCore(model);
   const modelOk = !q || modelCore(t).includes(q);
+  const searchDisp = (match || opts?.variant || model || "").match(/\b(\d\.\d)\b/)?.[1];
+  if (searchDisp) {
+    const titleDisp = t.match(/\b(\d\.\d)\b/)?.[1];
+    if (titleDisp && titleDisp !== searchDisp) return false;
+  }
+  const isPerfSearch = /\b(gti|gtd|rs\b|amg\b|type[- ]?r|golf[- ]?r\b)\b/i.test(`${model} ${opts?.variant || ""} ${match || ""}`);
+  if (!isPerfSearch) {
+    const isPerfTitle = /\b(gti|gtd|rs\b|amg\b|type[- ]?r|golf[- ]?r\b)\b/i.test(t);
+    if (isPerfTitle) return false;
+  }
+  if (opts?.variant) {
+    const vWords = String(opts.variant).toLowerCase().split(/[\s\-_/]+/).filter((w) => w.length >= 2);
+    const keyTokens = vWords.filter((w) => /^(?:\d\.\d|gti|gtd|tdi|tsi|tfsi|amg|4x4|4wd|gd-6|d-4d|v6|v8)$/i.test(w));
+    if (keyTokens.length > 0) {
+      const lowerTitle = t.toLowerCase();
+      const hasKeyToken = keyTokens.some((tok) => lowerTitle.includes(tok));
+      if (!hasKeyToken) return false;
+    }
+  }
   const matchOk = !match || new RegExp(escapeRegex(String(match)), "i").test(t);
   return makeOk && modelOk && matchOk;
 }
@@ -1011,9 +1032,17 @@ function parseSerpResults(json, make, model, year, cfg) {
   const consider = (title, snippet, structuredPrice) => {
     const text = `${String(title || "")} ${String(snippet || "")}`.trim();
     if (!text) return;
-    if (!yearTolerant(cfg, text, make, model, year)) return;
+    if (!titleMentionsVehicle(text, make, model, year)) return;
     let price = typeof structuredPrice === "number" ? jsonPrice(structuredPrice, cfg) : null;
-    if (price == null) price = priceFromText(text, cfg);
+    if (price == null) {
+      const allPrices = extractPricesFromText(text, cfg);
+      if (allPrices.length === 1) {
+        price = allPrices[0];
+      } else if (allPrices.length > 1) {
+        const sorted = [...allPrices].sort((a, b) => a - b);
+        price = sorted[Math.floor(sorted.length / 2)];
+      }
+    }
     if (price != null) out.push({ price });
   };
   const organic = json.organic_results || json.organic || [];
@@ -1098,18 +1127,6 @@ function extractPricesFromText(text, cfg) {
   }
   return prices;
 }
-function extractPrices(html, selectors, cfg) {
-  const $ = cheerio.load(html);
-  const prices = [];
-  for (const sel of selectors) {
-    $(sel.trim()).each((_, el) => {
-      const val = priceFromText($(el).text(), cfg);
-      if (val !== null) prices.push(val);
-    });
-  }
-  if (prices.length === 0) return extractPricesFromText($.text(), cfg);
-  return prices;
-}
 function extractJsonLd(html, cfg) {
   const $ = cheerio.load(html);
   const out = [];
@@ -1160,7 +1177,35 @@ function yearTolerant(cfg, title, make, model, year, match, opts) {
   const fn = cfg.titleMatch || titleMentionsVehicle;
   return fn(title, make, model, year, match, opts);
 }
-function extractNextDataListings(html, make, model, year, cfg) {
+function extractCardListings(html, make, model, year, cfg, opts) {
+  const $ = cheerio.load(html);
+  const out = [];
+  const seen = /* @__PURE__ */ new Set();
+  const selectCards = () => {
+    const anchors = $('a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"], a[class*="VehicleCard"]');
+    if (anchors.length) return anchors;
+    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="listing-card"]');
+  };
+  const cards = selectCards();
+  cards.each((_, el) => {
+    const $c = $(el);
+    const cardText = $c.text().replace(/\s+/g, " ").trim();
+    if (cardText.length < 8) return;
+    if (!yearTolerant(cfg, cardText, make, model, year, void 0, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) return;
+    const priceEl = $c.find('[class^="e-price__"], [class*="price"]').first();
+    const price = priceEl.length ? num(priceEl.text()) : priceFromText(cardText, cfg);
+    if (price == null || price < cfg.minPrice || price > cfg.maxPrice) return;
+    const odoMatch = cardText.match(/(\d{1,3}(?:[ ,]\d{3})*)\s?(km|mi(?:les)?\b)/i);
+    let km = odoMatch ? num(odoMatch[1]) ?? void 0 : void 0;
+    if (km != null && odoMatch && /^mi/i.test(odoMatch[2])) km = Math.round(km * 1.60934);
+    const key = `${Math.round(price)}|${km ?? ""}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0 });
+  });
+  return out;
+}
+function extractNextDataListings(html, make, model, year, cfg, opts) {
   const $ = cheerio.load(html);
   const raw = $("#__NEXT_DATA__").contents().text() || $("#__NEXT_DATA__").text();
   if (!raw) return [];
@@ -1192,8 +1237,9 @@ function extractNextDataListings(html, make, model, year, cfg) {
     const price = typeof n.price === "number" ? n.price : null;
     if (price != null && price >= cfg.minPrice && price <= cfg.maxPrice && (n.make || n.model || n.title)) {
       const yr = n.year ?? n.modelYear ?? n.vehicleYear;
-      const title = String(n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`);
-      if (yearTolerant(cfg, title, make, model, year)) {
+      const variantText = [n.variant, n.variantName, n.derivative, n.trim, n.subTitle, n.subtitle, n.badge, n.engine, n.summary].filter(Boolean).join(" ");
+      const title = `${n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`} ${variantText}`.trim();
+      if (yearTolerant(cfg, title, make, model, year, void 0, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) {
         const key = `${n.reference ?? n.id ?? ""}|${price}`;
         if (!seen.has(key)) {
           seen.add(key);
@@ -1387,6 +1433,7 @@ var sa = {
   id: "za",
   currency: "R",
   country: "za",
+  distanceUnit: "km",
   googleDomain: "google.co.za",
   googleGl: "gl=za&hl=en",
   googleQuerySuffix: "South Africa",
@@ -1396,7 +1443,7 @@ var sa = {
   classifieds: [
     {
       name: "AutoTrader",
-      url: (make, model, year) => `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(urlMake(make))}&model=${encodeURIComponent(model)}&year=${year}`,
+      url: (make, model, year) => `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(urlMake(make))}&model=${encodeURIComponent(model)}&minYear=${year}&maxYear=${year}`,
       fetchConfig: {},
       selectors: (process.env.SCRAPER_AUTOTRADER_SELECTORS || AUTO_SELECTORS).split(",")
     },
@@ -1407,7 +1454,7 @@ var sa = {
       selectors: (process.env.SCRAPER_CARSCOZA_SELECTORS || CARSSELECTORS).split(",")
     }
   ],
-  searchUrl: (make, model, year) => `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(urlMake(make))}&model=${encodeURIComponent(model)}&year=${year}`,
+  searchUrl: (make, model, year) => `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(urlMake(make))}&model=${encodeURIComponent(model)}&minYear=${year}&maxYear=${year}`,
   secondaryUrl: (make, model, year) => `https://www.cars.co.za/usedcars/${encodeURIComponent(urlMake(make))}/${encodeURIComponent(model)}/?Year=${year}`,
   secondarySourceName: "Cars.co.za"
 };
@@ -1537,23 +1584,27 @@ function pageUrl(src, make, model, year, page) {
   const sep = base.includes("?") ? "&" : "?";
   return `${base}${sep}${param}=${page}`;
 }
-function classifiedParser(cfg, make, model, year) {
+function classifiedParser(cfg, make, model, year, variant) {
   return (html, selectors) => {
-    const nd = extractNextDataListings(html, make, model, year, cfg);
+    const opts = variant ? { variant } : void 0;
+    const nd = extractNextDataListings(html, make, model, year, cfg, opts);
     if (nd.length) return nd;
-    return htmlToAnyListings(html, selectors, cfg);
+    const cards = extractCardListings(html, make, model, year, cfg, opts);
+    if (cards.length) return cards;
+    const jl = extractJsonLd(html, cfg).filter((l) => {
+      return true;
+    });
+    if (jl.length) return jl;
+    return [];
   };
-}
-function htmlToAnyListings(html, selectors, cfg) {
-  const jl = extractJsonLd(html, cfg);
-  if (jl.length) return jl;
-  return extractPrices(html, selectors, cfg).map((price) => ({ price }));
 }
 async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MARKET) {
   const cfg = market;
   const baseModel = modelCore(model);
+  const variant = opts.variant || "";
   const targetKm = Number(opts.mileage);
-  const key = cacheKey(cfg.id, make, baseModel, year, opts.vin, opts.dealerSlug, targetKm);
+  const cacheModel = variant ? `${model} ${variant}` : model;
+  const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, targetKm);
   const cached = cacheGet(key);
   if (cached) return cached;
   const y = String(year);
@@ -1621,7 +1672,7 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     return data2;
   }
   const sources = buildSourcesFor(cfg);
-  const parse = classifiedParser(cfg, make, baseModel, y);
+  const parse = classifiedParser(cfg, make, baseModel, y, variant);
   const perSource = await Promise.all(
     sources.map(async (src) => {
       const acc = [];
@@ -1656,8 +1707,9 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     sourcesOutput.push({ name, count: prices.length, avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null });
   }
   let serpListings = [];
+  const serpModel = variant ? `${baseModel} ${variant}` : baseModel;
   if (dealerListings.length + classifiedListings.length < SERP_TRIGGER_MAX2 && serpConfigured()) {
-    serpListings = await fetchSerpListings(make, baseModel, y, cfg);
+    serpListings = await fetchSerpListings(make, serpModel, y, cfg);
     if (serpListings.length) {
       sourcesOutput.push({ name: "Google (SERP)", count: serpListings.length, avg: Math.round(serpListings.reduce((s, l) => s + l.price, 0) / serpListings.length) });
     }
@@ -1733,7 +1785,247 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
   return data;
 }
 
+// ../tru-arbitrage/src/engine/catalogue.ts
+var fs3 = __toESM(require("fs"));
+var path4 = __toESM(require("path"));
+
+// ../tru-arbitrage/src/engine/tu-matcher.ts
+var fs2 = __toESM(require("fs"));
+var path3 = __toESM(require("path"));
+var catalogue = null;
+function resolveCataloguePath() {
+  const candidates = [
+    path3.join(__dirname, "..", "data", "tu-variants.json"),
+    path3.join(__dirname, "..", "..", "data", "tu-variants.json"),
+    path3.join(process.cwd(), "data", "tu-variants.json")
+  ];
+  for (const c of candidates) {
+    if (fs2.existsSync(c)) return c;
+  }
+  return null;
+}
+function loadCatalogue() {
+  if (catalogue) return catalogue;
+  const dataPath = resolveCataloguePath();
+  if (!dataPath) {
+    console.warn("[tu-matcher] tu-variants.json not found in any known location \u2014 TU matching disabled");
+    catalogue = {};
+    return catalogue;
+  }
+  try {
+    catalogue = JSON.parse(fs2.readFileSync(dataPath, "utf-8"));
+    const totalVariants = Object.values(catalogue).reduce((sum, arr) => sum + arr.length, 0);
+    console.log(`[tu-matcher] Loaded ${totalVariants} variants across ${Object.keys(catalogue).length} makes (${dataPath})`);
+  } catch (err) {
+    console.error("[tu-matcher] Failed to load tu-variants.json:", err?.message);
+    catalogue = {};
+  }
+  return catalogue;
+}
+
+// ../tru-arbitrage/src/engine/catalogue.ts
+var SPECIALTY_MODEL_CATEGORY = {
+  BICYCLE: "specialty",
+  "BOAT/JETSKI": "marine",
+  CARAVAN: "caravans",
+  GENERATOR: "specialty",
+  "GOLF CART": "specialty",
+  TRAILER: "caravans",
+  "YELLOW METAL": "agri"
+};
+var MOTO_BODIES = /* @__PURE__ */ new Set(["R/D", "O/F", "S/S", "3/W", "4/W", "6/W", "ATV"]);
+var MOTO_AXLES = /* @__PURE__ */ new Set(["1X1", "2X1"]);
+var AGRI_MAKES = /* @__PURE__ */ new Set([
+  "JOHN DEERE",
+  "KUBOTA",
+  "CATERPILLAR",
+  "MASSEY FERGUSON",
+  "NEW HOLLAND",
+  "AGCO ALLIS (AGROTEC)",
+  "BELARUS",
+  "CLAAS",
+  "LANDINI",
+  "VALTRA (VALMET)",
+  "CASE INTERNATIONAL",
+  "ANGLO INTERNATIONAL"
+]);
+var TRUCK_MAKES = /* @__PURE__ */ new Set([
+  "SCANIA",
+  "IVECO",
+  "HINO",
+  "UD TRUCKS",
+  "TATA",
+  "ASHOK LEYLAND",
+  "SHACMAN",
+  "LEYLAND",
+  "MACK",
+  "INTERNATIONAL",
+  "FREIGHTLINER",
+  "PETERBILT",
+  "WESTERN STAR",
+  "FUSO",
+  "FOTON",
+  "GOLDEN DRAGON"
+]);
+var TRUCK_BODIES = /* @__PURE__ */ new Set(["C/C", "T/T", "C/M", "TIP", "B/S", "D/S", "P/V", "REF", "F/C", "M/X"]);
+var TRUCK_AXLES = /* @__PURE__ */ new Set(["3X2", "6X2", "6X4", "6X6", "8X4", "8X8"]);
+var MARINE_BODIES = /* @__PURE__ */ new Set(["B/J"]);
+var CARAVAN_BODIES = /* @__PURE__ */ new Set(["C/V", "T/F", "R/V"]);
+var SPECIALTY_BODIES = /* @__PURE__ */ new Set(["G/E", "G/C", "B/C"]);
+var AGRI_BODIES = /* @__PURE__ */ new Set(["Y/M"]);
+function classify(v) {
+  const make = String(v.mk || "").toUpperCase().trim();
+  const body = String(v.b || "").toUpperCase().trim();
+  const axle = String(v.ax || "").toUpperCase().trim();
+  if (make === "SPECIALTY") {
+    return SPECIALTY_MODEL_CATEGORY[String(v.md || "").toUpperCase()] || "specialty";
+  }
+  if (make === "MULTIPLE MOTORCYCLE MANUFACTURERS") return "moto";
+  if (MOTO_BODIES.has(body) || MOTO_AXLES.has(axle)) return "moto";
+  if (AGRI_MAKES.has(make)) return "agri";
+  if (TRUCK_MAKES.has(make) || TRUCK_BODIES.has(body) || TRUCK_AXLES.has(axle)) return "trucks";
+  if (MARINE_BODIES.has(body)) return "marine";
+  if (CARAVAN_BODIES.has(body)) return "caravans";
+  if (SPECIALTY_BODIES.has(body)) return "specialty";
+  if (AGRI_BODIES.has(body)) return "agri";
+  return "cars";
+}
+var index = null;
+function resolveYearsPath() {
+  const candidates = [
+    path4.join(__dirname, "..", "data", "tu-years.json"),
+    path4.join(__dirname, "..", "..", "data", "tu-years.json"),
+    path4.join(process.cwd(), "data", "tu-years.json")
+  ];
+  for (const c of candidates) {
+    if (fs3.existsSync(c)) return c;
+  }
+  return null;
+}
+function loadYearsOverlay() {
+  const out = /* @__PURE__ */ new Map();
+  const p = resolveYearsPath();
+  if (!p) return out;
+  try {
+    const raw = JSON.parse(fs3.readFileSync(p, "utf-8"));
+    for (const [mmCode, years] of Object.entries(raw)) {
+      if (Array.isArray(years) && years.length) out.set(mmCode, years.map(Number).filter(Boolean));
+    }
+  } catch (err) {
+    console.warn("[catalogue] Failed to load tu-years.json overlay:", err?.message);
+  }
+  return out;
+}
+function buildIndex() {
+  if (index) return;
+  const cat = loadCatalogue();
+  const yearsOverlay = loadYearsOverlay();
+  const map = /* @__PURE__ */ new Map();
+  for (const [make, variants] of Object.entries(cat)) {
+    const mkEntry = { models: /* @__PURE__ */ new Map() };
+    map.set(make, mkEntry);
+    for (const v of variants) {
+      const category = classify(v);
+      const modelKey = String(v.md || "").trim() || String(v.v || "").trim();
+      if (!modelKey) continue;
+      let list = mkEntry.models.get(modelKey);
+      if (!list) {
+        list = [];
+        mkEntry.models.set(modelKey, list);
+      }
+      list.push({
+        mmCode: v.c,
+        make,
+        model: modelKey,
+        variant: v.v,
+        cc: v.cc,
+        kw: v.kw,
+        fuel: v.f,
+        body: v.b,
+        axle: v.ax,
+        newListPrice: v.nl,
+        latestYear: v.y,
+        years: yearsOverlay.get(v.c) || derivedYears(v.y),
+        category
+      });
+    }
+  }
+  index = map;
+  if (yearsOverlay.size) {
+    const total = [...map.values()].reduce((acc, m) => acc + [...m.models.values()].reduce((a, xs) => a + xs.length, 0), 0);
+    console.log(`[catalogue] Indexed ${total} variants across ${map.size} makes (${yearsOverlay.size} mmCodes have real year ranges)`);
+  } else {
+    console.warn("[catalogue] tu-years.json overlay not found \u2014 variant years are derived windows. Run `npm run catalogue:refresh` for real intro/discon ranges.");
+  }
+}
+function derivedYears(latestYear) {
+  const y = Number(latestYear) || (/* @__PURE__ */ new Date()).getFullYear();
+  return y >= 1996 ? [y - 1, y] : [y];
+}
+function ensureIndex() {
+  buildIndex();
+  return index;
+}
+function listMakes(category) {
+  const idx = ensureIndex();
+  const out = [];
+  for (const [make, mkEntry] of idx) {
+    if (!category) {
+      out.push(make);
+      continue;
+    }
+    for (const variants of mkEntry.models.values()) {
+      if (variants.some((v) => v.category === category)) {
+        out.push(make);
+        break;
+      }
+    }
+  }
+  return out.sort((a, b) => a.localeCompare(b));
+}
+function listModels(category, make) {
+  const idx = ensureIndex();
+  const mkEntry = idx.get(String(make || "").toUpperCase());
+  if (!mkEntry) return [];
+  const out = [];
+  for (const [model, variants] of mkEntry.models) {
+    if (!category || variants.some((v) => v.category === category)) out.push(model);
+  }
+  return out.sort((a, b) => a.localeCompare(b));
+}
+function listVariants(category, make, model) {
+  const idx = ensureIndex();
+  const mkEntry = idx.get(String(make || "").toUpperCase());
+  if (!mkEntry) return [];
+  const variants = mkEntry.models.get(String(model || ""));
+  if (!variants) return [];
+  const filtered = category ? variants.filter((v) => v.category === category) : variants;
+  return filtered.map((v) => ({ ...v, years: [...v.years].sort((a, b) => b - a) })).sort((a, b) => a.variant.localeCompare(b.variant));
+}
+
 // webapp/server.ts
+for (const envPath of [
+  path5.join(__dirname, "..", ".env"),
+  path5.join(__dirname, ".env"),
+  path5.join(process.cwd(), ".env")
+]) {
+  if (fs4.existsSync(envPath)) {
+    try {
+      const lines = fs4.readFileSync(envPath, "utf-8").split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+        const [k, ...v] = trimmed.split("=");
+        const key = k.trim();
+        const val = v.join("=").trim().replace(/^["']|["']$/g, "");
+        if (key && !process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    } catch {
+    }
+  }
+}
 var PORT = Number(process.env.PORT || 4300);
 var API_KEY = process.env.API_KEY || "";
 var LABELS = {
@@ -1784,18 +2076,45 @@ function throttled(ip) {
 app.get("/api/markets", (_req, res) => {
   res.json(Object.keys(filteredMarkets).map((id) => ({ id, label: LABELS[id] || id })));
 });
-app.post("/api/valuation", async (req, res) => {
+app.get("/api/catalogue/makes", (req, res) => {
+  try {
+    res.json({ makes: listMakes("cars") });
+  } catch {
+    res.json({ makes: ["Toyota", "Volkswagen", "Ford", "BMW", "Mercedes-Benz", "Hyundai", "Nissan", "Audi", "Kia", "Isuzu", "Mazda", "Renault", "Suzuki", "Havill", "Chery"] });
+  }
+});
+app.get("/api/catalogue/models", (req, res) => {
+  try {
+    const make = String(req.query.make || "").trim();
+    if (!make) return res.status(400).json({ error: "make is required" });
+    res.json({ models: listModels("cars", make) });
+  } catch {
+    res.json({ models: [] });
+  }
+});
+app.get("/api/catalogue/variants", (req, res) => {
+  try {
+    const make = String(req.query.make || "").trim();
+    const model = String(req.query.model || "").trim();
+    if (!make || !model) return res.status(400).json({ error: "make and model are required" });
+    res.json({ variants: listVariants("cars", make, model) });
+  } catch {
+    res.json({ variants: [] });
+  }
+});
+app.post(["/api/valuation", "/valuation", "/scraper/valuation", "/api/scraper/valuation"], async (req, res) => {
   const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
   if (throttled(ip)) return res.status(429).json({ error: "Too many requests \u2014 slow down." });
   try {
-    const { make, model, year, mileage, market, location } = req.body || {};
+    const { make, model, variant, year, mileage, market, location } = req.body || {};
     if (!make || !model || !year) {
       return res.status(400).json({ error: "make, model, and year are required" });
     }
     const cfg = filteredMarkets[market || "za"] || markets.za;
     const m = cfg.id === "housingZa" ? location || make : make;
     const data = await fetchValuation(String(m), String(model), String(year), {
-      mileage: Number(mileage) || void 0
+      mileage: Number(mileage) || void 0,
+      variant: variant ? String(variant) : void 0
     }, cfg);
     res.json(data);
   } catch (err) {

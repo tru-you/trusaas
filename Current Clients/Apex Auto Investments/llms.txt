@@ -1,0 +1,31 @@
+# Apex Auto Investments (Apex Wholesale Investments)
+> Independent pre-owned vehicle dealership in Newton Park, Gqeberha (Port Elizabeth), Eastern Cape, South Africa.
+
+## Business Overview
+- Official Name: Apex Auto Investments (Pty) Ltd / Apex Wholesale Investments
+- Domain: https://www.apexinvest.co.za
+- Physical Address: 17b Burt Drive, Newton Park, Gqeberha (Port Elizabeth), 6045, South Africa
+- Phone: +27 72 604 7878 | +27 76 852 2968
+- Email: info@apexinvest.co.za
+- Operating Hours: Monday–Friday 08:00–17:30, Saturday 08:30–13:00, Closed Sundays
+- Approved Banking Partners: ABSA, WesBank, Standard Bank, Nedbank MFC
+- Dealer Slug: apex-wholesale-investments
+
+## Services & Technologies
+- Live Stock Feed: https://flow.tru-saas.com/api/public/stock?dealer=apex-wholesale-investments
+- Vehicle Condition Reports: 114-point TruInspect VIR® certified inspection reports with 0-100 score
+- Finance Simulations: TruRepay bank-grade instalment calculator (NCA compliant)
+- Affordability Pre-qualification: TruAfford income vs expense qualifying tool
+- Trade-in Valuations: TruValue market-related vehicle appraisal
+- 360° Studio Walkarounds: TruLens TruOrbit 360° interactive view
+- Qualified Lead Response: 1-Tap WhatsApp instant lead inquiry
+
+## Key Pages & Schema Structure
+- Home Page -> https://www.apexinvest.co.za/: Featured inventory, quick search, finance tools, trade-in booking
+- Full Showroom -> https://www.apexinvest.co.za/stock.html: Filterable inventory search (Make, Body, Price, Transmission, Fuel)
+- Vehicle Details -> https://www.apexinvest.co.za/vehicle/: Vehicle detail pages with 360° view, specs, VIR score, and deal calculator
+- Sitemap -> https://www.apexinvest.co.za/sitemap.xml: Structured XML sitemap
+
+## Consumer Guarantees
+- All prices displayed are VAT-inclusive with itemised pricing breakdown and zero hidden admin surcharges.
+- Schema.org structured data (AutoDealer, Car, Offer) implemented across all listings.

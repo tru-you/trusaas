@@ -228,20 +228,20 @@ html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webk
   <h1>Your 24/7 <span class="cyan">AI Sales Agent</span></h1>
   <p>TruChat qualifies leads while you sleep — answers stock questions, runs finance estimates, books test drives, and hands hot prospects to your team with full context. Try it below.</p>
   <div class="demo-pills">
-    <span class="pill">⚡ Instant replies</span>
-    <span class="pill">📱 WhatsApp handoff</span>
-    <span class="pill">🚗 Live stock aware</span>
-    <span class="pill">💳 Finance calculator</span>
+    <span class="pill">Instant replies</span>
+    <span class="pill">WhatsApp handoff</span>
+    <span class="pill">Live stock aware</span>
+    <span class="pill">Finance calculator</span>
   </div>
 </section>
 
 <div class="prompts">
-  <button class="prompt-btn" onclick="tcSendPrompt('Show me Ford Ranger stock')">🚘 Ranger stock</button>
-  <button class="prompt-btn" onclick="tcSendPrompt('I want to sell my trade-in')">🔄 Trade-in value</button>
-  <button class="prompt-btn" onclick="tcSendPrompt('How does vehicle finance work?')">💳 Finance help</button>
-  <button class="prompt-btn" onclick="tcSendPrompt('Book a test drive for Saturday 10am')">📅 Book test drive</button>
-  <button class="prompt-btn" onclick="tcSendPrompt('What are your showroom hours?')">📍 Hours & location</button>
-  <button class="prompt-btn" onclick="tcSendPrompt('Calculate finance on R450,000 with R50,000 deposit')">🧮 Finance calc</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('Show me Ford Ranger stock')">Ranger stock</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('I want to sell my trade-in')">Trade-in value</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('How does vehicle finance work?')">Finance help</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('Book a test drive for Saturday 10am')">Book test drive</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('What are your showroom hours?')">Hours &amp; location</button>
+  <button class="prompt-btn" onclick="tcSendPrompt('Calculate finance on R450,000 with R50,000 deposit')">Finance calc</button>
 </div>
 
 <div class="dev-panel">
@@ -304,8 +304,8 @@ html,body{background:var(--ink);color:var(--white);font-family:var(--sans);-webk
     </div>
 
     <div class="tc-tabs">
-      <button class="tc-tab active" data-tab="ai" onclick="switchTab('ai')">🤖 AI Assistant</button>
-      <button class="tc-tab" data-tab="human" onclick="switchTab('human')">💬 Sales Desk</button>
+      <button class="tc-tab active" data-tab="ai" onclick="switchTab('ai')">AI Assistant</button>
+      <button class="tc-tab" data-tab="human" onclick="switchTab('human')">Sales Desk</button>
     </div>
 
     <div class="tc-body" id="tcBody"></div>
@@ -572,13 +572,13 @@ function buildTradeInReply(text){
     return { text: msg, suggestions: ["Book inspection","Browse stock","Finance help"] };
   }
   session.lastTopic = "tradein";
-  return { text: "We offer daily trade-in evaluations! 🚗 To give you a rough estimate, I need a few details:\n\n1. **Year** (e.g. 2020)\n2. **Make & Model** (e.g. Toyota Hilux)\n3. **Mileage** (e.g. 55 000 km)\n\nJust reply with those and I'll crunch the numbers.", suggestions: ["2021 Ford Ranger 45k km","2019 VW Polo 30k km","Browse stock"] };
+  return { text: "We offer daily trade-in evaluations! To give you a rough estimate, I need a few details:\n\n1. **Year** (e.g. 2020)\n2. **Make & Model** (e.g. Toyota Hilux)\n3. **Mileage** (e.g. 55 000 km)\n\nJust reply with those and I'll crunch the numbers.", suggestions: ["2021 Ford Ranger 45k km","2019 VW Polo 30k km","Browse stock"] };
 }
 
 function getRandomResponse(type){
   const responses = {
     greeting: ["Howzit! Welcome to True-Cars. What can I help you find today?","Hey there! Ray here from True-Cars. Looking for a new ride or just browsing?","Good day! Ready to find your next car? I'm here to help with stock, finance, or trade-ins."],
-    goodbye: ["Cheers! Hit me up anytime if you need anything else. 🚗","All good! Feel free to pop back whenever you're ready. Safe travels!","Thanks for chatting! Our WhatsApp line is always open if you think of anything later."],
+    goodbye: ["Cheers! Hit me up anytime if you need anything else.","All good! Feel free to pop back whenever you're ready. Safe travels!","Thanks for chatting! Our WhatsApp line is always open if you think of anything later."],
     fallback: ["I can pull live stock, run finance numbers, book test drives, or value your trade-in. What are you after?","Not sure I caught that — want me to show you what's on the floor, or run some finance numbers?","I'm built for car sales! Try asking about stock, finance, trade-ins, or booking a test drive."]
   };
   const arr = responses[type] || responses.fallback;
@@ -625,11 +625,11 @@ async function processMessage(text, tab){
     }
     case "hours":{
       session.lastTopic = "hours";
-      return { text: `**${CFG.dealerName}**\n📍 ${CFG.address}\n🕐 ${CFG.hoursText}\n\nWe're just off the main road in Simonstown — plenty of parking out front.`, suggestions: ["Browse stock","Book test drive","Get directions"] };
+      return { text: `**${CFG.dealerName}**\n${CFG.address}\n${CFG.hoursText}\n\nWe're just off the main road in Simonstown — plenty of parking out front.`, suggestions: ["Browse stock","Book test drive","Get directions"] };
     }
     case "services":{
       session.lastTopic = "services";
-      return { text: `Every vehicle at **${CFG.dealerName}** comes with:\n\n✅ **Multi-point inspection** before sale\n✅ **Roadworthy certificate** included\n✅ **Service history** verification\n✅ Optional **extended warranty** plans\n✅ **Trade-in assistance** on your current vehicle\n\nWe don't sell cars we wouldn't drive ourselves.`, suggestions: ["Browse stock","Book test drive","Finance help"] };
+      return { text: `Every vehicle at **${CFG.dealerName}** comes with:\n\n• **Multi-point inspection** before sale\n• **Roadworthy certificate** included\n• **Service history** verification\n• Optional **extended warranty** plans\n• **Trade-in assistance** on your current vehicle\n\nWe don't sell cars we wouldn't drive ourselves.`, suggestions: ["Browse stock","Book test drive","Finance help"] };
     }
     case "human":{
       if(tab === 'human') return { text: "Message received — I've flagged this for the sales team. They'll pick it up during business hours. For anything urgent, hit the WhatsApp button or give us a call.", suggestions: ["Browse stock","Finance help"] };
