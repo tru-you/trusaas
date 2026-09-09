@@ -135,6 +135,10 @@
   function shareUrl(v) {
     v = v || {};
     if (v.url) return v.url;
+    var stock = clean(v.stock || v.id || v.stockNumber);
+    if (stock) {
+      return cfg.site + cfg.vehiclePath + "?stock=" + encodeURIComponent(stock);
+    }
     var q = [];
     function add(k, val) {
       val = clean(val);
