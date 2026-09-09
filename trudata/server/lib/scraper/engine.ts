@@ -54,6 +54,8 @@ export interface ValuationResult {
   /** Display unit the source market uses for odometers (km default, mi US/UK).
    *  All km figures in this result stay km — clients convert for display. */
   distanceUnit?: "km" | "mi";
+  /** Array of extracted individual listing items with price, km, and source */
+  listings?: Listing[];
 }
 
 export interface JsonAuthConfig {

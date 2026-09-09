@@ -51,6 +51,7 @@ router.post('/quick', async (req, res) => {
       sampleMedianKm: result.sampleMedianKm,
       fallback: result.fallbackRequired,
       searchUrl: result.searchUrl,
+      listings: result.listings || [],
     });
   } catch (error: any) {
     console.error('[trudata:valuation] Error:', error?.message || error);

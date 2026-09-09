@@ -522,6 +522,48 @@ function renderVehicleResults(data) {
       ? `${(data.confidence * 100).toFixed(0)}%` 
       : (data.confidence || 'NONE').toUpperCase();
 
+    const listings = Array.isArray(data.listings) ? data.listings : [];
+    
+    // Build price distribution percentages
+    const rangeSpan = Math.max(1, maxVal - minVal);
+    const medianPct = Math.min(95, Math.max(5, ((medianVal - minVal) / rangeSpan) * 100));
+    const tradePct = Math.min(95, Math.max(5, ((tradeVal - minVal) / rangeSpan) * 100));
+
+    // Listings Data Table HTML
+    let tableHtml = '';
+    if (listings.length > 0) {
+      tableHtml = `
+        <div style="margin-top: 1.5rem; background: var(--bg-card, #0e131f); border: 1px solid var(--border, #1e293b); border-radius: 8px; padding: 1.25rem;">
+          <h4 style="margin-top:0; margin-bottom: 0.75rem; color: #f1f5f9; font-size: 1rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>📋 Sampled Marketplace Listings (${listings.length})</span>
+            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: normal;">Live Comps</span>
+          </h4>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid #1e293b; color: #94a3b8;">
+                  <th style="padding: 0.5rem 0.75rem;">Item / Vehicle</th>
+                  <th style="padding: 0.5rem 0.75rem;">Price</th>
+                  <th style="padding: 0.5rem 0.75rem;">Odometer</th>
+                  <th style="padding: 0.5rem 0.75rem;">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${listings.map((l, i) => `
+                  <tr style="border-bottom: 1px solid #1e293b; color: #e2e8f0;">
+                    <td style="padding: 0.5rem 0.75rem; font-weight: 500;">${data.year || ''} ${data.make || ''} ${data.model || ''} #${i + 1}</td>
+                    <td style="padding: 0.5rem 0.75rem; color: #38bdf8; font-weight: 600;">R ${numberFormat(l.price)}</td>
+                    <td style="padding: 0.5rem 0.75rem; color: #a1a1aa;">${l.km ? numberFormat(l.km) + ' km' : 'N/A'}</td>
+                    <td style="padding: 0.5rem 0.75rem;"><span style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">Live Market</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
     content.innerHTML = `
       <div class="results-grid">
         <div class="metric-card">
@@ -529,7 +571,7 @@ function renderVehicleResults(data) {
           <span class="metric-value">R ${numberFormat(medianVal)}</span>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Est. Trade Value</span>
+          <span class="metric-label">Est. Trade-In (85%)</span>
           <span class="metric-value">R ${numberFormat(tradeVal)}</span>
         </div>
         <div class="metric-card">
@@ -541,9 +583,26 @@ function renderVehicleResults(data) {
           <span class="metric-value">${sampleSize}</span>
         </div>
       </div>
-      <div style="margin-top: 1rem; font-size: 0.875rem; color: #a1a1aa;">
-        Confidence Score: ${conf}
+
+      <!-- Price Distribution Bar -->
+      <div style="margin-top: 1.25rem; background: var(--bg-card, #0e131f); border: 1px solid var(--border, #1e293b); border-radius: 8px; padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8;">
+          <span>Low: R ${numberFormat(minVal)}</span>
+          <span style="color: #38bdf8; font-weight: 600;">Est. Retail: R ${numberFormat(medianVal)}</span>
+          <span>High: R ${numberFormat(maxVal)}</span>
+        </div>
+        <div style="position: relative; height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden;">
+          <div style="position: absolute; left: 0%; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(56,189,248,0.2) 0%, rgba(56,189,248,0.8) 50%, rgba(56,189,248,0.2) 100%);"></div>
+          <div style="position: absolute; left: ${medianPct}%; top: 0; bottom: 0; width: 4px; background: #38bdf8; border-radius: 2px;" title="Median Retail"></div>
+          <div style="position: absolute; left: ${tradePct}%; top: 0; bottom: 0; width: 4px; background: #f59e0b; border-radius: 2px;" title="Trade-In Value"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+          <span>Confidence Score: <strong style="color: #38bdf8;">${conf}</strong></span>
+          <span>🟠 Trade Marker (R ${numberFormat(tradeVal)}) &nbsp;|&nbsp; 🔵 Retail Marker (R ${numberFormat(medianVal)})</span>
+        </div>
       </div>
+
+      ${tableHtml}
     `;
   }
   
