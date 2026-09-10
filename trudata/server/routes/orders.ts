@@ -139,11 +139,16 @@ router.post('/credits/purchase', async (req, res) => {
 
 // POST /api/orders/use — burn credits for a product
 router.post('/use', (req, res) => {
-  const { email, product } = req.body;
+  const { email, product, amount, count } = req.body;
   if (!email || !product) return res.status(400).json({ error: 'Missing: email, product' });
 
-  const cost = CREDIT_COSTS[product];
-  if (cost === undefined) return res.status(400).json({ error: `Unknown product: ${product}`, available: Object.keys(CREDIT_COSTS) });
+  const standardCost = CREDIT_COSTS[product];
+  if (standardCost === undefined && (!amount || Number(amount) <= 0)) {
+    return res.status(400).json({ error: `Unknown product: ${product}`, available: Object.keys(CREDIT_COSTS) });
+  }
+
+  const customAmount = (amount && Number(amount) > 0) ? Number(amount) : undefined;
+  const cost = customAmount !== undefined ? customAmount : (standardCost || 1);
 
   // Master/test email bypass — no credits burned, no 402
   if (isMaster(email)) {
@@ -156,7 +161,7 @@ router.post('/use', (req, res) => {
     });
   }
 
-  const result = burnCredits(email, product);
+  const result = burnCredits(email, product, customAmount);
   if (!result.success) {
     return res.status(402).json({
       error: result.error,

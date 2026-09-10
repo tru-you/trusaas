@@ -8,6 +8,7 @@ export interface ShoppingItem {
   price: number;
   source: string;
   link: string;
+  condition: 'NEW' | 'REFURB' | 'USED';
   rating?: number;
   ratingCount?: number;
   delivery?: string;
@@ -19,12 +20,28 @@ export interface ElectronicsValuationResult {
   category?: string;
   count: number;
   median: number;
+  medianNew?: number;
+  medianRefurb?: number;
   low: number;
   high: number;
   currency: string;
   confidence: 'high' | 'medium' | 'low' | 'none';
   sources: { source: string; count: number; avg: number }[];
   listings: ShoppingItem[];
+  message?: string;
+}
+
+const ACCESSORY_WORDS = /\b(case|cover|skin|skins|wrap|wraps|sleeve|bag|strap|cable|charger|adapter|protector|glass|bracket|mount|battery|replacement screen|housing|film|sticker)\b/i;
+
+function detectCondition(title: string, source: string): 'NEW' | 'REFURB' | 'USED' {
+  const text = `${title} ${source}`.toLowerCase();
+  if (/refurb|refurbished|certified pre-owned|pre-owned|preowned|open box|grade a|renewed/i.test(text)) {
+    return 'REFURB';
+  }
+  if (/used|second-hand|2nd hand|damaged|spares|for parts|fair condition/i.test(text)) {
+    return 'USED';
+  }
+  return 'NEW';
 }
 
 function parsePrice(val: any): number | null {
@@ -72,6 +89,8 @@ router.post('/valuation', async (req, res) => {
     }
 
     const cleanQuery = query.trim();
+    const isAccessorySearch = ACCESSORY_WORDS.test(cleanQuery);
+
     const apiKey = process.env.SERPER_API_KEY;
     if (!apiKey) {
       return res.status(503).json({ error: 'Valuation search service not configured' });
@@ -79,76 +98,104 @@ router.post('/valuation', async (req, res) => {
 
     const items: ShoppingItem[] = [];
 
-    // 1. Query Serper Google Shopping for South Africa
-    try {
-      const shopRes = await fetch('https://google.serper.dev/shopping', {
+    // 1. Parallel Stream A & B: Google Shopping ZA (Retail + Certified Refurb)
+    const shoppingQueries = [
+      cleanQuery,
+      `${cleanQuery} refurbished`
+    ];
+
+    const shoppingPromises = shoppingQueries.map(q =>
+      fetch('https://google.serper.dev/shopping', {
         method: 'POST',
         headers: {
           'X-API-KEY': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          q: cleanQuery,
+          q,
           gl: 'za',
           hl: 'en',
         }),
         signal: AbortSignal.timeout(12000),
-      });
+      })
+      .then(r => r.ok ? r.json() : { shopping: [] })
+      .catch(err => {
+        console.warn(`[ElectronicsAPI] Shopping query "${q}" failed:`, err.message);
+        return { shopping: [] };
+      })
+    );
 
-      if (shopRes.ok) {
-        const shopJson = await shopRes.json();
-        const rawItems = shopJson.shopping || [];
-        for (const item of rawItems) {
-          const price = parsePrice(item.price);
-          if (price && price > 50 && price < 1_000_000) {
-            items.push({
-              title: item.title || cleanQuery,
-              price: Math.round(price),
-              source: item.source || 'Online Store',
-              link: item.link || '',
-              rating: item.rating ? Number(item.rating) : undefined,
-              ratingCount: item.ratingCount ? Number(item.ratingCount) : undefined,
-              delivery: item.delivery || undefined,
-              imageUrl: item.imageUrl || undefined,
-            });
-          }
+    // 2. Parallel Stream C: Organic Merchant Search (Takealot, iStore, Makro, Incredible, Bob Shop)
+    const organicPromise = serperSearch(`${cleanQuery} price South Africa`, {
+      gl: 'za',
+      hl: 'en',
+      num: 30,
+    }).catch(err => {
+      console.warn('[ElectronicsAPI] Organic search note:', err.message);
+      return { organic: [] };
+    });
+
+    const [shopResults, orgResult] = await Promise.all([
+      Promise.all(shoppingPromises),
+      organicPromise
+    ]);
+
+    // Ingest Shopping Items
+    const seenLinks = new Set<string>();
+    for (const shopJson of shopResults) {
+      const rawItems = shopJson?.shopping || [];
+      for (const item of rawItems) {
+        const title = item.title || cleanQuery;
+        if (!isAccessorySearch && ACCESSORY_WORDS.test(title)) continue;
+
+        const link = item.link || '';
+        if (link && seenLinks.has(link)) continue;
+        if (link) seenLinks.add(link);
+
+        const price = parsePrice(item.price);
+        if (price && price > 50 && price < 1_000_000) {
+          const cond = detectCondition(title, item.source || '');
+          items.push({
+            title,
+            price: Math.round(price),
+            source: item.source || 'Online Store',
+            link,
+            condition: cond,
+            rating: item.rating ? Number(item.rating) : undefined,
+            ratingCount: item.ratingCount ? Number(item.ratingCount) : undefined,
+            delivery: item.delivery || undefined,
+            imageUrl: item.imageUrl || undefined,
+          });
         }
       }
-    } catch (err: any) {
-      console.warn('[ElectronicsAPI] Shopping search fallback to organic:', err.message);
     }
 
-    // 2. Fallback / supplement with Organic search if few shopping results
-    if (items.length < 5) {
-      try {
-        const serp = await serperSearch(`${cleanQuery} price South Africa takealot OR incredible OR makro`, {
-          gl: 'za',
-          hl: 'en',
-          num: 15,
-        });
+    // Ingest Organic Search Comps
+    for (const org of orgResult.organic || []) {
+      const title = org.title || '';
+      if (!isAccessorySearch && ACCESSORY_WORDS.test(title)) continue;
+      const link = org.link || '';
+      if (link && seenLinks.has(link)) continue;
 
-        for (const org of serp.organic) {
-          const text = `${org.title} ${org.snippet}`;
-          // Look for price patterns e.g. R 12,999 or R14999
-          const priceMatch = text.match(/R\s?([0-9]{1,3}(?:[ ,][0-9]{3})*(?:\.[0-9]{2})?|[0-9]{3,7})/i);
-          if (priceMatch) {
-            const p = parsePrice(priceMatch[1]);
-            if (p && p > 50 && p < 1_000_000) {
-              let domain = 'Google Search';
-              try {
-                domain = new URL(org.link).hostname.replace(/^www\./, '');
-              } catch {}
-              items.push({
-                title: org.title,
-                price: Math.round(p),
-                source: domain,
-                link: org.link,
-              });
-            }
-          }
+      const text = `${title} ${org.snippet}`;
+      const priceMatch = text.match(/R\s?([0-9]{1,3}(?:[ ,][0-9]{3})*(?:\.[0-9]{2})?|[0-9]{3,7})/i);
+      if (priceMatch) {
+        const p = parsePrice(priceMatch[1]);
+        if (p && p > 50 && p < 1_000_000) {
+          let domain = 'Google Search';
+          try {
+            domain = new URL(link).hostname.replace(/^www\./, '');
+          } catch {}
+          if (link) seenLinks.add(link);
+          const cond = detectCondition(title, domain);
+          items.push({
+            title,
+            price: Math.round(p),
+            source: domain,
+            link,
+            condition: cond,
+          });
         }
-      } catch (err: any) {
-        console.warn('[ElectronicsAPI] Organic price extraction error:', err.message);
       }
     }
 
@@ -171,20 +218,30 @@ router.post('/valuation', async (req, res) => {
     // Deduplicate & sort prices
     const prices = items.map(i => i.price).sort((a, b) => a - b);
     
-    // Filter extreme outliers: trim bottom 5% and top 5% if sample > 8
+    // Filter extreme outliers: trim bottom 5% and top 5% if sample >= 8
     let trimmedPrices = prices;
     if (prices.length >= 8) {
       const trimCount = Math.floor(prices.length * 0.08);
       trimmedPrices = prices.slice(trimCount, prices.length - trimCount);
     }
 
-    const midIdx = Math.floor(trimmedPrices.length / 2);
-    const median = trimmedPrices.length % 2 === 0
-      ? Math.round((trimmedPrices[midIdx - 1] + trimmedPrices[midIdx]) / 2)
-      : trimmedPrices[midIdx];
+    const calcMedian = (arr: number[]) => {
+      if (!arr.length) return 0;
+      const mid = Math.floor(arr.length / 2);
+      return arr.length % 2 === 0
+        ? Math.round((arr[mid - 1] + arr[mid]) / 2)
+        : arr[mid];
+    };
 
+    const overallMedian = calcMedian(trimmedPrices);
     const low = trimmedPrices[0];
     const high = trimmedPrices[trimmedPrices.length - 1];
+
+    // Compute condition medians
+    const newPrices = items.filter(i => i.condition === 'NEW').map(i => i.price).sort((a, b) => a - b);
+    const refurbPrices = items.filter(i => i.condition === 'REFURB').map(i => i.price).sort((a, b) => a - b);
+    const medianNew = newPrices.length ? calcMedian(newPrices) : undefined;
+    const medianRefurb = refurbPrices.length ? calcMedian(refurbPrices) : undefined;
 
     // Source aggregations
     const sourceMap: Record<string, { count: number; sum: number }> = {};
@@ -209,13 +266,15 @@ router.post('/valuation', async (req, res) => {
       query: cleanQuery,
       category,
       count: items.length,
-      median,
+      median: overallMedian,
+      medianNew,
+      medianRefurb,
       low,
       high,
       currency: 'R',
       confidence,
       sources,
-      listings: items.slice(0, 20), // Top 20 listings
+      listings: items.slice(0, 25), // Top 25 listings
     };
 
     res.json(result);

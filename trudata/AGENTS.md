@@ -27,6 +27,16 @@ TruData is a **B2B data marketplace** for South Africa. Five product verticals, 
 | 📋 **Bureau Reports** | `/api/imagin8/*` | 3 | Imagin8 TransUnion (valuation, reg check, accident) | ✅ Live |
 
 ### Features Added (2026-09-10)
+- **High-Volume Uncapped Multi-Angle Scrapers:**
+  - **B2B Business Finder:** Replaced single 20-result query with multi-page organic search (`page: 1, 2, 3, 4`) + Google Places (Google Maps local business card extraction). Discovers 30–50+ unique local business domains per crawl with verified direct phone numbers and physical street addresses.
+  - **Vehicles & Heavy Assets:** Removed the restrictive `SERP_TRIGGER_MAX = 6` cutoff and expanded classified accumulation to 50+ comps, always running parallel Google SERP to blend showroom floor feeds with online listings.
+  - **Electronics & Tech:** Multi-stream parallel pipeline (Google Shopping ZA + Refurb/Pre-owned + Organic Retailer extraction from Takealot, Makro, Incredible, iStore) yielding 50–100+ comps.
+  - **Property FSBO & Comps:** Expanded to `num: 50` across Gumtree Private, Private Property Direct, and Property24 suburb feeds returning 20–40+ leads.
+- **Credits Matched to Results Volume:**
+  - Dynamic billing economy in `server/lib/credits.ts` and `/api/orders/use`:
+    - Business Finder: 10 Targets = 1 Cr, 25 Targets = 2 Cr, 50 Targets = 4 Cr, 100 Targets (Deep Sweep) = 8 Cr. Dynamic badge on the submit button updates live on dropdown selection.
+    - Property: Suburb Comps Only = 1 Cr; Comps + Full FSBO Radar = 2 Cr.
+  - Full prospecting CSV export with formula injection sanitization.
 - **Property Suburb Sales Comps & FSBO Lead Radar:** Fully wired workbench with dual Suburb Comps (Property24 & Private Property) and live Private Seller (FSBO) Lead Radar.
   - Form `#panel-property` takes Suburb, City/Metro, Property Type (All, Houses, Apartments, Townhouses), and Intelligence Scope (Comps + FSBO, FSBO Only, Comps Only).
   - Parallel extraction from `/api/property/comps` and `/api/property/fsbo`.

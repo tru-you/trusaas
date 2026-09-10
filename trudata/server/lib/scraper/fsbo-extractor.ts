@@ -68,7 +68,7 @@ export async function extractFsboLeads(suburb: string, city: string = '', maxRes
       
       for (const q of queries) {
         if (liveLeads.length >= maxResults) break;
-        const result = await serperSearch(q, { gl: 'za', num: 20 });
+        const result = await serperSearch(q, { gl: 'za', num: 50 });
         for (const r of result.organic) {
           if (liveLeads.length >= maxResults) break;
           const title = String(r.title || '');

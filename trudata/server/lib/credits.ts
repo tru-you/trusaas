@@ -91,16 +91,29 @@ export function addCredits(email: string, credits: number, tier: CreditWallet['t
   return wallets.get(email)!;
 }
 
-export function burnCredits(email: string, product: string): { success: boolean; cost: number; remaining: number; error?: string } {
-  const cost = CREDIT_COSTS[product];
-  if (cost === undefined) return { success: false, cost: 0, remaining: 0, error: `Unknown product: ${product}` };
+export function burnCredits(
+  email: string,
+  product: string,
+  customAmount?: number
+): { success: boolean; cost: number; remaining: number; error?: string } {
+  const standardCost = CREDIT_COSTS[product];
+  const cost = (customAmount !== undefined && customAmount > 0)
+    ? Math.round(customAmount)
+    : (standardCost !== undefined ? standardCost : 1);
   
   let wallet = wallets.get(email);
   if (!wallet) {
     // Auto-provision trial wallet with 15 credits
     wallet = addCredits(email, 15, 'paygo');
   }
-  if (wallet.balance < cost) return { success: false, cost, remaining: wallet.balance, error: `Insufficient credits. Need ${cost}, have ${wallet.balance}.` };
+  if (wallet.balance < cost) {
+    return {
+      success: false,
+      cost,
+      remaining: wallet.balance,
+      error: `Insufficient credits. This query yields high-volume results requiring ${cost} credits (Current balance: ${wallet.balance}).`
+    };
+  }
   
   wallet.balance -= cost;
   wallet.totalUsed += cost;
@@ -109,3 +122,4 @@ export function burnCredits(email: string, product: string): { success: boolean;
   
   return { success: true, cost, remaining: wallet.balance };
 }
+

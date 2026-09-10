@@ -76,7 +76,7 @@ router.post('/fsbo', async (req, res) => {
       return res.status(400).json({ error: 'Missing required parameter: suburb' });
     }
 
-    const cleanLimit = Math.min(25, Math.max(1, Number(limit) || 8));
+    const cleanLimit = Math.min(60, Math.max(1, Number(limit) || 20));
     const result = await extractFsboLeads(String(suburb).trim(), String(city).trim(), cleanLimit);
 
     if (result.count === 0) {

@@ -30,15 +30,24 @@ export async function crawlLegacySites(request: CrawlRequest): Promise<CrawlResu
 
   const targets: LegacySiteTarget[] = [];
 
-  // 2. Audit candidate domains in parallel (max 5 concurrent)
-  const CONCURRENCY = 5;
+  // 2. Audit candidate domains in parallel (10 concurrent)
+  const CONCURRENCY = 10;
   const candidates = candidateDomains.slice(0, maxResults * 3);
   for (let i = 0; i < candidates.length; i += CONCURRENCY) {
     if (targets.length >= maxResults) break;
     const batch = candidates.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(
       batch.map(domainInfo =>
-        auditDomain(domainInfo.domain, domainInfo.title, city, industry, currency, country)
+        auditDomain(
+          domainInfo.domain,
+          domainInfo.title,
+          city,
+          industry,
+          currency,
+          country,
+          domainInfo.phone,
+          domainInfo.address
+        )
       )
     );
     for (const r of results) {
@@ -77,42 +86,97 @@ async function discoverBusinessDomains(
   country: 'za' | 'uk',
   limit: number
 ): Promise<{ domain: string; title: string }[]> {
-  const domains: { domain: string; title: string }[] = [];
-  const queryStr = `${industry} ${city} contact`;
-  const serpApiKey = process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || '';
-  const serpZone = process.env.SERP_ZONE || 'serp_api1';
-  const googleDomain = country === 'uk' ? 'google.co.uk' : 'google.co.za';
-  const gl = country === 'uk' ? 'gl=gb' : 'gl=za';
+  const domains: { domain: string; title: string; phone?: string; address?: string }[] = [];
+  const queryVariations = [
+    `${industry} in ${city}`,
+    `used ${industry} ${city}`,
+    `${industry} companies ${city}`
+  ];
+  const gl = country === 'uk' ? 'gb' : 'za';
+  const pages = limit > 20 ? [1, 2, 3, 4] : [1, 2];
 
-  // 1. Primary: Serper.dev (when configured)
-  if (process.env.SERPER_API_KEY && domains.length < limit) {
+  // 1. Primary: Serper.dev Multi-Page Search + Google Places Discovery
+  const apiKey = process.env.SERPER_API_KEY;
+  if (apiKey) {
     try {
-      const result = await serperSearch(queryStr, {
-        gl: country === 'uk' ? 'gb' : 'za',
-        num: 20,
-      });
-      for (const r of result.organic) {
-        if (domains.length >= limit) break;
-        if (r.link.startsWith('http')) {
-          try {
-            const u = new URL(r.link);
-            const domain = u.hostname.replace(/^www\./, '').toLowerCase();
-            const isDirectory = DIRECTORY_DOMAINS.some(d => domain.includes(d));
-            if (!isDirectory && !domains.some(d => d.domain === domain)) {
-              domains.push({ domain, title: r.title || domain });
-            }
-          } catch {}
+      const searchPromises: Promise<any>[] = [];
+
+      // A. Paginated organic web search
+      for (const q of queryVariations) {
+        for (const page of pages) {
+          searchPromises.push(
+            fetch('https://google.serper.dev/search', {
+              method: 'POST',
+              headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ q, gl, page })
+            }).then(r => r.json()).catch(() => ({ organic: [] }))
+          );
+        }
+      }
+
+      // B. Paginated Google Places (Local Maps Business listings)
+      for (const page of [1, 2, 3]) {
+        searchPromises.push(
+          fetch('https://google.serper.dev/places', {
+            method: 'POST',
+            headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: `${industry} in ${city}`, gl, page })
+          }).then(r => r.json()).catch(() => ({ places: [] }))
+        );
+      }
+
+      const results = await Promise.all(searchPromises);
+
+      for (const res of results) {
+        // Organic web results
+        for (const r of res.organic || []) {
+          if (domains.length >= limit) break;
+          if (r.link && r.link.startsWith('http')) {
+            try {
+              const u = new URL(r.link);
+              const domain = u.hostname.replace(/^www\./, '').toLowerCase();
+              const isDirectory = DIRECTORY_DOMAINS.some(d => domain.includes(d));
+              if (!isDirectory && !domains.some(d => d.domain === domain)) {
+                domains.push({ domain, title: r.title || domain });
+              }
+            } catch {}
+          }
+        }
+        // Places / Maps results
+        for (const p of res.places || []) {
+          if (domains.length >= limit) break;
+          if (p.website && p.website.startsWith('http')) {
+            try {
+              const u = new URL(p.website);
+              const domain = u.hostname.replace(/^www\./, '').toLowerCase();
+              const isDirectory = DIRECTORY_DOMAINS.some(d => domain.includes(d));
+              if (!isDirectory && !domains.some(d => d.domain === domain)) {
+                domains.push({
+                  domain,
+                  title: p.title || domain,
+                  phone: p.phoneNumber,
+                  address: p.address
+                });
+              }
+            } catch {}
+          }
         }
       }
     } catch (err: any) {
-      console.warn('[LegacyFinder] Serper.dev note:', err.message);
+      console.warn('[LegacyFinder] Serper.dev discovery error:', err.message);
     }
   }
 
-  // 2. Fallback: Bright Data SERP (when Serper not available or returned few results)
-  if (!process.env.SERPER_API_KEY && serpApiKey && domains.length < limit) {
+  // 2. Fallback: Bright Data SERP (when Serper returned few results or is unset)
+  const serpApiKey = process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || '';
+  const serpZone = process.env.SERP_ZONE || 'serp_api1';
+  const googleDomain = country === 'uk' ? 'google.co.uk' : 'google.co.za';
+  const glParam = country === 'uk' ? 'gl=gb' : 'gl=za';
+
+  if (domains.length < limit && serpApiKey) {
     try {
-      const googleUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(queryStr)}&${gl}&num=20&brd_json=1`;
+      const googleUrl = `https://www.${googleDomain}/search?q=${encodeURIComponent(`${industry} ${city} contact`)}&${glParam}&num=50&brd_json=1`;
+
       const res = await axios.post('https://api.brightdata.com/request', {
         zone: serpZone,
         url: googleUrl,
@@ -199,7 +263,9 @@ async function auditDomain(
   city: string,
   industry: string,
   currency: 'R' | '£',
-  country: 'za' | 'uk'
+  country: 'za' | 'uk',
+  seedPhone?: string,
+  seedAddress?: string
 ): Promise<LegacySiteTarget | null> {
   const t0 = Date.now();
   let activeUrl = `https://${domain}`;
@@ -233,7 +299,8 @@ async function auditDomain(
       html = res.data;
       headers = res.headers;
       loadTimeMs = Date.now() - t0;
-    } catch (httpErr) {
+    } catch (e) {
+      // Domain unreachable
       return null;
     }
   }
@@ -267,6 +334,14 @@ async function auditDomain(
         if (contactPageInfo.address && !contacts.address) contacts.address = contactPageInfo.address;
       }
     } catch (e) {}
+  }
+
+  // Fallback to Google Places phone and address if site had no contact info
+  if (contacts.phones.length === 0 && seedPhone) {
+    contacts.phones.push(seedPhone);
+  }
+  if (!contacts.address && seedAddress) {
+    contacts.address = seedAddress;
   }
 
   return {

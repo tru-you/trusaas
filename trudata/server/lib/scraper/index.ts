@@ -224,7 +224,7 @@ export async function fetchValuation(
             console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
           }
           acc.push(...listings);
-          if (acc.length >= 20) break; // Plenty of clean comps, avoid timeout
+          if (acc.length >= 50) break; // Increased from 20 to yield full showroom volume
         }
         return { name: src.name, listings: acc };
       })
@@ -294,7 +294,8 @@ export async function fetchValuation(
 
   let serpListings: Listing[] = [];
   const serpModel = variant ? `${baseModel} ${variant}` : baseModel;
-  if (dealerListings.length + classifiedListings.length < SERP_TRIGGER_MAX && serpConfigured()) {
+  // Always query Google SERP in parallel to capture aggregator comps (Trovit, Automark, dealer portals)
+  if (serpConfigured()) {
     serpListings = await fetchSerpListings(make, serpModel, y, cfg);
     if (serpListings.length) {
       sourcesOutput.push({

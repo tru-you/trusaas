@@ -597,7 +597,7 @@ export async function fetchSerpListings(make: string, model: string, year: strin
     if (process.env.SERPER_API_KEY) {
       const { serperSearch, toEngineFormat } = await import('./serper');
       const glCode = cfg.googleGl?.replace('gl=', '') || 'za';
-      const result = await serperSearch(q, { gl: glCode, num: 20 });
+      const result = await serperSearch(q, { gl: glCode, num: 50 });
       json = toEngineFormat(result);
     }
     // 2. Fallback: Bright Data SERP

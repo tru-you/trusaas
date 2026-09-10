@@ -134,13 +134,15 @@ async function updateWalletUI() {
   return { balance: 15 };
 }
 
-async function burnCredits(productKey) {
+async function burnCredits(productKey, customAmount) {
   const email = getUserEmail();
   try {
+    const payload = { email, product: productKey };
+    if (customAmount && customAmount > 0) payload.amount = customAmount;
     await fetch('/api/orders/use', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, product: productKey }),
+      body: JSON.stringify(payload),
     });
     updateWalletUI();
   } catch (e) {
@@ -242,7 +244,7 @@ if (creditPurchaseForm) {
 // ──────────────────────────────────────────────────
 // TAB SWITCHING & DOCK CONTROL
 // ──────────────────────────────────────────────────
-const TABS = ['vehicles', 'property', 'business', 'bureau', 'aeo', 'safepay'];
+const TABS = ['vehicles', 'electronics', 'property', 'business', 'bureau', 'aeo', 'safepay'];
 
 function switchPillarTab(target) {
   if (!TABS.includes(target)) return;
@@ -594,7 +596,8 @@ if (formProperty) {
 
     showResults('property');
     setResultsLoading(true, `Querying Property24, Private Property & FSBO Owner leads for ${suburb}...`);
-    burnCredits('property');
+    const propertyCredits = scope === 'comps' ? 1 : 2;
+    burnCredits('property', propertyCredits);
 
     try {
       let compsData = null;
@@ -877,73 +880,526 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
 }
 
 // ──────────────────────────────────────────────────
-// PILLAR 3: B2B BUSINESS FINDER
+// PILLAR 2: ELECTRONICS & CONSUMER TECH VALUATION
 // ──────────────────────────────────────────────────
+const formElectronics = document.getElementById('panel-electronics');
+const inputElectronicsQuery = document.getElementById('input-electronics-query');
+const selectElectronicsCategory = document.getElementById('select-electronics-category');
+const selectElectronicsCondition = document.getElementById('select-electronics-condition');
+
+// Wire preset chips
+document.querySelectorAll('.preset-tech').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const val = btn.dataset.val;
+    if (inputElectronicsQuery && val) {
+      inputElectronicsQuery.value = val;
+      if (formElectronics) {
+        formElectronics.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    }
+  });
+});
+
+if (formElectronics) {
+  formElectronics.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const query = inputElectronicsQuery ? inputElectronicsQuery.value.trim() : 'MacBook Pro M3 14 inch';
+    if (!query) {
+      showToast('Please enter an electronics model or device name.', 'warning');
+      return;
+    }
+
+    const category = selectElectronicsCategory ? selectElectronicsCategory.value : 'all';
+    const conditionFocus = selectElectronicsCondition ? selectElectronicsCondition.value : 'all';
+
+    showResults('electronics');
+    setResultsLoading(true, `Extracting real-time retail & refurb comps for "${query}"...`);
+    burnCredits('electronics_valuation');
+
+    try {
+      const res = await fetch('/api/electronics/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, category })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Electronics valuation failed');
+      }
+
+      const data = await res.json();
+      renderElectronicsResults(data, query, conditionFocus);
+    } catch (err) {
+      console.error('Electronics query error:', err);
+      renderError(`Could not fetch comps for "${query}": ${err.message}`);
+      showToast('Electronics search failed.', 'error');
+    }
+  });
+}
+
+function renderElectronicsResults(data, query, conditionFocus = 'all') {
+  updateJsonSchemaViewer(data);
+
+  const titleEl = document.getElementById('results-title');
+  if (titleEl) titleEl.textContent = `${query} · Retail & Refurb Comps`;
+
+  const countEl = document.getElementById('results-count');
+  if (countEl) countEl.textContent = `${data.count || 0} Comps Extracted · ${data.sources?.length || 0} Verified Retailers`;
+
+  const sourceEl = document.getElementById('results-source');
+  if (sourceEl) sourceEl.textContent = 'Sources: Google Shopping ZA · Takealot, iStore, Makro, Incredible Connection';
+
+  const container = document.getElementById('table-container');
+  if (!container) return;
+
+  const rawListings = data.listings || [];
+  let filteredListings = rawListings;
+  if (conditionFocus === 'new') {
+    filteredListings = rawListings.filter(l => l.condition === 'NEW');
+  } else if (conditionFocus === 'refurb') {
+    filteredListings = rawListings.filter(l => l.condition === 'REFURB' || l.condition === 'USED');
+  }
+  if (filteredListings.length === 0) filteredListings = rawListings;
+
+  const medianVal = data.median || 0;
+  const newPrice = data.medianNew || (rawListings.find(l => l.condition === 'NEW')?.price || medianVal);
+  const refurbPrice = data.medianRefurb || (rawListings.find(l => l.condition === 'REFURB')?.price || (data.low > 0 ? data.low : 0));
+  const lowVal = data.low || 0;
+  const highVal = data.high || 0;
+  const confidence = data.confidence || 'medium';
+
+  // Savings percentage if refurb vs new
+  const savingsPct = (newPrice > 0 && refurbPrice > 0 && newPrice > refurbPrice)
+    ? Math.round(((newPrice - refurbPrice) / newPrice) * 100)
+    : null;
+
+  container.innerHTML = `
+    <div class="space-y-5 font-mono text-xs">
+      
+      <!-- Top Metrics Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">MEDIAN MARKET PRICE</span>
+          <span class="font-display font-bold text-lg text-sky-800">R ${numberFormat(medianVal)}</span>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">BRAND NEW (RETAIL)</span>
+          <span class="font-display font-bold text-base text-slate-950">${newPrice > 0 ? 'R ' + numberFormat(newPrice) : 'N/A'}</span>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">CERTIFIED REFURB</span>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="font-display font-bold text-base text-emerald-700">${refurbPrice > 0 ? 'R ' + numberFormat(refurbPrice) : 'N/A'}</span>
+            ${savingsPct ? `<span class="text-[10px] font-bold px-1 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950">-${savingsPct}%</span>` : ''}
+          </div>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">PRICE SPREAD</span>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="font-display font-bold text-xs sm:text-sm text-slate-950">R ${numberFormat(lowVal)} - R ${numberFormat(highVal)}</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 bg-sky-100 text-sky-800 border border-slate-950">${confidence.toUpperCase()}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Merchants Strip -->
+      ${data.sources && data.sources.length > 0 ? `
+        <div class="p-2.5 bg-slate-50 border border-slate-950 flex flex-wrap items-center gap-2 text-[11px]">
+          <span class="font-bold text-slate-700 uppercase">Top Merchants:</span>
+          ${data.sources.slice(0, 5).map(s => `
+            <span class="px-2 py-0.5 bg-white border border-slate-950 text-slate-900 font-semibold brutal-shadow-sm">
+              ${esc(s.source)} <strong class="text-sky-800 font-mono font-bold">R ${numberFormat(s.avg)}</strong> (${s.count})
+            </span>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <!-- Listings Table -->
+      ${filteredListings.length > 0 ? `
+        <div class="overflow-x-auto border border-slate-950 brutal-shadow-sm bg-white">
+          <table class="w-full border-collapse text-left font-mono text-xs">
+            <thead>
+              <tr class="bg-slate-950 text-white uppercase text-[11px]">
+                <th class="p-2.5 border-r border-slate-800">Device Specification / Title</th>
+                <th class="p-2.5 border-r border-slate-800">Condition</th>
+                <th class="p-2.5 border-r border-slate-800">Verified Price</th>
+                <th class="p-2.5 border-r border-slate-800">Merchant</th>
+                <th class="p-2.5 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">
+              ${filteredListings.map(item => {
+                const isNew = item.condition === 'NEW';
+                const isRefurb = item.condition === 'REFURB';
+                return `
+                  <tr class="hover:bg-sky-50/70 transition-colors">
+                    <td class="p-2.5 border-r border-slate-300 max-w-sm">
+                      <div class="flex items-start gap-2.5">
+                        ${item.imageUrl ? `
+                          <img src="${esc(item.imageUrl)}" alt="" class="w-10 h-10 object-contain p-0.5 border border-slate-300 bg-white shrink-0" loading="lazy" onerror="this.style.display='none'"/>
+                        ` : `
+                          <div class="w-10 h-10 bg-slate-100 border border-slate-300 flex items-center justify-center shrink-0 font-bold text-slate-400 text-xs">TECH</div>
+                        `}
+                        <div class="min-w-0">
+                          <div class="font-bold text-slate-950 truncate" title="${esc(item.title)}">${esc(item.title)}</div>
+                          <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500">
+                            ${item.delivery ? `<span>🚚 ${esc(item.delivery)}</span>` : ''}
+                            ${item.rating ? `<span class="text-amber-700 font-bold">★ ${item.rating} ${item.ratingCount ? '(' + item.ratingCount + ')' : ''}</span>` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
+                      <span class="text-[10px] px-2 py-0.5 border border-slate-950 font-bold ${
+                        isNew ? 'bg-emerald-100 text-emerald-900' :
+                        isRefurb ? 'bg-sky-100 text-sky-900' :
+                        'bg-amber-100 text-amber-900'
+                      }">
+                        ${esc(item.condition)}
+                      </span>
+                    </td>
+                    <td class="p-2.5 border-r border-slate-300 font-bold text-sky-900 whitespace-nowrap text-sm">
+                      R ${numberFormat(item.price)}
+                    </td>
+                    <td class="p-2.5 border-r border-slate-300 whitespace-nowrap text-slate-800 font-semibold">
+                      ${esc(item.source)}
+                    </td>
+                    <td class="p-2.5 text-center whitespace-nowrap">
+                      <a href="${esc(item.link || '#')}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs" title="View Source Listing">
+                        <span>View Deal ↗</span>
+                      </a>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="p-6 bg-slate-50 border border-slate-950 text-center font-mono text-xs space-y-1">
+          <p class="font-bold text-slate-950 uppercase">No comps found matching your condition filter</p>
+          <p class="text-slate-600">Select "All Conditions" to view all available retail comps.</p>
+        </div>
+      `}
+
+    </div>
+  `;
+}
+
+// ──────────────────────────────────────────────────
+// PILLAR 3: B2B BUSINESS FINDER & DEFECT AUDIT
+// ──────────────────────────────────────────────────
+let lastBusinessCrawlData = null;
+
 const formBusiness = document.getElementById('panel-business');
+const limitSelect = document.getElementById('select-business-limit');
+const badgeBusinessCredits = document.getElementById('badge-business-credits');
+
+if (limitSelect && badgeBusinessCredits) {
+  limitSelect.addEventListener('change', () => {
+    const lim = parseInt(limitSelect.value, 10);
+    const cr = lim >= 100 ? 8 : lim >= 50 ? 4 : lim >= 25 ? 2 : 1;
+    badgeBusinessCredits.textContent = `${cr} CREDIT${cr > 1 ? 'S' : ''}`;
+  });
+}
+
+const selectPropertyScope = document.getElementById('select-property-scope');
+const badgePropertyCredits = document.getElementById('badge-property-credits');
+if (selectPropertyScope && badgePropertyCredits) {
+  selectPropertyScope.addEventListener('change', () => {
+    badgePropertyCredits.textContent = selectPropertyScope.value === 'comps' ? '1 CREDIT' : '2 CREDITS';
+  });
+}
+
 if (formBusiness) {
   formBusiness.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const inputEl = document.getElementById('input-business-query');
-    const query = inputEl ? inputEl.value.trim() : 'Car Dealerships in Sandton';
+    const industryInput = document.getElementById('input-business-industry');
+    const cityInput = document.getElementById('input-business-city');
+    const depthSelect = document.getElementById('select-business-depth');
+
+    const industry = industryInput ? industryInput.value.trim() : 'Car Dealerships';
+    const city = cityInput ? cityInput.value.trim() : 'Sandton';
+    const maxResults = limitSelect ? parseInt(limitSelect.value, 10) : 25;
+    const depth = depthSelect ? depthSelect.value : 'deep';
+
+    if (!industry || !city) {
+      showToast('Please enter both an industry and a target city.', 'warning');
+      return;
+    }
+
+    const creditsToBurn = maxResults >= 100 ? 8 : maxResults >= 50 ? 4 : maxResults >= 25 ? 2 : 1;
 
     showResults('business');
-    setResultsLoading(true, `Crawling SERP & auditing websites for ${query}...`);
-    burnCredits('business_audit');
+    setResultsLoading(true, `Crawling SERP & auditing ${maxResults} businesses for ${industry} in ${city}...`);
+    burnCredits('business_audit', creditsToBurn);
 
     try {
       const res = await fetch('/api/agency/crawl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ industry: query, city: 'Sandton' })
+        body: JSON.stringify({ industry, city, maxResults, country: 'za' })
       });
-      if (!res.ok) throw new Error('Business crawl failed');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Business crawl failed');
+      }
       const data = await res.json();
-      renderBusinessResults(data, query);
+      lastBusinessCrawlData = { data, industry, city };
+      renderBusinessResults(data, industry, city);
     } catch (err) {
-      renderError('Business crawl failed. Please check query parameters.');
+      console.error('Business crawl error:', err);
+      renderError(`Business crawl failed: ${err.message}. Please check query parameters.`);
       showToast('Business crawl failed.', 'error');
     }
   });
 }
 
-function renderBusinessResults(data, query) {
+function exportBusinessCsv(targets, city, industry) {
+  if (!targets || targets.length === 0) {
+    showToast('No audited businesses available to export.', 'warning');
+    return;
+  }
+
+  const headers = [
+    'Business Name',
+    'Domain',
+    'Readiness Score',
+    'Critical Defects',
+    'Primary Phone',
+    'WhatsApp Direct Link',
+    'Contact Email',
+    'Physical Address',
+    'Estimated Pitch Value'
+  ];
+
+  const csvSafe = (val) => {
+    if (val == null) return '""';
+    const s = String(val).replace(/"/g, '""');
+    if (/^[=+\-@]/.test(s)) return `"\t${s}"`;
+    return `"${s}"`;
+  };
+
+  const rows = targets.map(t => {
+    const defectsStr = (t.defects || []).map(d => d.title).join('; ');
+    const primaryPhone = t.contacts?.phones?.[0] || t.phone || '';
+    const waLink = t.contacts?.whatsAppLinks?.[0] || '';
+    const email = t.contacts?.emails?.[0] || '';
+    const address = t.contacts?.address || `${t.city || city}, South Africa`;
+
+    return [
+      csvSafe(t.businessName || t.domain),
+      csvSafe(t.domain),
+      `${t.readinessScore || 0}/100`,
+      csvSafe(defectsStr),
+      csvSafe(primaryPhone),
+      csvSafe(waLink),
+      csvSafe(email),
+      csvSafe(address),
+      csvSafe(t.estimatedPitchValue || 'R 15,000 - R 25,000')
+    ].join(',');
+  });
+
+  const csvContent = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `leads-${industry.toLowerCase().replace(/\s+/g, '-')}-${city.toLowerCase().replace(/\s+/g, '-')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Prospecting CSV downloaded successfully!');
+}
+
+function renderBusinessResults(data, industry, city) {
   updateJsonSchemaViewer(data);
   const targets = data.targets || [];
+  const totalAudited = targets.length;
+  const criticalDefectsFound = data.criticalDefectsFound ?? targets.reduce((sum, t) => sum + (t.defects || []).filter(d => d.severity === 'CRITICAL').length, 0);
+  const avgScore = data.averageReadinessScore ?? (totalAudited > 0 ? Math.round(targets.reduce((sum, t) => sum + (t.readinessScore || 0), 0) / totalAudited) : 0);
+
+  // Count targets with verified direct WhatsApp or phone
+  const waCount = targets.filter(t => (t.contacts?.whatsAppLinks?.length > 0) || (t.contacts?.phones?.length > 0) || t.phone).length;
+
   const titleEl = document.getElementById('results-title');
-  if (titleEl) titleEl.textContent = `Business Crawl: ${query}`;
+  if (titleEl) titleEl.textContent = `${industry} in ${city} · Technical Defect Audit`;
 
   const countEl = document.getElementById('results-count');
-  if (countEl) countEl.textContent = `${targets.length} businesses audited`;
+  if (countEl) countEl.textContent = `${totalAudited} Targets Audited · ${criticalDefectsFound} Critical Defects Identified`;
 
   const sourceEl = document.getElementById('results-source');
-  if (sourceEl) sourceEl.textContent = 'Sources: Serper Google Search + Cheerio Site Inspector';
+  if (sourceEl) sourceEl.textContent = 'Sources: Serper Local SERP · Cheerio Site Inspector & Technical Defect Audit';
 
   const container = document.getElementById('table-container');
-  if (container) {
-    container.innerHTML = `
-      <table class="w-full border-collapse border border-slate-950 text-left bg-white font-mono text-xs">
-        <thead>
-          <tr class="bg-slate-950 text-white text-[11px] uppercase">
-            <th class="p-2 border border-slate-950">Business Domain</th>
-            <th class="p-2 border border-slate-950">Phone / WhatsApp</th>
-            <th class="p-2 border border-slate-950">Health Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${targets.map(t => `
-            <tr class="border-b border-slate-300 hover:bg-sky-50">
-              <td class="p-2 font-bold border border-slate-950">
-                <a href="https://${esc(t.domain)}" target="_blank" class="text-sky-700 underline">${esc(t.domain)}</a>
-              </td>
-              <td class="p-2 border border-slate-950">${esc(t.phone || 'N/A')}</td>
-              <td class="p-2 font-bold border border-slate-950 ${t.readinessScore > 75 ? 'text-emerald-600' : 'text-amber-600'}">
-                ${t.readinessScore || 85}% Readiness
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="space-y-5 font-mono text-xs">
+      
+      <!-- Top Metrics Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">TARGETS AUDITED</span>
+          <span class="font-display font-bold text-lg text-slate-950">${totalAudited} Businesses</span>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">AVG READINESS SCORE</span>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="font-display font-bold text-lg ${avgScore < 50 ? 'text-rose-700' : avgScore < 75 ? 'text-amber-700' : 'text-emerald-700'}">${avgScore}/100</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 ${avgScore < 50 ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'} border border-slate-950">${avgScore < 50 ? 'HIGH DEFECTS' : 'MODERATE'}</span>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">CRITICAL DEFECTS</span>
+          <span class="font-display font-bold text-lg text-rose-700">${criticalDefectsFound} Issues</span>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">VERIFIED DIRECT LEADS</span>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="font-display font-bold text-lg text-emerald-700">${waCount} Direct</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950">1-TAP WA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Bar with Export Button -->
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-950 pb-2">
+        <span class="font-bold text-slate-950 uppercase text-xs">Audited Business Prospects (${totalAudited})</span>
+        <button id="btn-export-business-csv" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs">
+          <span>📥 Export Prospecting CSV</span>
+        </button>
+      </div>
+
+      <!-- Targets Table -->
+      ${targets.length > 0 ? `
+        <div class="overflow-x-auto border border-slate-950 brutal-shadow-sm bg-white">
+          <table class="w-full border-collapse text-left font-mono text-xs">
+            <thead>
+              <tr class="bg-slate-950 text-white uppercase text-[11px]">
+                <th class="p-2.5 border-r border-slate-800">Business &amp; Domain</th>
+                <th class="p-2.5 border-r border-slate-800">Digital Health</th>
+                <th class="p-2.5 border-r border-slate-800">Defects Identified</th>
+                <th class="p-2.5 border-r border-slate-800">Verified Contacts</th>
+                <th class="p-2.5 text-center">1-Tap Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">
+              ${targets.map(t => {
+                const score = t.readinessScore ?? 50;
+                const scoreColor = score < 50 ? 'bg-rose-100 text-rose-900 border-rose-950' : score < 75 ? 'bg-amber-100 text-amber-900 border-amber-950' : 'bg-emerald-100 text-emerald-900 border-emerald-950';
+                const defects = t.defects || [];
+                const primaryPhone = t.contacts?.phones?.[0] || t.phone || '';
+                const email = t.contacts?.emails?.[0] || '';
+                
+                // Build pre-filled WhatsApp URL
+                let waUrl = t.contacts?.whatsAppLinks?.[0] || '';
+                if (!waUrl && primaryPhone) {
+                  const cleanP = primaryPhone.replace(/[^\d]/g, '').replace(/^0/, '27');
+                  if (cleanP.length >= 10) {
+                    const defectSummary = defects.slice(0, 2).map(d => d.title).join(' and ');
+                    const msg = `Hi ${t.businessName || 'there'}! I noticed a couple of technical issues on ${t.domain} ${defectSummary ? '(' + defectSummary + ')' : ''} that could be impacting your mobile lead conversions. Would you like me to share a quick 2-minute diagnostic?`;
+                    waUrl = `https://wa.me/${cleanP}?text=${encodeURIComponent(msg)}`;
+                  }
+                }
+                const isWa = waUrl && waUrl.includes('wa.me');
+
+                return `
+                  <tr class="hover:bg-sky-50/70 transition-colors">
+                    <td class="p-2.5 border-r border-slate-300 max-w-xs">
+                      <div class="font-bold text-slate-950 truncate" title="${esc(t.businessName || t.domain)}">
+                        ${esc(t.businessName || t.domain)}
+                      </div>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <a href="https://${esc(t.domain)}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-sky-700 underline truncate">
+                          ${esc(t.domain)}
+                        </a>
+                      </div>
+                      ${t.estimatedPitchValue ? `
+                        <span class="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.2 bg-slate-100 text-slate-800 border border-slate-950">
+                          Pitch: ${esc(t.estimatedPitchValue)}
+                        </span>
+                      ` : ''}
+                    </td>
+
+                    <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
+                      <div class="inline-flex items-center gap-1.5 px-2 py-1 border font-bold text-xs ${scoreColor}">
+                        <span>${score}/100</span>
+                      </div>
+                      <span class="block text-[10px] text-slate-500 mt-1 uppercase font-semibold">
+                        ${score < 50 ? 'High Vulnerability' : score < 75 ? 'Moderate' : 'Good Health'}
+                      </span>
+                    </td>
+
+                    <td class="p-2.5 border-r border-slate-300 max-w-xs">
+                      ${defects.length > 0 ? `
+                        <div class="flex flex-wrap gap-1">
+                          ${defects.slice(0, 3).map(d => `
+                            <span class="text-[10px] px-1.5 py-0.5 border border-slate-950 font-semibold ${
+                              d.severity === 'CRITICAL' ? 'bg-rose-100 text-rose-900' : 'bg-amber-100 text-amber-900'
+                            }" title="${esc(d.description || d.title)}">
+                              ⚠ ${esc(d.title)}
+                            </span>
+                          `).join('')}
+                          ${defects.length > 3 ? `<span class="text-[10px] text-slate-500 font-bold self-center">+${defects.length - 3} more</span>` : ''}
+                        </div>
+                      ` : `
+                        <span class="text-emerald-700 font-semibold text-[11px]">✅ No critical defects detected</span>
+                      `}
+                    </td>
+
+                    <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
+                      ${primaryPhone ? `
+                        <a href="tel:${esc(primaryPhone.replace(/[^+\d]/g, ''))}" class="font-bold text-slate-950 hover:text-sky-700 underline block">
+                          📞 ${esc(primaryPhone)}
+                        </a>
+                      ` : `
+                        <span class="text-slate-400 italic text-[11px]">No phone found</span>
+                      `}
+                      ${email ? `
+                        <a href="mailto:${esc(email)}" class="text-[11px] text-slate-600 hover:text-sky-700 underline block truncate max-w-[160px]">
+                          ✉ ${esc(email)}
+                        </a>
+                      ` : ''}
+                    </td>
+
+                    <td class="p-2.5 text-center whitespace-nowrap">
+                      <div class="inline-flex items-center gap-1">
+                        ${isWa ? `
+                          <a href="${esc(waUrl)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs" title="1-Tap Pre-filled WhatsApp Lead">
+                            <span>💬 WhatsApp</span>
+                          </a>
+                        ` : ''}
+                        <a href="https://${esc(t.domain)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 ${isWa ? 'bg-white hover:bg-slate-100 text-slate-900' : 'bg-sky-600 hover:bg-sky-700 text-white'} font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs" title="Visit Live Domain">
+                          <span>Visit ↗</span>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="p-6 bg-slate-50 border border-slate-950 text-center font-mono text-xs space-y-1">
+          <p class="font-bold text-slate-950 uppercase">No candidate businesses found in this area</p>
+          <p class="text-slate-600">Try broadening your search or adjusting the target city/industry.</p>
+        </div>
+      `}
+
+    </div>
+  `;
+
+  // Wire Export CSV button
+  const exportBtn = document.getElementById('btn-export-business-csv');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportBusinessCsv(targets, city, industry);
+    });
   }
 }
 
