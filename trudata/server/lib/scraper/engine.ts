@@ -38,6 +38,9 @@ export interface SourceResult {
 export interface Listing {
   price: number;
   km?: number;
+  year?: number;
+  title?: string;
+  source?: string;
 }
 
 export interface ValuationResult {
@@ -362,7 +365,7 @@ function titleMentionsVehicle(title: string, make: string, model: string, year: 
   const y = parseInt(String(year), 10);
   const tolerance = opts?.yearTolerance ?? YEAR_TOLERANCE;
   if (Number.isFinite(y) && y >= 1990 && y <= 2100) {
-    const ym = t.match(/\b(?:19|20)\d{2}\b/);
+    const ym = t.match(/(?:19|20)\d{2}/);
     if (ym && Math.abs(parseInt(ym[0], 10) - y) > tolerance) return false;
   }
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), "i").test(t));
@@ -442,7 +445,7 @@ const CIRCUIT_BREAKER_COOLDOWN_MS = 5 * 60 * 1000;
 let workerFailCount = 0;
 let workerCircuitOpenUntil = 0;
 
-async function renderViaWorker(url: string, maxMs?: number): Promise<string | null> {
+export async function renderViaWorker(url: string, maxMs?: number): Promise<string | null> {
   if (WORKER_URLS.length === 0) return null;
   if (Date.now() < workerCircuitOpenUntil) return null;
   const timeoutMs = Math.max(1, Math.min(WORKER_TIMEOUT_MS, maxMs ?? WORKER_TIMEOUT_MS));
@@ -521,9 +524,15 @@ export function serpConfigured(): boolean {
 export function parseSerpResults(json: any, make: string, model: string, year: string, cfg: MarketConfig): Listing[] {
   if (!json || typeof json !== "object") return [];
   const out: Listing[] = [];
+  const targetYr = parseInt(String(year), 10);
   const consider = (title: unknown, snippet: unknown, structuredPrice?: unknown) => {
     const text = `${String(title || "")} ${String(snippet || "")}`.trim();
     if (!text) return;
+    // When searching for a vehicle with a specific year, SERP snippet MUST contain the target year (±1 year)
+    if (Number.isFinite(targetYr) && targetYr >= 1990 && targetYr <= 2100) {
+      const ym = text.match(/(?:19|20)\d{2}/);
+      if (!ym || Math.abs(parseInt(ym[0], 10) - targetYr) > 1) return;
+    }
     if (!titleMentionsVehicle(text, make, model, year)) return;
     let price = typeof structuredPrice === "number" ? jsonPrice(structuredPrice, cfg) : null;
     if (price == null) {
@@ -573,7 +582,7 @@ export async function fetchSerpListings(make: string, model: string, year: strin
       const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
         method: "POST",
         headers: { Authorization: `Bearer ${getSerpApiKey()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ zone: getSerpZone(), url: googleUrl, format: "raw" }),
+        body: JSON.stringify({ zone: getSerpZone(), url: googleUrl, format: "raw", country }),
         signal: AbortSignal.timeout(SERP_TIMEOUT_MS),
       });
       if (!res.ok) return [];
@@ -653,9 +662,12 @@ export function extractPrices(html: string, selectors: string[], cfg: MarketConf
   return prices;
 }
 
-export function extractJsonLd(html: string, cfg: MarketConfig): Listing[] {
+export function extractJsonLd(html: string, cfg: MarketConfig, make?: string, model?: string, year?: string, opts?: { variant?: string; yearTolerance?: number }): Listing[] {
   const $ = cheerio.load(html);
   const out: Listing[] = [];
+  const targetYr = year ? parseInt(String(year), 10) : undefined;
+  const tolerance = opts?.yearTolerance ?? 1;
+
   $('script[type="application/ld+json"]').each((_, el) => {
     const raw = $(el).contents().text() || $(el).text();
     if (!raw) return;
@@ -667,6 +679,21 @@ export function extractJsonLd(html: string, cfg: MarketConfig): Listing[] {
       if (!types.some((t) => VEHICLE_TYPE_RE.test(String(t))) && !offer) continue;
       const price = num(offer?.price ?? offer?.lowPrice ?? node.price);
       if (price == null || price < cfg.minPrice || price > cfg.maxPrice) continue;
+
+      const nodeName = String(node.name || node.title || "");
+      const nodeYr = node.modelDate || node.productionDate || node.vehicleModelDate;
+      const fullText = `${nodeYr ? `${nodeYr} ` : ""}${nodeName}`.trim();
+
+      if (targetYr && Number.isFinite(targetYr) && targetYr >= 1990 && targetYr <= 2100) {
+        const ym = fullText.match(/(?:19|20)\d{2}/);
+        if (ym && Math.abs(parseInt(ym[0], 10) - targetYr) > tolerance) {
+          continue;
+        }
+      }
+      if (make && model && year && !yearTolerant(cfg, fullText, make, model, year, undefined, opts)) {
+        continue;
+      }
+
       const odo = node.mileageFromOdometer;
       let km = num(odo && typeof odo === "object" ? odo.value : odo);
       /* schema.org unitCode "SMI" = statute miles → km; a unit-less odometer in
@@ -697,10 +724,10 @@ function jsonLdNodes(root: any): any[] {
 
 const VEHICLE_TYPE_RE = /car|vehicle|motorcycle|product/i;
 
-function htmlToListings(html: string, selectors: string[], cfg: MarketConfig): Listing[] {
-  const jl = extractJsonLd(html, cfg);
+function htmlToListings(html: string, selectors: string[], cfg: MarketConfig, make?: string, model?: string, year?: string, opts?: { variant?: string; yearTolerance?: number }): Listing[] {
+  const jl = extractJsonLd(html, cfg, make, model, year, opts);
   if (jl.length) return jl;
-  return extractPrices(html, selectors, cfg).map((price) => ({ price }));
+  return [];
 }
 
 function yearTolerant(cfg: MarketConfig, title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number; variant?: string }): boolean {
@@ -714,15 +741,17 @@ export function extractCardListings(html: string, make: string, model: string, y
   const seen = new Set<string>();
 
   const selectCards = () => {
-    const anchors = $('a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"], a[class*="VehicleCard"]');
+    const anchors = $('a[href*="/car-for-sale/"], a[href*="/for-sale/"], a[href*="/usedcars/"], a[href*="/used-cars/"], a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"], a[class*="VehicleCard"]');
     if (anchors.length) return anchors;
-    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="listing-card"]');
+    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="listing-card"], article, [class*="listing"]');
   };
   const cards = selectCards();
 
   cards.each((_, el) => {
     const $c = $(el);
-    const cardText = $c.text().replace(/\s+/g, " ").trim();
+    const rawHtml = $c.html() || "";
+    const cleanText = rawHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const cardText = cleanText || $c.text().replace(/\s+/g, " ").trim();
     if (cardText.length < 8) return;
 
     if (!yearTolerant(cfg, cardText, make, model, year, undefined, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) return;
@@ -740,8 +769,15 @@ export function extractCardListings(html: string, make: string, model: string, y
     if (seen.has(key)) return;
     seen.add(key);
 
-    const yrMatch = cardText.match(/\b(19\d{2}|20\d{2})\b/);
-    const parsedYear = yrMatch ? parseInt(yrMatch[1], 10) : undefined;
+    const yrMatch = cardText.match(/(?:19|20)\d{2}/);
+    const parsedYear = yrMatch ? parseInt(yrMatch[0], 10) : undefined;
+    const targetYr = parseInt(String(year), 10);
+    const tolerance = opts?.yearTolerance ?? 1;
+
+    if (parsedYear && Number.isFinite(targetYr) && Math.abs(parsedYear - targetYr) > tolerance) {
+      return;
+    }
+
     out.push({
       price: Math.round(price),
       km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined,
@@ -761,6 +797,9 @@ export function extractNextDataListings(html: string, make: string, model: strin
   try { root = JSON.parse(raw); } catch { return []; }
   const out: Listing[] = [];
   const seen = new Set<string>();
+  const targetYr = parseInt(String(year), 10);
+  const tolerance = opts?.yearTolerance ?? 1;
+
   const visit = (n: any) => {
     if (n == null) return;
     if (typeof n === "string") {
@@ -776,9 +815,16 @@ export function extractNextDataListings(html: string, make: string, model: strin
     if (price != null && price >= cfg.minPrice && price <= cfg.maxPrice && (n.make || n.model || n.title)) {
       /* Feeds name the year field differently (year / modelYear / vehicleYear). */
       const yr = n.year ?? n.modelYear ?? n.vehicleYear;
+      const parsedYr = Number(yr);
+
+      // Strict structured year check if available
+      if (Number.isFinite(parsedYr) && parsedYr >= 1990 && parsedYr <= 2100 && Number.isFinite(targetYr)) {
+        if (Math.abs(parsedYr - targetYr) > tolerance) return;
+      }
+
       const variantText = [n.variant, n.variantName, n.derivative, n.trim, n.subTitle, n.subtitle, n.badge, n.engine, n.summary].filter(Boolean).join(" ");
-      const title = `${n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`} ${variantText}`.trim();
-      if (yearTolerant(cfg, title, make, model, year, undefined, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) {
+      const title = `${yr ? `${yr} ` : ""}${n.title || `${n.make ?? ""} ${n.model ?? ""}`} ${variantText}`.trim();
+      if (yearTolerant(cfg, title, make, model, year, undefined, { yearTolerance: tolerance, variant: opts?.variant })) {
         const key = `${n.reference ?? n.id ?? ""}|${price}`;
         if (!seen.has(key)) {
           seen.add(key);

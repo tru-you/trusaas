@@ -123,7 +123,7 @@ function classifiedParser(cfg: MarketConfig, make: string, model: string, year: 
     if (nd.length) return nd;
     const cards = extractCardListings(html, make, model, year, cfg, opts);
     if (cards.length) return cards;
-    const jl = extractJsonLd(html, cfg);
+    const jl = extractJsonLd(html, cfg, make, model, year, opts);
     if (jl.length) return jl;
     return [];
   };
@@ -222,7 +222,6 @@ export async function fetchValuation(
           } catch (err: any) {
             console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
           }
-          if (listings.length === 0) break;
           acc.push(...listings);
           if (acc.length >= 20) break; // Plenty of clean comps, avoid timeout
         }

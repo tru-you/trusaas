@@ -398,31 +398,31 @@ var init_detector = __esm({
 });
 
 // legacy-finder/contacts.ts
-function extractPhones(text, html, country = "za") {
+function extractPhones(text, html, country2 = "za") {
   const phones = /* @__PURE__ */ new Set();
   const telRegex = /href=["']tel:([^"']+)["']/gi;
   let match;
   while ((match = telRegex.exec(html)) !== null) {
     const raw = match[1].replace(/[\s\-\(\)\.]/g, "");
     if (raw.length >= 9 && raw.length <= 15) {
-      phones.add(formatPhone(raw, country));
+      phones.add(formatPhone(raw, country2));
     }
   }
   const zaPattern = /(?:(?:\+27|0027)\s*\(?0?\)?|0)\s*[1-8](?:[\s\-]?[0-9]){8}/g;
   const ukPattern = /(?:(?:\+44|0044)\s*\(?0?\)?|0)\s*[1-9](?:[\s\-]?[0-9]){9}/g;
-  const pattern = country === "uk" ? ukPattern : zaPattern;
+  const pattern = country2 === "uk" ? ukPattern : zaPattern;
   const textMatches = text.match(pattern) || [];
   textMatches.forEach((p) => {
     const clean = p.replace(/[\s\-\(\)\.]/g, "");
     if (clean.length >= 9 && clean.length <= 14) {
-      phones.add(formatPhone(clean, country));
+      phones.add(formatPhone(clean, country2));
     }
   });
   return Array.from(phones).slice(0, 6);
 }
-function formatPhone(phone, country) {
+function formatPhone(phone, country2) {
   let p = phone.replace(/[^\d+]/g, "");
-  if (country === "za") {
+  if (country2 === "za") {
     if (p.startsWith("0") && p.length === 10) {
       return `+27 ${p.slice(1, 3)} ${p.slice(3, 6)} ${p.slice(6)}`;
     }
@@ -432,7 +432,7 @@ function formatPhone(phone, country) {
     if (p.startsWith("+27") && p.length === 12) {
       return `+27 ${p.slice(3, 5)} ${p.slice(5, 8)} ${p.slice(8)}`;
     }
-  } else if (country === "uk") {
+  } else if (country2 === "uk") {
     if (p.startsWith("0") && p.length === 11) {
       return `+44 ${p.slice(1, 5)} ${p.slice(5)}`;
     }
@@ -476,10 +476,10 @@ function extractWhatsAppLinks(html) {
   }
   return Array.from(links);
 }
-function parseContactPage($, country = "za") {
+function parseContactPage($, country2 = "za") {
   const text = $("body").text();
   const html = $.html();
-  const phones = extractPhones(text, html, country);
+  const phones = extractPhones(text, html, country2);
   const emails = extractEmails(text, html);
   const whatsAppLinks = extractWhatsAppLinks(html);
   const socialLinks = {};
@@ -551,11 +551,11 @@ __export(crawler_exports, {
   crawlLegacySites: () => crawlLegacySites
 });
 async function crawlLegacySites(request) {
-  const { city, industry, country = "za", maxResults = 10 } = request;
-  const currency = country === "uk" ? "\xA3" : "R";
+  const { city, industry, country: country2 = "za", maxResults = 10 } = request;
+  const currency = country2 === "uk" ? "\xA3" : "R";
   const query = `${industry} in ${city}`;
-  console.log(`[LegacyFinder] Starting crawl for: "${query}" (${country.toUpperCase()})`);
-  const candidateDomains = await discoverBusinessDomains(industry, city, country, maxResults * 3);
+  console.log(`[LegacyFinder] Starting crawl for: "${query}" (${country2.toUpperCase()})`);
+  const candidateDomains = await discoverBusinessDomains(industry, city, country2, maxResults * 3);
   console.log(`[LegacyFinder] Discovered ${candidateDomains.length} candidate business domains.`);
   const targets = [];
   const CONCURRENCY = 5;
@@ -565,7 +565,7 @@ async function crawlLegacySites(request) {
     const batch = candidates.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(
       batch.map(
-        (domainInfo) => auditDomain(domainInfo.domain, domainInfo.title, city, industry, currency, country)
+        (domainInfo) => auditDomain(domainInfo.domain, domainInfo.title, city, industry, currency, country2)
       )
     );
     for (const r of results) {
@@ -588,18 +588,18 @@ async function crawlLegacySites(request) {
     scannedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
 }
-async function discoverBusinessDomains(industry, city, country, limit) {
+async function discoverBusinessDomains(industry, city, country2, limit) {
   const domains = [];
   const queryStr = `${industry} ${city} contact`;
   const serpApiKey = process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || "";
   const serpZone = process.env.SERP_ZONE || "serp_api1";
-  const googleDomain = country === "uk" ? "google.co.uk" : "google.co.za";
-  const gl = country === "uk" ? "gl=gb" : "gl=za";
+  const googleDomain = country2 === "uk" ? "google.co.uk" : "google.co.za";
+  const gl = country2 === "uk" ? "gl=gb" : "gl=za";
   if (process.env.SERPER_API_KEY && domains.length < limit) {
     try {
       const { serperSearch: serperSearch2 } = await Promise.resolve().then(() => (init_serper(), serper_exports));
       const result = await serperSearch2(queryStr, {
-        gl: country === "uk" ? "gb" : "za",
+        gl: country2 === "uk" ? "gb" : "za",
         num: 20
       });
       for (const r of result.organic) {
@@ -693,7 +693,7 @@ async function discoverBusinessDomains(industry, city, country, limit) {
   }
   return domains;
 }
-async function auditDomain(domain, rawTitle, city, industry, currency, country) {
+async function auditDomain(domain, rawTitle, city, industry, currency, country2) {
   const t0 = Date.now();
   let activeUrl = `https://${domain}`;
   let html = "";
@@ -733,7 +733,7 @@ async function auditDomain(domain, rawTitle, city, industry, currency, country) 
   const $ = cheerio3.load(html);
   let businessName = $("title").text().trim().split(/[-|–•]/)[0].trim() || rawTitle || domain;
   if (businessName.length > 50) businessName = businessName.slice(0, 50);
-  const contacts = parseContactPage($, country);
+  const contacts = parseContactPage($, country2);
   const audit = auditWebsite(activeUrl, html, headers, loadTimeMs, currency);
   if (contacts.phones.length === 0 && contacts.contactPagesFound.length > 0) {
     try {
@@ -741,7 +741,7 @@ async function auditDomain(domain, rawTitle, city, industry, currency, country) 
       const contactRes = await import_axios3.default.get(contactUrl, { timeout: 4e3 });
       if (typeof contactRes.data === "string") {
         const $c = cheerio3.load(contactRes.data);
-        const contactPageInfo = parseContactPage($c, country);
+        const contactPageInfo = parseContactPage($c, country2);
         if (contactPageInfo.phones.length > 0) contacts.phones = contactPageInfo.phones;
         if (contactPageInfo.emails.length > 0) contacts.emails = contactPageInfo.emails;
         if (contactPageInfo.address && !contacts.address) contacts.address = contactPageInfo.address;
@@ -967,7 +967,7 @@ function titleMentionsVehicle(title, make, model, year, match, opts) {
   const y = parseInt(String(year), 10);
   const tolerance = opts?.yearTolerance ?? YEAR_TOLERANCE;
   if (Number.isFinite(y) && y >= 1990 && y <= 2100) {
-    const ym = t.match(/\b(?:19|20)\d{2}\b/);
+    const ym = t.match(/(?:19|20)\d{2}/);
     if (ym && Math.abs(parseInt(ym[0], 10) - y) > tolerance) return false;
   }
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), "i").test(t));
@@ -1054,14 +1054,14 @@ async function renderViaWorker(url, maxMs) {
   }
   return null;
 }
-async function brightDataFetch(targetUrl, zone, country, timeoutMs) {
+async function brightDataFetch(targetUrl, zone, country2, timeoutMs) {
   const apiKey = getBdApiKey();
   if (!apiKey) return null;
   try {
     const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ zone, url: targetUrl, format: "raw", country }),
+      body: JSON.stringify({ zone, url: targetUrl, format: "raw", country: country2 }),
       signal: AbortSignal.timeout(timeoutMs)
     });
     if (!res.ok) {
@@ -1086,10 +1086,10 @@ async function brightDataFetch(targetUrl, zone, country, timeoutMs) {
 function unlockerConfigured() {
   return isUnlockerEnabled() && !!getBdApiKey();
 }
-async function renderViaUnlocker(url, country, maxMs) {
+async function renderViaUnlocker(url, country2, maxMs) {
   if (!unlockerConfigured()) return null;
   console.log(`[scraper] Attempting Bright Data unlocker for: ${url}`);
-  return brightDataFetch(url, getUnlockerZone(), country, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
+  return brightDataFetch(url, getUnlockerZone(), country2, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
 }
 function serpConfigured() {
   return !!process.env.SERPER_API_KEY || !!getSerpApiKey() && (getSerpProvider() === "brightdata" || getSerpProvider() === "serpapi");
@@ -1097,9 +1097,14 @@ function serpConfigured() {
 function parseSerpResults(json, make, model, year, cfg) {
   if (!json || typeof json !== "object") return [];
   const out = [];
+  const targetYr = parseInt(String(year), 10);
   const consider = (title, snippet, structuredPrice) => {
     const text = `${String(title || "")} ${String(snippet || "")}`.trim();
     if (!text) return;
+    if (Number.isFinite(targetYr) && targetYr >= 1990 && targetYr <= 2100) {
+      const ym = text.match(/(?:19|20)\d{2}/);
+      if (!ym || Math.abs(parseInt(ym[0], 10) - targetYr) > 1) return;
+    }
     if (!titleMentionsVehicle(text, make, model, year)) return;
     let price = typeof structuredPrice === "number" ? jsonPrice(structuredPrice, cfg) : null;
     if (price == null) {
@@ -1140,7 +1145,7 @@ async function fetchSerpListings(make, model, year, cfg) {
       const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
         method: "POST",
         headers: { Authorization: `Bearer ${getSerpApiKey()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ zone: getSerpZone(), url: googleUrl, format: "raw" }),
+        body: JSON.stringify({ zone: getSerpZone(), url: googleUrl, format: "raw", country }),
         signal: AbortSignal.timeout(SERP_TIMEOUT_MS)
       });
       if (!res.ok) return [];
@@ -1195,9 +1200,11 @@ function extractPricesFromText(text, cfg) {
   }
   return prices;
 }
-function extractJsonLd(html, cfg) {
+function extractJsonLd(html, cfg, make, model, year, opts) {
   const $ = cheerio.load(html);
   const out = [];
+  const targetYr = year ? parseInt(String(year), 10) : void 0;
+  const tolerance = opts?.yearTolerance ?? 1;
   $('script[type="application/ld+json"]').each((_, el) => {
     const raw = $(el).contents().text() || $(el).text();
     if (!raw) return;
@@ -1213,6 +1220,18 @@ function extractJsonLd(html, cfg) {
       if (!types.some((t) => VEHICLE_TYPE_RE.test(String(t))) && !offer) continue;
       const price = num(offer?.price ?? offer?.lowPrice ?? node.price);
       if (price == null || price < cfg.minPrice || price > cfg.maxPrice) continue;
+      const nodeName = String(node.name || node.title || "");
+      const nodeYr = node.modelDate || node.productionDate || node.vehicleModelDate;
+      const fullText = `${nodeYr ? `${nodeYr} ` : ""}${nodeName}`.trim();
+      if (targetYr && Number.isFinite(targetYr) && targetYr >= 1990 && targetYr <= 2100) {
+        const ym = fullText.match(/(?:19|20)\d{2}/);
+        if (ym && Math.abs(parseInt(ym[0], 10) - targetYr) > tolerance) {
+          continue;
+        }
+      }
+      if (make && model && year && !yearTolerant(cfg, fullText, make, model, year, void 0, opts)) {
+        continue;
+      }
       const odo = node.mileageFromOdometer;
       let km = num(odo && typeof odo === "object" ? odo.value : odo);
       const unit = odo && typeof odo === "object" ? String(odo.unitCode || "") : "";
@@ -1250,14 +1269,16 @@ function extractCardListings(html, make, model, year, cfg, opts) {
   const out = [];
   const seen = /* @__PURE__ */ new Set();
   const selectCards = () => {
-    const anchors = $('a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"], a[class*="VehicleCard"]');
+    const anchors = $('a[href*="/car-for-sale/"], a[href*="/for-sale/"], a[href*="/usedcars/"], a[href*="/used-cars/"], a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"], a[class*="VehicleCard"]');
     if (anchors.length) return anchors;
-    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="listing-card"]');
+    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="listing-card"], article, [class*="listing"]');
   };
   const cards = selectCards();
   cards.each((_, el) => {
     const $c = $(el);
-    const cardText = $c.text().replace(/\s+/g, " ").trim();
+    const rawHtml = $c.html() || "";
+    const cleanText = rawHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const cardText = cleanText || $c.text().replace(/\s+/g, " ").trim();
     if (cardText.length < 8) return;
     if (!yearTolerant(cfg, cardText, make, model, year, void 0, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) return;
     const priceEl = $c.find('[class^="e-price__"], [class*="price"]').first();
@@ -1269,8 +1290,13 @@ function extractCardListings(html, make, model, year, cfg, opts) {
     const key = `${Math.round(price)}|${km ?? ""}`;
     if (seen.has(key)) return;
     seen.add(key);
-    const yrMatch = cardText.match(/\b(19\d{2}|20\d{2})\b/);
-    const parsedYear = yrMatch ? parseInt(yrMatch[1], 10) : void 0;
+    const yrMatch = cardText.match(/(?:19|20)\d{2}/);
+    const parsedYear = yrMatch ? parseInt(yrMatch[0], 10) : void 0;
+    const targetYr = parseInt(String(year), 10);
+    const tolerance = opts?.yearTolerance ?? 1;
+    if (parsedYear && Number.isFinite(targetYr) && Math.abs(parsedYear - targetYr) > tolerance) {
+      return;
+    }
     out.push({
       price: Math.round(price),
       km: km != null && km > 0 && km < 1e6 ? Math.round(km) : void 0,
@@ -1292,6 +1318,8 @@ function extractNextDataListings(html, make, model, year, cfg, opts) {
   }
   const out = [];
   const seen = /* @__PURE__ */ new Set();
+  const targetYr = parseInt(String(year), 10);
+  const tolerance = opts?.yearTolerance ?? 1;
   const visit = (n) => {
     if (n == null) return;
     if (typeof n === "string") {
@@ -1312,9 +1340,13 @@ function extractNextDataListings(html, make, model, year, cfg, opts) {
     const price = typeof n.price === "number" ? n.price : null;
     if (price != null && price >= cfg.minPrice && price <= cfg.maxPrice && (n.make || n.model || n.title)) {
       const yr = n.year ?? n.modelYear ?? n.vehicleYear;
+      const parsedYr = Number(yr);
+      if (Number.isFinite(parsedYr) && parsedYr >= 1990 && parsedYr <= 2100 && Number.isFinite(targetYr)) {
+        if (Math.abs(parsedYr - targetYr) > tolerance) return;
+      }
       const variantText = [n.variant, n.variantName, n.derivative, n.trim, n.subTitle, n.subtitle, n.badge, n.engine, n.summary].filter(Boolean).join(" ");
-      const title = `${n.title || `${yr ?? ""} ${n.make ?? ""} ${n.model ?? ""}`} ${variantText}`.trim();
-      if (yearTolerant(cfg, title, make, model, year, void 0, { yearTolerance: opts?.yearTolerance ?? 1, variant: opts?.variant })) {
+      const title = `${yr ? `${yr} ` : ""}${n.title || `${n.make ?? ""} ${n.model ?? ""}`} ${variantText}`.trim();
+      if (yearTolerant(cfg, title, make, model, year, void 0, { yearTolerance: tolerance, variant: opts?.variant })) {
         const key = `${n.reference ?? n.id ?? ""}|${price}`;
         if (!seen.has(key)) {
           seen.add(key);
@@ -1702,7 +1734,7 @@ function classifiedParser(cfg, make, model, year, variant, yearTolerance = 1) {
     if (nd.length) return nd;
     const cards = extractCardListings(html, make, model, year, cfg, opts);
     if (cards.length) return cards;
-    const jl = extractJsonLd(html, cfg);
+    const jl = extractJsonLd(html, cfg, make, model, year, opts);
     if (jl.length) return jl;
     return [];
   };
@@ -1784,7 +1816,6 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
           } catch (err) {
             console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
           }
-          if (listings.length === 0) break;
           acc.push(...listings);
           if (acc.length >= 20) break;
         }
@@ -2292,12 +2323,12 @@ app.post("/api/agency/crawl", async (req, res) => {
   const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString();
   if (throttled(ip)) return res.status(429).json({ error: "Too many requests \u2014 slow down." });
   try {
-    const { city = "Durban", industry = "plumbers", country = "za", limit = 10 } = req.body || {};
+    const { city = "Durban", industry = "plumbers", country: country2 = "za", limit = 10 } = req.body || {};
     const { crawlLegacySites: crawlLegacySites2 } = await Promise.resolve().then(() => (init_crawler(), crawler_exports));
     const data = await crawlLegacySites2({
       city: String(city).trim(),
       industry: String(industry).trim(),
-      country: country === "uk" ? "uk" : "za",
+      country: country2 === "uk" ? "uk" : "za",
       maxResults: Math.min(25, Math.max(1, Number(limit) || 10))
     });
     res.json(data);
