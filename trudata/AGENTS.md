@@ -9,9 +9,9 @@
 
 TruData is a **B2B data marketplace** for South Africa. Five product verticals, credit-based billing, honest data — you only pay for verified results.
 
-**Domain:** `data.tru-saas.com`
+**Domain:** `data.tru-saas.com` (moving to standalone domain, e.g. `trudata.co.za`)
 **Stack:** Node/Express + vanilla HTML/JS/CSS SPA + JSON file storage
-**Deploy:** Render.com starter plan, service `trusaas-data`
+**Deploy:** **Hetzner Dedicated Server** (`2.29.17.123`), PM2 service (NOT on Render)
 
 ---
 
