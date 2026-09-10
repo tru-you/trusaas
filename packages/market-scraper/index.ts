@@ -248,19 +248,31 @@ export async function fetchValuation(
     }
   }
 
-  // ── STAGE 3: Adjacent Year Backup (±1 Year Only) ──
-  // If still < 3 comps, look 1 year either side (year - 1 and year + 1)
+  // ── STAGE 3: Adjacent Year Backup (±2 Years) ──
+  // Bright Data often ignores year URL filters, so titleMentionsVehicle year check
+  // is the real gate. Widen to ±2 years; adjustForYearGap handles the price correction.
   if (classifiedListings.length < 3 && Number.isFinite(subjYear)) {
-    const prevYear = String(subjYear - 1);
-    const nextYear = String(subjYear + 1);
-    const [prevResults, nextResults] = await Promise.all([
-      runClassifiedPass(baseModel, prevYear, coreVariant || variant, 0),
-      runClassifiedPass(baseModel, nextYear, coreVariant || variant, 0),
-    ]);
-    for (const { listings } of [...prevResults, ...nextResults]) {
+    const adjacentYears = [subjYear - 1, subjYear + 1, subjYear - 2, subjYear + 2].map(String);
+    const adjacentResults = await Promise.all(
+      adjacentYears.map((ay) => runClassifiedPass(baseModel, ay, coreVariant || variant, 0))
+    );
+    for (const results of adjacentResults) {
+      for (const { listings } of results) {
+        classifiedListings.push(...listings);
+      }
+    }
+  }
+
+  // ── STAGE 4: Sibling Variant Fallback (Same Year, No Variant Filter) ──
+  // If exact variant is too rare (e.g. Fortuner 2.5 D-4D), drop the variant filter
+  // and let adjustForTrim's displacement differential handle the price correction.
+  if (classifiedListings.length < 3) {
+    const stage4Results = await runClassifiedPass(baseModel, y, undefined, 0);
+    for (const { listings } of stage4Results) {
       classifiedListings.push(...listings);
     }
   }
+  console.log(`[SCRAPER-DEBUG] After all stages: ${classifiedListings.length} classified comps`, classifiedListings.map(l => ({ price: l.price, year: l.year, title: l.title?.slice(0, 80), source: l.source })));
 
   // Compile classified source summary
   const classifiedBySource = new Map<string, Listing[]>();
@@ -363,17 +375,21 @@ export async function fetchValuation(
     }
   }
 
-  // Apply mathematical Year-Gap adjustment (±3.5%/yr) and Trim differential adjustment (±7%, Auto/Manual, 4x4/4x2)
+  // Apply make-aware Year-Gap adjustment and Trim differential adjustment
+  const isEv = /\b(electric|ev\b|bev\b|phev|e-tron|id\.\d|ioniq\s*[56]|model\s*[3sy]|leaf|zs\s*ev)\b/i.test(`${variant} ${cleanModel}`);
   const adjustedComps = candidateListings.map((l) => {
     let p = l.price;
     if (l.year && Number.isFinite(subjYear)) {
-      p = adjustForYearGap(p, l.year, subjYear);
+      p = adjustForYearGap(p, l.year, subjYear, make, isEv);
     }
     if (l.title && variant) {
       p = adjustForTrim(p, l.title, variant);
     }
     return p;
   });
+  console.log(`[SCRAPER-DEBUG] Raw prices:`, candidateListings.map(l => l.price));
+  console.log(`[SCRAPER-DEBUG] Adjusted prices:`, adjustedComps);
+  console.log(`[SCRAPER-DEBUG] Titles present:`, candidateListings.map(l => !!l.title));
 
   // Filter statistical outliers (e.g. keying errors, armored/extreme conversions, salvage)
   const validComps = iqrFilter(adjustedComps);
