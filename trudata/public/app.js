@@ -573,65 +573,306 @@ function renderVehicleResults(data) {
 // ──────────────────────────────────────────────────
 // PILLAR 2: PROPERTY & REAL ESTATE
 // ──────────────────────────────────────────────────
+// ──────────────────────────────────────────────────
+// PILLAR 2: PROPERTY & REAL ESTATE
+// ──────────────────────────────────────────────────
 const formProperty = document.getElementById('panel-property');
 if (formProperty) {
   formProperty.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const inputEl = document.getElementById('input-property-suburb');
-    const suburb = inputEl ? inputEl.value.trim() : 'Sandton';
+    const suburbEl = document.getElementById('input-property-suburb');
+    const cityEl = document.getElementById('input-property-city');
+    const typeEl = document.getElementById('select-property-type');
+    const scopeEl = document.getElementById('select-property-scope');
+
+    const suburb = suburbEl ? suburbEl.value.trim() : 'Sandton';
+    const city = cityEl ? cityEl.value.trim() : 'Johannesburg';
+    const propertyType = typeEl ? typeEl.value : 'property';
+    const scope = scopeEl ? scopeEl.value : 'all';
+
     if (!suburb) return;
 
     showResults('property');
-    setResultsLoading(true, `Scraping Property24 & Private Property comps for ${suburb}...`);
+    setResultsLoading(true, `Querying Property24, Private Property & FSBO Owner leads for ${suburb}...`);
     burnCredits('property');
 
     try {
-      const res = await fetch('/api/property/comps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ suburb, city: 'Johannesburg' })
-      });
-      if (!res.ok) throw new Error('Property search failed');
-      const data = await res.json();
-      renderPropertyResults(data, suburb);
+      let compsData = null;
+      let fsboData = null;
+
+      const promises = [];
+
+      if (scope === 'all' || scope === 'comps') {
+        promises.push(
+          fetch('/api/property/comps', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ suburb, city, propertyType })
+          }).then(r => r.ok ? r.json() : null).catch(() => null)
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      if (scope === 'all' || scope === 'fsbo') {
+        promises.push(
+          fetch('/api/property/fsbo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ suburb, city, limit: 10 })
+          }).then(r => r.ok ? r.json() : null).catch(() => null)
+        );
+      } else {
+        promises.push(Promise.resolve(null));
+      }
+
+      const [compsRes, fsboRes] = await Promise.all(promises);
+      compsData = compsRes;
+      fsboData = fsboRes;
+
+      if (!compsData && !fsboData) {
+        throw new Error('No property data could be retrieved for this location.');
+      }
+
+      renderPropertyResults(compsData, fsboData, suburb, city, scope);
     } catch (err) {
-      renderError('Property search query failed. Please check the suburb name.');
+      renderError(`Property search failed for "${suburb}". Please check the suburb name and try again.`);
       showToast('Property search failed.', 'error');
     }
   });
 }
 
-function renderPropertyResults(data, suburb) {
-  updateJsonSchemaViewer(data);
+function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
+  const consolidated = {
+    suburb,
+    city,
+    scannedAt: new Date().toISOString(),
+    comps: comps || { message: 'Not requested in this query' },
+    fsbo: fsbo || { message: 'Not requested in this query' }
+  };
+  updateJsonSchemaViewer(consolidated);
+
   const titleEl = document.getElementById('results-title');
-  if (titleEl) titleEl.textContent = `${suburb} Suburb Property Comps`;
+  if (titleEl) titleEl.textContent = `${suburb}, ${city} Property Intelligence`;
+
+  const totalComps = comps ? (comps.totalActiveListings || 0) : 0;
+  const totalFsbo = fsbo ? (fsbo.count || (fsbo.leads ? fsbo.leads.length : 0)) : 0;
 
   const countEl = document.getElementById('results-count');
-  if (countEl) countEl.textContent = `${data.totalActiveListings || data.count || 0} listings found`;
+  if (countEl) {
+    countEl.textContent = `${totalComps} Comps Analyzed · ${totalFsbo} FSBO Direct Owner Leads`;
+  }
 
   const sourceEl = document.getElementById('results-source');
-  if (sourceEl) sourceEl.textContent = 'Sources: Property24, Private Property via Bright Data';
+  if (sourceEl) {
+    sourceEl.textContent = 'Sources: Property24, Private Property, Gumtree SA Property';
+  }
 
   const container = document.getElementById('table-container');
-  if (container) {
-    container.innerHTML = `
-      <div class="space-y-4 font-mono text-xs">
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
-            <span class="text-slate-500 block text-[10px] uppercase">MEDIAN ASKING PRICE</span>
-            <span class="font-display font-bold text-lg text-sky-800">R ${numberFormat(data.medianAskingPrice || data.median)}</span>
+  if (!container) return;
+
+  const medianPrice = comps?.medianAskingPrice || fsbo?.averageAskingPrice || 0;
+  const lowPrice = comps?.low || (fsbo?.leads?.length ? Math.min(...fsbo.leads.map(l => l.askingPrice)) : 0);
+  const highPrice = comps?.high || (fsbo?.leads?.length ? Math.max(...fsbo.leads.map(l => l.askingPrice)) : 0);
+  const confidence = comps?.confidence || (totalFsbo > 2 ? 'medium' : 'low');
+
+  const leads = fsbo?.leads || [];
+
+  container.innerHTML = `
+    <div class="space-y-5 font-mono text-xs">
+      
+      <!-- Top Metrics Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">MEDIAN ASKING PRICE</span>
+          <span class="font-display font-bold text-lg text-sky-800">R ${numberFormat(medianPrice)}</span>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">PRICE SPREAD</span>
+          <span class="font-display font-bold text-sm sm:text-base text-slate-950">R ${numberFormat(lowPrice)} - R ${numberFormat(highPrice)}</span>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">ACTIVE MARKET COMPS</span>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="font-display font-bold text-base text-slate-950">${totalComps} Properties</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950">${esc(confidence).toUpperCase()}</span>
           </div>
-          <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
-            <span class="text-slate-500 block text-[10px] uppercase">ACTIVE LISTINGS</span>
-            <span class="font-display font-bold text-base text-slate-950">${data.totalActiveListings || 0} Properties</span>
-          </div>
-          <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
-            <span class="text-slate-500 block text-[10px] uppercase">CONFIDENCE</span>
-            <span class="font-display font-bold text-base text-emerald-600 uppercase">${esc(data.confidence || 'MEDIUM')}</span>
+        </div>
+        <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">DIRECT FSBO RADAR</span>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="font-display font-bold text-base text-emerald-700">${totalFsbo} Direct Owners</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 border border-slate-950">0% COMM</span>
           </div>
         </div>
       </div>
-    `;
+
+      <!-- Sub-Tabs Selector Bar -->
+      <div class="flex items-center justify-between border-b-2 border-slate-950 pb-2">
+        <div class="flex items-center gap-2">
+          <button id="btn-subtab-fsbo" class="px-3 py-1.5 bg-sky-600 text-white font-bold border border-slate-950 brutal-shadow-sm text-xs">
+            Direct Private Sellers (${totalFsbo})
+          </button>
+          <button id="btn-subtab-comps" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-900 font-bold border border-slate-950 brutal-shadow-sm text-xs">
+            Market Comps &amp; Portals (${comps?.sources?.length || 0})
+          </button>
+        </div>
+        <span class="text-[11px] text-slate-500 hidden sm:inline">Click 💬 WhatsApp to open pre-filled inquiry</span>
+      </div>
+
+      <!-- SECTION 1: VERIFIED DIRECT FSBO LEADS TABLE -->
+      <div id="deck-fsbo" class="space-y-3">
+        ${leads.length > 0 ? `
+          <div class="overflow-x-auto border border-slate-950 brutal-shadow-sm bg-white">
+            <table class="w-full border-collapse text-left font-mono text-xs">
+              <thead>
+                <tr class="bg-slate-950 text-white uppercase text-[11px]">
+                  <th class="p-2.5 border-r border-slate-800">Property / Headline</th>
+                  <th class="p-2.5 border-r border-slate-800">Asking Price</th>
+                  <th class="p-2.5 border-r border-slate-800">Direct Contact</th>
+                  <th class="p-2.5 border-r border-slate-800">Listed</th>
+                  <th class="p-2.5 border-r border-slate-800">Portal</th>
+                  <th class="p-2.5 text-center">1-Tap Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-300">
+                ${leads.map(lead => {
+                  let waUrl = lead.whatsAppUrl || '';
+                  const hasPhone = lead.phone && lead.phone !== 'Inquire via portal';
+                  if (!waUrl.includes('wa.me') && hasPhone) {
+                    const cleanP = lead.phone.replace(/[^\d]/g, '').replace(/^0/, '27');
+                    if (cleanP.length >= 10) {
+                      const msg = `Hi! I saw your property listing "${lead.headline}" in ${suburb} (${lead.formattedPrice || 'R ' + numberFormat(lead.askingPrice)}). Is it still available for viewing?`;
+                      waUrl = `https://wa.me/${cleanP}?text=${encodeURIComponent(msg)}`;
+                    }
+                  }
+                  const isWa = waUrl && waUrl.includes('wa.me');
+                  return `
+                    <tr class="hover:bg-sky-50/70 transition-colors">
+                      <td class="p-2.5 border-r border-slate-300 max-w-xs">
+                        <div class="font-bold text-slate-950 truncate" title="${esc(lead.headline)}">${esc(lead.headline)}</div>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                          <span class="text-[10px] px-1.5 py-0.2 bg-slate-100 border border-slate-950 font-semibold uppercase text-slate-700">
+                            ${esc(lead.propertyType || 'Property')}
+                          </span>
+                          <span class="text-[10px] text-slate-500">${esc(lead.suburb)}</span>
+                        </div>
+                      </td>
+                      <td class="p-2.5 border-r border-slate-300 font-bold text-sky-900 whitespace-nowrap">
+                        ${esc(lead.formattedPrice || 'R ' + numberFormat(lead.askingPrice))}
+                      </td>
+                      <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
+                        ${hasPhone ? `
+                          <a href="tel:${esc(lead.phone.replace(/[^+\d]/g, ''))}" class="font-bold text-slate-950 hover:text-sky-700 underline flex items-center gap-1">
+                            📞 ${esc(lead.phone)}
+                          </a>
+                        ` : `
+                          <span class="text-slate-500 italic text-[11px]">${esc(lead.phone)}</span>
+                        `}
+                        <span class="text-[10px] text-slate-500 block">${esc(lead.ownerName || 'Verified Owner')}</span>
+                      </td>
+                      <td class="p-2.5 border-r border-slate-300 text-slate-600 whitespace-nowrap">
+                        ${lead.daysListed ? `${lead.daysListed}d ago` : 'Recent'}
+                      </td>
+                      <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
+                        <span class="text-[10px] px-2 py-0.5 border border-slate-950 font-bold ${
+                          lead.portalSource === 'Gumtree Private' ? 'bg-amber-100 text-amber-900' :
+                          lead.portalSource === 'Private Property (Direct)' ? 'bg-indigo-100 text-indigo-900' :
+                          'bg-slate-100 text-slate-800'
+                        }">
+                          ${esc(lead.portalSource || 'Classifieds')}
+                        </span>
+                      </td>
+                      <td class="p-2.5 text-center whitespace-nowrap">
+                        <div class="inline-flex items-center gap-1">
+                          ${isWa ? `
+                            <a href="${esc(waUrl)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs">
+                              <span>💬 WhatsApp</span>
+                            </a>
+                          ` : ''}
+                          <a href="${esc(lead.sourceUrl || '#')}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 ${isWa ? 'bg-white hover:bg-slate-100 text-slate-900' : 'bg-sky-600 hover:bg-sky-700 text-white'} font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs" title="View Source Listing">
+                            <span>${isWa ? 'Listing ↗' : 'View Deal ↗'}</span>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : `
+          <div class="p-6 bg-amber-50 border border-slate-950 text-center font-mono text-xs space-y-1 brutal-shadow-sm">
+            <p class="font-bold text-amber-950 uppercase">No active private seller leads found for this suburb</p>
+            <p class="text-slate-700">Check the Market Comps tab below to view verified Property24 and Private Property suburb benchmarks.</p>
+          </div>
+        `}
+      </div>
+
+      <!-- SECTION 2: SUBURB BENCHMARK COMPS TABLE -->
+      <div id="deck-comps" class="space-y-3 ${leads.length > 0 ? 'hidden' : ''}">
+        ${comps && comps.sources && comps.sources.length > 0 ? `
+          <div class="border border-slate-950 bg-white brutal-shadow-sm overflow-x-auto">
+            <table class="w-full border-collapse text-left font-mono text-xs">
+              <thead>
+                <tr class="bg-slate-950 text-white uppercase text-[11px]">
+                  <th class="p-2.5 border-r border-slate-800">Data Source</th>
+                  <th class="p-2.5 border-r border-slate-800">Listings Analyzed</th>
+                  <th class="p-2.5 border-r border-slate-800">Suburb Average Asking Price</th>
+                  <th class="p-2.5">Distribution Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-300">
+                ${comps.sources.map(s => `
+                  <tr class="hover:bg-sky-50/70 transition-colors">
+                    <td class="p-2.5 font-bold text-slate-950 border-r border-slate-300">${esc(s.name)}</td>
+                    <td class="p-2.5 border-r border-slate-300">${s.count} properties indexed</td>
+                    <td class="p-2.5 font-bold text-sky-900 border-r border-slate-300">R ${numberFormat(s.avg)}</td>
+                    <td class="p-2.5">
+                      <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950 font-bold text-[10px]">
+                        ACTIVE FEED
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="p-3 bg-slate-50 border border-slate-950 text-[11px] text-slate-600 flex items-center justify-between">
+            <span>Suburb Benchmark: <strong>${esc(suburb)} (${esc(city)})</strong></span>
+            <span>Median Floor Comps: <strong>R ${numberFormat(medianPrice)}</strong></span>
+          </div>
+        ` : `
+          <div class="p-6 bg-slate-50 border border-slate-950 text-center font-mono text-xs space-y-1">
+            <p class="font-bold text-slate-950 uppercase">No aggregate portal comps for this suburb</p>
+            <p class="text-slate-600">Try searching a broader metro area or suburb name.</p>
+          </div>
+        `}
+      </div>
+
+    </div>
+  `;
+
+  // Wire sub-tabs
+  const btnFsbo = document.getElementById('btn-subtab-fsbo');
+  const btnComps = document.getElementById('btn-subtab-comps');
+  const deckFsbo = document.getElementById('deck-fsbo');
+  const deckComps = document.getElementById('deck-comps');
+
+  if (btnFsbo && btnComps && deckFsbo && deckComps) {
+    btnFsbo.addEventListener('click', () => {
+      btnFsbo.className = 'px-3 py-1.5 bg-sky-600 text-white font-bold border border-slate-950 brutal-shadow-sm text-xs';
+      btnComps.className = 'px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-900 font-bold border border-slate-950 brutal-shadow-sm text-xs';
+      deckFsbo.classList.remove('hidden');
+      deckComps.classList.add('hidden');
+    });
+
+    btnComps.addEventListener('click', () => {
+      btnComps.className = 'px-3 py-1.5 bg-sky-600 text-white font-bold border border-slate-950 brutal-shadow-sm text-xs';
+      btnFsbo.className = 'px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-900 font-bold border border-slate-950 brutal-shadow-sm text-xs';
+      deckComps.classList.remove('hidden');
+      deckFsbo.classList.add('hidden');
+    });
   }
 }
 

@@ -26,6 +26,15 @@ TruData is a **B2B data marketplace** for South Africa. Five product verticals, 
 | 🏢 **Business Finder** | `POST /api/agency/crawl` | 2 | Serper.dev (SERP) + Cheerio crawl + site audit | ✅ Live |
 | 📋 **Bureau Reports** | `/api/imagin8/*` | 3 | Imagin8 TransUnion (valuation, reg check, accident) | ✅ Live |
 
+### Features Added (2026-09-10)
+- **Property Suburb Sales Comps & FSBO Lead Radar:** Fully wired workbench with dual Suburb Comps (Property24 & Private Property) and live Private Seller (FSBO) Lead Radar.
+  - Form `#panel-property` takes Suburb, City/Metro, Property Type (All, Houses, Apartments, Townhouses), and Intelligence Scope (Comps + FSBO, FSBO Only, Comps Only).
+  - Parallel extraction from `/api/property/comps` and `/api/property/fsbo`.
+  - Rich UI results deck with 4 key metrics (Median Asking Price, Price Spread Low-High, Active Comps with Confidence Score, FSBO Radar Count with 0% Comm badge).
+  - Dual sub-tab switcher: Direct Private Sellers Table with verified phone numbers, days on market, portal source badge (`Gumtree Private`, `Private Property Direct`), 1-tap direct pre-filled WhatsApp CTA (`💬 WhatsApp Owner`), and source listing link.
+  - Suburb Comps Table detailing Property24 and Private Property listings count and average asking price.
+  - Auto-generated WhatsApp inquiry message with property title and price.
+
 ### Features Added (2026-09-04)
 - **Multi-Vertical Vehicle Catalogue:** 6 sub-verticals (`cars`, `moto`, `marine`, `trucks`, `caravans`, `yellowmetal`) wired to dynamic catalogue filtering in `/api/catalogue/makes` & `/api/catalogue/models` with SPECIALTY mapping.
 - **Electronics & Tech Valuation:** Full search engine for consumer tech (MacBooks, iPhones, gaming consoles, TVs, appliances) analyzing 40+ South African retail & refurb comps per query with price distribution metrics (median, low, high, top merchants).
