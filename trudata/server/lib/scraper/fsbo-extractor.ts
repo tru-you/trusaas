@@ -7,6 +7,7 @@
 
 import axios from 'axios';
 import crypto from 'crypto';
+import { serperSearch } from '../serper';
 
 export interface FsboLead {
   id: string;
@@ -59,7 +60,6 @@ export async function extractFsboLeads(suburb: string, city: string = '', maxRes
   // 1. Primary: Serper.dev
   if (process.env.SERPER_API_KEY && liveLeads.length < maxResults) {
     try {
-      const { serperSearch } = await import('../serper');
       const queries = [
         `${cleanSuburb} property for sale private seller`,
         `${cleanSuburb} property for sale owner Gumtree`,

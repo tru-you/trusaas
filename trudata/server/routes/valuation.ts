@@ -29,17 +29,11 @@ router.post('/quick', async (req, res) => {
       cfg
     );
 
-    // Build price range from source extremes
-    const sourceExtremes = result.sources
-      .flatMap(s => [s.min, s.max])
-      .filter(val => val != null)
-      .sort((a, b) => a! - b!);
-
     res.json({
       make, model, variant: variant || undefined, year,
       median: result.averageRetailPrice,
-      low: sourceExtremes.length ? sourceExtremes[0] : result.averageRetailPrice,
-      high: sourceExtremes.length ? sourceExtremes[sourceExtremes.length - 1] : result.averageRetailPrice,
+      low: result.priceRange?.low || result.averageRetailPrice,
+      high: result.priceRange?.high || result.averageRetailPrice,
       count: result.listingsFound,
       confidence: result.listingsFound >= 15 ? 'high'
                 : result.listingsFound >= 5  ? 'medium'

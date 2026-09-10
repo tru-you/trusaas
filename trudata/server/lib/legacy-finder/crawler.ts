@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { CrawlRequest, CrawlResult, LegacySiteTarget } from './types';
 import { auditWebsite } from './detector';
 import { parseContactPage } from './contacts';
+import { serperSearch } from '../serper';
 
 // Common directories and portals to exclude from target candidate lists
 const DIRECTORY_DOMAINS = [
@@ -86,8 +87,6 @@ async function discoverBusinessDomains(
   // 1. Primary: Serper.dev (when configured)
   if (process.env.SERPER_API_KEY && domains.length < limit) {
     try {
-      const { serperSearch } = await import('../serper');
-      // Use a relative path that resolves from legacy-finder to lib/serper
       const result = await serperSearch(queryStr, {
         gl: country === 'uk' ? 'gb' : 'za',
         num: 20,

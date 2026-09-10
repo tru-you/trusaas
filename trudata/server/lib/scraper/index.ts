@@ -222,7 +222,7 @@ export async function fetchValuation(
           } catch (err: any) {
             console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
           }
-          acc.push(...listings);
+          acc.push(...listings.map(l => ({ ...l, source: src.name })));
           if (acc.length >= 20) break; // Plenty of clean comps, avoid timeout
         }
         return { name: src.name, listings: acc };
@@ -275,19 +275,17 @@ export async function fetchValuation(
   console.log(`[SCRAPER-DEBUG] After all stages: ${classifiedListings.length} classified comps`, classifiedListings.map(l => ({ price: l.price, year: l.year, title: l.title?.slice(0, 80), source: l.source })));
 
   // Compile classified source summary
-  const classifiedBySource = new Map<string, Listing[]>();
-  for (const l of classifiedListings) {
-    const srcName = l.source || "Classifieds";
-    if (!classifiedBySource.has(srcName)) classifiedBySource.set(srcName, []);
-    classifiedBySource.get(srcName)!.push(l);
-  }
   for (const src of sources) {
-    const list = classifiedListings.filter((l) => !l.source || l.source === src.name);
+    const list = classifiedListings.filter((l) => l.source === src.name);
     const prices = list.map((l) => l.price);
+    const srcMin = prices.length ? Math.min(...prices) : null;
+    const srcMax = prices.length ? Math.max(...prices) : null;
     sourcesOutput.push({
       name: src.name,
       count: prices.length,
       avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null,
+      min: srcMin,
+      max: srcMax,
     });
   }
 

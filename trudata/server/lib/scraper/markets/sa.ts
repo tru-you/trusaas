@@ -11,7 +11,7 @@ export const sa: MarketConfig = {
   googleDomain: "google.co.za",
   googleGl: "gl=za&hl=en",
   googleQuerySuffix: "South Africa",
-  minPrice: 10_000,
+  minPrice: 75_000,
   maxPrice: 50_000_000,
   acceptLanguage: "en-ZA,en;q=0.9",
   classifieds: [
