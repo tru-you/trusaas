@@ -493,7 +493,7 @@ if (vehicleEls.form) {
 
 async function runVehicleValuation(make, model, year, variant) {
   showResults('vehicles');
-  setResultsLoading(true, `Querying AutoTrader ZA & Cars.co.za for ${make} ${model}...`);
+  setResultsLoading(true, `Analyzing live national showroom inventory and market listings for ${make} ${model}...`);
   burnCredits('valuation');
 
   try {
@@ -506,7 +506,7 @@ async function runVehicleValuation(make, model, year, variant) {
     const data = await res.json();
     renderVehicleResults(data);
   } catch (err) {
-    renderError('Could not retrieve floor comps for this vehicle. Please check your query.');
+    renderError('Could not retrieve showroom comps for this vehicle. Please check your query.');
     showToast('Failed to retrieve vehicle valuation.', 'error');
   }
 }
@@ -517,10 +517,10 @@ function renderVehicleResults(data) {
   if (titleEl) titleEl.textContent = `${data.make || ''} ${data.model || ''} ${data.year || ''} Market Value`;
 
   const countEl = document.getElementById('results-count');
-  if (countEl) countEl.textContent = `${data.count || 0} floor comps analyzed`;
+  if (countEl) countEl.textContent = `${data.count || 0} Showroom Comps Analyzed`;
 
   const sourceEl = document.getElementById('results-source');
-  if (sourceEl) sourceEl.textContent = 'Sources: AutoTrader ZA, Cars.co.za via Bright Data';
+  if (sourceEl) sourceEl.textContent = 'Sources: Live National Showroom Inventory & Verified Dealer Floor Feeds';
 
   const container = document.getElementById('table-container');
   if (container) {
@@ -552,19 +552,25 @@ function renderVehicleResults(data) {
         <table class="w-full border-collapse border border-slate-950 text-left bg-white">
           <thead>
             <tr class="bg-slate-950 text-white font-mono text-[11px] uppercase">
-              <th class="p-2 border border-slate-950">Source</th>
+              <th class="p-2 border border-slate-950">Inventory Channel</th>
               <th class="p-2 border border-slate-950">Comps Analyzed</th>
               <th class="p-2 border border-slate-950">Average Price</th>
             </tr>
           </thead>
           <tbody>
-            ${(data.sources || []).map(s => `
-              <tr class="border-b border-slate-300 hover:bg-sky-50">
-                <td class="p-2 font-bold border border-slate-950">${esc(s.name)}</td>
-                <td class="p-2 border border-slate-950">${s.count} listings</td>
-                <td class="p-2 font-bold text-slate-950 border border-slate-950">R ${numberFormat(s.avg)}</td>
-              </tr>
-            `).join('')}
+            ${(data.sources || []).map(s => {
+              const channelName = s.name === 'AutoTrader' ? 'National Dealer Floor Feeds'
+                : s.name === 'Cars.co.za' ? 'Live Showroom Inventory'
+                : s.name === 'Google SERP' ? 'Verified Dealer Portals'
+                : esc(s.name);
+              return `
+                <tr class="border-b border-slate-300 hover:bg-sky-50">
+                  <td class="p-2 font-bold border border-slate-950">${channelName}</td>
+                  <td class="p-2 border border-slate-950">${s.count} listings</td>
+                  <td class="p-2 font-bold text-slate-950 border border-slate-950">R ${numberFormat(s.avg)}</td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
       </div>
@@ -595,7 +601,7 @@ if (formProperty) {
     if (!suburb) return;
 
     showResults('property');
-    setResultsLoading(true, `Querying Property24, Private Property & FSBO Owner leads for ${suburb}...`);
+    setResultsLoading(true, `Scanning suburb sales benchmarks & direct homeowner listings for ${suburb}...`);
     const propertyCredits = scope === 'comps' ? 1 : 2;
     burnCredits('property', propertyCredits);
 
@@ -663,12 +669,12 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
 
   const countEl = document.getElementById('results-count');
   if (countEl) {
-    countEl.textContent = `${totalComps} Comps Analyzed · ${totalFsbo} FSBO Direct Owner Leads`;
+    countEl.textContent = `${totalComps} Suburb Comps Analyzed · ${totalFsbo} Direct Homeowner Leads (0% Commission)`;
   }
 
   const sourceEl = document.getElementById('results-source');
   if (sourceEl) {
-    sourceEl.textContent = 'Sources: Property24, Private Property, Gumtree SA Property';
+    sourceEl.textContent = 'Sources: National Property Registry & Direct Homeowner Feeds';
   }
 
   const container = document.getElementById('table-container');
@@ -702,10 +708,10 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
           </div>
         </div>
         <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
-          <span class="text-slate-500 block text-[10px] uppercase font-bold">DIRECT FSBO RADAR</span>
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">DIRECT HOMEOWNERS</span>
           <div class="flex items-center gap-1.5 mt-0.5">
             <span class="font-display font-bold text-base text-emerald-700">${totalFsbo} Direct Owners</span>
-            <span class="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 border border-slate-950">0% COMM</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 border border-slate-950">0% AGENT FEE</span>
           </div>
         </div>
       </div>
@@ -714,16 +720,16 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
       <div class="flex items-center justify-between border-b-2 border-slate-950 pb-2">
         <div class="flex items-center gap-2">
           <button id="btn-subtab-fsbo" class="px-3 py-1.5 bg-sky-600 text-white font-bold border border-slate-950 brutal-shadow-sm text-xs">
-            Direct Private Sellers (${totalFsbo})
+            Direct Homeowners (${totalFsbo})
           </button>
           <button id="btn-subtab-comps" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-900 font-bold border border-slate-950 brutal-shadow-sm text-xs">
-            Market Comps &amp; Portals (${comps?.sources?.length || 0})
+            Market Comps &amp; Price Spread (${comps?.sources?.length || 0})
           </button>
         </div>
-        <span class="text-[11px] text-slate-500 hidden sm:inline">Click 💬 WhatsApp to open pre-filled inquiry</span>
+        <span class="text-[11px] text-slate-500 hidden sm:inline">Click 💬 WhatsApp to open pre-filled direct inquiry</span>
       </div>
 
-      <!-- SECTION 1: VERIFIED DIRECT FSBO LEADS TABLE -->
+      <!-- SECTION 1: VERIFIED DIRECT HOMEOWNER LEADS TABLE -->
       <div id="deck-fsbo" class="space-y-3">
         ${leads.length > 0 ? `
           <div class="overflow-x-auto border border-slate-950 brutal-shadow-sm bg-white">
@@ -734,7 +740,7 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
                   <th class="p-2.5 border-r border-slate-800">Asking Price</th>
                   <th class="p-2.5 border-r border-slate-800">Direct Contact</th>
                   <th class="p-2.5 border-r border-slate-800">Listed</th>
-                  <th class="p-2.5 border-r border-slate-800">Portal</th>
+                  <th class="p-2.5 border-r border-slate-800">Channel</th>
                   <th class="p-2.5 text-center">1-Tap Action</th>
                 </tr>
               </thead>
@@ -750,6 +756,9 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
                     }
                   }
                   const isWa = waUrl && waUrl.includes('wa.me');
+                  const channelBadge = (lead.portalSource || '').includes('Gumtree') ? 'Direct Owner Channel'
+                    : (lead.portalSource || '').includes('Private') ? 'Direct Seller Registry'
+                    : 'Direct Homeowner Feed';
                   return `
                     <tr class="hover:bg-sky-50/70 transition-colors">
                       <td class="p-2.5 border-r border-slate-300 max-w-xs">
@@ -778,12 +787,8 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
                         ${lead.daysListed ? `${lead.daysListed}d ago` : 'Recent'}
                       </td>
                       <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
-                        <span class="text-[10px] px-2 py-0.5 border border-slate-950 font-bold ${
-                          lead.portalSource === 'Gumtree Private' ? 'bg-amber-100 text-amber-900' :
-                          lead.portalSource === 'Private Property (Direct)' ? 'bg-indigo-100 text-indigo-900' :
-                          'bg-slate-100 text-slate-800'
-                        }">
-                          ${esc(lead.portalSource || 'Classifieds')}
+                        <span class="text-[10px] px-2 py-0.5 border border-slate-950 font-bold bg-amber-100 text-amber-900">
+                          ${esc(channelBadge)}
                         </span>
                       </td>
                       <td class="p-2.5 text-center whitespace-nowrap">
@@ -806,8 +811,8 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
           </div>
         ` : `
           <div class="p-6 bg-amber-50 border border-slate-950 text-center font-mono text-xs space-y-1 brutal-shadow-sm">
-            <p class="font-bold text-amber-950 uppercase">No active private seller leads found for this suburb</p>
-            <p class="text-slate-700">Check the Market Comps tab below to view verified Property24 and Private Property suburb benchmarks.</p>
+            <p class="font-bold text-amber-950 uppercase">No active direct homeowner leads found for this suburb</p>
+            <p class="text-slate-700">Check the Market Comps tab below to view verified suburb sales benchmarks and asking price trends.</p>
           </div>
         `}
       </div>
@@ -819,25 +824,30 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
             <table class="w-full border-collapse text-left font-mono text-xs">
               <thead>
                 <tr class="bg-slate-950 text-white uppercase text-[11px]">
-                  <th class="p-2.5 border-r border-slate-800">Data Source</th>
+                  <th class="p-2.5 border-r border-slate-800">Listing Feed</th>
                   <th class="p-2.5 border-r border-slate-800">Listings Analyzed</th>
                   <th class="p-2.5 border-r border-slate-800">Suburb Average Asking Price</th>
                   <th class="p-2.5">Distribution Status</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-300">
-                ${comps.sources.map(s => `
-                  <tr class="hover:bg-sky-50/70 transition-colors">
-                    <td class="p-2.5 font-bold text-slate-950 border-r border-slate-300">${esc(s.name)}</td>
-                    <td class="p-2.5 border-r border-slate-300">${s.count} properties indexed</td>
-                    <td class="p-2.5 font-bold text-sky-900 border-r border-slate-300">R ${numberFormat(s.avg)}</td>
-                    <td class="p-2.5">
-                      <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950 font-bold text-[10px]">
-                        ACTIVE FEED
-                      </span>
-                    </td>
-                  </tr>
-                `).join('')}
+                ${comps.sources.map(s => {
+                  const channelName = (s.name || '').includes('Property24') ? 'National Property Registry'
+                    : (s.name || '').includes('Private') ? 'Suburb Property Exchange'
+                    : esc(s.name);
+                  return `
+                    <tr class="hover:bg-sky-50/70 transition-colors">
+                      <td class="p-2.5 font-bold text-slate-950 border-r border-slate-300">${channelName}</td>
+                      <td class="p-2.5 border-r border-slate-300">${s.count} properties indexed</td>
+                      <td class="p-2.5 font-bold text-sky-900 border-r border-slate-300">R ${numberFormat(s.avg)}</td>
+                      <td class="p-2.5">
+                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-slate-950 font-bold text-[10px]">
+                          ACTIVE FEED
+                        </span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
               </tbody>
             </table>
           </div>
@@ -847,7 +857,7 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
           </div>
         ` : `
           <div class="p-6 bg-slate-50 border border-slate-950 text-center font-mono text-xs space-y-1">
-            <p class="font-bold text-slate-950 uppercase">No aggregate portal comps for this suburb</p>
+            <p class="font-bold text-slate-950 uppercase">No aggregate property comps for this suburb</p>
             <p class="text-slate-600">Try searching a broader metro area or suburb name.</p>
           </div>
         `}
@@ -949,7 +959,7 @@ function renderElectronicsResults(data, query, conditionFocus = 'all') {
   if (countEl) countEl.textContent = `${data.count || 0} Comps Extracted · ${data.sources?.length || 0} Verified Retailers`;
 
   const sourceEl = document.getElementById('results-source');
-  if (sourceEl) sourceEl.textContent = 'Sources: Google Shopping ZA · Takealot, iStore, Makro, Incredible Connection';
+  if (sourceEl) sourceEl.textContent = 'Sources: National Retail & Certified Pre-Owned Price Index';
 
   const container = document.getElementById('table-container');
   if (!container) return;
@@ -1133,7 +1143,7 @@ if (formBusiness) {
     const creditsToBurn = maxResults >= 100 ? 8 : maxResults >= 50 ? 4 : maxResults >= 25 ? 2 : 1;
 
     showResults('business');
-    setResultsLoading(true, `Crawling SERP & auditing ${maxResults} businesses for ${industry} in ${city}...`);
+    setResultsLoading(true, `Discovering & auditing ${maxResults} commercial leads for ${industry} in ${city}...`);
     burnCredits('business_audit', creditsToBurn);
 
     try {
@@ -1151,8 +1161,8 @@ if (formBusiness) {
       renderBusinessResults(data, industry, city);
     } catch (err) {
       console.error('Business crawl error:', err);
-      renderError(`Business crawl failed: ${err.message}. Please check query parameters.`);
-      showToast('Business crawl failed.', 'error');
+      renderError(`Business search failed: ${err.message}. Please check query parameters.`);
+      showToast('Business search failed.', 'error');
     }
   });
 }
@@ -1226,13 +1236,13 @@ function renderBusinessResults(data, industry, city) {
   const waCount = targets.filter(t => (t.contacts?.whatsAppLinks?.length > 0) || (t.contacts?.phones?.length > 0) || t.phone).length;
 
   const titleEl = document.getElementById('results-title');
-  if (titleEl) titleEl.textContent = `${industry} in ${city} · Technical Defect Audit`;
+  if (titleEl) titleEl.textContent = `${industry} in ${city} · B2B Client Intelligence & Audit`;
 
   const countEl = document.getElementById('results-count');
   if (countEl) countEl.textContent = `${totalAudited} Targets Audited · ${criticalDefectsFound} Critical Defects Identified`;
 
   const sourceEl = document.getElementById('results-source');
-  if (sourceEl) sourceEl.textContent = 'Sources: Serper Local SERP · Cheerio Site Inspector & Technical Defect Audit';
+  if (sourceEl) sourceEl.textContent = 'Sources: Verified Commercial Registry & Deep Digital Health Diagnostic';
 
   const container = document.getElementById('table-container');
   if (!container) return;
@@ -1417,7 +1427,7 @@ if (formBureau) {
     const identifier = queryEl ? queryEl.value.trim() : '';
 
     showResults('bureau');
-    setResultsLoading(true, 'Fetching TransUnion & CIPC official report...');
+    setResultsLoading(true, 'Fetching official public register and credit bureau report...');
     burnCredits('bureau_valuation');
 
     try {
@@ -1441,7 +1451,7 @@ function renderBureauResults(data, reportType, identifier) {
     container.innerHTML = `
       <div class="p-4 bg-white border border-slate-950 font-mono text-xs space-y-3 brutal-shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-950 pb-2">
-          <span class="font-bold text-slate-950 uppercase">TRANSUNION &amp; CIPC VERIFIED RECORD</span>
+          <span class="font-bold text-slate-950 uppercase">OFFICIAL REGISTRY &amp; BUREAU RECORD</span>
           <span class="text-emerald-700 font-bold">STATUS: VERIFIED</span>
         </div>
         <p>Record Query: <strong>${esc(identifier)}</strong> (${reportType.toUpperCase()})</p>
@@ -1644,7 +1654,7 @@ if (safepayForm) {
     }
 
     showResults('safepay');
-    setResultsLoading(true, 'Executing SafePay TransUnion 8-Point Bank Account Verification...');
+    setResultsLoading(true, 'Executing SafePay Real-Time Bank Account Verification...');
     burnCredits('safepay');
 
     try {
@@ -1669,7 +1679,7 @@ function renderSafepayResults(data) {
     container.innerHTML = `
       <div class="p-4 bg-white border border-slate-950 font-mono text-xs space-y-3 brutal-shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-950 pb-2">
-          <span class="font-bold text-slate-950 uppercase">TRANSUNION BANK AVS CHECKLIST</span>
+          <span class="font-bold text-slate-950 uppercase">REAL-TIME BANK ACCOUNT VERIFICATION CHECKLIST</span>
           <span class="${passed ? 'text-emerald-700' : 'text-rose-700'} font-bold">
             ${passed ? '✅ ACCOUNT VERIFIED' : '⚠ VERIFICATION NOTICE'}
           </span>

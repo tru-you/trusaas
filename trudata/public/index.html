@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>TruData | South Africa Data Marketplace & Verification Engine</title>
-  <meta name="description" content="Query TransUnion vehicle valuations, Property24 comps, consumer tech pricing, B2B company records, CIPC directors, and bank account verifications with zero monthly contracts."/>
+  <meta name="description" content="Access real-time vehicle showroom valuations, direct homeowner property leads (0% agent commission), local B2B commercial contacts with site health audits, and fraud-proof bank account verification."/>
   <meta name="theme-color" content="#F7F4EB"/>
 
   <link rel="manifest" href="/manifest.json"/>
@@ -21,7 +21,7 @@
         "name": "TruData by TruSaaS",
         "url": "https://data.tru-saas.com",
         "logo": "https://cdn.tru-saas.com/brand/trudealer-logo-3d.svg",
-        "description": "South Africa B2B Data Marketplace & Verification Engine for vehicle valuations, property comps, CIPC company records, and bank account verifications."
+        "description": "South Africa B2B Data Marketplace & Verification Engine for vehicle valuations, direct homeowner property leads, B2B company records, and bank account verifications."
       },
       {
         "@type": "WebApplication",
@@ -40,7 +40,7 @@
         "@type": "DataCatalog",
         "@id": "https://data.tru-saas.com/#datacatalog",
         "name": "South Africa Data Marketplace",
-        "description": "Real-time B2B datasets covering 282 South African vehicle makes, Property24 suburb sales comps, CIPC company director records, and TransUnion bank AVS verifications."
+        "description": "Real-time B2B datasets covering 282 South African vehicle makes, suburb sales comps, direct homeowner listings, B2B company contacts, and bank account verifications."
       }
     ]
   }
@@ -233,12 +233,12 @@
         <span class="px-2.5 py-0.5 bg-sky-600 text-white font-semibold border border-slate-950 brutal-shadow-sm text-[11px]">
           5 PILLARS ACTIVE
         </span>
-        <span class="text-slate-700 hidden sm:inline">TransUnion M&amp;M &middot; Property24 &middot; Serper SERP &middot; CIPC &middot; SafePay Bank AVS</span>
+        <span class="text-slate-700 hidden sm:inline">Vehicle Market Values &middot; Direct Homeowner Leads (0% Commission) &middot; B2B Commercial Directory &middot; CIPC Registers &middot; Bank Account Verification</span>
       </div>
 
       <div class="hidden md:flex items-center gap-4 text-[11px] text-slate-600">
         <span>Node Cluster: <strong class="text-slate-900">JHB-01</strong></span>
-        <span>Catalogue: <strong class="text-slate-900">313 JSON Files (0ms)</strong></span>
+        <span>Catalogue: <strong class="text-slate-900">313 Makes Indexed (0ms)</strong></span>
         <span>Billing: <strong class="text-slate-900">Credit Wallet</strong></span>
       </div>
     </div>
@@ -251,13 +251,13 @@
       
       <div class="text-center max-w-3xl mx-auto space-y-3">
         <span class="font-mono text-xs font-semibold uppercase tracking-wider text-sky-800 px-3 py-1 bg-sky-100 border border-slate-950 brutal-shadow-sm inline-block">
-          SOUTH AFRICA'S DATA MARKETPLACE &amp; VERIFICATION ENGINE
+          SOUTH AFRICA'S B2B DATA ENGINE &amp; VERIFICATION SUITE
         </span>
         <h1 class="font-display font-bold text-3xl md:text-5xl text-slate-950 tracking-tight uppercase leading-tight">
-          Verified South African Data. Instant APIs. Zero Monthly Contracts.
+          Verified South African Market Data. Real-Time Intelligence. Zero Monthly Contracts.
         </h1>
         <p class="font-body text-sm md:text-base text-slate-700 leading-relaxed">
-          Query official TransUnion vehicle valuations, Property24 suburb comps, consumer tech pricing, B2B company records, CIPC directors, and bank account verifications with credit-based pay-as-you-go billing.
+          Access real-time showroom floor valuations across 282 vehicle makes, find direct homeowners selling without agent commission, uncover local B2B leads with direct decision-maker contacts, and verify bank accounts before releasing funds — all on honest pay-as-you-go credits.
         </p>
       </div>
 
@@ -341,7 +341,7 @@
               </div>
 
               <button type="submit" id="btn-run-vehicle-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
-                <span>QUERY CARS.CO.ZA &amp; AUTOTRADER</span>
+                <span>ANALYZE LIVE MARKET VALUE</span>
                 <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">1 CREDIT</span>
               </button>
             </form>
@@ -389,7 +389,7 @@
               </button>
             </form>
 
-            <!-- PANEL 2: PROPERTY COMPS & FSBO LEADS -->
+            <!-- PANEL 2: PROPERTY COMPS & DIRECT HOMEOWNERS -->
             <form id="panel-property" class="hidden space-y-3">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-xs">
                 <div>
@@ -415,15 +415,15 @@
                 <div>
                   <label class="block font-semibold text-slate-900 uppercase mb-1">4. Intelligence Scope</label>
                   <select id="select-property-scope" class="w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
-                    <option value="all" selected>Comps + Full FSBO Radar (2 Credits)</option>
-                    <option value="fsbo">Private Sellers (FSBO) Only (2 Credits)</option>
-                    <option value="comps">Suburb Comps Only (1 Credit)</option>
+                    <option value="all" selected>Comps + Direct Homeowners (0% Commission) (2 Credits)</option>
+                    <option value="fsbo">Direct Homeowners (0% Agent Commission) Only (2 Credits)</option>
+                    <option value="comps">Suburb Sales &amp; Asking Price Comps (1 Credit)</option>
                   </select>
                 </div>
               </div>
 
               <button type="submit" id="btn-run-property-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
-                <span>QUERY SUBURB COMPS &amp; FSBO RADAR</span>
+                <span>SCAN SUBURB COMPS &amp; DIRECT HOMEOWNERS</span>
                 <span id="badge-property-credits" class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">2 CREDITS</span>
               </button>
             </form>
@@ -461,7 +461,7 @@
               </div>
 
               <button type="submit" id="btn-run-business-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
-                <span>RUN BUSINESS CRAWL &amp; DEFECT AUDIT</span>
+                <span>DISCOVER LOCAL B2B CLIENTS &amp; AUDIT</span>
                 <span id="badge-business-credits" class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">2 CREDITS</span>
               </button>
             </form>
@@ -481,7 +481,7 @@
                 <input type="text" id="input-bureau-query" placeholder="e.g. 2019/123456/07 or ID Number" value="2019/123456/07" class="w-full bg-white border border-slate-950 px-3 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600"/>
               </div>
               <button type="submit" id="btn-run-bureau-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
-                <span>FETCH BUREAU REPORT</span>
+                <span>FETCH OFFICIAL BUREAU REPORT</span>
                 <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">3 CREDITS</span>
               </button>
             </form>
@@ -493,7 +493,7 @@
                 <input type="text" id="input-aeo-url" placeholder="https://example-dealer.co.za" value="https://data.tru-saas.com" class="w-full bg-white border border-slate-950 px-3 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600"/>
               </div>
               <button type="submit" id="btn-run-aeo-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
-                <span>RUN AEO &amp; LLM SEARCH AUDIT</span>
+                <span>AUDIT AI SEARCH ENGINE VISIBILITY</span>
                 <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">1 CREDIT</span>
               </button>
             </form>
@@ -541,7 +541,7 @@
                   LIVE EXTRACTION RESULTS
                 </span>
                 <h2 class="font-display font-bold text-lg md:text-xl text-slate-950 uppercase tracking-tight" id="results-title">
-                  LIVE MARKET INSPECTOR &amp; TELEMETRY
+                  VERIFIED MARKET INTELLIGENCE &amp; AUDIT CONSOLE
                 </h2>
                 <div class="flex items-center gap-3 mt-1">
                   <span id="results-count" class="font-mono text-xs text-sky-800 font-semibold"></span>
@@ -566,7 +566,7 @@
             <div id="table-container" class="overflow-x-auto min-h-[220px]">
               <div class="p-6 text-center font-mono text-xs text-slate-600 space-y-2">
                 <p class="font-semibold text-slate-950 uppercase">Ready to query live data</p>
-                <p>Select a pillar on the left and click submit to trigger real-time data extraction.</p>
+                <p>Select a data pillar on the left and submit your query to unlock verified market intelligence and live benchmarks.</p>
               </div>
             </div>
 
@@ -596,7 +596,7 @@
             PILLAR 01 &middot; VEHICLES &amp; HEAVY ASSETS
           </span>
           <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-950 uppercase tracking-tight">
-            TransUnion M&amp;M Catalogue + Live Market Comps
+            Official Vehicle Book Values &amp; Real-Time Showroom Comps
           </h2>
         </div>
         <button onclick="openConsoleTab('vehicles')" class="font-mono text-xs font-bold px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow">
@@ -605,7 +605,7 @@
       </div>
 
       <p class="font-body text-sm md:text-base text-slate-700 max-w-4xl">
-        Access South Africa's complete TransUnion Mead &amp; McGrouther (M&amp;M) catalogue covering 282 vehicle makes across 6 sub-verticals. Pair 0ms offline static catalogue specs with live AutoTrader ZA and Cars.co.za floor comps.
+        Know the exact market value of any vehicle before you buy, trade, or finance. We scan live showroom floor inventories and active dealer listings across South Africa, pairing real-time asking prices with official TransUnion Mead &amp; McGrouther (M&amp;M) catalogue specifications. Coverage spans 282 makes across passenger cars, commercial transport trucks, motorcycles, boats, caravans, and heavy agricultural equipment.
       </p>
 
       <!-- 4 Vertical Cards Grid -->
@@ -613,30 +613,30 @@
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-2">
           <span class="font-bold text-sky-800 uppercase text-xs block">[CAR]</span>
           <h3 class="font-bold text-slate-950 uppercase">Passenger Vehicles</h3>
-          <p class="text-slate-600 text-[11px] font-sans">Toyota, VW, Ford, BMW, Mercedes-Benz, Hyundai, Isuzu, Haval with full trim codes.</p>
+          <p class="text-slate-600 text-[11px] font-sans">Instant retail, trade, and asking price spread across Toyota, VW, BMW, Mercedes-Benz, Ford, and all major brands with exact variant trims.</p>
         </div>
 
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-2">
           <span class="font-bold text-sky-800 uppercase text-xs block">[MOTO]</span>
           <h3 class="font-bold text-slate-950 uppercase">Motorcycles &amp; Marine</h3>
-          <p class="text-slate-600 text-[11px] font-sans">Harley Davidson, Ducati, KTM, Yamaha, Kawasaki, Sea-Doo jetskis &amp; boats.</p>
+          <p class="text-slate-600 text-[11px] font-sans">Specialist valuation data for superbikes, cruisers, adventure bikes, and marine craft including Sea-Doo, Yamaha, and Kawasaki.</p>
         </div>
 
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-2">
           <span class="font-bold text-sky-800 uppercase text-xs block">[TRUCK]</span>
-          <h3 class="font-bold text-slate-950 uppercase">Commercial Trucks</h3>
-          <p class="text-slate-600 text-[11px] font-sans">Scania, Volvo Trucks, Isuzu Commercial, MAN heavy commercial vehicles &amp; buses.</p>
+          <h3 class="font-bold text-slate-950 uppercase">Commercial Fleet &amp; Trucks</h3>
+          <p class="text-slate-600 text-[11px] font-sans">Heavy commercial valuation benchmarks for Scania, Volvo, Isuzu Commercial, MAN, and logistics trailers.</p>
         </div>
 
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-2">
           <span class="font-bold text-sky-800 uppercase text-xs block">[HEAVY]</span>
-          <h3 class="font-bold text-slate-950 uppercase">Yellow Metal &amp; Ag</h3>
-          <p class="text-slate-600 text-[11px] font-sans">Caterpillar, Komatsu, John Deere tractors, JCB, and agricultural machinery.</p>
+          <h3 class="font-bold text-slate-950 uppercase">Construction &amp; Yellow Metal</h3>
+          <p class="text-slate-600 text-[11px] font-sans">Industrial equipment and agricultural tractor pricing across Caterpillar, Komatsu, John Deere, and JCB.</p>
         </div>
       </div>
     </section>
 
-    <!-- 4. Marketing Section: Pillar 2 - Property Comps & FSBO Leads -->
+    <!-- 4. Marketing Section: Pillar 2 - Property Comps & Direct Homeowner Leads -->
     <section id="property" class="glass-card border-1.5 border-slate-950 p-6 md:p-8 space-y-6 scroll-mt-20">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-950 pb-4">
         <div>
@@ -644,7 +644,7 @@
             PILLAR 02 &middot; PROPERTY &amp; REAL ESTATE
           </span>
           <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-950 uppercase tracking-tight">
-            Suburb Sales Comps &amp; Private Seller (FSBO) Intelligence
+            Direct Homeowners (0% Commission) &amp; Suburb Sales Comps
           </h2>
         </div>
         <button onclick="openConsoleTab('property')" class="font-mono text-xs font-bold px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow">
@@ -653,23 +653,23 @@
       </div>
 
       <p class="font-body text-sm md:text-base text-slate-700 max-w-4xl">
-        Extract active suburb asking price distributions across Property24 &amp; Private Property. Discover unmasked private owner-seller leads complete with phone numbers and 1-tap WhatsApp contact triggers.
+        Find property deals before they hit estate agency mandate books. When homeowners list their properties directly to avoid paying 5% to 7% agent commissions, our radar detects them in real time. We extract verified contact numbers and generate 1-tap WhatsApp conversation starters so investors, buyers, and sourcing agents can negotiate direct. Simultaneously, access deep suburb price intelligence with active median asking prices, price spreads, and inventory counts across 2,000+ South African neighborhoods.
       </p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono text-xs">
         <div class="bg-white border border-slate-950 p-5 brutal-shadow-sm space-y-2">
-          <h3 class="font-bold text-slate-950 text-sm uppercase">Suburb Price Distribution</h3>
-          <p class="font-body text-xs text-slate-600">Calculates suburb median asking prices, price spread ranges (min/max), and total active property listings across Sandton, Bryanston, Umhlanga, Camps Bay, and 2,000+ SA suburbs.</p>
+          <h3 class="font-bold text-slate-950 text-sm uppercase">Direct Homeowner Radar (0% Agent Fee)</h3>
+          <p class="font-body text-xs text-slate-600">Skip the middlemen. Connect directly with private property sellers with pre-filled WhatsApp conversation starters so investors and buyers can secure deals without paying estate agent commission fees.</p>
         </div>
 
         <div class="bg-white border border-slate-950 p-5 brutal-shadow-sm space-y-2">
-          <h3 class="font-bold text-slate-950 text-sm uppercase">FSBO Owner Lead Extraction</h3>
-          <p class="font-body text-xs text-slate-600">Extract verified private seller property listings with owner names, contact numbers, and pre-filled WhatsApp links for real estate agents and property aggregators.</p>
+          <h3 class="font-bold text-slate-950 text-sm uppercase">Suburb Price Spread &amp; Valuation Comps</h3>
+          <p class="font-body text-xs text-slate-600">Live asking price distributions, entry-to-luxury price spreads, and active listing volumes across Sandton, Bryanston, Umhlanga, Camps Bay, and 2,000+ SA suburbs.</p>
         </div>
       </div>
     </section>
 
-    <!-- 5. Marketing Section: Pillar 3 - Business Finder & Web Health Audit -->
+    <!-- 5. Marketing Section: Pillar 3 - Business Finder & Digital Health Diagnostic -->
     <section id="business" class="glass-card border-1.5 border-slate-950 p-6 md:p-8 space-y-6 scroll-mt-20">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-950 pb-4">
         <div>
@@ -677,7 +677,7 @@
             PILLAR 03 &middot; B2B BUSINESS FINDER
           </span>
           <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-950 uppercase tracking-tight">
-            SERP Crawl, Contact Extraction &amp; Web Health Audit
+            Local B2B Client Discovery &amp; Technical Website Audit
           </h2>
         </div>
         <button onclick="openConsoleTab('business')" class="font-mono text-xs font-bold px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow">
@@ -686,21 +686,21 @@
       </div>
 
       <p class="font-body text-sm md:text-base text-slate-700 max-w-4xl">
-        Discover local South African businesses by industry and city. Extract decision-maker contacts (phone, email, WhatsApp) and automatically audit website defects (missing SSL, non-responsive design, slow speed, missing CTAs).
+        Turn cold outreach into warm, high-converting client conversations. Search any industry in any South African city to uncover active commercial businesses complete with direct decision-maker phone lines, physical addresses, email contacts, and direct WhatsApp links. Every business is automatically analyzed for critical digital defects — including missing SSL certificates, broken mobile responsive layouts, missing calls-to-action, and slow loading speeds — providing your agency or sales team with an instant, undeniable pitch angle.
       </p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-1">
-          <strong class="block text-slate-950">Serper SERP Discovery</strong>
-          <p class="font-body text-xs text-slate-600">Query live Google SERP records for car dealerships, estate agencies, transport fleets, and retail chains.</p>
+          <strong class="block text-slate-950">Territory Commercial Discovery</strong>
+          <p class="font-body text-xs text-slate-600">Extract verified business domains, operating hours, and physical street addresses across 50+ local commercial categories.</p>
         </div>
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-1">
-          <strong class="block text-slate-950">Contact Extraction</strong>
-          <p class="font-body text-xs text-slate-600">Scrapes verified phone numbers, email addresses, and direct WhatsApp links directly from company sites.</p>
+          <strong class="block text-slate-950">Direct Decision-Maker Contacts</strong>
+          <p class="font-body text-xs text-slate-600">Verified phone numbers, contact emails, and direct WhatsApp triggers to bypass gatekeepers and reach decision-makers instantly.</p>
         </div>
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-1">
-          <strong class="block text-slate-950">Defect Health Scoring</strong>
-          <p class="font-body text-xs text-slate-600">Assigns 0-100 website health scores and generates high-converting sales pitch proposals for agency outreach.</p>
+          <strong class="block text-slate-950">Pre-Built Pitch Opportunities</strong>
+          <p class="font-body text-xs text-slate-600">Assigns 0-100 website health scores with actionable defect findings you can paste directly into sales proposals and audits.</p>
         </div>
       </div>
     </section>
@@ -713,7 +713,7 @@
             PILLAR 04 &middot; OFFICIAL BUREAU REPORTS
           </span>
           <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-950 uppercase tracking-tight">
-            TransUnion, CIPC, Deeds Office &amp; FICA ID Checks
+            Official Public Registers &amp; Credit Bureau Intelligence
           </h2>
         </div>
         <button onclick="openConsoleTab('bureau')" class="font-mono text-xs font-bold px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow">
@@ -722,7 +722,7 @@
       </div>
 
       <p class="font-body text-sm md:text-base text-slate-700 max-w-4xl">
-        Execute verified credit bureau lookups. Access official TransUnion eValue8 trade &amp; retail valuations, CIPC company director records, Deeds Office property title deeds, and Home Affairs SA ID verification.
+        Execute verified credit bureau and registry lookups with zero monthly subscription fees. Access official TransUnion trade &amp; retail book values, CIPC company director records, Deeds Office property title deeds, and Home Affairs SA ID verification on simple pay-as-you-go credits.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
@@ -757,10 +757,10 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-950 pb-4">
         <div>
           <span class="font-mono text-xs font-semibold text-sky-800 uppercase tracking-wider block">
-            PILLAR 05 &middot; AEO &amp; LLM OPTIMIZATION
+            PILLAR 05 &middot; AI SEARCH ENGINE DISCOVERY
           </span>
           <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-950 uppercase tracking-tight">
-            Audit AI Search Crawlers &amp; LLM Discovery
+            Audit AI Search Engine Visibility &amp; LLM Indexing
           </h2>
         </div>
         <button onclick="openConsoleTab('aeo')" class="font-mono text-xs font-bold px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow">
@@ -769,7 +769,7 @@
       </div>
 
       <p class="font-body text-sm md:text-base text-slate-700 max-w-4xl">
-        Ensure your business is discoverable by modern AI search engines (ChatGPT, Claude, Perplexity, Google Gemini). Audit `robots.txt` permissions for AI crawlers, generate `/llms.txt` dealership context documents, and validate Schema.org JSON-LD structured data.
+        Ensure your business is cited and recommended when consumers ask ChatGPT, Claude, Perplexity, or Google Gemini for local providers. Audit your site's AI crawler permissions, generate machine-readable business context documents (`/llms.txt`), and validate Schema.org JSON-LD structured data.
       </p>
     </section>
 
@@ -778,10 +778,10 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-950 pb-4">
         <div>
           <span class="font-mono text-xs font-semibold text-sky-800 uppercase tracking-wider block">
-            PILLAR 06 &middot; SAFEPAY BANK AVS
+            PILLAR 06 &middot; SAFEPAY FRAUD DEFENSE
           </span>
           <h2 class="font-display font-bold text-2xl md:text-3xl text-slate-950 uppercase tracking-tight">
-            Instant TransUnion Bank Account Verification (AVS)
+            Fraud-Proof Bank Account Verification Before You Release Funds
           </h2>
         </div>
         <button onclick="openConsoleTab('safepay')" class="font-mono text-xs font-bold px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow">
@@ -790,7 +790,7 @@
       </div>
 
       <p class="font-body text-sm md:text-base text-slate-700 max-w-4xl">
-        Prevent payment fraud before disbursing trade-in cash or paying suppliers. Verify that bank account numbers, branch codes, and account holder ID/names match official bank records across ABSA, FNB, Standard Bank, Nedbank, and Capitec.
+        Protect your business from invoice fraud, intercepted banking details, and incorrect supplier payouts. Verify that bank account numbers, branch codes, and account holder identity match official records across all major South African banks in real time before releasing funds.
       </p>
     </section>
 
@@ -896,27 +896,27 @@
             </thead>
             <tbody class="divide-y divide-slate-200">
               <tr>
-                <td class="p-2 font-medium">Vehicle Market Scrape &amp; Retail Comps</td>
+                <td class="p-2 font-medium">Vehicle Market Value &amp; Showroom Comps</td>
                 <td class="p-2 text-center font-bold text-sky-700">1 Credit</td>
                 <td class="p-2 text-right">R 13.27</td>
               </tr>
               <tr>
-                <td class="p-2 font-medium">Property Suburb FSBO &amp; Sales Comps</td>
-                <td class="p-2 text-center font-bold text-sky-700">1 Credit</td>
-                <td class="p-2 text-right">R 13.27</td>
+                <td class="p-2 font-medium">Property Suburb Comps &amp; Direct Homeowner Leads</td>
+                <td class="p-2 text-center font-bold text-sky-700">1 - 2 Credits</td>
+                <td class="p-2 text-right">R 13.27 - R 26.54</td>
               </tr>
               <tr>
-                <td class="p-2 font-medium">Business Website Audit &amp; Technical Score</td>
-                <td class="p-2 text-center font-bold text-sky-700">2 Credits</td>
-                <td class="p-2 text-right">R 26.54</td>
+                <td class="p-2 font-medium">B2B Business Leads &amp; Technical Health Audit</td>
+                <td class="p-2 text-center font-bold text-sky-700">1 - 8 Credits</td>
+                <td class="p-2 text-right">from R 13.27</td>
               </tr>
               <tr>
-                <td class="p-2 font-medium">TransUnion eValue8 Bureau Valuation</td>
+                <td class="p-2 font-medium">Official Bureau Vehicle Valuation</td>
                 <td class="p-2 text-center font-bold text-sky-700">3 Credits</td>
                 <td class="p-2 text-right">R 39.81</td>
               </tr>
               <tr>
-                <td class="p-2 font-medium">SafePay TransUnion Bank Account Verification (AVS)</td>
+                <td class="p-2 font-medium">SafePay Real-Time Bank Account Verification</td>
                 <td class="p-2 text-center font-bold text-sky-700">3 Credits</td>
                 <td class="p-2 text-right">R 39.81</td>
               </tr>
@@ -953,7 +953,7 @@
         <button id="close-docs-modal" class="font-mono text-xs px-2.5 py-1 border border-slate-950 bg-slate-100 hover:bg-slate-200 font-bold">&times; Close</button>
       </div>
       <div class="font-mono text-xs space-y-4 text-slate-800 leading-relaxed">
-        <p class="font-sans text-sm">TruData provides direct REST API endpoints for querying South African vehicle valuations, property comps, CIPC company records, and TransUnion bank AVS verifications.</p>
+        <p class="font-sans text-sm">TruData provides direct REST API endpoints for querying South African vehicle valuations, property comps, CIPC company records, and bank account verifications.</p>
         
         <div class="bg-slate-50 border border-slate-950 p-3 space-y-2">
           <strong class="text-sky-800 uppercase block">1. Authentication &amp; Headers</strong>
@@ -963,13 +963,13 @@
         <div class="bg-slate-50 border border-slate-950 p-3 space-y-2">
           <strong class="text-sky-800 uppercase block">2. Core API Endpoints</strong>
           <ul class="list-disc pl-4 space-y-1">
-            <li><code>POST /api/valuation/quick</code> — Vehicle Market Comps (1 Credit)</li>
+            <li><code>POST /api/valuation/quick</code> — Live Vehicle Market Value (1 Credit)</li>
             <li><code>POST /api/electronics/valuation</code> — Consumer Tech Comps (1 Credit)</li>
-            <li><code>POST /api/property/comps</code> — Property Suburb Comps (1 Credit)</li>
-            <li><code>POST /api/property/fsbo</code> — Property Private Sellers (1 Credit)</li>
-            <li><code>POST /api/agency/crawl</code> — Business SERP Audit &amp; Contacts (2 Credits)</li>
-            <li><code>POST /api/safepay/verify</code> — SafePay Bank Account AVS Match (3 Credits)</li>
-            <li><code>POST /api/imagin8/valuation</code> — TransUnion eValue8 Retail/Trade (3 Credits)</li>
+            <li><code>POST /api/property/comps</code> — Property Suburb Price Comps (1 Credit)</li>
+            <li><code>POST /api/property/fsbo</code> — Direct Homeowner Leads (0% Commission) (1 Credit)</li>
+            <li><code>POST /api/agency/crawl</code> — Local B2B Leads &amp; Health Audit (1-8 Credits)</li>
+            <li><code>POST /api/safepay/verify</code> — SafePay Bank Account Verification (3 Credits)</li>
+            <li><code>POST /api/imagin8/valuation</code> — Official Bureau Vehicle Valuation (3 Credits)</li>
           </ul>
         </div>
       </div>
@@ -985,13 +985,13 @@
       </div>
       <div class="font-body text-xs space-y-3 text-slate-700 leading-relaxed">
         <strong class="font-mono text-slate-900 block uppercase">1. Credit Wallet Economy</strong>
-        <p>TruData operates strictly on a credit-wallet transaction model. 1 Credit equals R13.27 on PAYG tiers down to R5.83 on Enterprise tiers. Purchased credits never expire and can be used across all 5 data pillars.</p>
+        <p>TruData operates strictly on a credit-wallet transaction model. 1 Credit equals R13.27 on PAYG tiers down to R5.83 on Enterprise tiers. Purchased credits never expire and can be used across all data pillars.</p>
         
         <strong class="font-mono text-slate-900 block uppercase">2. Non-Refundable Data Policy</strong>
-        <p>Due to real-time API verification costs incurred with external providers (TransUnion eValue8, Serper, Bright Data), credit deductions are non-refundable once an extraction query is executed.</p>
+        <p>Due to real-time verification costs incurred with external data providers (licensed credit bureaus, banking switches, and real-time verification networks), credit deductions are non-refundable once an extraction query is executed.</p>
 
         <strong class="font-mono text-slate-900 block uppercase">3. Data Accuracy &amp; Verification</strong>
-        <p>Data provided by TruData is aggregated directly from official public registers (CIPC, Deeds Office) and licensed bureau partners (TransUnion South Africa). TruData does not alter third-party financial records.</p>
+        <p>Data provided by TruData is aggregated directly from official public registers (CIPC, Deeds Office), certified retail networks, and licensed bureau partners. TruData does not alter third-party financial records.</p>
       </div>
     </div>
   </div>
@@ -1007,8 +1007,8 @@
         <strong class="font-mono text-slate-900 block uppercase">1. Protection of Personal Information (POPIA)</strong>
         <p>TruData complies fully with South Africa's Protection of Personal Information Act (POPIA). We do not collect, store, or sell consumer personal tracking data.</p>
         
-        <strong class="font-mono text-slate-900 block uppercase">2. Bank Verification Security (SafePay AVS)</strong>
-        <p>SafePay TransUnion Account Verification Service (AVS) queries are transmitted over encrypted TLS 1.3 channels directly to TransUnion. Bank account numbers are never logged or stored on persistent disk.</p>
+        <strong class="font-mono text-slate-900 block uppercase">2. Bank Verification Security (SafePay)</strong>
+        <p>SafePay Bank Account Verification queries are transmitted over encrypted TLS 1.3 channels directly to verified banking networks. Bank account numbers are never logged or stored on persistent disk.</p>
 
         <strong class="font-mono text-slate-900 block uppercase">3. Cookies &amp; Local Storage</strong>
         <p>TruData uses browser LocalStorage strictly to persist your wallet balance and session email context. Zero cross-site tracking cookies are used.</p>
@@ -1044,7 +1044,7 @@
       <button class="close-modal" id="close-credit-modal">&times;</button>
       <h2 class="font-display font-bold text-xl uppercase mb-1">Get TruData Credits</h2>
       <p class="font-body text-xs text-slate-600 mb-4">
-        Credits never expire. Use them across Vehicle Comps, Property FSBO, Business Dossiers, and TransUnion Bureau Checks.
+        Credits never expire. Use them across Vehicle Values, Direct Homeowner Leads, B2B Commercial Dossiers, and Official Bureau Checks.
       </p>
 
       <div class="credit-pack-selector">

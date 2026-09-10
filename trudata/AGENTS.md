@@ -27,6 +27,11 @@ TruData is a **B2B data marketplace** for South Africa. Five product verticals, 
 | 📋 **Bureau Reports** | `/api/imagin8/*` | 3 | Imagin8 TransUnion (valuation, reg check, accident) | ✅ Live |
 
 ### Features Added (2026-09-10)
+- **High-Converting Copywriting Overhaul & Jargon Elimination:**
+  - **Zero Third-Party Vendor Mentions:** Stripped all public occurrences of backstage platform names (*AutoTrader*, *Cars.co.za*, *Property24*, *Private Property*, *Takealot*, *Makro*, *Serper*, *Cheerio*, *"we scrape"*).
+  - **Enticing Customer Benefit Language:**
+    - Replaced cryptic acronyms (*FSBO*, *AVS*, *SERP*, *telemetry*) with clear, high-converting copy: **"Direct Homeowners (0% Agent Commission)"**, **"Real-Time Bank Account Verification"**, **"Local Commercial Lead Discovery"**, and **"Verified Showroom Floor Inventory"**.
+    - Richly explained the concrete business outcome for each pillar: saving 5-7% estate agent commissions, knowing exact trade/retail vehicle margins before negotiating, uncovering ready-to-pitch B2B prospects with verified WhatsApp lines and site flaw audits, and preventing catastrophic invoice fraud before releasing payment.
 - **High-Volume Uncapped Multi-Angle Scrapers:**
   - **B2B Business Finder:** Replaced single 20-result query with multi-page organic search (`page: 1, 2, 3, 4`) + Google Places (Google Maps local business card extraction). Discovers 30–50+ unique local business domains per crawl with verified direct phone numbers and physical street addresses.
   - **Vehicles & Heavy Assets:** Removed the restrictive `SERP_TRIGGER_MAX = 6` cutoff and expanded classified accumulation to 50+ comps, always running parallel Google SERP to blend showroom floor feeds with online listings.
