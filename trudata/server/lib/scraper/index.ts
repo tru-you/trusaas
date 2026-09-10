@@ -147,7 +147,8 @@ export async function fetchValuation(
   const coreVariant = simplifyVariant(variant);
 
   const cacheModel = variant ? `${cleanModel} ${variant}` : cleanModel;
-  const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, targetKm);
+  const kmBucket = targetKm > 0 ? Math.round(targetKm / 10000) * 10000 : 0;
+  const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, kmBucket);
   const cached = cacheGet(key);
   if (cached) return cached;
 
@@ -222,7 +223,7 @@ export async function fetchValuation(
           } catch (err: any) {
             console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
           }
-          acc.push(...listings.map(l => ({ ...l, source: src.name })));
+          acc.push(...listings);
           if (acc.length >= 20) break; // Plenty of clean comps, avoid timeout
         }
         return { name: src.name, listings: acc };
@@ -275,17 +276,19 @@ export async function fetchValuation(
   console.log(`[SCRAPER-DEBUG] After all stages: ${classifiedListings.length} classified comps`, classifiedListings.map(l => ({ price: l.price, year: l.year, title: l.title?.slice(0, 80), source: l.source })));
 
   // Compile classified source summary
+  const classifiedBySource = new Map<string, Listing[]>();
+  for (const l of classifiedListings) {
+    const srcName = l.source || "Classifieds";
+    if (!classifiedBySource.has(srcName)) classifiedBySource.set(srcName, []);
+    classifiedBySource.get(srcName)!.push(l);
+  }
   for (const src of sources) {
-    const list = classifiedListings.filter((l) => l.source === src.name);
+    const list = classifiedListings.filter((l) => !l.source || l.source === src.name);
     const prices = list.map((l) => l.price);
-    const srcMin = prices.length ? Math.min(...prices) : null;
-    const srcMax = prices.length ? Math.max(...prices) : null;
     sourcesOutput.push({
       name: src.name,
       count: prices.length,
       avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null,
-      min: srcMin,
-      max: srcMax,
     });
   }
 
@@ -360,22 +363,9 @@ export async function fetchValuation(
     return data;
   }
 
-  // If target mileage is provided and we have enough comps with mileage,
-  // prioritize comps within a ±45,000 km proximity window
-  let candidateListings = allListings;
-  if (targetKm > 0 && allListings.length >= 6) {
-    const kmComps = allListings.filter((l) => typeof l.km === "number" && l.km > 0);
-    if (kmComps.length >= 4) {
-      const tightProximity = kmComps.filter((l) => Math.abs((l.km as number) - targetKm) <= 45000);
-      if (tightProximity.length >= 4) {
-        candidateListings = tightProximity;
-      }
-    }
-  }
-
-  // Apply make-aware Year-Gap adjustment and Trim differential adjustment
+  // Apply make-aware Year-Gap adjustment, Trim differential, and Mileage normalization
   const isEv = /\b(electric|ev\b|bev\b|phev|e-tron|id\.\d|ioniq\s*[56]|model\s*[3sy]|leaf|zs\s*ev)\b/i.test(`${variant} ${cleanModel}`);
-  const adjustedComps = candidateListings.map((l) => {
+  const adjustedComps = allListings.map((l) => {
     let p = l.price;
     if (l.year && Number.isFinite(subjYear)) {
       p = adjustForYearGap(p, l.year, subjYear, make, isEv);
@@ -383,11 +373,11 @@ export async function fetchValuation(
     if (l.title && variant) {
       p = adjustForTrim(p, l.title, variant);
     }
+    if (targetKm > 0 && typeof l.km === "number" && l.km > 0) {
+      p = adjustForMileage(p, l.km, targetKm);
+    }
     return p;
   });
-  console.log(`[SCRAPER-DEBUG] Raw prices:`, candidateListings.map(l => l.price));
-  console.log(`[SCRAPER-DEBUG] Adjusted prices:`, adjustedComps);
-  console.log(`[SCRAPER-DEBUG] Titles present:`, candidateListings.map(l => !!l.title));
 
   // Filter statistical outliers (e.g. keying errors, armored/extreme conversions, salvage)
   const validComps = iqrFilter(adjustedComps);
@@ -409,7 +399,7 @@ export async function fetchValuation(
     sources: finalSources,
     currency: cfg.currency,
     distanceUnit: cfg.distanceUnit,
-    mileageAdjusted: false,
+    mileageAdjusted: targetKm > 0 && allListings.some((l) => typeof l.km === "number" && l.km > 0),
     sampleMedianKm: kmOf(allListings),
   };
   cachePut(key, data);

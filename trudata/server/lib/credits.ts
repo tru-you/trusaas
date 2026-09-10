@@ -26,6 +26,7 @@ export const CREDIT_COSTS: Record<string, number> = {
   'bureau_accident': 3,
   'safepay': 3,
   'extract': 1,
+  'aeo': 1,
 };
 
 // Credit pack pricing (ZAR)
@@ -94,8 +95,11 @@ export function burnCredits(email: string, product: string): { success: boolean;
   const cost = CREDIT_COSTS[product];
   if (cost === undefined) return { success: false, cost: 0, remaining: 0, error: `Unknown product: ${product}` };
   
-  const wallet = wallets.get(email);
-  if (!wallet) return { success: false, cost, remaining: 0, error: 'No credit wallet found. Purchase credits first.' };
+  let wallet = wallets.get(email);
+  if (!wallet) {
+    // Auto-provision trial wallet with 15 credits
+    wallet = addCredits(email, 15, 'paygo');
+  }
   if (wallet.balance < cost) return { success: false, cost, remaining: wallet.balance, error: `Insufficient credits. Need ${cost}, have ${wallet.balance}.` };
   
   wallet.balance -= cost;

@@ -763,31 +763,166 @@ if (formAeo) {
     e.preventDefault();
     const urlEl = document.getElementById('input-aeo-url');
     const targetUrl = urlEl ? urlEl.value.trim() : 'https://data.tru-saas.com';
+    if (!targetUrl) return;
 
     showResults('aeo');
     setResultsLoading(true, `Auditing AI & LLM Search Engine Visibility for ${targetUrl}...`);
-    burnCredits('property');
 
-    setTimeout(() => {
-      renderAeoResults(targetUrl);
-    }, 1200);
+    try {
+      const email = getUserEmail();
+      const res = await fetch('/api/aeo/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: targetUrl, userEmail: email })
+      });
+
+      if (!res.ok) {
+        // If 402, try free preview
+        if (res.status === 402) {
+          showToast('Insufficient credits, falling back to free preview scan...', 'warning');
+          const previewRes = await fetch('/api/aeo/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: targetUrl })
+          });
+          if (previewRes.ok) {
+            const previewData = await previewRes.json();
+            renderAeoPreviewResults(previewData.preview, targetUrl);
+            return;
+          }
+        }
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'AEO Audit failed');
+      }
+
+      const json = await res.json();
+      await updateWalletUI();
+      renderAeoResults(json.data, targetUrl);
+    } catch (err) {
+      renderError(`AEO Audit error: ${err.message}. Please verify the target URL.`);
+      showToast('AEO Audit failed.', 'error');
+    }
   });
 }
 
-function renderAeoResults(url) {
+function renderAeoPreviewResults(preview, url) {
+  updateJsonSchemaViewer(preview);
+  const titleEl = document.getElementById('results-title');
+  if (titleEl) titleEl.textContent = `AEO PREVIEW: ${preview.domain || url}`;
+
   const container = document.getElementById('table-container');
   if (container) {
     container.innerHTML = `
-      <div class="p-4 bg-white border border-slate-950 font-mono text-xs space-y-3 brutal-shadow-sm">
+      <div class="p-4 bg-white border border-slate-950 font-mono text-xs space-y-4 brutal-shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-950 pb-2">
-          <span class="font-bold text-slate-950 uppercase">AEO &amp; LLM CRAWLER COMPLIANCE</span>
-          <span class="text-sky-800 font-bold">SCORE: 94 / 100</span>
+          <span class="font-bold text-slate-950 uppercase">AEO &amp; LLM CRAWLER PREVIEW</span>
+          <span class="px-2.5 py-1 text-white font-bold ${preview.score >= 80 ? 'bg-emerald-600' : preview.score >= 60 ? 'bg-amber-600' : 'bg-rose-600'}">GRADE ${preview.grade} (${preview.score}/100)</span>
         </div>
-        <ul class="space-y-1 text-slate-800">
-          <li>✅ <code>robots.txt</code> allows GPTBot, ClaudeBot, PerplexityBot</li>
-          <li>✅ <code>llms.txt</code> contextual AI overview found</li>
-          <li>✅ Schema.org <code>Organization</code> &amp; <code>DataCatalog</code> JSON-LD valid</li>
-        </ul>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="p-3 bg-slate-50 border border-slate-950">
+            <div class="text-slate-500 uppercase text-[10px]">AI Search Crawlers</div>
+            <div class="text-sm font-bold mt-1 ${preview.crawlersAllowed ? 'text-emerald-700' : 'text-amber-700'}">${preview.crawlersAllowed ? 'ALLOWED' : 'PARTIAL / BLOCKED'}</div>
+          </div>
+          <div class="p-3 bg-slate-50 border border-slate-950">
+            <div class="text-slate-500 uppercase text-[10px]">Context /llms.txt</div>
+            <div class="text-sm font-bold mt-1 ${preview.llmsTxtFound ? 'text-emerald-700' : 'text-rose-700'}">${preview.llmsTxtFound ? 'FOUND & ACTIVE' : 'MISSING'}</div>
+          </div>
+          <div class="p-3 bg-slate-50 border border-slate-950">
+            <div class="text-slate-500 uppercase text-[10px]">Schema.org JSON-LD</div>
+            <div class="text-sm font-bold mt-1 text-sky-800">${preview.schemaFound ? (preview.schemaTypes || []).join(', ') : 'NONE DETECTED'}</div>
+          </div>
+        </div>
+        <div class="p-3 bg-sky-50 border border-sky-950 text-slate-800 space-y-1">
+          <div class="font-bold uppercase text-[11px] text-sky-950">Unlock Full 1-Click Fix Snippets &amp; Diagnostics</div>
+          <p class="text-[11px]">Top-up your credit wallet to view complete line-by-line crawler permissions, schema property diagnostics, and auto-generated JSON-LD scripts.</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderAeoResults(audit, url) {
+  updateJsonSchemaViewer(audit);
+  const titleEl = document.getElementById('results-title');
+  if (titleEl) titleEl.textContent = `AEO AUDIT: ${audit.domain || url}`;
+
+  const container = document.getElementById('table-container');
+  if (container) {
+    const crawlers = audit.crawlers || {};
+    const schemaLd = audit.schemaLd || {};
+    const llms = audit.llmsTxt || {};
+    const fix = audit.fixSnippet || {};
+
+    container.innerHTML = `
+      <div class="p-4 bg-white border border-slate-950 font-mono text-xs space-y-4 brutal-shadow-sm">
+        <!-- Header -->
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-950 pb-3">
+          <div>
+            <span class="text-slate-500 uppercase text-[10px] block">AEO &amp; AI SEARCH READINESS SCORE</span>
+            <span class="font-bold text-base text-slate-950">${esc(audit.domain)}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 text-white font-bold text-sm ${audit.score >= 80 ? 'bg-emerald-600' : audit.score >= 60 ? 'bg-amber-600' : 'bg-rose-600'}">GRADE ${audit.grade} (${audit.score}/100)</span>
+          </div>
+        </div>
+
+        <!-- 3-Pillar Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <!-- Crawlers -->
+          <div class="p-3 bg-slate-50 border border-slate-950 space-y-1">
+            <div class="text-slate-500 uppercase text-[10px] font-bold">1. AI Bots (robots.txt)</div>
+            <div class="space-y-0.5 text-[11px]">
+              <div>GPTBot (ChatGPT): <strong>${crawlers.gptBot ? '✅ Allowed' : '❌ Disallowed'}</strong></div>
+              <div>ClaudeBot (Anthropic): <strong>${crawlers.claudeBot ? '✅ Allowed' : '❌ Disallowed'}</strong></div>
+              <div>PerplexityBot: <strong>${crawlers.perplexityBot ? '✅ Allowed' : '❌ Disallowed'}</strong></div>
+            </div>
+          </div>
+
+          <!-- llms.txt -->
+          <div class="p-3 bg-slate-50 border border-slate-950 space-y-1">
+            <div class="text-slate-500 uppercase text-[10px] font-bold">2. LLMs.txt Context</div>
+            <div class="text-sm font-bold ${llms.found ? 'text-emerald-700' : 'text-rose-700'}">
+              ${llms.found ? '✅ /llms.txt Present' : '❌ /llms.txt Missing'}
+            </div>
+            <div class="text-[11px] text-slate-600">${llms.fullVersionFound ? '✅ /llms-full.txt detected' : 'Standard context only'}</div>
+          </div>
+
+          <!-- Schema.org -->
+          <div class="p-3 bg-slate-50 border border-slate-950 space-y-1">
+            <div class="text-slate-500 uppercase text-[10px] font-bold">3. Schema.org JSON-LD</div>
+            <div class="text-sm font-bold ${schemaLd.found ? 'text-emerald-700' : 'text-rose-700'}">
+              ${schemaLd.found ? `${schemaLd.validCount} Valid Blocks` : '❌ Missing JSON-LD'}
+            </div>
+            <div class="text-[11px] text-slate-600 truncate">${(schemaLd.schemaTypes || []).join(', ') || 'No types'}</div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        ${(audit.recommendations && audit.recommendations.length > 0) ? `
+          <div class="p-3 bg-amber-50 border border-amber-950 space-y-1.5">
+            <div class="font-bold text-amber-950 uppercase text-[11px]">Actionable Optimization Steps</div>
+            <ul class="list-disc list-inside space-y-1 text-slate-800 text-[11px]">
+              ${audit.recommendations.map(r => `<li>${esc(r)}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- 1-Click Fix Snippets Accordion -->
+        <div class="border border-slate-950 bg-slate-50 p-3 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-950 uppercase text-[11px]">1-Click Fix Snippets (Copy &amp; Deploy)</span>
+          </div>
+          <div class="space-y-2">
+            <div>
+              <div class="text-[10px] font-bold text-slate-600 uppercase mb-1">robots.txt AI Crawler Rules</div>
+              <textarea readonly class="w-full bg-slate-950 text-sky-300 font-mono text-[11px] p-2 border border-slate-950 h-20">${esc(fix.robotsTxtRules || '')}</textarea>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-slate-600 uppercase mb-1">Generated Schema.org JSON-LD</div>
+              <textarea readonly class="w-full bg-slate-950 text-sky-300 font-mono text-[11px] p-2 border border-slate-950 h-24">${esc(fix.jsonLdScript || '')}</textarea>
+            </div>
+          </div>
+        </div>
       </div>
     `;
   }

@@ -17,12 +17,12 @@ router.post('/audit', async (req, res) => {
     }
 
     const email = userEmail || 'guest@trudata.co.za';
-    const creditResult = burnCredits(email, 1, `AEO & LLM Search Audit: ${url}`);
+    const creditResult = burnCredits(email, 'aeo');
     if (!creditResult.success) {
       return res.status(402).json({
         error: 'Insufficient credits',
         required: 1,
-        balance: creditResult.balance,
+        balance: creditResult.remaining,
       });
     }
 
@@ -31,7 +31,7 @@ router.post('/audit', async (req, res) => {
       success: true,
       data: audit,
       wallet: {
-        remainingCredits: creditResult.balance,
+        remainingCredits: creditResult.remaining,
       },
     });
   } catch (err: any) {
