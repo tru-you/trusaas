@@ -906,7 +906,7 @@ function splitModelAndVariant(rawModel, rawVariant) {
     { re: /^golf\s+(gti|gtd|r\b|1\.4\s*tsi|1\.0\s*tsi|1\.2\s*tsi|2\.0\s*tdi|comfortline|highline|trendline)/i, base: "Golf", extractVariant: (m2) => m2[1] },
     { re: /^polo\s+(gti|vivo\b|1\.0\s*tsi|1\.2\s*tsi|1\.4|1\.6|comfortline|highline|trendline)/i, base: "Polo", extractVariant: (m2) => m2[1].toLowerCase().startsWith("vivo") ? "Polo Vivo" : m2[1] },
     { re: /^hilux\s+(2\.8\s*gd-6|2\.4\s*gd-6|2\.7\s*vvti|4\.0\s*v6|raider|legend|srx|gr-s)/i, base: "Hilux", extractVariant: (m2) => m2[1] },
-    { re: /^fortuner\s+(2\.8\s*gd-6|2\.4\s*gd-6|4\.0\s*v6|epic)/i, base: "Fortuner", extractVariant: (m2) => m2[1] },
+    { re: /^fortuner\s+(2\.8\s*gd-6|2\.4\s*gd-6|2\.5\s*(?:d-4d)?|3\.0\s*d-4d|4\.0\s*v6|epic)/i, base: "Fortuner", extractVariant: (m2) => m2[1] },
     { re: /^corolla\s+(cross|quest|1\.8|1\.6|1\.4|hybrid|prestige|exclusive)/i, base: "Corolla", extractVariant: (m2) => m2[1].toLowerCase().includes("cross") || m2[1].toLowerCase().includes("quest") ? `Corolla ${m2[1]}` : m2[1] },
     { re: /^ranger\s+(raptor|2\.0\s*bi-turbo|2\.0\s*si-turbo|3\.2\s*tdci|2\.2\s*tdci|wildtrak|xlt|xl)/i, base: "Ranger", extractVariant: (m2) => m2[1] },
     { re: /^(?:3\s*series\s+)?(318[id]|320[id]|325[i]|328[i]|330[id]|335[i]|340[i]|m340i|m3)\b/i, base: "3 Series", extractVariant: (m2) => m2[1] },
@@ -1098,14 +1098,21 @@ function parseSerpResults(json, make, model, year, cfg) {
   if (!json || typeof json !== "object") return [];
   const out = [];
   const targetYr = parseInt(String(year), 10);
-  const consider = (title, snippet, structuredPrice) => {
+  const serpBaseModel = model.replace(/\s+\d\.\d.*$/, "").trim() || model;
+  const BLOCKED_DOMAINS = /\b(facebook\.com|gumtree\.co\.za|olx\.co\.za|junkmail\.co\.za|tiktok\.com|bidorbuy\.co\.za)\b/i;
+  const consider = (title, snippet, link, structuredPrice) => {
+    if (link && BLOCKED_DOMAINS.test(link)) return;
     const text = `${String(title || "")} ${String(snippet || "")}`.trim();
     if (!text) return;
+    if (/\b(bidding|auction|starting bid|reserve|bid now|sold for)\b/i.test(text)) return;
     if (Number.isFinite(targetYr) && targetYr >= 1990 && targetYr <= 2100) {
-      const ym = text.match(/(?:19|20)\d{2}/);
-      if (!ym || Math.abs(parseInt(ym[0], 10) - targetYr) > 1) return;
+      const allYears = text.match(/(?:19|20)\d{2}/g);
+      if (allYears) {
+        const hasMatchingYear = allYears.some((ys) => Math.abs(parseInt(ys, 10) - targetYr) <= 1);
+        if (!hasMatchingYear) return;
+      }
     }
-    if (!titleMentionsVehicle(text, make, model, year)) return;
+    if (!titleMentionsVehicle(text, make, serpBaseModel, year)) return;
     let price = typeof structuredPrice === "number" ? jsonPrice(structuredPrice, cfg) : null;
     if (price == null) {
       const allPrices = extractPricesFromText(text, cfg);
@@ -1116,15 +1123,19 @@ function parseSerpResults(json, make, model, year, cfg) {
         price = sorted[Math.floor(sorted.length / 2)];
       }
     }
-    if (price != null) out.push({ price });
+    if (price != null) {
+      const ym = text.match(/(?:19|20)\d{2}/);
+      const serpYear = ym ? parseInt(ym[0], 10) : void 0;
+      out.push({ price, title: String(title || ""), year: serpYear, source: "Google (SERP)" });
+    }
   };
   const organic = json.organic_results || json.organic || [];
   for (const r of Array.isArray(organic) ? organic : []) {
-    consider(r?.title, r?.snippet ?? r?.description ?? r?.desc);
+    consider(r?.title, r?.snippet ?? r?.description ?? r?.desc, r?.link);
   }
   const shopping = json.shopping_results || json.shopping || [];
   for (const r of Array.isArray(shopping) ? shopping : []) {
-    consider(r?.title, r?.snippet ?? r?.description, r?.extracted_price ?? r?.price);
+    consider(r?.title, r?.snippet ?? r?.description, r?.link, r?.extracted_price ?? r?.price);
   }
   const seen = /* @__PURE__ */ new Set();
   return out.filter((l) => seen.has(l.price) ? false : (seen.add(l.price), true));
@@ -1366,12 +1377,68 @@ function extractNextDataListings(html, make, model, year, cfg, opts) {
   visit(root);
   return out;
 }
-var YEAR_DEPRECIATION_RATE = 0.035;
-function adjustForYearGap(price, compYear, subjectYear) {
+var DEPRECIATION_BY_MAKE = {
+  // Tier 1 — hold value exceptionally (3.5% / year gap)
+  toyota: 0.035,
+  isuzu: 0.035,
+  "land rover": 0.035,
+  landrover: 0.035,
+  jeep: 0.035,
+  porsche: 0.035,
+  // Tier 2 — strong retention (4.0% / year gap)
+  volkswagen: 0.04,
+  vw: 0.04,
+  nissan: 0.04,
+  mazda: 0.04,
+  suzuki: 0.04,
+  subaru: 0.04,
+  honda: 0.04,
+  ford: 0.04,
+  // Tier 3 — mainstream (4.5% / year gap)
+  hyundai: 0.045,
+  kia: 0.045,
+  mitsubishi: 0.045,
+  opel: 0.045,
+  chevrolet: 0.045,
+  chevy: 0.045,
+  // Tier 4 — premium European (5.5% / year gap)
+  bmw: 0.055,
+  "mercedes-benz": 0.055,
+  mercedes: 0.055,
+  audi: 0.055,
+  volvo: 0.055,
+  mini: 0.055,
+  jaguar: 0.055,
+  // Tier 5 — fast-depreciating niche (6.5% / year gap)
+  "alfa romeo": 0.065,
+  alfa: 0.065,
+  maserati: 0.065,
+  peugeot: 0.065,
+  citroen: 0.065,
+  fiat: 0.065,
+  // Tier 6 — budget / new-entrant brands (5.5% / year gap)
+  renault: 0.055,
+  chery: 0.055,
+  gwm: 0.055,
+  haval: 0.055,
+  baic: 0.055,
+  jac: 0.055,
+  mahindra: 0.045
+};
+var DEFAULT_DEPRECIATION_RATE = 0.045;
+var EV_DEPRECIATION_RATE = 0.085;
+function getDepreciationRate(make, isEv) {
+  if (isEv) return EV_DEPRECIATION_RATE;
+  if (!make) return DEFAULT_DEPRECIATION_RATE;
+  const m = String(make).toLowerCase().trim();
+  return DEPRECIATION_BY_MAKE[m] ?? DEFAULT_DEPRECIATION_RATE;
+}
+function adjustForYearGap(price, compYear, subjectYear, make, isEv) {
   if (!compYear || !subjectYear || compYear === subjectYear) return price;
   const gap = subjectYear - compYear;
-  if (Math.abs(gap) > 1) return price;
-  const factor = 1 + gap * YEAR_DEPRECIATION_RATE;
+  if (Math.abs(gap) > 3) return price;
+  const rate = getDepreciationRate(make, isEv);
+  const factor = Math.pow(1 - rate, -gap);
   return Math.round(price * factor);
 }
 function adjustForTrim(price, compTitle, subjectVariant) {
@@ -1414,6 +1481,13 @@ function adjustForTrim(price, compTitle, subjectVariant) {
     p = Math.round(p * 1.14);
   } else if (/\b(single cab|s\/c|sc\b)\b/i.test(sVar) && isCompDC) {
     p = Math.round(p * 0.86);
+  }
+  const searchDisp = parseFloat(sVar.match(/(\d\.\d)/)?.[1] || "0");
+  const compDisp = parseFloat(cTitle.match(/(\d\.\d)/)?.[1] || "0");
+  if (searchDisp > 0 && compDisp > 0 && searchDisp !== compDisp) {
+    const steps = Math.round((compDisp - searchDisp) * 10);
+    const adjustment = 1 - steps * 0.03;
+    p = Math.round(p * Math.max(0.7, Math.min(1.3, adjustment)));
   }
   return p;
 }
@@ -1837,16 +1911,23 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     }
   }
   if (classifiedListings.length < 3 && Number.isFinite(subjYear)) {
-    const prevYear = String(subjYear - 1);
-    const nextYear = String(subjYear + 1);
-    const [prevResults, nextResults] = await Promise.all([
-      runClassifiedPass(baseModel, prevYear, coreVariant || variant, 0),
-      runClassifiedPass(baseModel, nextYear, coreVariant || variant, 0)
-    ]);
-    for (const { listings } of [...prevResults, ...nextResults]) {
+    const adjacentYears = [subjYear - 1, subjYear + 1, subjYear - 2, subjYear + 2].map(String);
+    const adjacentResults = await Promise.all(
+      adjacentYears.map((ay) => runClassifiedPass(baseModel, ay, coreVariant || variant, 0))
+    );
+    for (const results of adjacentResults) {
+      for (const { listings } of results) {
+        classifiedListings.push(...listings);
+      }
+    }
+  }
+  if (classifiedListings.length < 3) {
+    const stage4Results = await runClassifiedPass(baseModel, y, void 0, 0);
+    for (const { listings } of stage4Results) {
       classifiedListings.push(...listings);
     }
   }
+  console.log(`[SCRAPER-DEBUG] After all stages: ${classifiedListings.length} classified comps`, classifiedListings.map((l) => ({ price: l.price, year: l.year, title: l.title?.slice(0, 80), source: l.source })));
   const classifiedBySource = /* @__PURE__ */ new Map();
   for (const l of classifiedListings) {
     const srcName = l.source || "Classifieds";
@@ -1935,16 +2016,20 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
       }
     }
   }
+  const isEv = /\b(electric|ev\b|bev\b|phev|e-tron|id\.\d|ioniq\s*[56]|model\s*[3sy]|leaf|zs\s*ev)\b/i.test(`${variant} ${cleanModel}`);
   const adjustedComps = candidateListings.map((l) => {
     let p = l.price;
     if (l.year && Number.isFinite(subjYear)) {
-      p = adjustForYearGap(p, l.year, subjYear);
+      p = adjustForYearGap(p, l.year, subjYear, make, isEv);
     }
     if (l.title && variant) {
       p = adjustForTrim(p, l.title, variant);
     }
     return p;
   });
+  console.log(`[SCRAPER-DEBUG] Raw prices:`, candidateListings.map((l) => l.price));
+  console.log(`[SCRAPER-DEBUG] Adjusted prices:`, adjustedComps);
+  console.log(`[SCRAPER-DEBUG] Titles present:`, candidateListings.map((l) => !!l.title));
   const validComps = iqrFilter(adjustedComps);
   const avgRetail = robustAverage(validComps);
   const range = calcPriceRange(validComps);
