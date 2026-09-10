@@ -57,10 +57,10 @@ export type { MarketConfig, FetchValuationOptions, ValuationResult, Listing, Sou
 const DEFAULT_MARKET: MarketConfig = sa;
 // TODO: export from engine.ts to avoid drift
 const CACHE_TTL_MS = Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1000;
-const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
+const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25000;
 const MIN_DEALER_LISTINGS = Number(process.env.SCRAPER_MIN_DEALER_LISTINGS) || 3;
 const DEALER_FINAL_THRESHOLD = Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD) || 20;
-const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
+const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
 const SERP_TRIGGER_MAX = Number(process.env.SERP_TRIGGER_MAX) || 6;
 
 /* ── per-market cache ─────────────────────────── */
@@ -345,8 +345,21 @@ export async function fetchValuation(
     return data;
   }
 
-  // Apply mathematical Year-Gap adjustment (±3.5%/yr) and Trim differential adjustment (±7%) to each comp
-  const adjustedComps = allListings.map((l) => {
+  // If target mileage is provided and we have enough comps with mileage,
+  // prioritize comps within a ±45,000 km proximity window
+  let candidateListings = allListings;
+  if (targetKm > 0 && allListings.length >= 6) {
+    const kmComps = allListings.filter((l) => typeof l.km === "number" && l.km > 0);
+    if (kmComps.length >= 4) {
+      const tightProximity = kmComps.filter((l) => Math.abs((l.km as number) - targetKm) <= 45000);
+      if (tightProximity.length >= 4) {
+        candidateListings = tightProximity;
+      }
+    }
+  }
+
+  // Apply mathematical Year-Gap adjustment (±3.5%/yr) and Trim differential adjustment (±7%, Auto/Manual, 4x4/4x2)
+  const adjustedComps = candidateListings.map((l) => {
     let p = l.price;
     if (l.year && Number.isFinite(subjYear)) {
       p = adjustForYearGap(p, l.year, subjYear);

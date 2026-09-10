@@ -835,9 +835,9 @@ var DEFAULT_HEADERS = {
 };
 var DEALER_FINAL_THRESHOLD = Math.max(3, Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD) || 20);
 var MIN_HTTP_LISTINGS = Number(process.env.SCRAPER_MIN_HTTP_LISTINGS) || 8;
-var CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
+var CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
 var SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
-var TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 2e4;
+var TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25e3;
 function getSerpApiUrl() {
   return process.env.SERP_API_URL || "";
 }
@@ -1319,22 +1319,46 @@ function adjustForYearGap(price, compYear, subjectYear) {
 }
 function adjustForTrim(price, compTitle, subjectVariant) {
   if (!subjectVariant || !compTitle) return price;
+  let p = price;
   const sVar = subjectVariant.toLowerCase();
   const cTitle = compTitle.toLowerCase();
   const getTrimScore = (text) => {
-    if (/\b(highline|exclusive|prestige|autobiography|gt-line|gt|vogue|overland)\b/i.test(text)) return 3;
-    if (/\b(comfortline|advance|sport|dynamic|elegance|srx|raider|limited)\b/i.test(text)) return 2;
-    if (/\b(trendline|base|conceptline|entry|active|essential|s|sr|start)\b/i.test(text)) return 1;
+    if (/\b(highline|exclusive|prestige|autobiography|gt-line|gt\b|vogue|overland|legend|wildtrak|m-sport|m sport|amg line|s-line|s line)\b/i.test(text)) return 3;
+    if (/\b(comfortline|advance|sport|dynamic|elegance|srx|raider|limited|xlt|advantage|progressive|se\b)\b/i.test(text)) return 2;
+    if (/\b(trendline|base|conceptline|entry|active|essential|s\b|sr\b|start|xl\b|workhorse)\b/i.test(text)) return 1;
     return 0;
   };
   const sScore = getTrimScore(sVar);
   const cScore = getTrimScore(cTitle);
   if (sScore > 0 && cScore > 0 && sScore !== cScore) {
     const diff = sScore - cScore;
-    const factor = 1 + diff * 0.07;
-    return Math.round(price * factor);
+    p = Math.round(p * (1 + diff * 0.07));
   }
-  return price;
+  const isSubjectAuto = /\b(auto|automatic|dsg|edc|tiptronic|steptronic|s-tronic|7g-tronic|9g-tronic|cvt|a\/t|at\b)\b/i.test(sVar);
+  const isCompAuto = /\b(auto|automatic|dsg|edc|tiptronic|steptronic|s-tronic|7g-tronic|9g-tronic|cvt|a\/t|at\b)\b/i.test(cTitle);
+  const isCompManual = /\b(manual|m\/t|mt\b)\b/i.test(cTitle) || !isCompAuto && /\b(5-speed|6-speed)\b/i.test(cTitle);
+  if (isSubjectAuto && isCompManual) {
+    p = Math.round(p * 1.045);
+  } else if (!isSubjectAuto && /\b(manual|m\/t|mt\b)\b/i.test(sVar) && isCompAuto) {
+    p = Math.round(p * 0.955);
+  }
+  const isSubject4x4 = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(sVar);
+  const isComp4x4 = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(cTitle);
+  const isComp4x2 = /\b(4x2|2wd|rwd|fwd|raised body|rb\b)\b/i.test(cTitle);
+  if (isSubject4x4 && isComp4x2) {
+    p = Math.round(p * 1.1);
+  } else if (!isSubject4x4 && /\b(4x2|2wd|rb\b)\b/i.test(sVar) && isComp4x4) {
+    p = Math.round(p * 0.9);
+  }
+  const isSubjectDC = /\b(double cab|d\/c|dc\b)\b/i.test(sVar);
+  const isCompSC = /\b(single cab|s\/c|sc\b)\b/i.test(cTitle);
+  const isCompDC = /\b(double cab|d\/c|dc\b)\b/i.test(cTitle);
+  if (isSubjectDC && isCompSC) {
+    p = Math.round(p * 1.14);
+  } else if (/\b(single cab|s\/c|sc\b)\b/i.test(sVar) && isCompDC) {
+    p = Math.round(p * 0.86);
+  }
+  return p;
 }
 function iqrFilter(prices) {
   if (prices.length < 4) return prices;
@@ -1599,10 +1623,10 @@ var ALLOWED_MARKETS = (process.env.MARKETS || "").split(",").map((s) => s.trim()
 var filteredMarkets = ALLOWED_MARKETS.length ? Object.fromEntries(Object.entries(markets).filter(([id]) => ALLOWED_MARKETS.includes(id))) : markets;
 var DEFAULT_MARKET = sa;
 var CACHE_TTL_MS2 = Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1e3;
-var TOTAL_BUDGET_MS2 = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 2e4;
+var TOTAL_BUDGET_MS2 = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25e3;
 var MIN_DEALER_LISTINGS = Number(process.env.SCRAPER_MIN_DEALER_LISTINGS) || 3;
 var DEALER_FINAL_THRESHOLD2 = Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD) || 20;
-var CLASSIFIEDS_PAGES2 = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
+var CLASSIFIEDS_PAGES2 = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
 var SERP_TRIGGER_MAX2 = Number(process.env.SERP_TRIGGER_MAX) || 6;
 var cache = /* @__PURE__ */ new Map();
 function cacheKey(marketId, make, model, year, vin, dealerSlug, mileage) {
@@ -1840,7 +1864,17 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     cachePut(key, data2);
     return data2;
   }
-  const adjustedComps = allListings.map((l) => {
+  let candidateListings = allListings;
+  if (targetKm > 0 && allListings.length >= 6) {
+    const kmComps = allListings.filter((l) => typeof l.km === "number" && l.km > 0);
+    if (kmComps.length >= 4) {
+      const tightProximity = kmComps.filter((l) => Math.abs(l.km - targetKm) <= 45e3);
+      if (tightProximity.length >= 4) {
+        candidateListings = tightProximity;
+      }
+    }
+  }
+  const adjustedComps = candidateListings.map((l) => {
     let p = l.price;
     if (l.year && Number.isFinite(subjYear)) {
       p = adjustForYearGap(p, l.year, subjYear);

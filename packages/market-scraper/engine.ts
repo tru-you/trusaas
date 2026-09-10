@@ -192,9 +192,9 @@ const DEFAULT_HEADERS = {
 const MIN_DEALER_LISTINGS = 3;
 const DEALER_FINAL_THRESHOLD = Math.max(3, Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD) || 20);
 const MIN_HTTP_LISTINGS = Number(process.env.SCRAPER_MIN_HTTP_LISTINGS) || 8;
-const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
+const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
 const SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
-const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
+const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25000;
 
 // SERP env — lazy getters (same dotenv load-order issue as unlocker vars)
 function getSerpApiUrl() { return process.env.SERP_API_URL || ""; }
@@ -778,13 +778,15 @@ export function adjustForYearGap(price: number, compYear?: number, subjectYear?:
 
 export function adjustForTrim(price: number, compTitle?: string, subjectVariant?: string): number {
   if (!subjectVariant || !compTitle) return price;
+  let p = price;
   const sVar = subjectVariant.toLowerCase();
   const cTitle = compTitle.toLowerCase();
 
+  // 1. Trim tier level (Highline vs Comfortline vs Trendline)
   const getTrimScore = (text: string) => {
-    if (/\b(highline|exclusive|prestige|autobiography|gt-line|gt|vogue|overland)\b/i.test(text)) return 3;
-    if (/\b(comfortline|advance|sport|dynamic|elegance|srx|raider|limited)\b/i.test(text)) return 2;
-    if (/\b(trendline|base|conceptline|entry|active|essential|s|sr|start)\b/i.test(text)) return 1;
+    if (/\b(highline|exclusive|prestige|autobiography|gt-line|gt\b|vogue|overland|legend|wildtrak|m-sport|m sport|amg line|s-line|s line)\b/i.test(text)) return 3;
+    if (/\b(comfortline|advance|sport|dynamic|elegance|srx|raider|limited|xlt|advantage|progressive|se\b)\b/i.test(text)) return 2;
+    if (/\b(trendline|base|conceptline|entry|active|essential|s\b|sr\b|start|xl\b|workhorse)\b/i.test(text)) return 1;
     return 0;
   };
 
@@ -793,10 +795,43 @@ export function adjustForTrim(price: number, compTitle?: string, subjectVariant?
 
   if (sScore > 0 && cScore > 0 && sScore !== cScore) {
     const diff = sScore - cScore; // e.g. Highline(3) vs Comfortline(2) = +1 -> +7%
-    const factor = 1 + diff * 0.07;
-    return Math.round(price * factor);
+    p = Math.round(p * (1 + diff * 0.07));
   }
-  return price;
+
+  // 2. Transmission adjustment (Auto / DSG vs Manual)
+  const isSubjectAuto = /\b(auto|automatic|dsg|edc|tiptronic|steptronic|s-tronic|7g-tronic|9g-tronic|cvt|a\/t|at\b)\b/i.test(sVar);
+  const isCompAuto = /\b(auto|automatic|dsg|edc|tiptronic|steptronic|s-tronic|7g-tronic|9g-tronic|cvt|a\/t|at\b)\b/i.test(cTitle);
+  const isCompManual = /\b(manual|m\/t|mt\b)\b/i.test(cTitle) || (!isCompAuto && /\b(5-speed|6-speed)\b/i.test(cTitle));
+
+  if (isSubjectAuto && isCompManual) {
+    p = Math.round(p * 1.045); // Subject is Auto, comp is Manual -> add +4.5%
+  } else if (!isSubjectAuto && /\b(manual|m\/t|mt\b)\b/i.test(sVar) && isCompAuto) {
+    p = Math.round(p * 0.955); // Subject is Manual, comp is Auto -> subtract -4.5%
+  }
+
+  // 3. Drivetrain adjustment for bakkies/SUVs (4x4 vs 4x2)
+  const isSubject4x4 = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(sVar);
+  const isComp4x4 = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(cTitle);
+  const isComp4x2 = /\b(4x2|2wd|rwd|fwd|raised body|rb\b)\b/i.test(cTitle);
+
+  if (isSubject4x4 && isComp4x2) {
+    p = Math.round(p * 1.10); // Subject is 4x4, comp is 4x2 -> add +10%
+  } else if (!isSubject4x4 && /\b(4x2|2wd|rb\b)\b/i.test(sVar) && isComp4x4) {
+    p = Math.round(p * 0.90); // Subject is 4x2, comp is 4x4 -> subtract -10%
+  }
+
+  // 4. Cab Type adjustment for bakkies (Double Cab vs Single Cab vs Super/Extra Cab)
+  const isSubjectDC = /\b(double cab|d\/c|dc\b)\b/i.test(sVar);
+  const isCompSC = /\b(single cab|s\/c|sc\b)\b/i.test(cTitle);
+  const isCompDC = /\b(double cab|d\/c|dc\b)\b/i.test(cTitle);
+
+  if (isSubjectDC && isCompSC) {
+    p = Math.round(p * 1.14); // Subject is Double Cab, comp is Single Cab -> add +14%
+  } else if (/\b(single cab|s\/c|sc\b)\b/i.test(sVar) && isCompDC) {
+    p = Math.round(p * 0.86); // Subject is Single Cab, comp is Double Cab -> subtract -14%
+  }
+
+  return p;
 }
 
 export function adjustForMileage(listings: Listing[], _targetKm?: number): number[] {

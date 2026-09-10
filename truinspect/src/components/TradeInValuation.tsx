@@ -267,19 +267,12 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           </div>
         )}
 
-        {/* Fallback deep links */}
-        {valuation.fallbackRequired && valuation.searchUrl && (
+        {/* Fallback deep links when no price found */}
+        {valuation.averageRetailPrice == null && valuation.searchUrl && (
           <div className="rounded-xl border border-[rgba(232,234,230,0.14)] bg-[rgba(232,234,230,0.055)] p-4">
-            {valuation.averageRetailPrice != null ? (
-              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mb-3">
-                Dealer stock was thin — this price blends dealer listings with online
-                classifieds. Cross-check before finalising.
-              </p>
-            ) : (
-              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mb-3">
-                Auto-scrape unavailable — enter the market average manually after checking listings.
-              </p>
-            )}
+            <p className="text-[13px] text-[rgba(232,234,230,0.72)] mb-3">
+              Auto-scrape unavailable — enter the market average manually after checking live listings.
+            </p>
             <div className="flex flex-col gap-2">
               <a
                 href={valuation.searchUrl}
