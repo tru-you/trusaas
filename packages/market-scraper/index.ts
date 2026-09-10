@@ -35,6 +35,7 @@ import {
   splitModelAndVariant,
   adjustForYearGap,
   adjustForTrim,
+  iqrFilter,
 } from "./engine";
 
 // Forward the full public surface so per-app `src/lib/scraper.ts` loses nothing.
@@ -57,7 +58,7 @@ export type { MarketConfig, FetchValuationOptions, ValuationResult, Listing, Sou
 const DEFAULT_MARKET: MarketConfig = sa;
 // TODO: export from engine.ts to avoid drift
 const CACHE_TTL_MS = Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1000;
-const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25000;
+const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 22000;
 const MIN_DEALER_LISTINGS = Number(process.env.SCRAPER_MIN_DEALER_LISTINGS) || 3;
 const DEALER_FINAL_THRESHOLD = Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD) || 20;
 const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
@@ -223,6 +224,7 @@ export async function fetchValuation(
           }
           if (listings.length === 0) break;
           acc.push(...listings);
+          if (acc.length >= 20) break; // Plenty of clean comps, avoid timeout
         }
         return { name: src.name, listings: acc };
       })
@@ -321,8 +323,12 @@ export async function fetchValuation(
 
   function calcPriceRange(prices: number[]): { low: number | null; high: number | null } {
     if (!prices.length) return { low: null, high: null };
-    const sorted = [...prices].sort((a, b) => a - b);
-    return { low: sorted[0], high: sorted[sorted.length - 1] };
+    const filtered = iqrFilter(prices);
+    const sorted = [...filtered].sort((a, b) => a - b);
+    if (sorted.length === 1) return { low: sorted[0], high: sorted[0] };
+    const lowIdx = Math.floor(sorted.length * 0.05);
+    const highIdx = Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1);
+    return { low: sorted[lowIdx], high: sorted[highIdx] };
   }
 
   if (allListings.length === 0) {
@@ -370,9 +376,12 @@ export async function fetchValuation(
     return p;
   });
 
-  const avgRetail = robustAverage(adjustedComps);
-  const range = calcPriceRange(adjustedComps);
-  const confidence = calcConfidenceScore(adjustedComps);
+  // Filter statistical outliers (e.g. keying errors, armored/extreme conversions, salvage)
+  const validComps = iqrFilter(adjustedComps);
+
+  const avgRetail = robustAverage(validComps);
+  const range = calcPriceRange(validComps);
+  const confidence = calcConfidenceScore(validComps);
   const tradeEst = avgRetail != null ? Math.round(avgRetail * 0.85) : null;
 
   const data: ValuationResult = {
@@ -380,7 +389,7 @@ export async function fetchValuation(
     tradeEstimate: tradeEst,
     priceRange: range,
     confidenceScore: confidence,
-    listingsFound: adjustedComps.length,
+    listingsFound: validComps.length,
     fallbackRequired: dealerListings.length < MIN_DEALER_LISTINGS,
     searchUrl,
     carsUrl,

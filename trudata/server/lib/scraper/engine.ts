@@ -194,7 +194,7 @@ const DEALER_FINAL_THRESHOLD = Math.max(3, Number(process.env.SCRAPER_DEALER_FIN
 const MIN_HTTP_LISTINGS = Number(process.env.SCRAPER_MIN_HTTP_LISTINGS) || 8;
 const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
 const SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
-const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25000;
+const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 22000;
 
 // SERP env — lazy getters (same dotenv load-order issue as unlocker vars)
 function getSerpApiUrl() { return process.env.SERP_API_URL || ""; }
@@ -369,12 +369,45 @@ function titleMentionsVehicle(title: string, make: string, model: string, year: 
   const q = modelCore(model);
   const modelOk = !q || modelCore(t).includes(q);
 
+  // Exclude armored / bulletproof / specialized conversions unless specifically searched
+  const isArmoredSearch = /\b(armou?red|bulletproof|b4|b6|b7)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  if (!isArmoredSearch && /\b(armou?red|bulletproof|b4|b6|b7)\b/i.test(t)) {
+    return false;
+  }
+
   // Engine displacement check (e.g. 2.8, 2.4, 1.4, 2.0, 3.0, 3.2) — prevents mixing engine sizes
   const searchDisp = (match || opts?.variant || model || "").match(/\b(\d\.\d)\b/)?.[1];
   if (searchDisp) {
     const titleDisp = t.match(/\b(\d\.\d)\b/)?.[1];
     if (titleDisp && titleDisp !== searchDisp) return false;
   }
+
+  // Fuel Type separation (Diesel vs Petrol)
+  const isDieselSearch = /\b(diesel|tdi|d-4d|gd-6|cdi|dci|crdi|tdci|di-d)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  const isPetrolSearch = /\b(petrol|tsi|tfsi|vvt-i|vvti|ecoboost)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  const isCompDiesel = /\b(diesel|tdi|d-4d|gd-6|cdi|dci|crdi|tdci|di-d)\b/i.test(t);
+  const isCompPetrol = /\b(petrol|tsi|tfsi|vvt-i|vvti|ecoboost)\b/i.test(t);
+  if (isDieselSearch && isCompPetrol) return false;
+  if (isPetrolSearch && isCompDiesel) return false;
+
+  // Cab Type separation for bakkies / commercial vehicles
+  const isDoubleCabSearch = /\b(double cab|d\/c|dc\b|4dr)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  const isSingleCabSearch = /\b(single cab|s\/c|sc\b)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  const isExtraCabSearch = /\b(extra cab|xtra cab|super cab|extended cab|club cab|king cab)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  const isCompDC = /\b(double cab|d\/c|dc\b)\b/i.test(t);
+  const isCompSC = /\b(single cab|s\/c|sc\b)\b/i.test(t);
+  const isCompEC = /\b(extra cab|xtra cab|super cab|extended cab|club cab|king cab)\b/i.test(t);
+  if (isDoubleCabSearch && (isCompSC || isCompEC)) return false;
+  if (isSingleCabSearch && (isCompDC || isCompEC)) return false;
+  if (isExtraCabSearch && (isCompSC || isCompDC)) return false;
+
+  // Drivetrain separation (4x4 vs 4x2)
+  const is4x4Search = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  const is4x2Search = /\b(4x2|2wd|raised body|rb\b)\b/i.test(`${opts?.variant || ''} ${match || ''}`);
+  const isComp4x4 = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(t);
+  const isComp4x2 = /\b(4x2|2wd|raised body|rb\b)\b/i.test(t);
+  if (is4x4Search && isComp4x2) return false;
+  if (is4x2Search && isComp4x4) return false;
 
   // Performance badge separation (GTI, RS, AMG, Golf R, Type R):
   // If searching for a standard car (e.g. Golf 1.4 TSI), exclude GTI/R comps that double the price
@@ -384,11 +417,11 @@ function titleMentionsVehicle(title: string, make: string, model: string, year: 
     if (isPerfTitle) return false;
   }
 
-  // Variant token check — if variant specifies key badges/engine tokens (e.g. "1.4", "tsi", "gd-6", "4x4"),
+  // Variant token check — if variant specifies key badges/engine tokens (e.g. "1.4", "tsi", "gd-6", "raider", "legend"),
   // require at least one key token to match in the title to avoid generic/untrimmed cards polluting the sample
   if (opts?.variant) {
     const vWords = String(opts.variant).toLowerCase().split(/[\s\-_/]+/).filter(w => w.length >= 2);
-    const keyTokens = vWords.filter(w => /^(?:\d\.\d|gti|gtd|tdi|tsi|tfsi|amg|4x4|4wd|gd-6|d-4d|v6|v8)$/i.test(w));
+    const keyTokens = vWords.filter(w => /^(?:\d\.\d|gti|gtd|tdi|tsi|tfsi|amg|4x4|4wd|gd-6|d-4d|v6|v8|raider|legend|highline|comfortline|trendline)$/i.test(w));
     if (keyTokens.length > 0) {
       const lowerTitle = t.toLowerCase();
       const hasKeyToken = keyTokens.some(tok => lowerTitle.includes(tok));
@@ -839,7 +872,7 @@ export function adjustForMileage(listings: Listing[], _targetKm?: number): numbe
   return listings.map((l) => l.price);
 }
 
-function iqrFilter(prices: number[]): number[] {
+export function iqrFilter(prices: number[]): number[] {
   if (prices.length < 4) return prices;
   const s = [...prices].sort((a, b) => a - b);
   const q1 = s[Math.floor(s.length * 0.25)];

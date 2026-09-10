@@ -837,7 +837,7 @@ var DEALER_FINAL_THRESHOLD = Math.max(3, Number(process.env.SCRAPER_DEALER_FINAL
 var MIN_HTTP_LISTINGS = Number(process.env.SCRAPER_MIN_HTTP_LISTINGS) || 8;
 var CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
 var SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
-var TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25e3;
+var TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 22e3;
 function getSerpApiUrl() {
   return process.env.SERP_API_URL || "";
 }
@@ -973,11 +973,36 @@ function titleMentionsVehicle(title, make, model, year, match, opts) {
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), "i").test(t));
   const q = modelCore(model);
   const modelOk = !q || modelCore(t).includes(q);
+  const isArmoredSearch = /\b(armou?red|bulletproof|b4|b6|b7)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  if (!isArmoredSearch && /\b(armou?red|bulletproof|b4|b6|b7)\b/i.test(t)) {
+    return false;
+  }
   const searchDisp = (match || opts?.variant || model || "").match(/\b(\d\.\d)\b/)?.[1];
   if (searchDisp) {
     const titleDisp = t.match(/\b(\d\.\d)\b/)?.[1];
     if (titleDisp && titleDisp !== searchDisp) return false;
   }
+  const isDieselSearch = /\b(diesel|tdi|d-4d|gd-6|cdi|dci|crdi|tdci|di-d)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  const isPetrolSearch = /\b(petrol|tsi|tfsi|vvt-i|vvti|ecoboost)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  const isCompDiesel = /\b(diesel|tdi|d-4d|gd-6|cdi|dci|crdi|tdci|di-d)\b/i.test(t);
+  const isCompPetrol = /\b(petrol|tsi|tfsi|vvt-i|vvti|ecoboost)\b/i.test(t);
+  if (isDieselSearch && isCompPetrol) return false;
+  if (isPetrolSearch && isCompDiesel) return false;
+  const isDoubleCabSearch = /\b(double cab|d\/c|dc\b|4dr)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  const isSingleCabSearch = /\b(single cab|s\/c|sc\b)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  const isExtraCabSearch = /\b(extra cab|xtra cab|super cab|extended cab|club cab|king cab)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  const isCompDC = /\b(double cab|d\/c|dc\b)\b/i.test(t);
+  const isCompSC = /\b(single cab|s\/c|sc\b)\b/i.test(t);
+  const isCompEC = /\b(extra cab|xtra cab|super cab|extended cab|club cab|king cab)\b/i.test(t);
+  if (isDoubleCabSearch && (isCompSC || isCompEC)) return false;
+  if (isSingleCabSearch && (isCompDC || isCompEC)) return false;
+  if (isExtraCabSearch && (isCompSC || isCompDC)) return false;
+  const is4x4Search = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  const is4x2Search = /\b(4x2|2wd|raised body|rb\b)\b/i.test(`${opts?.variant || ""} ${match || ""}`);
+  const isComp4x4 = /\b(4x4|4wd|awd|all-wheel|syncro|4motion|quattro|xdrive|4matic)\b/i.test(t);
+  const isComp4x2 = /\b(4x2|2wd|raised body|rb\b)\b/i.test(t);
+  if (is4x4Search && isComp4x2) return false;
+  if (is4x2Search && isComp4x4) return false;
   const isPerfSearch = /\b(gti|gtd|rs\b|amg\b|type[- ]?r|golf[- ]?r\b)\b/i.test(`${model} ${opts?.variant || ""} ${match || ""}`);
   if (!isPerfSearch) {
     const isPerfTitle = /\b(gti|gtd|rs\b|amg\b|type[- ]?r|golf[- ]?r\b)\b/i.test(t);
@@ -985,7 +1010,7 @@ function titleMentionsVehicle(title, make, model, year, match, opts) {
   }
   if (opts?.variant) {
     const vWords = String(opts.variant).toLowerCase().split(/[\s\-_/]+/).filter((w) => w.length >= 2);
-    const keyTokens = vWords.filter((w) => /^(?:\d\.\d|gti|gtd|tdi|tsi|tfsi|amg|4x4|4wd|gd-6|d-4d|v6|v8)$/i.test(w));
+    const keyTokens = vWords.filter((w) => /^(?:\d\.\d|gti|gtd|tdi|tsi|tfsi|amg|4x4|4wd|gd-6|d-4d|v6|v8|raider|legend|highline|comfortline|trendline)$/i.test(w));
     if (keyTokens.length > 0) {
       const lowerTitle = t.toLowerCase();
       const hasKeyToken = keyTokens.some((tok) => lowerTitle.includes(tok));
@@ -1623,7 +1648,7 @@ var ALLOWED_MARKETS = (process.env.MARKETS || "").split(",").map((s) => s.trim()
 var filteredMarkets = ALLOWED_MARKETS.length ? Object.fromEntries(Object.entries(markets).filter(([id]) => ALLOWED_MARKETS.includes(id))) : markets;
 var DEFAULT_MARKET = sa;
 var CACHE_TTL_MS2 = Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1e3;
-var TOTAL_BUDGET_MS2 = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 25e3;
+var TOTAL_BUDGET_MS2 = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 22e3;
 var MIN_DEALER_LISTINGS = Number(process.env.SCRAPER_MIN_DEALER_LISTINGS) || 3;
 var DEALER_FINAL_THRESHOLD2 = Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD) || 20;
 var CLASSIFIEDS_PAGES2 = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 5);
@@ -1761,6 +1786,7 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
           }
           if (listings.length === 0) break;
           acc.push(...listings);
+          if (acc.length >= 20) break;
         }
         return { name: src.name, listings: acc };
       })
@@ -1842,8 +1868,12 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
   }
   function calcPriceRange(prices) {
     if (!prices.length) return { low: null, high: null };
-    const sorted = [...prices].sort((a, b) => a - b);
-    return { low: sorted[0], high: sorted[sorted.length - 1] };
+    const filtered = iqrFilter(prices);
+    const sorted = [...filtered].sort((a, b) => a - b);
+    if (sorted.length === 1) return { low: sorted[0], high: sorted[0] };
+    const lowIdx = Math.floor(sorted.length * 0.05);
+    const highIdx = Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1);
+    return { low: sorted[lowIdx], high: sorted[highIdx] };
   }
   if (allListings.length === 0) {
     const data2 = {
@@ -1884,16 +1914,17 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     }
     return p;
   });
-  const avgRetail = robustAverage(adjustedComps);
-  const range = calcPriceRange(adjustedComps);
-  const confidence = calcConfidenceScore(adjustedComps);
+  const validComps = iqrFilter(adjustedComps);
+  const avgRetail = robustAverage(validComps);
+  const range = calcPriceRange(validComps);
+  const confidence = calcConfidenceScore(validComps);
   const tradeEst = avgRetail != null ? Math.round(avgRetail * 0.85) : null;
   const data = {
     averageRetailPrice: avgRetail,
     tradeEstimate: tradeEst,
     priceRange: range,
     confidenceScore: confidence,
-    listingsFound: adjustedComps.length,
+    listingsFound: validComps.length,
     fallbackRequired: dealerListings.length < MIN_DEALER_LISTINGS,
     searchUrl,
     carsUrl,
