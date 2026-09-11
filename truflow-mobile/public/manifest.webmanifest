@@ -1,6 +1,6 @@
 {
-  "name": "TruFlow",
-  "short_name": "TruFlow",
+  "name": "TruFlow App",
+  "short_name": "TruFlow App",
   "description": "TruFlow Premium mobile companion — manage leads, inventory and deals from the floor.",
   "id": "/",
   "start_url": "/",

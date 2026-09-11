@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TruFlow">
-<title>TruFlow Mobile</title>
+<meta name="apple-mobile-web-app-title" content="TruFlow App">
+<title>TruFlow App</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -581,7 +581,7 @@ button,input,textarea,select{font-family:inherit;}
         <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--cyan)"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>WhatsApp Support<span style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)">24/7 Desk</span></div>
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</div>
       </div>
-      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.05em;margin-top:22px">TruFlow Mobile · Unified with Flow Desktop</p>
+      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.05em;margin-top:22px">TruFlow App · Flow Central Synced</p>
     </section>
 
     <!-- Screen: Activity Log -->
@@ -655,7 +655,7 @@ button,input,textarea,select{font-family:inherit;}
   <div class="glow"></div>
   <svg class="gmark" viewBox="0 0 72 72" aria-hidden="true" style="width:78px;height:78px;margin-bottom:16px;"><use href="#tf-emblem"/></svg>
   <h1>Tru<span class="flow-glow">Flow</span></h1>
-  <span class="flow-badge" style="margin-top:10px;">Mobile Floor Companion</span>
+  <span class="flow-badge" style="margin-top:10px;">TruFlow App</span>
   <input id="gateCode" type="password" inputmode="text" placeholder="Dealer code" autocomplete="off" autocapitalize="off" style="margin-top:24px">
   <button class="enter btn-primary" id="gateEnter">Sign in</button>
   <button class="enter btn-demo" id="gateDemo">Try demo (24h)</button>
@@ -666,6 +666,7 @@ button,input,textarea,select{font-family:inherit;}
 <script>
 (function(){
   "use strict";
+  var FLOW_BASE="https://premium.tru-saas.com";
   var API="", TOKEN="", AUTH=null, cachedLeads=[], cachedStock=[], cachedTasks=[];
   var DEALER_SITE="", DEALER_SLUG="", DMS_CONNECTED=null, PROFILE_RESOLVED=false, mvCache={}, curTaskId=null;
   var MARKET_TABLE={za:{currency:"R",locale:"en-ZA",unit:"km"},uk:{currency:"£",locale:"en-GB",unit:"mi"},us:{currency:"$",locale:"en-US",unit:"mi"}};
@@ -693,11 +694,26 @@ button,input,textarea,select{font-family:inherit;}
   var todayISO=function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
   var stampNow=function(){var d=new Date();return d.toLocaleDateString(MARKET.locale,{day:"numeric",month:"short"})+" · "+d.toLocaleTimeString(MARKET.locale,{hour:"2-digit",minute:"2-digit"});};
 
+  function fetchWithFallback(path, opts){
+    var url = API ? (API + path) : path;
+    return fetch(url, opts).then(function(r){
+      if((r.status === 502 || r.status === 504 || r.status === 404) && !url.startsWith("http")){
+        return fetch(FLOW_BASE + path, opts);
+      }
+      return r;
+    }).catch(function(err){
+      if(!url.startsWith("http")){
+        return fetch(FLOW_BASE + path, opts);
+      }
+      throw err;
+    });
+  }
+
   function hdrs(){return {"Content-Type":"application/json","Authorization":"Bearer "+TOKEN};}
   function api(method,path,body){
     var opts={method:method,headers:hdrs()};
     if(body)opts.body=JSON.stringify(body);
-    return fetch(API+path,opts).then(function(r){
+    return fetchWithFallback(path,opts).then(function(r){
       if(r.status===401){doLogout();throw new Error("Session expired");}
       return r.json().then(function(data){
         if(!r.ok)throw new Error((data&&data.error)||("HTTP "+r.status));
@@ -711,7 +727,7 @@ button,input,textarea,select{font-family:inherit;}
     var code=$("#gateCode").value.trim(), errEl=$("#gateErr"), btn=$("#gateEnter");
     if(!code){errEl.textContent="Enter your dealer code.";return;}
     btn.disabled=true;btn.textContent="Signing in…";errEl.textContent="";
-    fetch(API+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:code})})
+    fetchWithFallback("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:code})})
       .then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d};});})
       .then(function(res){
         btn.disabled=false;btn.textContent="Sign in";
@@ -721,13 +737,13 @@ button,input,textarea,select{font-family:inherit;}
         try{localStorage.setItem("tflx_token",TOKEN);localStorage.setItem("tflx_auth",JSON.stringify(AUTH));}catch(e){}
         enterApp();
       })
-      .catch(function(){btn.disabled=false;btn.textContent="Sign in";errEl.textContent="Can't reach server. Try again.";});
+      .catch(function(){btn.disabled=false;btn.textContent="Sign in";errEl.textContent="Can't reach server. Check connection.";});
   }
 
   function doDemo(){
     var errEl=$("#gateErr"), btn=$("#gateDemo");
     btn.disabled=true;btn.textContent="Opening demo…";errEl.textContent="";
-    fetch(API+"/api/auth/demo",{method:"POST",headers:{"Content-Type":"application/json"}})
+    fetchWithFallback("/api/auth/demo",{method:"POST",headers:{"Content-Type":"application/json"}})
       .then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d};});})
       .then(function(res){
         btn.disabled=false;btn.textContent="Try demo (24h)";
@@ -736,7 +752,7 @@ button,input,textarea,select{font-family:inherit;}
         try{localStorage.setItem("tflx_token",TOKEN);localStorage.setItem("tflx_auth",JSON.stringify(AUTH));}catch(e){}
         enterApp();
       })
-      .catch(function(){btn.disabled=false;btn.textContent="Try demo (24h)";errEl.textContent="Can't reach server.";});
+      .catch(function(){btn.disabled=false;btn.textContent="Try demo (24h)";errEl.textContent="Can't reach server. Check connection.";});
   }
 
   function doLogout(){
@@ -747,7 +763,7 @@ button,input,textarea,select{font-family:inherit;}
   function enterApp(){
     $("#gate").classList.add("hide");$("#app").style.display="";
     var label=(AUTH&&AUTH.label)||"Dealer";
-    $("#homeDealer").textContent=label;$("#topDealerName").textContent=label;$("#acctName").textContent=label;
+    $("#homeDealer").textContent=label;$("#acctName").textContent=label;
     $("#avatarBtn").textContent=initials(label);$("#acctInit").textContent=initials(label);
     var codeEl=$("#acctCode");if(codeEl)codeEl.textContent=(AUTH&&(AUTH.code||AUTH.dealerCode))||"";
     loadAll();

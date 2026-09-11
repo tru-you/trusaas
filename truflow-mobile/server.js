@@ -8,7 +8,7 @@ import { URL } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || "3002", 10);
-const API_TARGET = process.env.API_TARGET || "http://localhost:3000";
+const API_TARGET = process.env.API_TARGET || process.env.TRUFLOW_DMS_URL || "https://premium.tru-saas.com";
 const target = new URL(API_TARGET);
 
 const app = express();
