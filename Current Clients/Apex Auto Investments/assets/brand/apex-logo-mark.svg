@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Brushed Silver Metallic Gradients -->
+    <linearGradient id="metal-left" x1="50" y1="50" x2="200" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="35%" stop-color="#CBD5E1"/>
+      <stop offset="70%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    
+    <linearGradient id="metal-right" x1="350" y1="50" x2="200" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="40%" stop-color="#94A3B8"/>
+      <stop offset="80%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    
+    <linearGradient id="metal-top" x1="200" y1="30" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+
+    <!-- Terracotta Orange Inner Glow Gradient -->
+    <linearGradient id="terracotta-glow" x1="200" y1="100" x2="200" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E8611A"/>
+      <stop offset="50%" stop-color="#C2652A"/>
+      <stop offset="100%" stop-color="#9C4411"/>
+    </linearGradient>
+
+    <!-- Soft Drop Shadow -->
+    <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#09090b" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#drop-shadow)">
+    <!-- Outer Metallic Chevron Wing - Left Face -->
+    <path d="M200 40 L60 310 L135 310 L200 170 Z" fill="url(#metal-left)" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Outer Metallic Chevron Wing - Right Face -->
+    <path d="M200 40 L340 310 L265 310 L200 170 Z" fill="url(#metal-right)" stroke="#0F172A" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Terracotta Glow Bevel Inset Core -->
+    <path d="M200 110 L115 280 L145 280 L200 180 L255 280 L285 280 Z" fill="url(#terracotta-glow)"/>
+
+    <!-- Inner Metallic Core Apex -->
+    <path d="M200 140 L140 260 L170 260 L200 200 L230 260 L260 260 Z" fill="url(#metal-top)" stroke="#334155" stroke-width="1"/>
+
+    <!-- Highlight Crest Rim -->
+    <path d="M200 40 L200 170" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+  </g>
+</svg>

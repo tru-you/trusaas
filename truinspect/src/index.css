@@ -814,7 +814,7 @@ textarea.ti-input { padding: 10px 12px; resize: none; line-height: 1.5; }
   gap: 8px;
 }
 
-/* ── Live Market Value button — animated gradient glow ── */
+/* ── TruRadar™ button — animated gradient glow ── */
 @property --mv-angle {
   syntax: '<angle>';
   initial-value: 0deg;

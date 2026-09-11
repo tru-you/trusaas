@@ -451,7 +451,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
             className={`market-btn inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2.5 text-[#4FE3DC] text-[13px] font-semibold cursor-pointer select-none${marketLoading ? ' scanning' : ''}${market.id !== 'za' ? ' col-span-2' : ''}`}
           >
             {marketLoading ? <Loader2 size={13} className="animate-spin" /> : <Radio size={13} />}
-            <span className="truncate">Live Market Value</span>
+            <span className="truncate">{marketLoading ? 'Verifying Live Sources…' : 'TruRadar™ Live Price'}</span>
             <span className="mv-badge">LIVE</span>
           </button>
         </div>
@@ -507,7 +507,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
         {marketResult && (
           <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
             <div className="flex items-center justify-between gap-3">
-              <span style={{ color: 'var(--muted)' }}>Live market value</span>
+              <span style={{ color: 'var(--muted)' }}>TruRadar™ value</span>
               {marketResult.error ? (
                 <span className="text-amber-400 font-medium">{marketResult.error}</span>
               ) : marketResult.averageRetailPrice != null ? (

@@ -7,6 +7,7 @@ export interface Imagin8Bundles {
   valuation: number;
   regCheck: number;
   accidentReport: number;
+  bankAvs: number;
   unlimited?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const FEATURE_LABELS: Record<Imagin8Feature, string> = {
   valuation: "TransUnion Valuation",
   regCheck: "Verify Registration",
   accidentReport: "Accident Report",
+  bankAvs: "Verify Bank Account",
 };
 
 /** Default empty bundles. */
@@ -24,6 +26,7 @@ export const ZERO_BUNDLES: Imagin8Bundles = {
   valuation: 0,
   regCheck: 0,
   accidentReport: 0,
+  bankAvs: 0,
 };
 
 /** Hook that wraps bundle state with persistence. */

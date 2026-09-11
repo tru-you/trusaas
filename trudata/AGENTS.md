@@ -1,6 +1,6 @@
 # TruData — Project Status
 
-**Last updated:** 2026-09-03 by Antigravity
+**Last updated:** 2026-09-11 by Antigravity
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or config changes.
 
 ---
@@ -19,12 +19,34 @@ TruData is a **B2B data marketplace** for South Africa. Five product verticals, 
 
 | Pillar | Endpoint | Credits | Data Source | Status |
 |--------|----------|---------|-------------|--------|
-| 🚗 **Vehicles & Heavy Assets** | `POST /api/valuation/quick` + `/api/catalogue/*` | 1 | TransUnion catalogue (Cars, Moto, Marine, Commercial, Caravans, Yellow Metal/Ag) + Bright Data scraping | ✅ Live |
+| 🚗 **Vehicles & Heavy Assets** | `POST /api/valuation/quick` + `/api/catalogue/*` | 1 | Flat-fee OEM specs (`getStaticInfo`) + Bright Data/Serper live showroom scraper | ✅ Live |
+| 🛡️ **Vehicle Verification (RegCheck)** | `POST /api/bureau/regcheck` | 3 | Official national vehicle registry (eNaTIS, SAPS Police Stolen, Bank Finance Lien, Colour, VIN, Engine No) | ✅ Live |
 | 💻 **Electronics & Tech** | `POST /api/electronics/valuation` | 1 | Serper Google Shopping ZA + Organic retail comps (Takealot, iStore, Makro, Incredible) | ✅ Live |
 | 🏠 **Property** | `POST /api/property/comps` + `/api/property/fsbo` | 1 | Bright Data scraping (Property24, Private Property) | ✅ Live |
 | 🔒 **SafePay** | `POST /api/safepay/verify` | 3 | Imagin8 TransUnion AVS (bank account verification) | ✅ Live |
 | 🏢 **Business Finder** | `POST /api/agency/crawl` | 2 | Serper.dev (SERP) + Cheerio crawl + site audit | ✅ Live |
-| 📋 **Bureau Reports** | `/api/imagin8/*` | 3 | Imagin8 TransUnion (valuation, reg check, accident) | ✅ Live |
+| 📋 **Bureau Reports** | `/api/bureau/*` | 3 | Official registers (RegCheck, Accident Claims, CIPC, Deeds Office, Home Affairs ID) | ✅ Live |
+
+### Architecture & Compliance Updates (2026-09-11)
+- 🚫 **Zero Emojis Sitewide Standard**:
+  - Removed all emojis across HTML, JS, templates, badges, toast messages, and button text sitewide. Replaced with clean typography, styled badges, and high-contrast brutalist borders.
+- 🎛️ **Vehicle Selector 4-Stage Cascading Dropdowns**:
+  - Replaced manual typing datalists with 4 native dependent `<select>` dropdowns: **Make -> Model -> Variant (Trim) -> Production Year**. Auto-fetches live TransUnion models from `/api/imagin8/models` with static catalogue fallbacks and auto-computes production year ranges.
+- 🏷️ **Clean Selector Tabs & Action Buttons (No Credit Clutter)**:
+  - Stripped `(1 CR)`, `(3 CR)`, `(2 CR)`, and `1 CREDIT` text badges from pillar dock tabs, vehicle sub-mode switchers, select dropdown options, and main action CTA buttons for a distraction-free, professional enterprise interface.
+- ⚖️ **Strict Bureau Resale Compliance (TransUnion `getValues` Decommissioned from Public Resale)**:
+  - TransUnion book values (`getValues`) are proprietary IP and legally prohibited from third-party marketplace resale.
+  - TruData uses **100% independent, proprietary market valuations** calculated live from active showroom floor feeds (AutoTrader & Cars.co.za via Bright Data / Serper), ensuring full legal ownership and zero redistribution restrictions.
+- 🚗 **All Vehicle Intelligence Consolidated Exclusively Under Vehicle Panel (`#panel-vehicles`)**:
+  - 1. **Live Market Value & OEM Specs** (`POST /api/valuation/quick`): Live showroom floor comps merged with flat-fee verified technical specs (`getStaticInfo`: kW, cc, cylinders, body, fuel, tare, GVM, dates).
+  - 2. **Standalone Reg / VIN Background Check** (`POST /api/bureau/regcheck`): Official SAPS Police Stolen status, active Bank Finance Lien checks, registered colour, 17-digit VIN, engine number, and microdot validation.
+  - 3. **Standalone Accident & Insurance Claims History** (`POST /api/bureau/accident`): Official insurance write-off flags, damage area breakdown, and claims payouts.
+- 🏢 **Bureau Panel Exclusively Dedicated to Non-Vehicle Registries**:
+  - Form `#panel-bureau` only queries official corporate, property, and citizen identity registries: CIPC Company & Director Dossier, Deeds Office Property Title & Transfer, and Home Affairs SA ID Verification.
+- 🏷️ **Wholesale & WinDeed Pricing Stripped from UI**:
+  - Removed all internal raw backend costs (`R 18.50 wholesale`, `R 26.00 wholesale`, `R 12.50 wholesale`). All services are cleanly denominated in uniform TruData Credits across both frontend UI and API response envelopes.
+- 📅 **WinDeed Ingestion Scheduled**:
+  - Direct CIPC company director search and Deeds Office title deed transfers queued for connection following Monday's integration appointment.
 
 ### Features Added (2026-09-10)
 - **High-Converting Copywriting Overhaul & Jargon Elimination:**

@@ -756,7 +756,7 @@ button.absolute:active { transform: translateY(2px); }
    text someone squints at across a windscreen. */
 .text-\[11px\] { font-size: 12px; }
 
-/* ── Live Market Value button — animated gradient glow ── */
+/* ── TruRadar™ button — animated gradient glow ── */
 @property --mv-angle {
   syntax: '<angle>';
   initial-value: 0deg;

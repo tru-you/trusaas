@@ -14,7 +14,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import * as cheerio from "cheerio";
 import fs from "fs";
 import path from "path";
-import type { SerperResponse } from './serper';
+import { serperSearch, toEngineFormat, type SerperResponse } from '../serper';
 
 /* ────────────────────────────────────────────────
    TYPES
@@ -595,7 +595,6 @@ export async function fetchSerpListings(make: string, model: string, year: strin
     
     // 1. Primary: Serper.dev (cheapest, fastest)
     if (process.env.SERPER_API_KEY) {
-      const { serperSearch, toEngineFormat } = await import('./serper');
       const glCode = cfg.googleGl?.replace('gl=', '') || 'za';
       const result = await serperSearch(q, { gl: glCode, num: 50 });
       json = toEngineFormat(result);

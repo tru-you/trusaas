@@ -66,7 +66,7 @@ const GUIDES: Guide[] = [
     steps: [
       { title: "Start a trade-in", detail: "From the vehicle card, tap the trade-in button. This opens the condition assessment form." },
       { title: "Complete all items", detail: "Work each panel and item — flag anything damaged with an estimated recon cost. The offer is built from what you enter." },
-      { title: "Pull live prices", detail: "Fetch Live Market Value shows what similar cars are asking on AutoTrader and Cars.co.za right now (free). TransUnion Valuation gives the official trade/retail figure when you need it — uses one credit." },
+      { title: "Pull live prices", detail: "TruRadar™ shows what similar cars are asking across live market sources right now (free). TransUnion Valuation gives the official trade/retail figure when you need it — uses one credit." },
       { title: "Set your margin", detail: "The offer calculates as retail minus recon costs minus your margin %. Adjust the margin on the spot while the customer watches." },
       { title: "Save or share the summary", detail: "The appraisal carries your branding and T&Cs with a drawn signature. Save it to the vehicle record or export as PDF." },
     ],

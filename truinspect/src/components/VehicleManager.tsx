@@ -2,7 +2,7 @@ import React from 'react';
 import {
   ArrowLeft, Save, FileText, ShoppingCart, AlertTriangle, Camera, Pencil,
   CheckCircle2, Phone, Mail, MessageCircle, HandCoins, User, Upload, Paperclip,
-  Trash2, Plus, X, ChevronLeft, ChevronRight, Shield, History, Loader2,
+  Trash2, Plus, X, ChevronLeft, ChevronRight, Shield, History, Loader2, Banknote, AlertCircle,
 } from 'lucide-react';
 import { Vehicle, VehicleOffer } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -118,6 +118,31 @@ export default function VehicleManager({
       setAccidentResult({ error: e?.message || 'Report failed' });
     } finally {
       setAccidentLoading(false);
+    }
+  };
+
+  const [avsResult, setAvsResult] = React.useState<any>(null);
+  const [avsLoading, setAvsLoading] = React.useState(false);
+  const [showAvsForm, setShowAvsForm] = React.useState(false);
+  const [avsForm, setAvsForm] = React.useState({ bankAccount: '', branchCode: '', idNumber: '', initials: '', surname: '', accountType: '1' });
+  const runBankAvs = async () => {
+    if (!avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber || !user) return;
+    setAvsLoading(true);
+    setAvsResult(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/imagin8/avs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(avsForm),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setAvsResult(res.ok ? data : { error: data.error || `Verification failed (${res.status})` });
+    } catch (e: any) {
+      setAvsResult({ error: e?.message || 'Verification failed' });
+    } finally {
+      setAvsLoading(false);
     }
   };
 
@@ -376,7 +401,7 @@ export default function VehicleManager({
                 <span className="text-[12px] font-semibold" style={{ color: 'var(--white-dim)' }}>TransUnion Verification</span>
                 <span className="text-[11px]" style={{ color: 'var(--muted)' }}>Imagin8 bundle-gated</span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Imagin8GatedButton
                   feature="regCheck"
                   bundles={imagin8Bundles}
@@ -393,7 +418,105 @@ export default function VehicleManager({
                   className="w-full"
                   icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
                 />
+                <Imagin8GatedButton
+                  feature="bankAvs"
+                  bundles={imagin8Bundles}
+                  onClick={() => setShowAvsForm((v) => !v)}
+                  onUnlock={() => alert('Bank account verifications are bundle-gated. Contact your TruSaaS account manager to activate live AVS-R for this dealership.')}
+                  className="w-full"
+                  icon={avsLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Banknote size={13} />}
+                  label="Verify Bank"
+                />
               </div>
+
+              {showAvsForm && (
+                <div className="rounded-lg p-3 space-y-2.5 mt-2" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+                  <div className="text-[12px] font-semibold flex items-center justify-between" style={{ color: 'var(--cyan)' }}>
+                    <span className="flex items-center gap-1.5"><Banknote size={13} /> Bank Account Verification (AVS-R)</span>
+                    <button type="button" onClick={() => setShowAvsForm(false)} className="text-[11px] text-[var(--muted)] hover:text-white">Close</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      placeholder="Account number"
+                      value={avsForm.bankAccount}
+                      onChange={(e) => setAvsForm((f) => ({ ...f, bankAccount: e.target.value }))}
+                      className={inputCls}
+                      style={{ minHeight: 36, fontSize: '12px' }}
+                    />
+                    <input
+                      placeholder="Branch code"
+                      value={avsForm.branchCode}
+                      onChange={(e) => setAvsForm((f) => ({ ...f, branchCode: e.target.value }))}
+                      className={inputCls}
+                      style={{ minHeight: 36, fontSize: '12px' }}
+                    />
+                    <input
+                      placeholder="ID number"
+                      value={avsForm.idNumber}
+                      onChange={(e) => setAvsForm((f) => ({ ...f, idNumber: e.target.value }))}
+                      className={inputCls}
+                      style={{ minHeight: 36, fontSize: '12px' }}
+                    />
+                    <input
+                      placeholder="Initials (e.g. JP)"
+                      value={avsForm.initials}
+                      onChange={(e) => setAvsForm((f) => ({ ...f, initials: e.target.value }))}
+                      className={inputCls}
+                      style={{ minHeight: 36, fontSize: '12px' }}
+                    />
+                    <input
+                      placeholder="Account surname"
+                      value={avsForm.surname}
+                      onChange={(e) => setAvsForm((f) => ({ ...f, surname: e.target.value }))}
+                      className={inputCls}
+                      style={{ minHeight: 36, fontSize: '12px' }}
+                    />
+                    <select
+                      value={avsForm.accountType}
+                      onChange={(e) => setAvsForm((f) => ({ ...f, accountType: e.target.value }))}
+                      className={inputCls}
+                      style={{ minHeight: 36, fontSize: '12px' }}
+                    >
+                      <option value="1">Current / Cheque</option>
+                      <option value="2">Savings</option>
+                      <option value="3">Transmission</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={runBankAvs}
+                    disabled={avsLoading || !avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber}
+                    className="w-full flex items-center justify-center gap-2 rounded-lg py-2 text-[12px] font-semibold cursor-pointer disabled:opacity-40"
+                    style={{ background: 'var(--cyan-faint)', color: 'var(--cyan)', border: '1px solid var(--cyan-soft)' }}
+                  >
+                    {avsLoading ? <Loader2 size={13} className="animate-spin" /> : <Shield size={13} />}
+                    {avsLoading ? "Verifying..." : "Run AVS Check"}
+                  </button>
+                  {avsResult && (
+                    <div className="rounded-lg p-2 text-[12px] space-y-1 mt-2" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-line)' }}>
+                      {avsResult.error ? (
+                        <span className="text-amber-400 font-medium">{avsResult.error}</span>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-1">
+                          <span className={avsResult.accountExists ? 'text-emerald-400' : 'text-rose-400'}>
+                            Account: {avsResult.accountExists ? 'Exists' : 'Not found'}
+                          </span>
+                          <span className={avsResult.accountOpen ? 'text-emerald-400' : 'text-rose-400'}>
+                            Status: {avsResult.accountOpen ? 'Open' : 'Closed'}
+                          </span>
+                          <span className={avsResult.idMatch ? 'text-emerald-400' : 'text-rose-400'}>
+                            ID: {avsResult.idMatch ? 'Match' : 'Mismatch'}
+                          </span>
+                          <span className={avsResult.nameMatch ? 'text-emerald-400' : 'text-rose-400'}>
+                            Name: {avsResult.nameMatch ? 'Match' : 'Mismatch'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {regCheckResult && (
                 <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
                   <div className="flex items-center justify-between">

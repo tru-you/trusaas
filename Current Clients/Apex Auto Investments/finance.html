@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en-ZA" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Vehicle Finance & Multi-Bank Approval | Apex Auto Investments Gqeberha</title>
+  <meta name="description" content="Calculate real monthly vehicle repayments on any showroom unit and apply for multi-bank vehicle finance with ABSA, WesBank, Standard Bank, and Nedbank MFC at Apex Auto Investments, Newton Park.">
+  <link rel="canonical" href="https://www.apexinvest.co.za/finance.html">
+
+  <meta property="og:locale" content="en_ZA">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Apex Auto Investments">
+  <meta property="og:title" content="Vehicle Finance Calculator & Approval | Apex Auto Investments">
+  <meta property="og:description" content="Calculate monthly repayments and get fast multi-bank finance pre-approval in Port Elizabeth.">
+  <meta property="og:url" content="https://www.apexinvest.co.za/finance.html">
+  <meta property="og:image" content="https://www.apexinvest.co.za/og-card.jpg">
+
+  <link rel="stylesheet" href="assets/css/showroom.css">
+
+  <script src="tru-loader.js?v=3"
+          data-dealer="Apex Auto Investments"
+          data-slug="apex-wholesale-investments"
+          data-flow="https://flow.tru-saas.com"
+          data-wa="27726047878"
+          data-accent="#B85B24"
+          data-brand="Apex Auto"
+          data-theme="dark"
+          data-widgets="form,share,book,afford,repay,chat"
+          data-repay-target="#finance-calc"
+          data-share-site="https://www.apexinvest.co.za"
+          data-share-vehicle-path="vehicle.html"></script>
+
+  <style>
+    /* ============================================================
+       Apex Auto Investments — Vehicle Finance & Stock Showcase
+       Dark Sahara Warm Minimalism System
+       ============================================================ */
+    .fin-hero-plate { margin-bottom: 32px; }
+
+    .fin-vdp-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+    @media(max-width: 960px) {
+      .fin-vdp-layout {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+    }
+
+    /* 3D Vehicle Showcase Card */
+    .fin-car-card {
+      background: linear-gradient(145deg, rgba(20, 26, 38, 0.85) 0%, rgba(13, 19, 28, 0.96) 100%);
+      border: 1px solid rgba(184, 91, 36, 0.3);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+    }
+    .fin-car-card:hover {
+      box-shadow: 0 24px 60px -15px rgba(184, 91, 36, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    /* Custom Vehicle Selector Bar */
+    .fin-picker-bar {
+      padding: 16px 22px;
+      background: linear-gradient(135deg, #0D131C 0%, #17202E 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .fin-picker-badge {
+      font-family: var(--font-mono, monospace);
+      font-size: 10.5px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: #E6762E;
+      background: rgba(184, 91, 36, 0.2);
+      border: 1px solid rgba(230, 118, 46, 0.4);
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .fin-picker-select-wrap {
+      position: relative;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+    }
+    .fin-picker-select {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 8px 32px 8px 12px;
+      color: #FFFFFF;
+      font-size: 13.5px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .fin-picker-select:hover, .fin-picker-select:focus {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: #E6762E;
+    }
+    .fin-picker-select option {
+      background: #0D131C;
+      color: #FFFFFF;
+    }
+    .fin-picker-chevron {
+      position: absolute;
+      right: 10px;
+      pointer-events: none;
+      color: #E6762E;
+      display: grid;
+      place-items: center;
+    }
+
+    /* Vehicle Media & Details Area */
+    .fin-car-media {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      width: 100%;
+      background: #0D131C;
+      overflow: hidden;
+    }
+    .fin-car-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .fin-car-media:hover img {
+      transform: scale(1.03);
+    }
+    .fin-car-vir-pill {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(13, 19, 28, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(184, 91, 36, 0.4);
+      color: #E6762E;
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    }
+    .fin-car-vir-pill .vir-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #E6762E;
+    }
+
+    .fin-car-info {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .fin-car-top-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .fin-car-year-make {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--ink-quiet, rgba(241, 245, 249, 0.65));
+    }
+    .fin-car-stock-id {
+      font-family: var(--font-mono, monospace);
+      font-size: 10.5px;
+      color: #E6762E;
+      background: rgba(184, 91, 36, 0.15);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+    .fin-car-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+      margin: 0;
+      line-height: 1.25;
+    }
+    .fin-car-price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .fin-car-price-main {
+      font-size: 30px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+    .fin-car-price-pm {
+      font-family: var(--font-mono, monospace);
+      font-size: 14px;
+      font-weight: 700;
+      color: #E6762E;
+    }
+
+    .fin-car-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .fin-car-pill {
+      font-size: 12.5px;
+      color: #F1F5F9;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    /* Specs & Rules Panel */
+    .fin-spec-card {
+      margin-top: 24px;
+      background: rgba(20, 26, 38, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .fin-spec-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0 0 16px;
+      color: #FFFFFF;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    .spec-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .spec-table tr:last-child td { border-bottom: none; }
+    .spec-table td:first-child { color: var(--ink-quiet, rgba(241, 245, 249, 0.65)); }
+    .spec-table td:last-child { text-align: right; font-weight: 700; color: #FFFFFF; }
+
+    /* Calculator Mount Column */
+    .fin-calc-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .fin-calc-box {
+      background: linear-gradient(145deg, rgba(24, 30, 44, 0.85) 0%, rgba(13, 19, 28, 0.96) 100%);
+      border: 1px solid rgba(184, 91, 36, 0.38);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px -15px rgba(0,0,0,0.65), 0 0 32px -6px rgba(184, 91, 36, 0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .fin-preapproval-card {
+      background: linear-gradient(135deg, #0D131C 0%, #17202E 100%);
+      border: 1px solid rgba(184, 91, 36, 0.3);
+      color: #FFFFFF;
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 14px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+    .fin-preapproval-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #FFFFFF;
+      margin: 0;
+    }
+    .fin-preapproval-desc {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.78);
+      margin: 0;
+    }
+
+    .bank-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .bank-tile {
+      background: rgba(20, 26, 38, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #F1F5F9;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .bank-tile:hover {
+      transform: translateY(-3px);
+      border-color: #B85B24;
+      box-shadow: 0 10px 24px -8px rgba(184, 91, 36, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="coc-skip">Skip to main content</a>
+
+  <div id="site-topbar"></div>
+  <div id="site-header"></div>
+
+  <main id="main-content" class="section">
+    <div class="container">
+      <div class="section-header" style="text-align: center; max-width: 760px; margin: 0 auto 36px;">
+        <div class="section-eyebrow" style="justify-content: center;">Bank Approvals · TruRepay</div>
+        <h1 class="section-title">Vehicle Finance &amp; <em>Pre-Approval</em></h1>
+        <p class="section-desc">
+          Simulate real monthly repayments on any showroom unit and apply for multi-bank vehicle finance with ABSA, WesBank, Standard Bank, and Nedbank MFC. Rapid turnaround with zero admin fees.
+        </p>
+      </div>
+
+      <div class="fin-vdp-layout">
+        <!-- Left Column: 3D Vehicle Showcase Card -->
+        <div class="fin-car-column">
+          <div class="fin-car-card" id="finCarShowcase">
+            <div class="fin-picker-bar">
+              <span class="fin-picker-badge">🚘 Selected Unit</span>
+              <div class="fin-picker-select-wrap">
+                <select id="carPicker" class="fin-picker-select" aria-label="Select vehicle from stock">
+                  <option value="">Loading showroom stock…</option>
+                </select>
+                <div class="fin-picker-chevron">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="fin-car-media">
+              <img id="finCarImg" src="assets/img/hero-showroom.jpg" alt="Selected Vehicle">
+              <div class="fin-car-vir-pill" id="finCarVir">
+                <span class="vir-dot"></span>
+                <span id="finVirScore">VIR 94 / 100</span>
+              </div>
+            </div>
+
+            <div class="fin-car-info">
+              <div class="fin-car-top-meta">
+                <span class="fin-car-year-make" id="finCarYearMake">Apex Auto Stock</span>
+                <span class="fin-car-stock-id" id="finCarStockId">STOCK: APEX</span>
+              </div>
+
+              <h3 class="fin-car-title" id="finCarTitle">Select Showroom Vehicle</h3>
+
+              <div class="fin-car-price-row">
+                <span class="fin-car-price-main" id="finCarPrice">R 0</span>
+                <span class="fin-car-price-pm" id="finCarEstPm">From R 0 / mo</span>
+              </div>
+
+              <div class="fin-car-pills" id="finCarPills">
+                <span class="fin-car-pill" id="finCarTrans">Automatic</span>
+                <span class="fin-car-pill" id="finCarFuel">Petrol</span>
+                <span class="fin-car-pill" id="finCarKm">Low Mileage</span>
+                <span class="fin-car-pill" id="finCarBody">Showroom Unit</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="fin-spec-card">
+            <h4 class="fin-spec-title">How repayment figures are calculated</h4>
+            <table class="spec-table">
+              <tr><td>Interest Rate</td><td>11.75% linked (Prime)</td></tr>
+              <tr><td>Default Loan Term</td><td>72 months (6 years)</td></tr>
+              <tr><td>Standard Deposit</td><td>10% down payment</td></tr>
+              <tr><td>Optional Balloon</td><td>0% to 35% residual</td></tr>
+            </table>
+            <p style="font-size:13px;line-height:1.5;color:var(--ink-quiet);margin:16px 0 0">
+              <em>Indicative estimate calculated via TruRepay based on standard prime interest rate. Actual approved rate depends on bank credit risk profile and individual assessment.</em>
+            </p>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-quiet); margin-bottom: 12px;">Direct Multi-Bank Finance Partners</div>
+            <div class="bank-grid">
+              <div class="bank-tile">ABSA</div>
+              <div class="bank-tile">WesBank</div>
+              <div class="bank-tile">Standard Bank</div>
+              <div class="bank-tile">Nedbank MFC</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Calculator Mount & Pre-Approval Actions -->
+        <div class="fin-calc-column">
+          <div class="fin-calc-box" id="finance-calc">
+            <!-- tru-repay.js mounts dynamically here -->
+          </div>
+
+          <div class="fin-preapproval-card">
+            <h4 class="fin-preapproval-title">Instant Multi-Bank Pre-Approval</h4>
+            <p class="fin-preapproval-desc">
+              Complete one simple online inquiry. We negotiate financing across WesBank, MFC / Nedbank, ABSA, and Standard Bank with fast turnaround in Newton Park.
+            </p>
+            <div style="display:grid;gap:12px;margin-top:6px">
+              <button class="btn btn-primary btn-block" id="ctaApply" style="justify-content:center;font-weight:700">
+                Start Pre-Approval Application &rarr;
+              </button>
+              <a class="btn btn-outline btn-block" href="stock.html" style="justify-content:center;border-color:rgba(255,255,255,0.25);color:#FFFFFF">
+                Browse All Showroom Stock
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/showroom-data.js"></script>
+  <script src="assets/js/showroom.js"></script>
+
+  <script>
+  (function () {
+    var TRU = window.TruShowroom;
+    var e = TRU ? TRU.esc : function(s){return s;};
+    var selected = null;
+
+    function formatTitleCase(str) {
+      if (!str) return "";
+      return String(str).toLowerCase().replace(/(?:^|\s|\/|-)\S/g, function(a) {
+        return a.toUpperCase();
+      });
+    }
+
+    function updateShowcaseCard(v) {
+      if (!v) return;
+      var img = document.getElementById("finCarImg");
+      var vir = document.getElementById("finVirScore");
+      var ym = document.getElementById("finCarYearMake");
+      var stock = document.getElementById("finCarStockId");
+      var title = document.getElementById("finCarTitle");
+      var price = document.getElementById("finCarPrice");
+      var pm = document.getElementById("finCarEstPm");
+      var trans = document.getElementById("finCarTrans");
+      var fuel = document.getElementById("finCarFuel");
+      var km = document.getElementById("finCarKm");
+      var body = document.getElementById("finCarBody");
+
+      var vPrice = v.truPrice || v.price || 350000;
+      if (img) img.src = v.heroImage || (v.images && v.images[0]) || "assets/img/hero-showroom.jpg";
+      if (vir) vir.textContent = "VIR " + (v.vir || 94) + " / 100";
+      if (ym) ym.textContent = v.year + " · " + formatTitleCase(v.make);
+      if (stock) stock.textContent = "STOCK: " + (v.stockNumber || v.id || "APEX");
+      
+      var modelName = formatTitleCase(v.model);
+      var trimName = v.trim ? " " + formatTitleCase(v.trim) : "";
+      if (title) title.textContent = formatTitleCase(v.make) + " " + modelName + trimName;
+      
+      if (price) price.textContent = TRU ? TRU.money(vPrice) : ("R " + Number(vPrice).toLocaleString("en-ZA"));
+      if (pm) pm.textContent = "From " + (TRU ? TRU.money(TRU.monthly(vPrice)) : ("R " + Math.round(vPrice * 0.02))) + " / mo";
+
+      if (trans) trans.textContent = v.transmission || "Automatic";
+      if (fuel) fuel.textContent = v.fuelType || "Petrol";
+      if (km) km.textContent = v.mileage ? (TRU ? TRU.km(v.mileage) : (v.mileage + " km")) : "Low Mileage";
+      if (body) body.textContent = v.bodyType || "Vehicle";
+    }
+
+    function mountRepay(v) {
+      var host = document.getElementById("finance-calc");
+      if (!host) return;
+      host.innerHTML = "";
+      var tag = document.createElement("script");
+      tag.src = "tru-repay.js?v=4";
+      tag.setAttribute("data-dealer", "Apex Auto Investments");
+      tag.setAttribute("data-slug", "apex-wholesale-investments");
+      tag.setAttribute("data-flow", "https://flow.tru-saas.com");
+      tag.setAttribute("data-wa", "27726047878");
+      tag.setAttribute("data-accent", "#B85B24");
+      tag.setAttribute("data-mode", "inline");
+      tag.setAttribute("data-target", "#finance-calc");
+      tag.setAttribute("data-collapsible", "0");
+      tag.setAttribute("data-theme", "dark");
+      tag.setAttribute("data-price", String(v ? (v.truPrice || v.price) : 350000));
+      if (v && TRU) tag.setAttribute("data-vehicle", TRU.title(v) + (v.trim ? " " + v.trim : ""));
+      document.body.appendChild(tag);
+    }
+
+    function render() {
+      var picker = document.getElementById("carPicker");
+      if (!picker || !TRU) return;
+      var list = TRU.sort(TRU.vehicles || [], "price-asc");
+      if (!list.length) return;
+
+      picker.innerHTML = list.map(function (v) {
+        return '<option value="' + e(v.stockNumber || v.id) + '">' +
+          e(TRU.title(v)) + " — " + TRU.money(v.truPrice || v.price) + "</option>";
+      }).join("");
+
+      var wanted = TRU.params().stock;
+      if (wanted) {
+        selected = TRU.get(wanted, true);
+      }
+      if (!selected && list.length > 0) {
+        selected = list[0];
+      }
+
+      if (selected) {
+        picker.value = selected.stockNumber || selected.id;
+        updateShowcaseCard(selected);
+        mountRepay(selected);
+      }
+    }
+
+    var picker = document.getElementById("carPicker");
+    if (picker) {
+      picker.addEventListener("change", function () {
+        if (!TRU) return;
+        selected = TRU.get(picker.value, true);
+        if (selected) {
+          updateShowcaseCard(selected);
+          mountRepay(selected);
+          TRU.setParams({ stock: selected.stockNumber || selected.id }, true);
+        }
+      });
+    }
+
+    var cta = document.getElementById("ctaApply");
+    if (cta) {
+      cta.addEventListener("click", function () {
+        if (window.TruForm && window.TruForm.open) {
+          window.TruForm.open({
+            vehicle: selected && TRU ? TRU.title(selected) : "",
+            vehicleId: selected ? (selected.stockNumber || selected.id) : "",
+            interest: "Finance pre-approval", finance: true, tradein: true,
+            source: "finance-page",
+          });
+        } else {
+          location.href = "https://wa.me/27726047878?text=" +
+            encodeURIComponent("Hi Apex Auto! I'd like to apply for finance on " + (selected && TRU ? TRU.title(selected) : "a vehicle"));
+        }
+      });
+    }
+
+    render();
+    window.addEventListener("tru:stock", render);
+  })();
+  </script>
+</body>
+</html>

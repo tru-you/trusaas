@@ -64,7 +64,7 @@ function renderError(message = 'An unexpected error occurred during data retriev
   container.innerHTML = `
     <div class="p-6 bg-rose-50 border border-rose-950 brutal-shadow-sm font-mono text-xs text-rose-950 space-y-2">
       <div class="flex items-center gap-2 font-bold uppercase text-rose-700">
-        <span>⚠ EXTRACTION FAILED</span>
+        <span>[!] EXTRACTION FAILED</span>
       </div>
       <p class="font-sans text-xs text-rose-900">${esc(message)}</p>
     </div>
@@ -206,7 +206,7 @@ if (creditPurchaseForm) {
     const checkoutBtn = document.getElementById('btn-payfast-checkout');
     if (checkoutBtn) {
       checkoutBtn.disabled = true;
-      checkoutBtn.textContent = 'Preparing Secure Checkout... 🔒';
+      checkoutBtn.textContent = 'Preparing Secure Checkout...';
     }
 
     try {
@@ -235,7 +235,7 @@ if (creditPurchaseForm) {
     } finally {
       if (checkoutBtn) {
         checkoutBtn.disabled = false;
-        checkoutBtn.textContent = 'Proceed to PayFast Checkout 🔒';
+        checkoutBtn.textContent = 'Proceed to PayFast Checkout';
       }
     }
   });
@@ -288,7 +288,7 @@ function openConsoleTab(tabName) {
 }
 
 // ──────────────────────────────────────────────────
-// PILLAR 1: VEHICLES & TYPEAHEAD DATALIST
+// PILLAR 1: VEHICLES & DEPENDENT DROPDOWNS
 // ──────────────────────────────────────────────────
 let currentVehicleVertical = 'cars';
 let makesDataStore = [];
@@ -297,10 +297,8 @@ let modelGroups = {};
 function getVehicleElements() {
   return {
     form: document.getElementById('panel-vehicles'),
-    makeInput: document.getElementById('select-make'),
-    makeDatalist: document.getElementById('make-list'),
-    modelInput: document.getElementById('select-model'),
-    modelDatalist: document.getElementById('model-list'),
+    makeSelect: document.getElementById('select-make'),
+    modelSelect: document.getElementById('select-model'),
     variantSelect: document.getElementById('select-variant'),
     yearSelect: document.getElementById('select-year'),
     btnSearch: document.getElementById('btn-run-vehicle-search')
@@ -308,8 +306,8 @@ function getVehicleElements() {
 }
 
 async function initVehicleMakes(vertical = 'cars') {
-  const { makeInput, makeDatalist } = getVehicleElements();
-  if (!makeInput || !makeDatalist) return;
+  const { makeSelect } = getVehicleElements();
+  if (!makeSelect) return;
   try {
     let makesList = [];
     const catRes = await fetch('/catalogue/index.json');
@@ -325,9 +323,11 @@ async function initVehicleMakes(vertical = 'cars') {
     makesList.sort((a, b) => a.name.localeCompare(b.name));
     makesDataStore = makesList;
 
-    makeDatalist.innerHTML = makesList.map(m => `<option value="${esc(m.name)}"></option>`).join('');
+    makeSelect.innerHTML = '<option value="">Select Make...</option>' +
+      makesList.map(m => `<option value="${esc(m.name)}">${esc(m.name)}</option>`).join('');
   } catch (err) {
     console.error('Failed to init vehicle makes:', err);
+    if (makeSelect) makeSelect.innerHTML = '<option value="">Failed to load makes</option>';
   }
 }
 
@@ -338,20 +338,34 @@ if (document.readyState === 'loading') {
   initVehicleMakes(currentVehicleVertical);
 }
 
-// Handle Make Input (Type or Select)
+// Handle Make Select Change
 const vehicleEls = getVehicleElements();
-if (vehicleEls.makeInput) {
-  const handleMakeChange = async () => {
-    const { makeInput, modelInput, modelDatalist, variantSelect, yearSelect, btnSearch } = getVehicleElements();
-    const make = makeInput ? makeInput.value.trim() : '';
+if (vehicleEls.makeSelect) {
+  vehicleEls.makeSelect.addEventListener('change', async () => {
+    const { makeSelect, modelSelect, variantSelect, yearSelect, btnSearch } = getVehicleElements();
+    const make = makeSelect ? makeSelect.value.trim() : '';
 
-    if (modelInput) modelInput.value = '';
-    if (modelDatalist) modelDatalist.innerHTML = '';
-    if (variantSelect) { variantSelect.innerHTML = '<option value="">Select Variant...</option>'; variantSelect.disabled = true; }
-    if (yearSelect) { yearSelect.innerHTML = '<option value="">Select Year...</option>'; yearSelect.disabled = true; }
+    if (modelSelect) {
+      modelSelect.innerHTML = '<option value="">Loading Models...</option>';
+      modelSelect.disabled = true;
+      modelSelect.className = 'w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm font-semibold text-slate-950';
+    }
+    if (variantSelect) {
+      variantSelect.innerHTML = '<option value="">Select Model First</option>';
+      variantSelect.disabled = true;
+      variantSelect.className = 'w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm font-semibold text-slate-950';
+    }
+    if (yearSelect) {
+      yearSelect.innerHTML = '<option value="">Select Variant First</option>';
+      yearSelect.disabled = true;
+      yearSelect.className = 'w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm font-semibold text-slate-950';
+    }
     if (btnSearch) btnSearch.disabled = true;
 
-    if (!make) return;
+    if (!make) {
+      if (modelSelect) modelSelect.innerHTML = '<option value="">Select Make First</option>';
+      return;
+    }
 
     try {
       let items = [];
@@ -385,62 +399,74 @@ if (vehicleEls.makeInput) {
       });
 
       const groupNames = Object.keys(modelGroups).sort();
-      if (modelDatalist) {
-        modelDatalist.innerHTML = groupNames.map(g => `<option value="${esc(g)}"></option>`).join('');
+      if (modelSelect) {
+        if (groupNames.length === 0) {
+          modelSelect.innerHTML = '<option value="">No models found</option>';
+        } else {
+          modelSelect.innerHTML = '<option value="">Select Model...</option>' +
+            groupNames.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
+          modelSelect.disabled = false;
+          modelSelect.className = 'w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950';
+        }
       }
     } catch (err) {
       console.error('Error loading models:', err);
-    }
-  };
-
-  vehicleEls.makeInput.addEventListener('change', handleMakeChange);
-  vehicleEls.makeInput.addEventListener('input', () => {
-    const val = vehicleEls.makeInput.value.trim();
-    if (makesDataStore.some(m => m.name.toLowerCase() === val.toLowerCase())) {
-      handleMakeChange();
+      if (modelSelect) modelSelect.innerHTML = '<option value="">Error loading models</option>';
     }
   });
 }
 
-// Handle Model Input (Type or Select)
-if (vehicleEls.modelInput) {
-  const handleModelChange = () => {
-    const { modelInput, variantSelect, yearSelect, btnSearch } = getVehicleElements();
-    const selectedGroup = modelInput ? modelInput.value.trim() : '';
+// Handle Model Select Change
+if (vehicleEls.modelSelect) {
+  vehicleEls.modelSelect.addEventListener('change', () => {
+    const { modelSelect, variantSelect, yearSelect, btnSearch } = getVehicleElements();
+    const selectedGroup = modelSelect ? modelSelect.value.trim() : '';
 
-    if (variantSelect) { variantSelect.innerHTML = '<option value="">Select Variant...</option>'; variantSelect.disabled = true; }
-    if (yearSelect) { yearSelect.innerHTML = '<option value="">Select Year...</option>'; yearSelect.disabled = true; }
+    if (variantSelect) {
+      variantSelect.innerHTML = '<option value="">Select Variant...</option>';
+      variantSelect.disabled = true;
+      variantSelect.className = 'w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm font-semibold text-slate-950';
+    }
+    if (yearSelect) {
+      yearSelect.innerHTML = '<option value="">Select Variant First</option>';
+      yearSelect.disabled = true;
+      yearSelect.className = 'w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm font-semibold text-slate-950';
+    }
     if (btnSearch) btnSearch.disabled = true;
 
     if (!selectedGroup || !modelGroups[selectedGroup]) return;
 
     const variants = modelGroups[selectedGroup];
     if (variantSelect) {
-      variantSelect.innerHTML = '<option value="">Select Variant (Optional)...</option>' +
+      variantSelect.innerHTML = '<option value="">Select Variant / Trim...</option>' +
         variants.map((v, idx) => `<option value="${idx}">${esc(v.model || selectedGroup)}</option>`).join('');
       variantSelect.disabled = false;
-      variantSelect.value = "0";
-      variantSelect.dispatchEvent(new Event('change'));
-    }
-  };
-
-  vehicleEls.modelInput.addEventListener('change', handleModelChange);
-  vehicleEls.modelInput.addEventListener('input', () => {
-    const val = vehicleEls.modelInput.value.trim();
-    if (modelGroups[val]) {
-      handleModelChange();
+      variantSelect.className = 'w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950';
+      if (variants.length === 1) {
+        variantSelect.value = "0";
+        variantSelect.dispatchEvent(new Event('change'));
+      }
     }
   });
 }
 
-// Handle Variant & Year Change
+// Handle Variant Select Change
 if (vehicleEls.variantSelect) {
   vehicleEls.variantSelect.addEventListener('change', () => {
-    const { modelInput, variantSelect, yearSelect, btnSearch } = getVehicleElements();
-    const selectedGroup = modelInput ? modelInput.value.trim() : '';
+    const { modelSelect, variantSelect, yearSelect, btnSearch } = getVehicleElements();
+    const selectedGroup = modelSelect ? modelSelect.value.trim() : '';
     const variantIdx = variantSelect ? variantSelect.value : '';
 
-    if (variantIdx === '' || !modelGroups[selectedGroup]) return;
+    if (variantIdx === '' || !modelGroups[selectedGroup]) {
+      if (yearSelect) {
+        yearSelect.innerHTML = '<option value="">Select Variant First</option>';
+        yearSelect.disabled = true;
+        yearSelect.className = 'w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm font-semibold text-slate-950';
+      }
+      if (btnSearch) btnSearch.disabled = true;
+      return;
+    }
+
     const v = modelGroups[selectedGroup][Number(variantIdx)];
     if (!v) return;
 
@@ -462,12 +488,130 @@ if (vehicleEls.variantSelect) {
     if (!years.length) years = [new Date().getFullYear()];
 
     if (yearSelect) {
-      yearSelect.innerHTML = '<option value="">Select Year...</option>' +
-        years.map(y => `<option value="${y}">${y}</option>`).join('');
+      yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
       yearSelect.disabled = false;
+      yearSelect.className = 'w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950';
       yearSelect.value = String(years[0]);
     }
     if (btnSearch) btnSearch.disabled = false;
+  });
+}
+
+if (vehicleEls.form) {
+  vehicleEls.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const { makeSelect, modelSelect, variantSelect, yearSelect } = getVehicleElements();
+    const make = makeSelect ? makeSelect.value.trim() : '';
+    const selectedGroup = modelSelect ? modelSelect.value.trim() : '';
+    const variantIdx = variantSelect ? variantSelect.value : '';
+    const year = yearSelect ? yearSelect.value : '2022';
+
+    if (!make || !selectedGroup) {
+      showToast('Please select both Make and Model from the dropdowns.', 'error');
+      return;
+    }
+
+    const v = modelGroups[selectedGroup]?.[Number(variantIdx)];
+    const variantName = v?.model || '';
+    const mmCode = v?.mmCode || '';
+    runVehicleValuation(make, selectedGroup, year, variantName, mmCode);
+  });
+}
+
+// ──────────────────────────────────────────────────
+// VEHICLE SUB-MODE SWITCHER (Valuation vs RegCheck vs Accident History)
+// ──────────────────────────────────────────────────
+const btnModeVal = document.getElementById('btn-mode-valuation');
+const btnModeReg = document.getElementById('btn-mode-regcheck');
+const btnModeAccident = document.getElementById('btn-mode-accident');
+const containerVal = document.getElementById('container-vehicle-valuation');
+const containerReg = document.getElementById('container-vehicle-regcheck');
+const containerAccident = document.getElementById('container-vehicle-accident');
+
+function switchVehicleMode(mode) {
+  // Reset all 3 buttons
+  [
+    { btn: btnModeVal, container: containerVal, activeClass: 'bg-sky-600' },
+    { btn: btnModeReg, container: containerReg, activeClass: 'bg-amber-600' },
+    { btn: btnModeAccident, container: containerAccident, activeClass: 'bg-rose-600' }
+  ].forEach(item => {
+    if (item.btn) {
+      item.btn.classList.remove('bg-sky-600', 'bg-amber-600', 'bg-rose-600', 'text-white', 'border-slate-950');
+      item.btn.classList.add('bg-white', 'text-slate-900', 'border-transparent');
+    }
+    if (item.container) item.container.classList.add('hidden');
+  });
+
+  if (mode === 'regcheck') {
+    if (btnModeReg) {
+      btnModeReg.classList.remove('bg-white', 'text-slate-900', 'border-transparent');
+      btnModeReg.classList.add('bg-amber-600', 'text-white', 'border-slate-950');
+    }
+    if (containerReg) containerReg.classList.remove('hidden');
+  } else if (mode === 'accident') {
+    if (btnModeAccident) {
+      btnModeAccident.classList.remove('bg-white', 'text-slate-900', 'border-transparent');
+      btnModeAccident.classList.add('bg-rose-600', 'text-white', 'border-slate-950');
+    }
+    if (containerAccident) containerAccident.classList.remove('hidden');
+  } else {
+    if (btnModeVal) {
+      btnModeVal.classList.remove('bg-white', 'text-slate-900', 'border-transparent');
+      btnModeVal.classList.add('bg-sky-600', 'text-white', 'border-slate-950');
+    }
+    if (containerVal) containerVal.classList.remove('hidden');
+  }
+}
+
+if (btnModeVal) btnModeVal.addEventListener('click', () => switchVehicleMode('valuation'));
+if (btnModeReg) btnModeReg.addEventListener('click', () => switchVehicleMode('regcheck'));
+if (btnModeAccident) btnModeAccident.addEventListener('click', () => switchVehicleMode('accident'));
+
+// Global function to jump to Standalone RegCheck from results or nav
+window.openStandaloneRegCheck = function(prefill = '') {
+  switchPillarTab('vehicles');
+  switchVehicleMode('regcheck');
+  const regInput = document.getElementById('input-vehicle-reg-standalone');
+  if (regInput && prefill) regInput.value = prefill;
+  const consoleCard = document.getElementById('console-card');
+  if (consoleCard) consoleCard.scrollIntoView({ behavior: 'smooth' });
+};
+
+// Global function to jump to Standalone Accident Report from results or nav
+window.openStandaloneAccidentReport = function(prefill = '') {
+  switchPillarTab('vehicles');
+  switchVehicleMode('accident');
+  const vinInput = document.getElementById('input-vehicle-accident-standalone');
+  if (vinInput && prefill) vinInput.value = prefill;
+  const consoleCard = document.getElementById('console-card');
+  if (consoleCard) consoleCard.scrollIntoView({ behavior: 'smooth' });
+};
+
+// Standalone Vehicle RegCheck Submit
+const btnRunRegStandalone = document.getElementById('btn-run-vehicle-regcheck-standalone');
+if (btnRunRegStandalone) {
+  btnRunRegStandalone.addEventListener('click', () => {
+    const regInput = document.getElementById('input-vehicle-reg-standalone');
+    const identifier = regInput ? regInput.value.trim() : '';
+    if (!identifier) {
+      showToast('Please enter a Registration Number or VIN.', 'error');
+      return;
+    }
+    executeVehicleRegCheck(identifier);
+  });
+}
+
+// Standalone Vehicle Accident Report Submit
+const btnRunAccidentStandalone = document.getElementById('btn-run-vehicle-accident-standalone');
+if (btnRunAccidentStandalone) {
+  btnRunAccidentStandalone.addEventListener('click', () => {
+    const vinInput = document.getElementById('input-vehicle-accident-standalone');
+    const vin = vinInput ? vinInput.value.trim().toUpperCase() : '';
+    if (!vin) {
+      showToast('Please enter a 17-digit VIN number.', 'error');
+      return;
+    }
+    executeVehicleAccidentReport(vin);
   });
 }
 
@@ -487,20 +631,21 @@ if (vehicleEls.form) {
 
     const v = modelGroups[selectedGroup]?.[Number(variantIdx)];
     const variantName = v?.model || '';
-    runVehicleValuation(make, selectedGroup, year, variantName);
+    const mmCode = v?.mmCode || '';
+    runVehicleValuation(make, selectedGroup, year, variantName, mmCode);
   });
 }
 
-async function runVehicleValuation(make, model, year, variant) {
+async function runVehicleValuation(make, model, year, variant, mmCode) {
   showResults('vehicles');
-  setResultsLoading(true, `Analyzing live national showroom inventory and market listings for ${make} ${model}...`);
+  setResultsLoading(true, `Analyzing live national showroom inventory & factory specs for ${make} ${model}...`);
   burnCredits('valuation');
 
   try {
     const res = await fetch('/api/valuation/quick', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ make, model, year, variant })
+      body: JSON.stringify({ make, model, year, variant, mmCode })
     });
     if (!res.ok) throw new Error('Valuation query failed');
     const data = await res.json();
@@ -520,16 +665,18 @@ function renderVehicleResults(data) {
   if (countEl) countEl.textContent = `${data.count || 0} Showroom Comps Analyzed`;
 
   const sourceEl = document.getElementById('results-source');
-  if (sourceEl) sourceEl.textContent = 'Sources: Live National Showroom Inventory & Verified Dealer Floor Feeds';
+  if (sourceEl) sourceEl.textContent = 'Sources: Live National Showroom Inventory, Verified Dealer Feeds & OEM Factory Specs';
 
   const container = document.getElementById('table-container');
   if (container) {
     const medianVal = data.median || 0;
     const lowVal = data.low || 0;
     const highVal = data.high || 0;
+    const specs = data.specs;
 
     container.innerHTML = `
       <div class="space-y-4 font-mono text-xs">
+        <!-- 4 Key Market Metrics -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="bg-white border border-slate-950 p-3 brutal-shadow-sm">
             <span class="text-slate-500 block text-[10px] uppercase">MEDIAN MARKET PRICE</span>
@@ -549,6 +696,45 @@ function renderVehicleResults(data) {
           </div>
         </div>
 
+        ${specs ? `
+        <!-- Verified OEM Factory Specifications Grid (getStaticInfo) -->
+        <div class="p-3.5 bg-sky-50 border border-slate-950 space-y-2 brutal-shadow-sm">
+          <div class="flex items-center justify-between border-b border-sky-200 pb-1.5">
+            <span class="font-bold text-slate-950 uppercase flex items-center gap-1">
+              <span>VERIFIED OEM TECHNICAL SPECIFICATIONS</span>
+            </span>
+            <span class="font-mono text-[10px] bg-sky-600 text-white px-1.5 py-0.5 font-bold">M&amp;M ${esc(data.mmCode || specs.mmCode || 'VERIFIED')}</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-slate-900 pt-1">
+            <div class="bg-white p-2 border border-slate-950/20">
+              <span class="text-[10px] text-slate-500 uppercase block">Engine Output</span>
+              <span class="font-bold text-xs text-sky-900">${specs.kw ? specs.kw + ' kW' : 'N/A'}</span>
+            </div>
+            <div class="bg-white p-2 border border-slate-950/20">
+              <span class="text-[10px] text-slate-500 uppercase block">Displacement</span>
+              <span class="font-bold text-xs text-sky-900">${specs.cc ? specs.cc + ' cc' : 'N/A'} ${specs.cylinders ? '(' + specs.cylinders + '-Cyl)' : ''}</span>
+            </div>
+            <div class="bg-white p-2 border border-slate-950/20">
+              <span class="text-[10px] text-slate-500 uppercase block">Body / Doors</span>
+              <span class="font-bold text-xs text-slate-900">${esc(specs.bodyType || 'Sedan/SUV')} (${specs.doors || 4} Dr / ${specs.seats || 5} Seats)</span>
+            </div>
+            <div class="bg-white p-2 border border-slate-950/20">
+              <span class="text-[10px] text-slate-500 uppercase block">Fuel / Tank</span>
+              <span class="font-bold text-xs text-slate-900">${specs.fuelType === 'P' ? 'Petrol' : specs.fuelType === 'D' ? 'Diesel' : esc(specs.fuelType || 'Petrol')} ${specs.fuelTankSize ? '• ' + specs.fuelTankSize + 'L' : ''}</span>
+            </div>
+            <div class="bg-white p-2 border border-slate-950/20">
+              <span class="text-[10px] text-slate-500 uppercase block">Tare / GVM</span>
+              <span class="font-bold text-xs text-slate-900">${specs.tare ? specs.tare + ' kg' : 'N/A'} / ${specs.gvm ? specs.gvm + ' kg' : 'N/A'}</span>
+            </div>
+            <div class="bg-white p-2 border border-slate-950/20">
+              <span class="text-[10px] text-slate-500 uppercase block">Production Era</span>
+              <span class="font-bold text-xs text-slate-900">${esc(specs.introDate || 'Launch')} to ${esc(specs.disconDate || 'Current')}</span>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Showroom Comps Table -->
         <table class="w-full border-collapse border border-slate-950 text-left bg-white">
           <thead>
             <tr class="bg-slate-950 text-white font-mono text-[11px] uppercase">
@@ -573,6 +759,24 @@ function renderVehicleResults(data) {
             }).join('')}
           </tbody>
         </table>
+
+        <!-- 1-Click Standalone RegCheck & Accident History CTA Banner -->
+        <div class="p-4 bg-amber-50 border border-amber-950 flex flex-col sm:flex-row items-center justify-between gap-3 brutal-shadow-sm">
+          <div class="space-y-0.5">
+            <span class="font-bold text-amber-950 uppercase block text-xs flex items-center gap-1.5">
+              <span>PURCHASING OR FINANCING A SPECIFIC VEHICLE?</span>
+            </span>
+            <span class="text-amber-900 text-[11px] block">Run official SAPS Police Stolen, Bank Finance Lien, and Accident Claims History checks.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openStandaloneRegCheck()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-display font-bold text-xs uppercase border border-slate-950 brutal-shadow active:translate-x-0.5 active:translate-y-0.5 transition-all whitespace-nowrap flex items-center gap-1.5">
+              <span>REG / VIN CHECK</span>
+            </button>
+            <button onclick="openStandaloneAccidentReport()" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-display font-bold text-xs uppercase border border-slate-950 brutal-shadow active:translate-x-0.5 active:translate-y-0.5 transition-all whitespace-nowrap flex items-center gap-1.5">
+              <span>ACCIDENT HISTORY</span>
+            </button>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -726,7 +930,7 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
             Market Comps &amp; Price Spread (${comps?.sources?.length || 0})
           </button>
         </div>
-        <span class="text-[11px] text-slate-500 hidden sm:inline">Click 💬 WhatsApp to open pre-filled direct inquiry</span>
+        <span class="text-[11px] text-slate-500 hidden sm:inline">Click WhatsApp to open pre-filled direct inquiry</span>
       </div>
 
       <!-- SECTION 1: VERIFIED DIRECT HOMEOWNER LEADS TABLE -->
@@ -776,7 +980,7 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
                       <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
                         ${hasPhone ? `
                           <a href="tel:${esc(lead.phone.replace(/[^+\d]/g, ''))}" class="font-bold text-slate-950 hover:text-sky-700 underline flex items-center gap-1">
-                            📞 ${esc(lead.phone)}
+                            Tel: ${esc(lead.phone)}
                           </a>
                         ` : `
                           <span class="text-slate-500 italic text-[11px]">${esc(lead.phone)}</span>
@@ -795,7 +999,7 @@ function renderPropertyResults(comps, fsbo, suburb, city, scope = 'all') {
                         <div class="inline-flex items-center gap-1">
                           ${isWa ? `
                             <a href="${esc(waUrl)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs">
-                              <span>💬 WhatsApp</span>
+                              <span>WhatsApp</span>
                             </a>
                           ` : ''}
                           <a href="${esc(lead.sourceUrl || '#')}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 ${isWa ? 'bg-white hover:bg-slate-100 text-slate-900' : 'bg-sky-600 hover:bg-sky-700 text-white'} font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs" title="View Source Listing">
@@ -1055,8 +1259,8 @@ function renderElectronicsResults(data, query, conditionFocus = 'all') {
                         <div class="min-w-0">
                           <div class="font-bold text-slate-950 truncate" title="${esc(item.title)}">${esc(item.title)}</div>
                           <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500">
-                            ${item.delivery ? `<span>🚚 ${esc(item.delivery)}</span>` : ''}
-                            ${item.rating ? `<span class="text-amber-700 font-bold">★ ${item.rating} ${item.ratingCount ? '(' + item.ratingCount + ')' : ''}</span>` : ''}
+                            ${item.delivery ? `<span>Delivery: ${esc(item.delivery)}</span>` : ''}
+                            ${item.rating ? `<span class="text-amber-700 font-bold">Rating: ${item.rating} ${item.ratingCount ? '(' + item.ratingCount + ')' : ''}</span>` : ''}
                           </div>
                         </div>
                       </div>
@@ -1280,7 +1484,7 @@ function renderBusinessResults(data, industry, city) {
       <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-950 pb-2">
         <span class="font-bold text-slate-950 uppercase text-xs">Audited Business Prospects (${totalAudited})</span>
         <button id="btn-export-business-csv" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs">
-          <span>📥 Export Prospecting CSV</span>
+          <span>Export Prospecting CSV</span>
         </button>
       </div>
 
@@ -1351,27 +1555,27 @@ function renderBusinessResults(data, industry, city) {
                             <span class="text-[10px] px-1.5 py-0.5 border border-slate-950 font-semibold ${
                               d.severity === 'CRITICAL' ? 'bg-rose-100 text-rose-900' : 'bg-amber-100 text-amber-900'
                             }" title="${esc(d.description || d.title)}">
-                              ⚠ ${esc(d.title)}
+                              [!] ${esc(d.title)}
                             </span>
                           `).join('')}
                           ${defects.length > 3 ? `<span class="text-[10px] text-slate-500 font-bold self-center">+${defects.length - 3} more</span>` : ''}
                         </div>
                       ` : `
-                        <span class="text-emerald-700 font-semibold text-[11px]">✅ No critical defects detected</span>
+                        <span class="text-emerald-700 font-semibold text-[11px]">No critical defects detected</span>
                       `}
                     </td>
 
                     <td class="p-2.5 border-r border-slate-300 whitespace-nowrap">
                       ${primaryPhone ? `
                         <a href="tel:${esc(primaryPhone.replace(/[^+\d]/g, ''))}" class="font-bold text-slate-950 hover:text-sky-700 underline block">
-                          📞 ${esc(primaryPhone)}
+                          Tel: ${esc(primaryPhone)}
                         </a>
                       ` : `
                         <span class="text-slate-400 italic text-[11px]">No phone found</span>
                       `}
                       ${email ? `
                         <a href="mailto:${esc(email)}" class="text-[11px] text-slate-600 hover:text-sky-700 underline block truncate max-w-[160px]">
-                          ✉ ${esc(email)}
+                          Email: ${esc(email)}
                         </a>
                       ` : ''}
                     </td>
@@ -1380,7 +1584,7 @@ function renderBusinessResults(data, industry, city) {
                       <div class="inline-flex items-center gap-1">
                         ${isWa ? `
                           <a href="${esc(waUrl)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs" title="1-Tap Pre-filled WhatsApp Lead">
-                            <span>💬 WhatsApp</span>
+                            <span>WhatsApp</span>
                           </a>
                         ` : ''}
                         <a href="https://${esc(t.domain)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 ${isWa ? 'bg-white hover:bg-slate-100 text-slate-900' : 'bg-sky-600 hover:bg-sky-700 text-white'} font-bold border border-slate-950 brutal-shadow-sm inline-flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs" title="Visit Live Domain">
@@ -1414,8 +1618,76 @@ function renderBusinessResults(data, industry, city) {
 }
 
 // ──────────────────────────────────────────────────
-// PILLAR 4: BUREAU REPORTS
+// PILLAR 4: OFFICIAL REGISTRY & BUREAU DOSSIERS (CIPC, Deeds, Home Affairs)
 // ──────────────────────────────────────────────────
+const selectBureauType = document.getElementById('select-bureau-type');
+const labelBureauQuery = document.getElementById('label-bureau-query');
+const inputBureauQuery = document.getElementById('input-bureau-query');
+
+if (selectBureauType && labelBureauQuery && inputBureauQuery) {
+  selectBureauType.addEventListener('change', () => {
+    const val = selectBureauType.value;
+    if (val === 'deeds') {
+      labelBureauQuery.textContent = 'Township / Erf / Property Address';
+      inputBureauQuery.placeholder = 'e.g. Erf 412 Sandton, Bryanston, Cape Town';
+      inputBureauQuery.value = 'Sandton Erf 412';
+    } else if (val === 'id_verify') {
+      labelBureauQuery.textContent = '13-Digit South African ID Number';
+      inputBureauQuery.placeholder = 'e.g. 8801015009087';
+      inputBureauQuery.value = '8801015009087';
+    } else {
+      // Default: CIPC
+      labelBureauQuery.textContent = 'Company Name or Registration No';
+      inputBureauQuery.placeholder = 'e.g. 2019/123456/07 or TruSaaS Pty Ltd';
+      inputBureauQuery.value = '2019/123456/07';
+    }
+  });
+}
+
+// Standalone RegCheck Execution (Used by Vehicle Tab)
+async function executeVehicleRegCheck(identifier) {
+  if (!identifier) return;
+  showResults('vehicles');
+  setResultsLoading(true, `Querying SAPS Police Stolen Register & Bank Finance Interest for ${identifier}...`);
+  burnCredits('bureau_regcheck');
+
+  try {
+    const res = await fetch('/api/bureau/regcheck', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, type: identifier.length === 17 ? 'vin' : 'reg' })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'RegCheck request failed');
+    renderRegCheckResults(result.data || result, identifier);
+  } catch (err) {
+    renderError(`Vehicle verification failed: ${err.message || 'Unable to connect to registry gateway.'}`);
+    showToast('Vehicle verification lookup failed.', 'error');
+  }
+}
+
+// Standalone Accident Report Execution (Used by Vehicle Tab)
+async function executeVehicleAccidentReport(vin) {
+  if (!vin) return;
+  showResults('vehicles');
+  setResultsLoading(true, `Querying Insurance Claims & Damage History for VIN ${vin}...`);
+  burnCredits('bureau_accident');
+
+  try {
+    const res = await fetch('/api/bureau/accident', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vin })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Accident report request failed');
+    renderAccidentResults(result.data || result, vin);
+  } catch (err) {
+    renderError(`Accident report lookup failed: ${err.message || 'Unable to connect to insurance gateway.'}`);
+    showToast('Accident report query failed.', 'error');
+  }
+}
+
 const formBureau = document.getElementById('panel-bureau');
 if (formBureau) {
   formBureau.addEventListener('submit', async (e) => {
@@ -1426,36 +1698,203 @@ if (formBureau) {
     const reportType = typeEl ? typeEl.value : 'cipc';
     const identifier = queryEl ? queryEl.value.trim() : '';
 
+    if (!identifier) {
+      showToast('Please enter an identifier to query.', 'error');
+      return;
+    }
+
     showResults('bureau');
-    setResultsLoading(true, 'Fetching official public register and credit bureau report...');
+    setResultsLoading(true, `Executing official ${reportType.toUpperCase()} register extraction for ${identifier}...`);
     burnCredits('bureau_valuation');
 
     try {
-      const res = await fetch('/api/imagin8/static?mmCode=12000000');
-      const data = await res.json().catch(() => ({}));
-      renderBureauResults(data, reportType, identifier);
+      let endpoint = '/api/bureau/cipc';
+      let payload = { query: identifier };
+
+      if (reportType === 'deeds') {
+        endpoint = '/api/bureau/deeds';
+        payload = { query: identifier, province: 'Gauteng' };
+      } else if (reportType === 'id_verify') {
+        endpoint = '/api/bureau/id-verify';
+        payload = { idNumber: identifier };
+      }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Registry query failed');
+      renderBureauResults(data.data || data, reportType, identifier);
     } catch (err) {
-      renderError('Bureau report query failed.');
+      renderError(`Bureau registry query failed: ${err.message || 'Data gateway unavailable.'}`);
       showToast('Bureau search failed.', 'error');
     }
   });
 }
 
+// ──────────────────────────────────────────────────
+// BUREAU RESULT RENDERERS
+// ──────────────────────────────────────────────────
+
+function renderRegCheckResults(data, identifier) {
+  updateJsonSchemaViewer(data);
+  const titleEl = document.getElementById('results-title');
+  if (titleEl) titleEl.textContent = `Vehicle Verification: ${identifier}`;
+
+  const countEl = document.getElementById('results-count');
+  if (countEl) countEl.textContent = 'Official SAPS Stolen & Bank Finance Verification';
+
+  const sourceEl = document.getElementById('results-source');
+  if (sourceEl) sourceEl.textContent = 'Source: Official National Vehicle Register & Financial Title Registry';
+
+  const container = document.getElementById('table-container');
+  if (container) {
+    const isStolen = !!data.stolen;
+    const isFinanced = !!data.financePending;
+    const isMicrodot = !!data.microdotted;
+
+    container.innerHTML = `
+      <div class="space-y-4 font-mono text-xs">
+        <!-- 3 Primary Risk Badges -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3.5 border border-slate-950 brutal-shadow-sm ${isStolen ? 'bg-rose-100 text-rose-950 border-rose-950' : 'bg-emerald-50 text-emerald-950'}">
+            <span class="text-[10px] uppercase font-bold block mb-1">SAPS POLICE STOLEN STATUS</span>
+            <span class="font-display font-bold text-base flex items-center gap-1.5 ${isStolen ? 'text-rose-700' : 'text-emerald-700'}">
+              <span>${isStolen ? 'STOLEN REPORTED' : 'NOT REPORTED STOLEN'}</span>
+            </span>
+            <span class="text-[10px] text-slate-600 block mt-1">${isStolen ? 'Active SAPS stolen flag on record.' : 'Clear on national police vehicle database.'}</span>
+          </div>
+
+          <div class="p-3.5 border border-slate-950 brutal-shadow-sm ${isFinanced ? 'bg-amber-100 text-amber-950 border-amber-950' : 'bg-emerald-50 text-emerald-950'}">
+            <span class="text-[10px] uppercase font-bold block mb-1">BANK FINANCE INTEREST</span>
+            <span class="font-display font-bold text-base flex items-center gap-1.5 ${isFinanced ? 'text-amber-800' : 'text-emerald-700'}">
+              <span>${isFinanced ? 'FINANCE PENDING' : 'CLEAR / NO LIEN'}</span>
+            </span>
+            <span class="text-[10px] text-slate-600 block mt-1">${isFinanced ? 'Active bank lien registered against title.' : 'No financial institution lien registered.'}</span>
+          </div>
+
+          <div class="p-3.5 border border-slate-950 brutal-shadow-sm ${isMicrodot ? 'bg-emerald-50 text-emerald-950' : 'bg-slate-50 text-slate-900'}">
+            <span class="text-[10px] uppercase font-bold block mb-1">MICRODOT PROTECTION</span>
+            <span class="font-display font-bold text-base flex items-center gap-1.5 ${isMicrodot ? 'text-emerald-700' : 'text-slate-600'}">
+              <span>${isMicrodot ? 'MICRODOTTED' : 'NOT DETECTED'}</span>
+            </span>
+            <span class="text-[10px] text-slate-600 block mt-1">${isMicrodot ? 'Microdot identification recorded.' : 'No microdot identifier on file.'}</span>
+          </div>
+        </div>
+
+        <!-- Verified Factory Identity Record -->
+        <div class="p-4 bg-white border border-slate-950 space-y-3 brutal-shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-950 pb-2">
+            <span class="font-bold text-slate-950 uppercase">VERIFIED VEHICLE REGISTRATION RECORD</span>
+            <span class="font-mono text-[10px] bg-slate-950 text-white px-2 py-0.5 font-bold uppercase">${esc(data.registrationNumber || identifier)}</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-slate-900">
+            <div>
+              <span class="text-[10px] text-slate-500 uppercase block font-semibold">Make &amp; Model</span>
+              <span class="font-bold text-sm text-slate-950">${esc(data.make || '')} ${esc(data.model || data.description || 'Vehicle Verified')}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 uppercase block font-semibold">Year Model</span>
+              <span class="font-bold text-sm text-slate-950">${esc(data.year || 'N/A')}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 uppercase block font-semibold">Factory Colour</span>
+              <span class="font-bold text-sm text-slate-950">${esc(data.colour || 'N/A')}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 uppercase block font-semibold">17-Digit VIN</span>
+              <span class="font-bold text-xs text-sky-900 font-mono select-all">${esc(data.vin || 'N/A')}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 uppercase block font-semibold">Engine Number</span>
+              <span class="font-bold text-xs text-slate-900 font-mono select-all">${esc(data.engineNumber || 'N/A')}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 uppercase block font-semibold">eNaTIS Registration</span>
+              <span class="font-bold text-sm ${data.registered ? 'text-emerald-700' : 'text-slate-900'}">${data.registered ? 'Active on Register' : 'Recorded'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderAccidentResults(data, vin) {
+  updateJsonSchemaViewer(data);
+  const titleEl = document.getElementById('results-title');
+  if (titleEl) titleEl.textContent = `Insurance Claims & Accident History: ${vin}`;
+
+  const countEl = document.getElementById('results-count');
+  if (countEl) countEl.textContent = `${(data.claims || []).length} Recorded Claims on Record`;
+
+  const container = document.getElementById('table-container');
+  if (container) {
+    const claims = data.claims || [];
+    container.innerHTML = `
+      <div class="space-y-4 font-mono text-xs">
+        <div class="p-3.5 bg-white border border-slate-950 brutal-shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-slate-500 uppercase block font-bold">INSURANCE CLAIMS RADAR</span>
+            <span class="font-bold text-sm ${claims.length > 0 ? 'text-amber-800' : 'text-emerald-700'}">
+              ${claims.length > 0 ? `${claims.length} Previous Claim(s) Recorded` : 'No Previous Insurance Claims on File'}
+            </span>
+          </div>
+          <span class="font-mono text-xs bg-slate-100 px-2 py-1 border border-slate-950 font-bold">${esc(vin)}</span>
+        </div>
+
+        ${claims.length > 0 ? `
+          <table class="w-full border-collapse border border-slate-950 text-left bg-white">
+            <thead>
+              <tr class="bg-slate-950 text-white font-mono text-[11px] uppercase">
+                <th class="p-2 border border-slate-950">Claim Date</th>
+                <th class="p-2 border border-slate-950">Damaged Area</th>
+                <th class="p-2 border border-slate-950">Claim Amount</th>
+                <th class="p-2 border border-slate-950">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${claims.map(c => `
+                <tr class="border-b border-slate-300 hover:bg-slate-50">
+                  <td class="p-2 font-bold border border-slate-950">${esc(c.date || 'N/A')}</td>
+                  <td class="p-2 font-bold text-slate-900 border border-slate-950">${esc(c.areaDamaged || 'General')}</td>
+                  <td class="p-2 font-bold text-slate-950 border border-slate-950">${c.claimAmount ? 'R ' + numberFormat(c.claimAmount) : 'Settled'}</td>
+                  <td class="p-2 text-slate-600 border border-slate-950">${esc(c.description || 'Insurance payout')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        ` : `
+          <div class="p-6 bg-emerald-50 border border-emerald-950 text-center font-mono text-xs space-y-1">
+            <p class="font-bold text-emerald-900 uppercase">CLEAN CLAIMS HISTORY</p>
+            <p class="text-emerald-800">No major accident or structural write-off claims recorded for this VIN.</p>
+          </div>
+        `}
+      </div>
+    `;
+  }
+}
+
 function renderBureauResults(data, reportType, identifier) {
   updateJsonSchemaViewer(data);
   const titleEl = document.getElementById('results-title');
-  if (titleEl) titleEl.textContent = `Bureau Report: ${identifier}`;
+  if (titleEl) titleEl.textContent = `Official Bureau Record: ${identifier}`;
 
   const container = document.getElementById('table-container');
   if (container) {
     container.innerHTML = `
       <div class="p-4 bg-white border border-slate-950 font-mono text-xs space-y-3 brutal-shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-950 pb-2">
-          <span class="font-bold text-slate-950 uppercase">OFFICIAL REGISTRY &amp; BUREAU RECORD</span>
+          <span class="font-bold text-slate-950 uppercase">${reportType.toUpperCase()} REGISTRY RECORD</span>
           <span class="text-emerald-700 font-bold">STATUS: VERIFIED</span>
         </div>
-        <p>Record Query: <strong>${esc(identifier)}</strong> (${reportType.toUpperCase()})</p>
-        <p class="text-slate-600">Official company, property ownership, or vehicle specification record verified against primary registry databases.</p>
+        <p>Identifier Query: <strong>${esc(identifier)}</strong></p>
+        <div class="p-3 bg-slate-50 border border-slate-950 overflow-x-auto text-[11px]">
+          <pre class="font-mono text-slate-900">${esc(JSON.stringify(data, null, 2))}</pre>
+        </div>
       </div>
     `;
   }
@@ -1579,9 +2018,9 @@ function renderAeoResults(audit, url) {
           <div class="p-3 bg-slate-50 border border-slate-950 space-y-1">
             <div class="text-slate-500 uppercase text-[10px] font-bold">1. AI Bots (robots.txt)</div>
             <div class="space-y-0.5 text-[11px]">
-              <div>GPTBot (ChatGPT): <strong>${crawlers.gptBot ? '✅ Allowed' : '❌ Disallowed'}</strong></div>
-              <div>ClaudeBot (Anthropic): <strong>${crawlers.claudeBot ? '✅ Allowed' : '❌ Disallowed'}</strong></div>
-              <div>PerplexityBot: <strong>${crawlers.perplexityBot ? '✅ Allowed' : '❌ Disallowed'}</strong></div>
+              <div>GPTBot (ChatGPT): <strong>${crawlers.gptBot ? 'Allowed' : 'Disallowed'}</strong></div>
+              <div>ClaudeBot (Anthropic): <strong>${crawlers.claudeBot ? 'Allowed' : 'Disallowed'}</strong></div>
+              <div>PerplexityBot: <strong>${crawlers.perplexityBot ? 'Allowed' : 'Disallowed'}</strong></div>
             </div>
           </div>
 
@@ -1589,16 +2028,16 @@ function renderAeoResults(audit, url) {
           <div class="p-3 bg-slate-50 border border-slate-950 space-y-1">
             <div class="text-slate-500 uppercase text-[10px] font-bold">2. LLMs.txt Context</div>
             <div class="text-sm font-bold ${llms.found ? 'text-emerald-700' : 'text-rose-700'}">
-              ${llms.found ? '✅ /llms.txt Present' : '❌ /llms.txt Missing'}
+              ${llms.found ? '/llms.txt Present' : '/llms.txt Missing'}
             </div>
-            <div class="text-[11px] text-slate-600">${llms.fullVersionFound ? '✅ /llms-full.txt detected' : 'Standard context only'}</div>
+            <div class="text-[11px] text-slate-600">${llms.fullVersionFound ? '/llms-full.txt detected' : 'Standard context only'}</div>
           </div>
 
           <!-- Schema.org -->
           <div class="p-3 bg-slate-50 border border-slate-950 space-y-1">
             <div class="text-slate-500 uppercase text-[10px] font-bold">3. Schema.org JSON-LD</div>
             <div class="text-sm font-bold ${schemaLd.found ? 'text-emerald-700' : 'text-rose-700'}">
-              ${schemaLd.found ? `${schemaLd.validCount} Valid Blocks` : '❌ Missing JSON-LD'}
+              ${schemaLd.found ? `${schemaLd.validCount} Valid Blocks` : 'Missing JSON-LD'}
             </div>
             <div class="text-[11px] text-slate-600 truncate">${(schemaLd.schemaTypes || []).join(', ') || 'No types'}</div>
           </div>
@@ -1681,14 +2120,14 @@ function renderSafepayResults(data) {
         <div class="flex items-center justify-between border-b border-slate-950 pb-2">
           <span class="font-bold text-slate-950 uppercase">REAL-TIME BANK ACCOUNT VERIFICATION CHECKLIST</span>
           <span class="${passed ? 'text-emerald-700' : 'text-rose-700'} font-bold">
-            ${passed ? '✅ ACCOUNT VERIFIED' : '⚠ VERIFICATION NOTICE'}
+            ${passed ? 'ACCOUNT VERIFIED' : 'VERIFICATION NOTICE'}
           </span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-slate-800">
-          <div>Account Exists: ✅ Yes</div>
-          <div>Account Open: ✅ Yes</div>
-          <div>ID Match: ${data.score > 4 ? '✅ Match' : '⚠ Check ID'}</div>
-          <div>Accepts Credits: ✅ Yes</div>
+          <div>Account Exists: Yes</div>
+          <div>Account Open: Yes</div>
+          <div>ID Match: ${data.score > 4 ? 'Match' : 'Check ID'}</div>
+          <div>Accepts Credits: Yes</div>
         </div>
       </div>
     `;

@@ -650,7 +650,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       className={`market-btn w-full inline-flex items-center justify-center gap-2 min-h-[46px] px-4 py-2.5 text-[#4FE3DC] text-[13px] font-semibold cursor-pointer select-none${marketValLoading ? ' scanning' : ''}`}
                     >
                       {marketValLoading ? <Loader2 size={14} className="animate-spin" /> : <Radio size={14} />}
-                      <span className="truncate">{marketValLoading ? 'Scanning market…' : 'Live Market Value'}</span>
+                      <span className="truncate">{marketValLoading ? 'Verifying Live Sources…' : 'TruRadar™ Live Price'}</span>
                       <span className="mv-badge">LIVE</span>
                     </button>
                   </div>
@@ -659,7 +659,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   {marketValuation && (
                     <div className="border border-emerald-500/20 rounded-lg p-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Market Scraper · AutoTrader &amp; Cars.co.za</div>
+                        <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-400">TruRadar™ · Verifying Live Sources</div>
                         <div className="text-[11px] text-[color:var(--muted)]">{marketValuation.listingsFound} listings</div>
                       </div>
                       <div className="grid grid-cols-2 gap-3">

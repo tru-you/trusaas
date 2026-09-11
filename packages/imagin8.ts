@@ -419,24 +419,33 @@ export async function bankAvs(
   initials: string,
   surname: string,
   opts: Imagin8Opts,
+  accountType?: string,
 ): Promise<AvsResult> {
   const data = await get("im8bank_api", "avsr", {
     accountnumber: bankAccount,
+    accountNo: bankAccount,
     branchcode: branchCode,
+    branchCode: branchCode,
     idnumber: idNumber,
+    idNo: idNumber,
     initials,
     surname,
+    accountName: surname,
+    accountType: accountType || "1",
+    userName: opts.userName,
+    password: opts.password,
+    applicationName: opts.appName,
   }, opts);
 
   return {
-    valid: toBool(data?.Valid),
-    accountExists: toBool(data?.AccountExists),
-    accountOpen: toBool(data?.AccountOpen),
-    idMatch: toBool(data?.IDMatch),
-    nameMatch: toBool(data?.NameMatch),
-    initials: data?.Initials || null,
-    surname: data?.Surname || null,
-    accountType: data?.AccountType || null,
+    valid: toBool(data?.Valid || data?.valid),
+    accountExists: toBool(data?.AccountExists || data?.accountExists),
+    accountOpen: toBool(data?.AccountOpen || data?.accountOpen),
+    idMatch: toBool(data?.IDMatch || data?.idMatch),
+    nameMatch: toBool(data?.NameMatch || data?.nameMatch),
+    initials: data?.Initials || data?.initials || null,
+    surname: data?.Surname || data?.surname || null,
+    accountType: data?.AccountType || data?.accountType || accountType || null,
     raw: data,
   };
 }
@@ -534,7 +543,7 @@ function toBool(v: unknown): boolean {
 
 /** Demo sessions get ZERO paid calls — TransUnion features are gated behind a
  *  real dealership subscription. The UI shows the glassmorphic "Unlock" state. */
-export const DEMO_IMAGIN8_ALLOWANCE = { valuation: 0, regCheck: 0, accidentReport: 0 };
+export const DEMO_IMAGIN8_ALLOWANCE = { valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0 };
 
 /** Deterministic FNV-1a hash → 32-bit uint. Stable per input string. */
 function hash32(str: string): number {

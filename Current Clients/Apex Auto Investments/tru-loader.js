@@ -23,9 +23,9 @@
     slug: getAttr("data-slug", "apex-wholesale-investments"),
     flow: getAttr("data-flow", "https://flow.tru-saas.com"),
     wa: (getAttr("data-wa", "27726047878") || "").replace(/\D/g, ""),
-    accent: getAttr("data-accent", "#E8611A"),
+    accent: getAttr("data-accent", "#B85B24"),
     brand: getAttr("data-brand", "Apex Auto"),
-    theme: getAttr("data-theme", "light"),
+    theme: getAttr("data-theme", "dark"),
     position: getAttr("data-position", "right"),
     baseBottom: parseInt(getAttr("data-bottom", "24"), 10) || 24,
     widgets: (getAttr("data-widgets", "afford,repay,form,share,book,value") || "")
@@ -72,7 +72,7 @@
       document.head.appendChild(tag);
     }
 
-    // TruRepay
+    // TruRepay (Inline Default on Finance & VDP Pages)
     if (wanted.indexOf("repay") !== -1 || wanted.indexOf("tru-repay") !== -1) {
       var repaySrc = getScriptUrl("tru-repay.js");
       var rTag = document.createElement("script");
@@ -82,8 +82,10 @@
       rTag.setAttribute("data-flow", globalCfg.flow);
       rTag.setAttribute("data-wa", globalCfg.wa);
       rTag.setAttribute("data-accent", globalCfg.accent);
-      rTag.setAttribute("data-mode", getAttr("data-repay-mode", "float"));
-      rTag.setAttribute("data-target", getAttr("data-repay-target", "#finance-calc"));
+      var repayTarget = document.querySelector("#vdpFinanceCalc") ? "#vdpFinanceCalc" : (document.querySelector("#finance-calc") ? "#finance-calc" : "");
+      rTag.setAttribute("data-mode", repayTarget ? "inline" : getAttr("data-repay-mode", "inline"));
+      rTag.setAttribute("data-target", repayTarget || getAttr("data-repay-target", "#finance-calc"));
+      rTag.setAttribute("data-collapsible", getAttr("data-repay-collapsible", "1"));
       rTag.setAttribute("data-price", getAttr("data-repay-price", "0"));
       rTag.setAttribute("data-vehicle", getAttr("data-repay-vehicle", ""));
       rTag.setAttribute("data-brand", globalCfg.brand);
@@ -92,7 +94,7 @@
       document.head.appendChild(rTag);
     }
 
-    // TruForm
+    // TruForm (Get in Touch — Spaced at 160px Right)
     if (wanted.indexOf("form") !== -1 || wanted.indexOf("tru-form") !== -1) {
       var formSrc = getScriptUrl("tru-form.js");
       var fTag = document.createElement("script");
@@ -102,6 +104,8 @@
       fTag.setAttribute("data-flow", globalCfg.flow);
       fTag.setAttribute("data-wa", globalCfg.wa);
       fTag.setAttribute("data-accent", globalCfg.accent);
+      fTag.setAttribute("data-position", "right");
+      fTag.setAttribute("data-bottom", "160px");
       fTag.setAttribute("data-mode", getAttr("data-form-mode", "float"));
       fTag.setAttribute("data-target", getAttr("data-form-target", "#contact-form"));
       fTag.setAttribute("data-brand", globalCfg.brand);
@@ -120,6 +124,50 @@
       sTag.setAttribute("data-site", getAttr("data-share-site", location.origin));
       sTag.setAttribute("data-vehicle-path", getAttr("data-share-vehicle-path", "/vehicle/"));
       document.head.appendChild(sTag);
+    }
+
+    // TruBook
+    if (wanted.indexOf("book") !== -1 || wanted.indexOf("tru-book") !== -1) {
+      var bookSrc = getScriptUrl("tru-book.js");
+      var bTag = document.createElement("script");
+      bTag.src = bookSrc;
+      bTag.setAttribute("data-dealer", globalCfg.dealer);
+      bTag.setAttribute("data-slug", globalCfg.slug);
+      bTag.setAttribute("data-flow", globalCfg.flow);
+      bTag.setAttribute("data-wa", globalCfg.wa);
+      bTag.setAttribute("data-accent", globalCfg.accent);
+      bTag.setAttribute("data-brand", globalCfg.brand);
+      document.head.appendChild(bTag);
+    }
+
+    // TruValue
+    if (wanted.indexOf("value") !== -1 || wanted.indexOf("tru-value") !== -1) {
+      var valueSrc = getScriptUrl("tru-value.js");
+      var vTag = document.createElement("script");
+      vTag.src = valueSrc;
+      vTag.setAttribute("data-dealer", globalCfg.dealer);
+      vTag.setAttribute("data-slug", globalCfg.slug);
+      vTag.setAttribute("data-flow", globalCfg.flow);
+      vTag.setAttribute("data-wa", globalCfg.wa);
+      vTag.setAttribute("data-accent", globalCfg.accent);
+      document.head.appendChild(vTag);
+    }
+
+    // TruChat AI Bot (Positioned on the LEFT side)
+    if (wanted.indexOf("chat") !== -1 || wanted.indexOf("tru-chat") !== -1 || wanted.indexOf("truchat") !== -1) {
+      var chatSrc = getScriptUrl("tru-chat.js");
+      var cTag = document.createElement("script");
+      cTag.src = chatSrc;
+      cTag.setAttribute("data-dealer", globalCfg.dealer);
+      cTag.setAttribute("data-slug", globalCfg.slug);
+      cTag.setAttribute("data-wa", globalCfg.wa);
+      cTag.setAttribute("data-accent", globalCfg.accent);
+      cTag.setAttribute("data-position", "left");
+      cTag.setAttribute("data-side", "left");
+      cTag.setAttribute("data-bottom", "24px");
+      cTag.setAttribute("data-left", "24px");
+      cTag.setAttribute("data-theme", globalCfg.theme);
+      document.head.appendChild(cTag);
     }
   }
 

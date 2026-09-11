@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-ZA">
+<html lang="en-ZA" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -20,40 +20,110 @@
           data-slug="apex-wholesale-investments"
           data-flow="https://flow.tru-saas.com"
           data-wa="27726047878"
-          data-accent="#E8611A"
+          data-accent="#B85B24"
           data-brand="Apex Auto"
-          data-theme="light"
-          data-widgets="form,share,book,afford,repay"
+          data-theme="dark"
+          data-widgets="form,share,book,afford,repay,chat"
           data-repay-target="#vdpFinanceCalc"
           data-share-site="https://www.apexinvest.co.za"
           data-share-vehicle-path="vehicle.html"></script>
 
   <style>
     .vdp-layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 36px; align-items: start; }
-    .vdp-gallery { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
-    .vdp-hero-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: var(--slate-100); }
-    .vdp-filmstrip { display: flex; gap: 10px; padding: 14px; overflow-x: auto; background: var(--slate-50); border-top: 1px solid var(--rule); }
+    .vdp-gallery { background: var(--color-surface); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; position: relative; }
+    .vdp-hero-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: var(--bg-inset); display: block; }
+    .vdp-filmstrip { display: flex; gap: 10px; padding: 14px; overflow-x: auto; background: var(--bg-inset); border-top: 1px solid var(--rule); }
     .vdp-thumb { width: 80px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; opacity: 0.7; transition: all 0.2s; }
-    .vdp-thumb.is-active, .vdp-thumb:hover { border-color: var(--apex-orange); opacity: 1; }
+    .vdp-thumb.is-active, .vdp-thumb:hover { border-color: var(--accent); opacity: 1; }
     
-    .vdp-rail { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; position: sticky; top: 90px; }
-    .vdp-price { font-family: var(--display); font-size: 2.2rem; font-weight: 800; color: var(--graphite-950); }
-    .vdp-repay { font-family: var(--mono); font-size: 0.95rem; color: var(--apex-orange); font-weight: 600; margin-bottom: 20px; }
+    .vdp-rail { background: var(--color-surface); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; position: sticky; top: 90px; }
+    .vdp-price { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; color: var(--ink-main); }
+    .vdp-repay { font-family: var(--font-mono); font-size: 0.95rem; color: var(--accent); font-weight: 600; margin-bottom: 20px; }
     
     .spec-grid-8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0; }
-    .spec-tile { background: var(--slate-50); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; text-align: center; }
-    .spec-tile-val { font-family: var(--display); font-size: 1rem; font-weight: 700; color: var(--graphite-950); }
-    .spec-tile-lbl { font-family: var(--mono); font-size: 0.7rem; color: var(--graphite-500); text-transform: uppercase; }
+    .spec-tile { background: var(--bg-inset); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; text-align: center; }
+    .spec-tile-val { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--ink-main); }
+    .spec-tile-lbl { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-quiet); text-transform: uppercase; }
 
-    .vir-card { background: var(--graphite-950); color: #fff; border-radius: 16px; padding: 28px; margin: 28px 0; }
+    .vir-card { background: var(--color-dark-anchor); color: #fff; border-radius: 16px; padding: 28px; margin: 28px 0; }
     .vir-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .vir-score-ring { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--apex-orange); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 1.3rem; font-weight: 800; color: var(--apex-orange); }
+    .vir-score-ring { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+
+    /* TruOrbit 360° Stage Elements */
+    .orbit-stage-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(23, 30, 38, 0.85);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 5;
+    }
     
+    /* Sticky Top Deal Bar */
+    .sticky-deal-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--color-dark-anchor);
+      color: #fff;
+      z-index: 1000;
+      padding: 10px 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sticky-deal-bar.is-visible { display: flex; }
+    
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      place-items: center;
+      padding: 20px;
+    }
+    .modal-backdrop.is-open { display: grid; }
+    .modal-box {
+      background: var(--color-surface);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
     @media (max-width: 960px) { .vdp-layout { grid-template-columns: 1fr; } .spec-grid-8 { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
   <a href="#main-content" class="coc-skip">Skip to main content</a>
+
+  <!-- Sticky Top Deal Bar -->
+  <div class="sticky-deal-bar" id="stickyDeal">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <strong id="stickyTitle" style="font-size: 0.95rem;">Vehicle Title</strong>
+      <span id="stickyPrice" style="color: var(--accent); font-family: var(--font-mono); font-weight: 800;">R 0</span>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a id="stickyWa" href="#" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>
+      <button type="button" class="btn btn-primary btn-sm" onclick="openModal('reserveModal')">Reserve Hold</button>
+    </div>
+  </div>
 
   <div id="site-topbar"></div>
   <div id="site-header"></div>
@@ -61,17 +131,21 @@
   <main id="main-content" class="section">
     <div class="container">
       <!-- Breadcrumb -->
-      <div style="font-family: var(--mono); font-size: 0.8rem; color: var(--graphite-500); margin-bottom: 20px;">
-        <a href="index.html" style="color: var(--graphite-500); text-decoration: none;">Home</a> &nbsp;/&nbsp;
-        <a href="stock.html" style="color: var(--graphite-500); text-decoration: none;">Pre-Owned Stock</a> &nbsp;/&nbsp;
-        <span id="vdpBreadcrumbTitle" style="color: var(--apex-orange);">Loading Vehicle...</span>
+      <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-quiet); margin-bottom: 20px;">
+        <a href="index.html" style="color: var(--ink-quiet); text-decoration: none;">Home</a> &nbsp;/&nbsp;
+        <a href="stock.html" style="color: var(--ink-quiet); text-decoration: none;">Pre-Owned Stock</a> &nbsp;/&nbsp;
+        <span id="vdpBreadcrumbTitle" style="color: var(--accent);">Loading Vehicle...</span>
       </div>
 
       <div class="vdp-layout">
         <!-- Main Column (Left) -->
         <div>
-          <!-- Hero Gallery -->
-          <div class="vdp-gallery">
+          <!-- Hero Gallery & TruOrbit Stage -->
+          <div class="vdp-gallery" id="vdpGalleryContainer">
+            <div id="orbitBadge" class="orbit-stage-badge" style="display: none;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></span>
+              <span>TruOrbit 360° Studio Walkaround</span>
+            </div>
             <img id="vdpMainImg" src="" alt="Vehicle Photo" class="vdp-hero-img" onerror="this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80'">
             <div id="vdpFilmstrip" class="vdp-filmstrip"></div>
           </div>
@@ -116,25 +190,30 @@
           <div class="vir-card">
             <div class="vir-header">
               <div>
-                <div style="font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; color: var(--apex-orange); letter-spacing: 0.1em; margin-bottom: 4px;">TruInspect Condition Report</div>
+                <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 4px;">TruInspect Condition Report</div>
                 <h3 style="color:#fff; font-size: 1.4rem;">114-Point Verified Inspection</h3>
               </div>
               <div class="vir-score-ring" id="virRingVal">92</div>
             </div>
-            <p style="color: var(--slate-300); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6;">
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6;">
               This vehicle has passed our comprehensive mechanical, electrical, bodywork, and road safety evaluation at 17b Burt Drive.
             </p>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; font-family: var(--mono); font-size: 0.82rem;">
-              <div>Mechanical: <strong style="color:var(--apex-orange);">PASS</strong></div>
-              <div>Electrical: <strong style="color:var(--apex-orange);">PASS</strong></div>
-              <div>Body & Structure: <strong style="color:var(--apex-orange);">PASS</strong></div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; font-family: var(--font-mono); font-size: 0.82rem;">
+              <div>Mechanical: <strong style="color:var(--accent);">PASS</strong></div>
+              <div>Electrical: <strong style="color:var(--accent);">PASS</strong></div>
+              <div>Bodywork: <strong style="color:var(--accent);">PASS</strong></div>
+            </div>
+            <div style="margin-top: 18px; text-align: right;">
+              <a id="vdpFullReportBtn" href="report.html" class="btn btn-outline btn-sm" style="color: #fff; border-color: rgba(255,255,255,0.3);">
+                View Full VIR® Certificate &rarr;
+              </a>
             </div>
           </div>
 
           <!-- Description & Highlights -->
-          <div style="background: var(--white); border: 1px solid var(--rule); border-radius: 16px; padding: 28px; margin-bottom: 28px;">
+          <div style="background: var(--color-surface); border: 1px solid var(--rule); border-radius: 16px; padding: 28px; margin-bottom: 28px;">
             <h3 style="font-size: 1.25rem; margin-bottom: 12px;">Dealer Notes & Highlights</h3>
-            <p id="vdpNotes" style="color: var(--graphite-600); line-height: 1.6;">
+            <p id="vdpNotes" style="color: var(--ink-quiet); line-height: 1.6;">
               Hand-picked pre-owned vehicle in excellent condition. Full multi-point inspection verified. Financing available with ABSA, WesBank, Standard Bank, and Nedbank MFC. Trade-ins welcome.
             </p>
           </div>
@@ -142,7 +221,7 @@
 
         <!-- Sticky Sidebar Buy Rail (Right) -->
         <aside class="vdp-rail">
-          <div style="font-family: var(--mono); font-size: 0.78rem; color: var(--graphite-500); text-transform: uppercase; margin-bottom: 4px;" id="vdpStockNo">Stock # APX-001</div>
+          <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-quiet); text-transform: uppercase; margin-bottom: 4px;" id="vdpStockNo">Stock # APX-001</div>
           <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 14px; line-height: 1.2;" id="vdpTitle">Vehicle Title</h1>
 
           <div class="vdp-price" id="vdpPrice">R 0</div>
@@ -152,18 +231,21 @@
             <a id="vdpWaBtn" href="#" target="_blank" class="btn btn-wa btn-lg" style="width:100%;">
               WhatsApp About This Car
             </a>
-            <a href="#vdpFinanceCalc" class="btn btn-primary btn-lg" style="width:100%;">
-              Apply for Bank Finance
-            </a>
+            <button type="button" class="btn btn-primary btn-lg" style="width:100%;" onclick="openModal('reserveModal')">
+              48-Hour Priority Hold
+            </button>
+            <button type="button" class="btn btn-outline" style="width:100%;" onclick="openModal('priceAlertModal')">
+              Set Price Drop Alert
+            </button>
             <button type="button" id="vdpShareBtn" class="btn btn-outline" style="width:100%;">
               Share This Vehicle
             </button>
           </div>
 
           <!-- Market Comparison Badge -->
-          <div style="background: var(--slate-50); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 24px;">
-            <span style="font-family: var(--mono); font-size: 0.72rem; color: var(--graphite-500); text-transform: uppercase; display: block; margin-bottom: 4px;">Market Appraisal</span>
-            <strong style="color: var(--apex-orange); font-size: 0.95rem;">Competitive Market Price</strong>
+          <div style="background: var(--bg-inset); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 24px;">
+            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-quiet); text-transform: uppercase; display: block; margin-bottom: 4px;">TransUnion Appraisal</span>
+            <strong style="color: var(--accent); font-size: 0.95rem;">Competitive Market Price</strong>
           </div>
 
           <!-- In-Page Finance Calculator Target -->
@@ -173,10 +255,91 @@
     </div>
   </main>
 
+  <!-- 48-Hour Reserve Hold Modal -->
+  <div class="modal-backdrop" id="reserveModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.3rem; margin: 0;">48-Hour Priority Hold</h3>
+        <button type="button" onclick="closeModal('reserveModal')" style="background:none; border:none; font-size: 1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <p style="color: var(--ink-quiet); font-size: 0.9rem; margin-bottom: 20px;">
+        Place a priority hold on this vehicle while you schedule viewing or complete finance approval.
+      </p>
+      <form onsubmit="return submitReserve(event);">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+          <input type="text" id="resName" placeholder="Full Name" required class="trade-input">
+          <input type="tel" id="resCell" placeholder="WhatsApp / Cell Number" required class="trade-input">
+          <input type="email" id="resEmail" placeholder="Email Address" required class="trade-input">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Confirm Priority Hold &rarr;</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Price Drop Alert Modal -->
+  <div class="modal-backdrop" id="priceAlertModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.3rem; margin: 0;">Set Price Drop Alert</h3>
+        <button type="button" onclick="closeModal('priceAlertModal')" style="background:none; border:none; font-size: 1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <p style="color: var(--ink-quiet); font-size: 0.9rem; margin-bottom: 20px;">
+        Get notified instantly via WhatsApp if this vehicle drops in price or matching stock arrives.
+      </p>
+      <form onsubmit="return submitPriceAlert(event);">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+          <input type="text" id="altContact" placeholder="WhatsApp Number or Email" required class="trade-input">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Set Alert &rarr;</button>
+      </form>
+    </div>
+  </div>
+
   <div id="site-footer"></div>
 
   <script src="assets/js/showroom-data.js"></script>
   <script src="assets/js/showroom.js"></script>
   <script src="assets/js/vdp-page.js"></script>
+
+  <script>
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('is-open');
+  }
+  function closeModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('is-open');
+  }
+  function submitReserve(e) {
+    e.preventDefault();
+    var nm = document.getElementById('resName').value;
+    var cl = document.getElementById('resCell').value;
+    var title = document.getElementById('vdpTitle').textContent;
+    var msg = "Hi Apex Auto! I'd like to place a 48-Hour Priority Hold on " + title + ". Name: " + nm + " (" + cl + ")";
+    window.open("https://wa.me/27726047878?text=" + encodeURIComponent(msg), "_blank");
+    closeModal('reserveModal');
+    return false;
+  }
+  function submitPriceAlert(e) {
+    e.preventDefault();
+    var alt = document.getElementById('altContact').value;
+    var title = document.getElementById('vdpTitle').textContent;
+    var msg = "Hi Apex Auto! Please alert me (" + alt + ") if " + title + " drops in price.";
+    window.open("https://wa.me/27726047878?text=" + encodeURIComponent(msg), "_blank");
+    closeModal('priceAlertModal');
+    return false;
+  }
+
+  // Scroll listener for Sticky Top Deal Bar
+  window.addEventListener('scroll', function() {
+    var bar = document.getElementById('stickyDeal');
+    if (!bar) return;
+    if (window.scrollY > 400) {
+      bar.classList.add('is-visible');
+    } else {
+      bar.classList.remove('is-visible');
+    }
+  });
+  </script>
 </body>
 </html>

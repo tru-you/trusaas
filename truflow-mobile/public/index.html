@@ -528,6 +528,15 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
 .mv-v{font-family:var(--mono);font-weight:500;color:var(--paper);}
 .mv-big{color:var(--cyan);font-weight:600;font-size:16px;}
 .mv-sub{color:var(--muted);margin-top:7px;font-size:12.5px;}
+
+/* ── Gated Buttons ── */
+.gated-btn{position:relative;width:100%;height:44px;margin-top:6px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;transition:transform .1s,box-shadow .2s;border:1px solid transparent;background-clip:padding-box;}
+.gated-btn.available{background:rgba(79,227,220,0.10);border-color:rgba(79,227,220,0.25);color:#4FE3DC;}
+.gated-btn.available:active{transform:translateY(1px);}
+.gated-btn.unlock{background:rgba(232,234,230,0.04);border-color:rgba(232,234,230,0.10);color:rgba(232,234,230,0.65);}
+.gated-btn.unlock:active{transform:translateY(1px);}
+.gated-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:6px;background:rgba(79,227,220,0.15);color:#4FE3DC;margin-left:4px;}
+.gated-badge.unlock-badge{background:rgba(232,234,230,0.08);color:rgba(232,234,230,0.45);}
 .mv-delta{margin-top:10px;padding-top:10px;border-top:1px dashed var(--glass-line2);font-size:12.5px;color:var(--dim);line-height:1.4;}
 .mv-use{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:42px;margin-top:12px;background:rgba(79,227,220,.14);border:1px solid var(--cyan-soft);color:var(--cyan);border-radius:var(--btn-r);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s ease, transform .1s ease;}
 .mv-use svg{width:15px;height:15px;flex-shrink:0;}
@@ -634,7 +643,12 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
         <div class="frow"><div class="field"><label>Transmission</label><select id="aTrans"><option>Automatic</option><option>Manual</option></select></div><div class="field"><label id="lblAKm">Mileage (km)</label><input inputmode="numeric" id="aKm" placeholder="28500" autocomplete="off"></div></div>
         <div class="lbl">The money</div>
         <div class="frow"><div class="field"><label id="lblAPrice">Asking price (R)</label><input inputmode="numeric" id="aPrice" placeholder="459900" autocomplete="off"></div><div class="field"><label id="lblATru">TruPrice (R)</label><input inputmode="numeric" id="aTru" placeholder="479000" autocomplete="off"></div></div>
-        <button type="button" class="mvbtn" id="aMvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>Live Market Value<span class="mv-badge">LIVE</span></button><div id="aMvOut"></div>
+        <div id="aGatedContainer" style="display:flex;flex-direction:column;margin-bottom:12px;margin-top:12px">
+          <button type="button" class="mvbtn" id="aMvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>TruRadar™ Live Price<span class="mv-badge">LIVE</span></button><div id="aMvOut"></div>
+          <div id="aTuBtnContainer"></div>
+          <div id="aRegBtnContainer"></div>
+          <div id="aAccBtnContainer"></div>
+        </div>
         <button type="submit" class="btn-primary uf-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Add to inventory</button>
         <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px">Saved unpublished · shoot in TruLens to go live</p>
         <div style="height:14px"></div>
@@ -857,7 +871,7 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
   }
 
   /* ── Data ── */
-  var polling=false, loadFailed=false, isOffline=false;
+  var polling=false, loadFailed=false, isOffline=false, cachedBundles=null;
   // The offline banner tracks whether real requests succeed — NOT navigator.onLine.
   // Android WebViews/PWAs report onLine=false while the device is actually
   // connected, which flashed "OFFLINE — SHOWING CACHED DATA" over live data.
@@ -874,7 +888,103 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
     if(!cachedLeads.length)$("#homeLeads").innerHTML=skelHTML("skel-lead",2);
     if(!cachedStock.length)$("#homeStock").innerHTML=skelHTML("skel-veh",2);
     if(!cachedLeads.length&&!cachedStock.length)$("#kpis").innerHTML=skelHTML("skel-kpi",4);
-    Promise.all([loadLeads(),loadInventory(),loadTasks()]).finally(function(){polling=false;endPTR();setOffline(loadFailed);});
+    Promise.all([loadLeads(),loadInventory(),loadTasks(),loadBundles()]).finally(function(){polling=false;endPTR();setOffline(loadFailed);});
+  }
+  function loadBundles(){
+    return api("GET","/api/imagin8/bundles").then(function(x){
+      cachedBundles=x;
+      renderAllGatedButtons();
+    }).catch(function(){});
+  }
+
+  function renderGatedButtonHtml(feature, label, iconHtml) {
+    if(!cachedBundles) return "";
+    var unlimited = !!cachedBundles.unlimited;
+    var available = unlimited || (cachedBundles[feature] || 0) > 0;
+    if (available) {
+      var showCount = !unlimited && (cachedBundles[feature] || 0) < 999;
+      return '<button type="button" class="gated-btn available" data-feature="'+feature+'">' + iconHtml + ' <span>' + esc(label) + '</span>' + (showCount ? '<span class="gated-badge">'+cachedBundles[feature]+'</span>' : '') + '</button>';
+    } else {
+      var svgUnlock = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0" class="text-[rgba(232,234,230,0.45)]"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+      return '<button type="button" class="gated-btn unlock" data-feature="'+feature+'">' + svgUnlock + ' <span>' + esc(label) + '</span><span class="gated-badge unlock-badge">Unlock</span></button>';
+    }
+  }
+
+  function renderAllGatedButtons() {
+    var render = function(prefix) {
+      var tu = $("#"+prefix+"TuBtnContainer");
+      var reg = $("#"+prefix+"RegBtnContainer");
+      var acc = $("#"+prefix+"AccBtnContainer");
+      var svgTu = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>';
+      var svgReg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+      var svgAcc = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>';
+      
+      if(tu) tu.innerHTML = renderGatedButtonHtml("valuation", "TransUnion price", svgTu) + '<div id="'+prefix+'TuOut"></div>';
+      if(reg) reg.innerHTML = renderGatedButtonHtml("regCheck", "Verify Registration", svgReg) + '<div id="'+prefix+'RegOut"></div>';
+      if(acc) acc.innerHTML = renderGatedButtonHtml("accidentReport", "Accident Report", svgAcc) + '<div id="'+prefix+'AccOut"></div>';
+      
+      bindGatedClicks(prefix);
+    };
+    render("a");
+    if($("#vGatedContainer")) render("v");
+  }
+
+  function bindGatedClicks(prefix) {
+    var c = $("#"+prefix+"GatedContainer");
+    if(!c) return;
+    Array.prototype.forEach.call(c.querySelectorAll(".gated-btn"), function(btn) {
+      var cloned = btn.cloneNode(true);
+      btn.parentNode.replaceChild(cloned, btn);
+      cloned.addEventListener("click", function() {
+        var feature = cloned.getAttribute("data-feature");
+        var available = !!cachedBundles.unlimited || (cachedBundles[feature] || 0) > 0;
+        if(!available) {
+          toast("Unlock feature on TruFlow Premium desktop.");
+          return;
+        }
+        
+        var year = prefix === "a" ? $("#aYear").value : (currentSheetV ? currentSheetV.year : "");
+        var make = prefix === "a" ? $("#aMake").value : (currentSheetV ? currentSheetV.make : "");
+        var model = prefix === "a" ? $("#aModel").value : (currentSheetV ? currentSheetV.model : "");
+        var km = prefix === "a" ? $("#aKm").value : (currentSheetV ? currentSheetV.mileage : "");
+        var vId = prefix === "v" && currentSheetV ? currentSheetV.id : "";
+        var out = $("#" + prefix + (feature==="valuation"?"Tu":feature==="regCheck"?"Reg":"Acc") + "Out");
+        
+        cloned.disabled = true;
+        cloned.innerHTML = '<div style="animation:mv-rotate 1s linear infinite;width:14px;height:14px;border:2px solid currentColor;border-bottom-color:transparent;border-radius:50%"></div> <span>Running...</span>';
+        
+        var payload, endpoint;
+        if(feature === "valuation") {
+          endpoint = "/api/imagin8/valuation";
+          payload = { year: year, make: make, model: model, mileage: km };
+        } else if(feature === "regCheck") {
+          if (!vId) { toast("Save vehicle first to run check"); renderAllGatedButtons(); return; }
+          endpoint = "/api/imagin8/regcheck";
+          payload = { vehicleId: vId, type: "registration" };
+        } else {
+          if (!vId) { toast("Save vehicle first to run check"); renderAllGatedButtons(); return; }
+          endpoint = "/api/imagin8/accident-report";
+          payload = { vehicleId: vId }; 
+        }
+
+        api("POST", endpoint, payload).then(function(res) {
+          if (res.bundlesRemaining !== undefined && !cachedBundles.unlimited) {
+            cachedBundles[feature] = res.bundlesRemaining;
+          }
+          if (feature === "valuation") {
+             out.innerHTML = '<div class="mv-out"><div class="mv-row"><div class="mv-k">Trade</div><div class="mv-v">'+money(res.tuPriceResult?.mmTrade)+'</div></div><div class="mv-row"><div class="mv-k">Retail</div><div class="mv-v">'+money(res.tuPriceResult?.mmRetail)+'</div></div></div>';
+          } else if (feature === "regCheck") {
+             out.innerHTML = '<div class="mv-out"><div class="mv-row"><div class="mv-k">Status</div><div class="mv-v">'+esc(res.result?.summary||"Verified")+'</div></div></div>';
+          } else {
+             out.innerHTML = '<div class="mv-out"><div class="mv-row"><div class="mv-k">Claims</div><div class="mv-v">'+(res.result?.claims?.length||0)+' found</div></div></div>';
+          }
+          renderAllGatedButtons();
+        }).catch(function(err) {
+          out.innerHTML = '<div class="mv-out err">Failed: '+esc(err.message)+'</div>';
+          renderAllGatedButtons();
+        });
+      });
+    });
   }
   function loadLeads(){
     return api("GET","/api/leads").then(function(x){cachedLeads=Array.isArray(x)?x:[];
@@ -1159,7 +1269,9 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
   /* ── Vehicle sheet (wired to PUT/DELETE) ── */
   var curId=null;
   function curVeh(){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===curId)return cachedStock[i];}return null;}
+  var currentSheetV = null;
   function openVeh(v){
+    currentSheetV = v;
     curId=v.id; var name=vName(v), hero=vHero(v), pub=isPub(v);
     // Publish-state pill on the hero, so the sheet and the stock card agree.
     var topPill=v.status==="SOLD"?'<span class="pill mute">Sold</span>':(pub?'<span class="pill cyan dot">Live</span>':'<span class="pill glass">Draft</span>');
@@ -1183,10 +1295,16 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
       '</div>'+
       '<div class="lbl">Details</div>'+
               '<div class="frow"><div class="field"><label>Asking price ('+MARKET.currency+')</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label id="lblFKm">Mileage ('+MARKET.unit+')</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
-      '<button type="button" class="mvbtn" id="vMvBtn">'+SVG_RADIO+'Live Market Value<span class="mv-badge">LIVE</span></button><div id="vMvOut"></div>'+
       '<div class="field"><label>Variant / trim</label><input type="text" value="'+esc(v.trim||"")+'" id="fTrim"></div>'+
-      '<div class="field"><label>Listing blurb</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div><div style="height:8px"></div>';
+      '<div class="field"><label>Listing blurb</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div><div style="height:8px"></div>'+
+      '<div id="vGatedContainer" style="display:flex;flex-direction:column;margin-bottom:12px">'+
+        '<button type="button" class="mvbtn" id="vMvBtn">'+SVG_RADIO+'TruRadar™ Live Price<span class="mv-badge">LIVE</span></button><div id="vMvOut"></div>'+
+        '<div id="vTuBtnContainer"></div>'+
+        '<div id="vRegBtnContainer"></div>'+
+        '<div id="vAccBtnContainer"></div>'+
+      '</div>';
     $("#sheetFoot").style.display="";
+    renderAllGatedButtons();
     $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Save changes</button><button class="tru-btn-ghost danger foot-del" id="delBtn" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
 
     $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
@@ -1677,7 +1795,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
       wireUse();
       return;
     }
-    btn.disabled=true;btn.classList.add('scanning');btn.innerHTML=SVG_RADIO+'Scanning market…<span class="mv-badge">LIVE</span>';
+    btn.disabled=true;btn.classList.add('scanning');btn.innerHTML=SVG_RADIO+'Verifying Live Sources…<span class="mv-badge">LIVE</span>';
     api("POST","/api/valuation",{make:params.make,model:params.model,year:params.year,mileage:params.mileage||undefined}).then(function(res){
       mvCache[key]=res;
       out.innerHTML=mvHTML(res,params,curPrice);

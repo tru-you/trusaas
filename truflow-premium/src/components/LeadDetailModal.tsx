@@ -3,7 +3,9 @@ import { Lead, Vehicle, User, Communication, Task, Agreement, TradeIn, InvoiceEx
 import { getAccount } from "../lib/session";
 import { useMoney, useMarket } from "../contexts/MarketContext";
 import { fetchState, updateLead, updateLeadStatus, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement, createVehicle } from "../api";
-import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature, Shield, CheckCircle2, AlertCircle, Banknote, Trash2, Printer, ChevronDown, ChevronUp, Car } from "lucide-react";
+import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature, Shield, CheckCircle2, AlertCircle, Banknote, Trash2, Printer, ChevronDown, ChevronUp, Car, Loader2 } from "lucide-react";
+import { authFetch } from "../lib/session";
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from "./imagin8-gating";
 import AgreementPreview from "./AgreementPreview";
 
 interface LeadDetailModalProps {
@@ -116,7 +118,22 @@ export default function LeadDetailModal({
   // Bank AVS (Imagin8)
   const [avsResult, setAvsResult] = useState<any>(null);
   const [avsLoading, setAvsLoading] = useState(false);
-  const [avsForm, setAvsForm] = useState({ bankAccount: "", branchCode: "", idNumber: "", initials: "", surname: "" });
+  const [avsForm, setAvsForm] = useState({ bankAccount: "", branchCode: "", idNumber: "", initials: "", surname: "", accountType: "1" });
+  const [imagin8Bundles, setImagin8Bundles] = useState<Imagin8Bundles>(ZERO_BUNDLES);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await authFetch("/api/imagin8/bundles");
+        if (res.ok && alive) {
+          const data = await res.json();
+          setImagin8Bundles(data);
+        }
+      } catch {}
+    })();
+    return () => { alive = false; };
+  }, []);
 
   const notify = (title: string, message: string, type: "info" | "warning" | "error" = "info") => {
     if (onNotify) {
@@ -127,18 +144,23 @@ export default function LeadDetailModal({
   };
 
   const handleAvs = async () => {
-    if (!avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber) return;
+    if (!avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber) {
+      notify("AVS Verification", "Account number, branch code, and ID number are required", "warning");
+      return;
+    }
     setAvsLoading(true);
     setAvsResult(null);
     try {
-      const res = await fetch("/api/imagin8/avs", {
+      const res = await authFetch("/api/imagin8/avs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(avsForm),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "AVS verification failed");
+      if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
       setAvsResult(data);
+      notify("AVS Verification", data.valid ? "Bank account verified successfully" : "Verification completed with flags", data.valid ? "info" : "warning");
     } catch (err: any) {
       notify("AVS Verification", err?.message || "AVS failed", "error");
     } finally {
@@ -2285,43 +2307,58 @@ export default function LeadDetailModal({
                 {/* Bank Account Verification (AVS) via Imagin8 / TransUnion */}
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex flex-col gap-3">
-                    <div className="text-[13px] font-semibold text-amber-400 tracking-normal font-mono border-b border-white/5 pb-2 flex items-center gap-2">
-                      <Banknote size={14} /> Bank Account Verification (AVS)
+                    <div className="text-[13px] font-semibold text-[#4FE3DC] tracking-normal font-mono border-b border-white/5 pb-2 flex items-center gap-2">
+                      <Banknote size={14} /> Bank Account Verification (AVS-R)
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         placeholder="Account number"
                         value={avsForm.bankAccount}
                         onChange={(e) => setAvsForm((f) => ({ ...f, bankAccount: e.target.value }))}
-                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-[#4FE3DC]/50"
                       />
                       <input
                         placeholder="Branch code"
                         value={avsForm.branchCode}
                         onChange={(e) => setAvsForm((f) => ({ ...f, branchCode: e.target.value }))}
-                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-[#4FE3DC]/50"
                       />
                       <input
                         placeholder="ID number"
                         value={avsForm.idNumber}
                         onChange={(e) => setAvsForm((f) => ({ ...f, idNumber: e.target.value }))}
-                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-[#4FE3DC]/50"
                       />
                       <input
-                        placeholder="Surname"
+                        placeholder="Initials (e.g. JP)"
+                        value={avsForm.initials}
+                        onChange={(e) => setAvsForm((f) => ({ ...f, initials: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-[#4FE3DC]/50"
+                      />
+                      <input
+                        placeholder="Account surname / name"
                         value={avsForm.surname}
                         onChange={(e) => setAvsForm((f) => ({ ...f, surname: e.target.value }))}
-                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-[#4FE3DC]/50"
                       />
+                      <select
+                        value={avsForm.accountType}
+                        onChange={(e) => setAvsForm((f) => ({ ...f, accountType: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-[#4FE3DC]/50"
+                      >
+                        <option value="1">1 — Current / Cheque</option>
+                        <option value="2">2 — Savings</option>
+                        <option value="3">3 — Transmission</option>
+                      </select>
                     </div>
-                    <button
+                    <Imagin8GatedButton
+                      feature="bankAvs"
+                      bundles={imagin8Bundles}
                       onClick={handleAvs}
-                      disabled={avsLoading || !avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 disabled:opacity-40 transition"
-                    >
-                      <Shield size={14} />
-                      {avsLoading ? "Verifying..." : "Verify Bank Account"}
-                    </button>
+                      className="w-full"
+                      icon={avsLoading ? <Loader2 size={13} className="animate-spin" /> : <Banknote size={13} />}
+                      label={avsLoading ? "Verifying Bank Account..." : "Verify Bank Account"}
+                    />
                     {avsResult && (
                       <div className={`rounded-xl border p-3 ${
                         avsResult.valid && avsResult.accountOpen && avsResult.idMatch

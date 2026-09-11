@@ -1301,12 +1301,27 @@ function extractCardListings(html, make, model, year, cfg, opts) {
     const key = `${Math.round(price)}|${km ?? ""}`;
     if (seen.has(key)) return;
     seen.add(key);
-    const yrMatch = cardText.match(/(?:19|20)\d{2}/);
-    const parsedYear = yrMatch ? parseInt(yrMatch[0], 10) : void 0;
     const targetYr = parseInt(String(year), 10);
     const tolerance = opts?.yearTolerance ?? 1;
-    if (parsedYear && Number.isFinite(targetYr) && Math.abs(parsedYear - targetYr) > tolerance) {
-      return;
+    const yrMatches = [...cardText.matchAll(/\b(?:19|20)\d{2}\b/g)].map((m) => parseInt(m[0], 10));
+    let parsedYear;
+    if (Number.isFinite(targetYr) && targetYr >= 1990 && targetYr <= 2100) {
+      const validYears = yrMatches.filter((y) => Math.abs(y - targetYr) <= tolerance);
+      if (validYears.length > 0) {
+        parsedYear = validYears[0];
+      } else if (yrMatches.length > 0) {
+        return;
+      } else {
+        const hrefYears = [...rawHtml.matchAll(/\b(?:19|20)\d{2}\b/g)].map((m) => parseInt(m[0], 10));
+        const validHref = hrefYears.filter((y) => Math.abs(y - targetYr) <= tolerance);
+        if (validHref.length > 0) {
+          parsedYear = validHref[0];
+        } else {
+          return;
+        }
+      }
+    } else {
+      parsedYear = yrMatches[0];
     }
     out.push({
       price: Math.round(price),
@@ -1491,6 +1506,13 @@ function adjustForTrim(price, compTitle, subjectVariant) {
   }
   return p;
 }
+function adjustForMileage(price, compKm, targetKm) {
+  if (!compKm || !targetKm || compKm <= 0 || targetKm <= 0 || compKm === targetKm) return price;
+  const deltaKm = targetKm - compKm;
+  const factor = 1 - deltaKm / 1e4 * 0.012;
+  const boundedFactor = Math.max(0.85, Math.min(1.15, factor));
+  return Math.round(price * boundedFactor);
+}
 function iqrFilter(prices) {
   if (prices.length < 4) return prices;
   const s = [...prices].sort((a, b) => a - b);
@@ -1504,17 +1526,16 @@ function iqrFilter(prices) {
 }
 function robustAverage(prices) {
   if (!prices || !prices.length) return null;
-  const s = [...prices].sort((a, b) => a - b);
-  if (s.length <= 3) {
-    return s[s.length - 1];
+  const filtered = iqrFilter(prices);
+  const s = [...filtered].sort((a, b) => a - b);
+  if (!s.length) return null;
+  if (s.length <= 8) {
+    const mid = Math.floor(s.length / 2);
+    return Math.round(s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2);
   }
-  if (s.length === 4) {
-    return Math.round((s[2] + s[3]) / 2);
-  }
-  const filtered = iqrFilter(s);
-  if (!filtered.length) return median(s);
-  const mid = Math.floor(filtered.length / 2);
-  return Math.round(filtered.length % 2 ? filtered[mid] : (filtered[mid - 1] + filtered[mid]) / 2);
+  const trim = Math.max(1, Math.floor(s.length * 0.1));
+  const core = s.slice(trim, s.length - trim);
+  return Math.round(core.reduce((a, b) => a + b, 0) / core.length);
 }
 function expandDealerUrl(source, make, model, year, page = 1) {
   const m = encodeURIComponent(make);
@@ -1822,7 +1843,8 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
   const subjYear = parseInt(String(year), 10);
   const coreVariant = simplifyVariant(variant);
   const cacheModel = variant ? `${cleanModel} ${variant}` : cleanModel;
-  const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, targetKm);
+  const kmBucket = targetKm > 0 ? Math.round(targetKm / 1e4) * 1e4 : 0;
+  const key = cacheKey(cfg.id, make, cacheModel, year, opts.vin, opts.dealerSlug, kmBucket);
   const cached = cacheGet(key);
   if (cached) return cached;
   const y = String(year);
@@ -2006,18 +2028,8 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     cachePut(key, data2);
     return data2;
   }
-  let candidateListings = allListings;
-  if (targetKm > 0 && allListings.length >= 6) {
-    const kmComps = allListings.filter((l) => typeof l.km === "number" && l.km > 0);
-    if (kmComps.length >= 4) {
-      const tightProximity = kmComps.filter((l) => Math.abs(l.km - targetKm) <= 45e3);
-      if (tightProximity.length >= 4) {
-        candidateListings = tightProximity;
-      }
-    }
-  }
   const isEv = /\b(electric|ev\b|bev\b|phev|e-tron|id\.\d|ioniq\s*[56]|model\s*[3sy]|leaf|zs\s*ev)\b/i.test(`${variant} ${cleanModel}`);
-  const adjustedComps = candidateListings.map((l) => {
+  const adjustedComps = allListings.map((l) => {
     let p = l.price;
     if (l.year && Number.isFinite(subjYear)) {
       p = adjustForYearGap(p, l.year, subjYear, make, isEv);
@@ -2025,11 +2037,11 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     if (l.title && variant) {
       p = adjustForTrim(p, l.title, variant);
     }
+    if (targetKm > 0 && typeof l.km === "number" && l.km > 0) {
+      p = adjustForMileage(p, l.km, targetKm);
+    }
     return p;
   });
-  console.log(`[SCRAPER-DEBUG] Raw prices:`, candidateListings.map((l) => l.price));
-  console.log(`[SCRAPER-DEBUG] Adjusted prices:`, adjustedComps);
-  console.log(`[SCRAPER-DEBUG] Titles present:`, candidateListings.map((l) => !!l.title));
   const validComps = iqrFilter(adjustedComps);
   const avgRetail = robustAverage(validComps);
   const range = calcPriceRange(validComps);
@@ -2047,7 +2059,7 @@ async function fetchValuation(make, model, year, opts = {}, market = DEFAULT_MAR
     sources: finalSources,
     currency: cfg.currency,
     distanceUnit: cfg.distanceUnit,
-    mileageAdjusted: false,
+    mileageAdjusted: targetKm > 0 && allListings.some((l) => typeof l.km === "number" && l.km > 0),
     sampleMedianKm: kmOf(allListings)
   };
   cachePut(key, data);

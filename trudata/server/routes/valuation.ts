@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { fetchValuation, markets } from '../lib/scraper/index';
 import type { ValuationResult } from '../lib/scraper/index';
+import { getStaticInfo, getImagin8Opts, type StaticInfo } from '../lib/imagin8';
 
 const router = Router();
 
 router.post('/quick', async (req, res) => {
   try {
-    const { make, model, variant, year, market: marketCode, mileage } = req.body;
+    const { make, model, variant, year, market: marketCode, mileage, mmCode } = req.body;
 
     if (!make || !model || !year) {
       return res.status(400).json({ error: 'Missing required parameters: make, model, year' });
@@ -21,16 +22,25 @@ router.post('/quick', async (req, res) => {
       ? (rawModel.split(' ')[0] || rawModel) 
       : rawModel;
 
-    const result: ValuationResult = await fetchValuation(
-      String(make).trim(),
-      cleanModel,
-      String(year).trim(),
-      { mileage: mileage ? Number(mileage) : undefined },
-      cfg
-    );
+    // Run scraper and static specs in parallel
+    const opts = getImagin8Opts();
+    const staticPromise: Promise<StaticInfo | null> = (mmCode && opts) 
+      ? getStaticInfo(String(mmCode).trim(), opts).catch(() => null) 
+      : Promise.resolve(null);
+
+    const [result, specs] = await Promise.all([
+      fetchValuation(
+        String(make).trim(),
+        cleanModel,
+        String(year).trim(),
+        { mileage: mileage ? Number(mileage) : undefined },
+        cfg
+      ),
+      staticPromise,
+    ]);
 
     res.json({
-      make, model, variant: variant || undefined, year,
+      make, model, variant: variant || undefined, year, mmCode: mmCode || undefined,
       median: result.averageRetailPrice,
       low: result.priceRange?.low || result.averageRetailPrice,
       high: result.priceRange?.high || result.averageRetailPrice,
@@ -46,6 +56,22 @@ router.post('/quick', async (req, res) => {
       fallback: result.fallbackRequired,
       searchUrl: result.searchUrl,
       listings: result.listings || [],
+      specs: specs ? {
+        kw: specs.kw,
+        cc: specs.cc,
+        cylinders: specs.cylinders,
+        doors: specs.doors,
+        seats: specs.seats,
+        bodyType: specs.bodyType,
+        fuelType: specs.fuelType,
+        fuelTankSize: specs.fuelTankSize,
+        tare: specs.tare,
+        gvm: specs.gvm,
+        co2: specs.co2,
+        introDate: specs.introDate,
+        disconDate: specs.disconDate,
+        vehicleType: specs.vehicleType,
+      } : null,
     });
   } catch (error: any) {
     console.error('[trudata:valuation] Error:', error?.message || error);

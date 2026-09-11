@@ -213,7 +213,7 @@ function getDealerImagin8Bundles(identifier: string) {
   // to slug keys. Surfaced once so nothing already purchased is silently zeroed.
   const legacyId = findDealerByKey(identifier)?.id;
   if (legacyId && legacyId !== slug && all[legacyId]) return all[legacyId];
-  return { valuation: 0, regCheck: 0, accidentReport: 0 };
+  return { valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0 };
 }
 
 function setDealerImagin8Bundles(identifier: string, bundles: any) {
@@ -6310,10 +6310,12 @@ function isImagin8DemoSlug(dealershipId: string): boolean {
  *  is simulated/free — it never touches a real dealership's ledger. */
 const premiumDemoBundles = new Map<string, typeof DEMO_IMAGIN8_ALLOWANCE>();
 /** Map the route feature name to the Imagin8Bundles slot the UI reads. */
-const DEMO_FEATURE_SLOT: Record<"valuation" | "regcheck" | "accident-report", keyof typeof DEMO_IMAGIN8_ALLOWANCE> = {
+const DEMO_FEATURE_SLOT: Record<"valuation" | "regcheck" | "accident-report" | "bank-avs" | "avsr", keyof typeof DEMO_IMAGIN8_ALLOWANCE> = {
   valuation: "valuation",
   regcheck: "regCheck",
   "accident-report": "accidentReport",
+  "bank-avs": "bankAvs",
+  avsr: "bankAvs",
 };
 function premiumDemoRemaining(key: string): typeof DEMO_IMAGIN8_ALLOWANCE {
   let b = premiumDemoBundles.get(key);
@@ -6323,7 +6325,7 @@ function premiumDemoRemaining(key: string): typeof DEMO_IMAGIN8_ALLOWANCE {
   }
   return { ...b };
 }
-function premiumDemoConsume(key: string, feature: "valuation" | "regcheck" | "accident-report"): typeof DEMO_IMAGIN8_ALLOWANCE {
+function premiumDemoConsume(key: string, feature: "valuation" | "regcheck" | "accident-report" | "bank-avs" | "avsr"): typeof DEMO_IMAGIN8_ALLOWANCE {
   const b = premiumDemoRemaining(key);
   const slot = DEMO_FEATURE_SLOT[feature];
   b[slot] = Math.max(0, (b[slot] || 0) - 1);
@@ -6331,14 +6333,14 @@ function premiumDemoConsume(key: string, feature: "valuation" | "regcheck" | "ac
   return { ...b };
 }
 
-/** Shared core for the three chargeable Imagin8 calls. Both the dealer-facing
+/** Shared core for the chargeable Imagin8 calls. Both the dealer-facing
  *  routes (JWT auth) and the suite's internal proxy routes (sync-key auth)
  *  funnel through here so gating, per-dealer credentials and deduction live
  *  in exactly one place. Returns a discriminated result instead of touching
  *  `res`, so each caller maps its own response. */
 async function runChargedImagin8Call(
   dealershipId: string,
-  feature: "valuation" | "regcheck" | "accident-report",
+  feature: "valuation" | "regcheck" | "accident-report" | "bank-avs" | "avsr",
   params: Record<string, any>,
   demoSessionId?: string
 ): Promise<
@@ -6382,6 +6384,15 @@ async function runChargedImagin8Call(
       const lookupType = params.type === "reg" || params.type === "engine" ? params.type : "vin";
       result = await imagin8RegCheck(String(params.identifier), lookupType, { apiKey, customerId });
       console.log(`[imagin8] reg check ${lookupType}=${params.identifier}: stolen=${result.stolen} finance=${result.financePending}`);
+    } else if (feature === "bank-avs" || feature === "avsr") {
+      const acc = String(params.accountNo || params.bankAccount || params.accountnumber || "");
+      const branch = String(params.branchCode || params.branchcode || "");
+      const id = String(params.idNo || params.idNumber || params.idnumber || "");
+      const sur = String(params.accountName || params.surname || "");
+      const inits = String(params.initials || "");
+      const accType = params.accountType ? String(params.accountType) : undefined;
+      result = await imagin8BankAvs(acc, branch, id, inits, sur, { apiKey, customerId, ...imagin8Login }, accType);
+      console.log(`[imagin8] AVS for account ending ${acc.slice(-4)}: valid=${result.valid} idMatch=${result.idMatch}`);
     } else {
       result = await imagin8AccidentReport(String(params.vin), { apiKey, customerId, ...imagin8Login });
     }
@@ -6470,15 +6481,28 @@ app.all("/api/internal/imagin8/accident-report", requireSyncKey, async (req: any
   res.status(out.status).json(out.body);
 });
 
+app.all("/api/internal/imagin8/avs", requireSyncKey, async (req: any, res) => {
+  const accountNo = req.body?.accountNo || req.body?.bankAccount || req.query?.accountNo || req.query?.bankAccount;
+  const branchCode = req.body?.branchCode || req.query?.branchCode;
+  const idNo = req.body?.idNo || req.body?.idNumber || req.query?.idNo || req.query?.idNumber;
+  if (!accountNo || !branchCode || !idNo) {
+    return res.status(400).json({ error: "accountNo, branchCode, and idNo are required" });
+  }
+  const dealershipId = resolveInternalDealership(req);
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
+  const out = await runChargedImagin8Call(dealershipId, "bank-avs", { ...(req.query || {}), ...(req.body || {}) });
+  res.status(out.status).json(out.body);
+});
+
 app.get("/api/internal/imagin8/bundles", requireSyncKey, (req: any, res) => {
   let dealershipId = String(req.query?.dealershipId || "");
   if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
   dealershipId = canonicalDealerSlug(dealershipId);
   if (isImagin8DemoSlug(dealershipId)) {
-    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, demo: true });
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0, demo: true });
   }
   if (isUnlimitedDealer(dealershipId)) {
-    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0, unlimited: true });
   }
   res.json(getDealerImagin8Bundles(dealershipId));
 });
@@ -6492,13 +6516,13 @@ app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
   }
   const dealershipId = canonicalDealerSlug(rawId);
   if (isImagin8DemoSlug(dealershipId)) {
-    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, demo: true });
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0, demo: true });
   }
   if (isUnlimitedDealer(dealershipId)) {
     // Unlimited dealers get plain unlocked buttons — zeroed counters plus the
     // flag, never 9999 sentinels. The shared Imagin8GatedButton keys off
     // `unlimited`.
-    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0, unlimited: true });
   }
   res.json(getDealerImagin8Bundles(dealershipId));
 });
@@ -6783,27 +6807,16 @@ app.get("/api/public/trade-report/:id", (req, res) => {
 });
 
 // Invoicing is handled by DocHub + per-client Xero, not Imagin8 Core —
-// the createInvoice route was removed. Bank AVS-R stays (Flow's LeadDetailModal
-// uses it for debit-order verification); it is not surfaced in Lens/Inspect.
-app.post("/api/imagin8/avs", authenticate, async (req: any, res) => {
-  const { bankAccount, branchCode, idNumber, initials, surname } = req.body || {};
-  if (!bankAccount || !branchCode || !idNumber) {
+// Bank AVS-R (chargeable per-call — bundle-gated via central ledger).
+app.all("/api/imagin8/avs", authenticate, async (req: any, res) => {
+  const accountNo = req.body?.accountNo || req.body?.bankAccount || req.query?.accountNo || req.query?.bankAccount;
+  const branchCode = req.body?.branchCode || req.query?.branchCode;
+  const idNo = req.body?.idNo || req.body?.idNumber || req.query?.idNo || req.query?.idNumber;
+  if (!accountNo || !branchCode || !idNo) {
     return res.status(400).json({ error: "bankAccount, branchCode, and idNumber are required" });
   }
-  const state = readState();
-  const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
-  const customerId = dealerImagin8CustomerId(state, req.user.dealershipId) || IMAGIN8_CUSTOMER_ID;
-  if (!apiKey || !customerId) {
-    return res.status(503).json({ error: "Imagin8 not configured (API key + customerId required)." });
-  }
-  try {
-    const result = await imagin8BankAvs(bankAccount, branchCode, idNumber, initials || "", surname || "", { apiKey, customerId });
-    console.log(`[imagin8] AVS for account ending ${bankAccount.slice(-4)}: valid=${result.valid} idMatch=${result.idMatch}`);
-    res.json(result);
-  } catch (err: any) {
-    console.error("[imagin8] AVS failed:", err?.message || err);
-    res.status(502).json({ error: err?.message || "Bank AVS failed" });
-  }
+  const out = await runChargedImagin8Call(req.auth?.dealershipId || req.user?.dealershipId || "default", "bank-avs", { ...(req.query || {}), ...(req.body || {}) }, req.auth?.sid);
+  res.status(out.status).json(out.body);
 });
 
 // Invoicing: DocHubPanel still posts here today. Slated to move fully to

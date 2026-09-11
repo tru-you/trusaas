@@ -278,7 +278,7 @@ export default function InventoryList({
   const [vin, setVin] = React.useState('');
   const [stockNumber, setStockNumber] = React.useState('');
   const [color, setColor] = React.useState('');
-  const [price, setPrice] = React.useState(24995);
+  const [price, setPrice] = React.useState<number | ''>('');
   const [vehicleType, setVehicleType] = React.useState('SUV');
   /* Shown on every dealer website card. Mileage starts empty rather than 0 so
      the field reads as "not filled in" instead of a car with no kilometres. */
@@ -512,7 +512,7 @@ export default function InventoryList({
     setVin(v.vin || '');
     setStockNumber(v.stockNumber || '');
     setColor(v.color || '');
-    setPrice(v.price || 24995);
+    setPrice(v.price != null && v.price > 0 ? v.price : '');
     setVehicleType(v.vehicleType || 'SUV');
     setMileage(v.mileage != null ? String(v.mileage) : '');
     setTransmission(v.transmission || 'Manual');
@@ -586,7 +586,7 @@ export default function InventoryList({
         regCheck: lookupResult || undefined,
         stockNumber: stockNumber.trim(),
         color: color.trim(),
-        price: Number(price),
+        price: price === '' ? 0 : Number(price),
         vehicleType,
         mileage: Number(mileage),
         transmission,
@@ -606,7 +606,7 @@ export default function InventoryList({
         regCheck: lookupResult || undefined,
         stockNumber: stockNumber.trim(),
         color: color.trim(),
-        price: Number(price),
+        price: price === '' ? 0 : Number(price),
         vehicleType,
         mileage: Number(mileage),
         transmission,
@@ -630,7 +630,7 @@ export default function InventoryList({
     setVin('');
     setStockNumber('');
     setColor('');
-    setPrice(24995);
+    setPrice('');
     setVehicleType('SUV');
     setMileage('');
     setTransmission('Manual');
@@ -1005,7 +1005,7 @@ export default function InventoryList({
                   type="number"
                   placeholder="35000"
                   value={price}
-                  onChange={(e) => setPrice(Number(e.target.value))}
+                  onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                 />
               </div>
@@ -1022,7 +1022,7 @@ export default function InventoryList({
                 className={`market-btn w-full inline-flex items-center justify-center gap-2 min-h-[46px] px-4 py-2.5 text-[#4FE3DC] text-[13px] font-semibold cursor-pointer select-none${valuationLoading ? ' scanning' : ''}`}
               >
                 {valuationLoading ? <Loader2 size={15} className="animate-spin" /> : <Radio size={15} />}
-                <span className="truncate">{valuationLoading ? 'Scanning market…' : 'Live Market Value'}</span>
+                <span className="truncate">{valuationLoading ? 'Verifying Live Sources…' : 'TruRadar™ Live Price'}</span>
                 <span className="mv-badge">LIVE</span>
               </button>
               {valuation && (

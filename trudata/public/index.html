@@ -281,69 +281,105 @@
             <!-- Product Pillar Action Selector Tabs -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 font-mono text-[11px]" id="pillar-tab-dock">
               <button id="tab-vehicles" class="px-2 py-2 bg-sky-600 text-white font-semibold border border-slate-950 brutal-shadow-sm text-center">
-                VEHICLES (1 CR)
+                VEHICLES
               </button>
               <button id="tab-electronics" class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center">
-                ELECTRONICS (1 CR)
+                ELECTRONICS
               </button>
               <button id="tab-property" class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center">
-                PROPERTY (1 CR)
+                PROPERTY
               </button>
               <button id="tab-business" class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center">
-                BUSINESS (2 CR)
+                BUSINESS
               </button>
               <button id="tab-bureau" class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center">
-                BUREAU (3 CR)
+                BUREAU
               </button>
               <button id="tab-aeo" class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center">
-                AEO AUDIT (1 CR)
+                AEO AUDIT
               </button>
               <button id="tab-safepay" class="px-2 py-2 bg-white hover:bg-slate-50 text-slate-900 font-semibold border border-slate-950 brutal-shadow-sm text-center col-span-2 sm:col-span-1">
-                SAFEPAY (3 CR)
+                SAFEPAY
               </button>
             </div>
 
-            <!-- PANEL 1: VEHICLES & HEAVY ASSETS (4-Level Dependent Dropdowns) -->
+            <!-- PANEL 1: VEHICLES & HEAVY ASSETS (Valuation, RegCheck, & Accident History) -->
             <form id="panel-vehicles" class="space-y-3">
-              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-                <div>
-                  <label class="block font-semibold text-slate-900 uppercase mb-1">1. Make (Type to Search)</label>
-                  <input type="text" id="select-make" list="make-list" autocomplete="off" placeholder="e.g. Toyota, BMW, Harley..." class="w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950"/>
-                  <datalist id="make-list"></datalist>
-                </div>
-                <div>
-                  <label class="block font-semibold text-slate-900 uppercase mb-1">2. Model (Type to Search)</label>
-                  <input type="text" id="select-model" list="model-list" autocomplete="off" placeholder="e.g. Hilux, Golf, Ranger..." class="w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950"/>
-                  <datalist id="model-list"></datalist>
-                </div>
+              <!-- Vehicle Sub-Mode Toggle (3-Way Switcher) -->
+              <div class="grid grid-cols-3 gap-1 font-mono text-xs border border-slate-950 p-1 bg-slate-100 brutal-shadow-sm">
+                <button type="button" id="btn-mode-valuation" class="py-1.5 px-1 bg-sky-600 text-white font-bold text-center border border-slate-950 transition-all text-[11px]">
+                  VALUE &amp; SPECS
+                </button>
+                <button type="button" id="btn-mode-regcheck" class="py-1.5 px-1 bg-white text-slate-900 hover:bg-slate-50 font-bold text-center border border-transparent hover:border-slate-950 transition-all text-[11px]">
+                  REG / VIN CHECK
+                </button>
+                <button type="button" id="btn-mode-accident" class="py-1.5 px-1 bg-white text-slate-900 hover:bg-slate-50 font-bold text-center border border-transparent hover:border-slate-950 transition-all text-[11px]">
+                  ACCIDENTS
+                </button>
               </div>
 
-              <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-                <div>
-                  <label class="block font-semibold text-slate-900 uppercase mb-1">3. Variant (Trim)</label>
-                  <select id="select-variant" disabled class="w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
-                    <option value="">Select Model First</option>
-                  </select>
+              <!-- Container A: Valuation & Specs Mode -->
+              <div id="container-vehicle-valuation" class="space-y-3">
+                <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                  <div>
+                    <label class="block font-semibold text-slate-900 uppercase mb-1">1. Make</label>
+                    <select id="select-make" class="w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
+                      <option value="">Loading Makes...</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-900 uppercase mb-1">2. Model</label>
+                    <select id="select-model" disabled class="w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
+                      <option value="">Select Make First</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label class="block font-semibold text-slate-900 uppercase mb-1">4. Year</label>
-                  <select id="select-year" class="w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022" selected>2022</option>
-                    <option value="2021">2021</option>
-                    <option value="2020">2020</option>
-                    <option value="2019">2019</option>
-                    <option value="2018">2018</option>
-                    <option value="2017">2017</option>
-                  </select>
+
+                <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                  <div>
+                    <label class="block font-semibold text-slate-900 uppercase mb-1">3. Variant (Trim)</label>
+                    <select id="select-variant" disabled class="w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
+                      <option value="">Select Model First</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-900 uppercase mb-1">4. Year</label>
+                    <select id="select-year" disabled class="w-full bg-slate-100 border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
+                      <option value="">Select Variant First</option>
+                    </select>
+                  </div>
                 </div>
+
+                <button type="submit" id="btn-run-vehicle-search" disabled class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
+                  <span>ANALYZE LIVE MARKET VALUE &amp; SPECS</span>
+                </button>
               </div>
 
-              <button type="submit" id="btn-run-vehicle-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
-                <span>ANALYZE LIVE MARKET VALUE</span>
-                <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">1 CREDIT</span>
-              </button>
+              <!-- Container B: Standalone Reg / VIN Check Mode -->
+              <div id="container-vehicle-regcheck" class="hidden space-y-3">
+                <div class="space-y-1 font-mono text-xs">
+                  <label class="block font-semibold text-slate-900 uppercase">License Plate (Reg No) or 17-Digit VIN</label>
+                  <input type="text" id="input-vehicle-reg-standalone" placeholder="e.g. CA 123-456, ND 987-654, or AAVZZZ..." class="w-full bg-white border border-slate-950 px-3 py-2.5 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950 uppercase tracking-wider"/>
+                  <span class="text-[10px] text-slate-500">Official SAPS Police Stolen Register &amp; Bank Finance Title Interest Check</span>
+                </div>
+
+                <button type="button" id="btn-run-vehicle-regcheck-standalone" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-amber-600 hover:bg-amber-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
+                  <span>VERIFY POLICE STOLEN &amp; BANK FINANCE STATUS</span>
+                </button>
+              </div>
+
+              <!-- Container C: Standalone Accident & Claims History Mode -->
+              <div id="container-vehicle-accident" class="hidden space-y-3">
+                <div class="space-y-1 font-mono text-xs">
+                  <label class="block font-semibold text-slate-900 uppercase">17-Digit Vehicle VIN Number</label>
+                  <input type="text" id="input-vehicle-accident-standalone" placeholder="e.g. AAVZZZ88291029381..." class="w-full bg-white border border-slate-950 px-3 py-2.5 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950 uppercase tracking-wider"/>
+                  <span class="text-[10px] text-slate-500">Official Insurance Industry Write-Off, Damage History &amp; Claims Register</span>
+                </div>
+
+                <button type="button" id="btn-run-vehicle-accident-standalone" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-rose-600 hover:bg-rose-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
+                  <span>QUERY ACCIDENT &amp; CLAIMS HISTORY</span>
+                </button>
+              </div>
             </form>
 
             <!-- PANEL: ELECTRONICS & TECH VALUATION -->
@@ -385,7 +421,6 @@
 
               <button type="submit" id="btn-run-electronics-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
                 <span>QUERY RETAIL &amp; REFURB COMPS</span>
-                <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">1 CREDIT</span>
               </button>
             </form>
 
@@ -415,16 +450,15 @@
                 <div>
                   <label class="block font-semibold text-slate-900 uppercase mb-1">4. Intelligence Scope</label>
                   <select id="select-property-scope" class="w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950">
-                    <option value="all" selected>Comps + Direct Homeowners (0% Commission) (2 Credits)</option>
-                    <option value="fsbo">Direct Homeowners (0% Agent Commission) Only (2 Credits)</option>
-                    <option value="comps">Suburb Sales &amp; Asking Price Comps (1 Credit)</option>
+                    <option value="all" selected>Comps + Direct Homeowners (0% Commission)</option>
+                    <option value="fsbo">Direct Homeowners (0% Agent Commission) Only</option>
+                    <option value="comps">Suburb Sales &amp; Asking Price Comps</option>
                   </select>
                 </div>
               </div>
 
               <button type="submit" id="btn-run-property-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
                 <span>SCAN SUBURB COMPS &amp; DIRECT HOMEOWNERS</span>
-                <span id="badge-property-credits" class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">2 CREDITS</span>
               </button>
             </form>
 
@@ -445,10 +479,10 @@
                 <div>
                   <label class="block font-semibold text-slate-900 uppercase mb-1">3. Crawl Limit</label>
                   <select id="select-business-limit" class="w-full bg-white border border-slate-950 px-2.5 py-2 brutal-shadow-sm font-semibold text-slate-950">
-                    <option value="10">Top 10 Targets (1 Credit)</option>
-                    <option value="25" selected>Top 25 Targets (2 Credits)</option>
-                    <option value="50">Top 50 Targets (4 Credits)</option>
-                    <option value="100">Top 100 Targets (8 Credits - Deep Sweep)</option>
+                    <option value="10">Top 10 Targets</option>
+                    <option value="25" selected>Top 25 Targets</option>
+                    <option value="50">Top 50 Targets</option>
+                    <option value="100">Top 100 Targets (Deep Sweep)</option>
                   </select>
                 </div>
                 <div>
@@ -462,27 +496,25 @@
 
               <button type="submit" id="btn-run-business-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
                 <span>DISCOVER LOCAL B2B CLIENTS &amp; AUDIT</span>
-                <span id="badge-business-credits" class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">2 CREDITS</span>
               </button>
             </form>
 
-            <!-- PANEL 4: BUREAU REPORTS -->
+            <!-- PANEL 4: BUREAU REPORTS (CIPC, Deeds, Home Affairs) -->
             <form id="panel-bureau" class="hidden space-y-3">
               <div class="space-y-1 font-mono text-xs">
-                <label class="block font-semibold text-slate-900 uppercase">Report Type</label>
-                <select id="select-bureau-type" class="w-full bg-white border border-slate-950 px-3 py-2 brutal-shadow-sm font-semibold">
-                  <option value="cipc">CIPC Company &amp; Director Report (R18.50)</option>
-                  <option value="deeds">Deeds Office Property Ownership (R26.00)</option>
-                  <option value="id_verify">Home Affairs SA ID Verification (R12.50)</option>
+                <label class="block font-semibold text-slate-900 uppercase">Official Register Type</label>
+                <select id="select-bureau-type" class="w-full bg-white border border-slate-950 px-3 py-2 brutal-shadow-sm font-semibold text-slate-950">
+                  <option value="cipc" selected>CIPC Company &amp; Director Dossier</option>
+                  <option value="deeds">Deeds Office Property Title &amp; Transfer</option>
+                  <option value="id_verify">Home Affairs SA ID Verification</option>
                 </select>
               </div>
               <div class="space-y-1 font-mono text-xs">
-                <label class="block font-semibold text-slate-900 uppercase">Registration No / Erf / ID Number</label>
-                <input type="text" id="input-bureau-query" placeholder="e.g. 2019/123456/07 or ID Number" value="2019/123456/07" class="w-full bg-white border border-slate-950 px-3 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600"/>
+                <label id="label-bureau-query" class="block font-semibold text-slate-900 uppercase">Company Name or Registration No</label>
+                <input type="text" id="input-bureau-query" placeholder="e.g. 2019/123456/07 or TruSaaS Pty Ltd" value="2019/123456/07" class="w-full bg-white border border-slate-950 px-3 py-2 brutal-shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 font-semibold text-slate-950 uppercase tracking-wider"/>
               </div>
               <button type="submit" id="btn-run-bureau-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
-                <span>FETCH OFFICIAL BUREAU REPORT</span>
-                <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">3 CREDITS</span>
+                <span>FETCH OFFICIAL BUREAU DOSSIER</span>
               </button>
             </form>
 
@@ -494,7 +526,6 @@
               </div>
               <button type="submit" id="btn-run-aeo-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
                 <span>AUDIT AI SEARCH ENGINE VISIBILITY</span>
-                <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">1 CREDIT</span>
               </button>
             </form>
 
@@ -509,7 +540,6 @@
               </div>
               <button type="submit" id="btn-run-safepay-search" class="w-full font-display font-bold text-sm uppercase tracking-wider py-3 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-2">
                 <span>VERIFY BANK ACCOUNT MATCH</span>
-                <span class="font-mono text-xs bg-sky-800 px-2 py-0.5 border border-slate-950">3 CREDITS</span>
               </button>
             </form>
 
@@ -722,32 +752,32 @@
       </div>
 
       <p class="font-body text-sm md:text-base text-slate-700 max-w-4xl">
-        Execute verified credit bureau and registry lookups with zero monthly subscription fees. Access official TransUnion trade &amp; retail book values, CIPC company director records, Deeds Office property title deeds, and Home Affairs SA ID verification on simple pay-as-you-go credits.
+        Execute verified credit bureau and registry lookups with zero monthly subscription fees. Access official CIPC company director records, Deeds Office property title deeds, and Home Affairs SA ID verification on simple pay-as-you-go credits.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-1">
           <strong class="block text-slate-950">CIPC Company Search</strong>
-          <span class="text-sky-700 font-bold block">R 18.50 wholesale</span>
-          <p class="font-body text-xs text-slate-600">Company registration, status, registered address, active directors.</p>
+          <span class="text-sky-700 font-bold block">3 CREDITS</span>
+          <p class="font-body text-xs text-slate-600">Company registration status, registered physical address, and active directors.</p>
         </div>
 
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-1">
           <strong class="block text-slate-950">Deeds Office Title Deed</strong>
-          <span class="text-sky-700 font-bold block">R 26.00 wholesale</span>
-          <p class="font-body text-xs text-slate-600">Registered owner, purchase price, title deed number, erf bonds.</p>
+          <span class="text-sky-700 font-bold block">3 CREDITS</span>
+          <p class="font-body text-xs text-slate-600">Registered owner, purchase price history, title deed number, and registered bonds.</p>
         </div>
 
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-1">
           <strong class="block text-slate-950">Home Affairs ID Verify</strong>
-          <span class="text-sky-700 font-bold block">R 12.50 wholesale</span>
-          <p class="font-body text-xs text-slate-600">FICA SA ID match verification, full names, gender, ID status.</p>
+          <span class="text-sky-700 font-bold block">3 CREDITS</span>
+          <p class="font-body text-xs text-slate-600">FICA SA ID match verification, full legal names, gender, and citizen status.</p>
         </div>
 
         <div class="bg-white border border-slate-950 p-4 brutal-shadow-sm space-y-1">
-          <strong class="block text-slate-950">TU Vehicle Valuation</strong>
-          <span class="text-sky-700 font-bold block">R 39.81 / 3 Credits</span>
-          <p class="font-body text-xs text-slate-600">Official TransUnion retail, trade, cost, and estimator book values.</p>
+          <strong class="block text-slate-950">Commercial Registry Dossier</strong>
+          <span class="text-sky-700 font-bold block">3 CREDITS</span>
+          <p class="font-body text-xs text-slate-600">Comprehensive corporate registry, business filings, and directorship intelligence.</p>
         </div>
       </div>
     </section>

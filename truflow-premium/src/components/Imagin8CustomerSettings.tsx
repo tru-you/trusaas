@@ -31,7 +31,7 @@ const labelCls = "text-[length:var(--t-micro)] font-mono text-[color:var(--muted
 export default function Imagin8CustomerSettings({ dealershipId, slug, apiKey = "", customerId = "", onChanged }: Props) {
   const [key, setKey] = useState(apiKey);
   const [cust, setCust] = useState(customerId);
-  const [credits, setCredits] = useState({ valuation: 0, regCheck: 0, accidentReport: 0 });
+  const [credits, setCredits] = useState({ valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0 });
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [busy, setBusy] = useState<"creds" | "credits" | null>(null);
   const [msg, setMsg] = useState("");
@@ -53,6 +53,7 @@ export default function Imagin8CustomerSettings({ dealershipId, slug, apiKey = "
           valuation: Number(b.valuation) || 0,
           regCheck: Number(b.regCheck) || 0,
           accidentReport: Number(b.accidentReport) || 0,
+          bankAvs: Number(b.bankAvs) || 0,
         });
       })
       .catch(() => undefined)
@@ -136,15 +137,15 @@ export default function Imagin8CustomerSettings({ dealershipId, slug, apiKey = "
       <div className="border-t border-white/5 pt-3">
         <h4 className="font-semibold text-[14px] text-[color:var(--white)] mb-1">Premium credits</h4>
         <p className="text-[11px] text-[rgba(232,234,230,0.45)] mb-3">
-          One credit is spent per TU Valuation / Reg Check / Accident Report. Set what this yard has purchased.
+          One credit is spent per TU Valuation / Reg Check / Accident Report / Bank Verification. Set what this yard has purchased.
         </p>
         {loadingCredits ? (
           <Loader2 className="w-4 h-4 animate-spin text-[color:var(--muted)]" />
         ) : (
-          <div className="grid grid-cols-3 gap-3 max-w-md">
-            {(["valuation", "regCheck", "accidentReport"] as const).map((k) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-lg">
+            {(["valuation", "regCheck", "accidentReport", "bankAvs"] as const).map((k) => (
               <label key={k} className="flex flex-col gap-1">
-                <span className={labelCls}>{k === "accidentReport" ? "Accident rpt" : k === "regCheck" ? "Reg check" : "Valuation"}</span>
+                <span className={labelCls}>{k === "bankAvs" ? "Bank AVS" : k === "accidentReport" ? "Accident rpt" : k === "regCheck" ? "Reg check" : "Valuation"}</span>
                 <input
                   type="number"
                   min={0}

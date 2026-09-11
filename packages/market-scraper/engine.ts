@@ -793,13 +793,33 @@ export function extractCardListings(html: string, make: string, model: string, y
     if (seen.has(key)) return;
     seen.add(key);
 
-    const yrMatch = cardText.match(/(?:19|20)\d{2}/);
-    const parsedYear = yrMatch ? parseInt(yrMatch[0], 10) : undefined;
     const targetYr = parseInt(String(year), 10);
     const tolerance = opts?.yearTolerance ?? 1;
 
-    if (parsedYear && Number.isFinite(targetYr) && Math.abs(parsedYear - targetYr) > tolerance) {
-      return;
+    // Scan ALL 4-digit years in card text
+    const yrMatches = [...cardText.matchAll(/\b(?:19|20)\d{2}\b/g)].map((m) => parseInt(m[0], 10));
+    let parsedYear: number | undefined;
+    if (Number.isFinite(targetYr) && targetYr >= 1990 && targetYr <= 2100) {
+      const validYears = yrMatches.filter((y) => Math.abs(y - targetYr) <= tolerance);
+      if (validYears.length > 0) {
+        parsedYear = validYears[0];
+      } else if (yrMatches.length > 0) {
+        // Card has explicit years, but none within tolerance -> reject modern/unrelated promoted model
+        return;
+      } else {
+        // No year found in text — inspect anchor links inside the card
+        const hrefYears = [...rawHtml.matchAll(/\b(?:19|20)\d{2}\b/g)].map((m) => parseInt(m[0], 10));
+        const validHref = hrefYears.filter((y) => Math.abs(y - targetYr) <= tolerance);
+        if (validHref.length > 0) {
+          parsedYear = validHref[0];
+        } else {
+          // Classifieds feed returned a card with zero identifiable year.
+          // Strictly drop to prevent un-yeared promoted units from bypassing year-gap depreciation.
+          return;
+        }
+      }
+    } else {
+      parsedYear = yrMatches[0];
     }
 
     out.push({
@@ -995,9 +1015,14 @@ export function adjustForTrim(price: number, compTitle?: string, subjectVariant?
   return p;
 }
 
-export function adjustForMileage(listings: Listing[], _targetKm?: number): number[] {
-  // Make NO synthetic slope adjustments for mileage — pass clean raw listing prices
-  return listings.map((l) => l.price);
+export function adjustForMileage(price: number, compKm?: number, targetKm?: number): number {
+  if (!compKm || !targetKm || compKm <= 0 || targetKm <= 0 || compKm === targetKm) return price;
+  const deltaKm = targetKm - compKm; // positive when target has more km -> subject is worth less -> price down
+  // 1.2% per 10,000 km gap (standard TransUnion / SA automotive market depreciation rate)
+  const factor = 1 - (deltaKm / 10_000) * 0.012;
+  // Strict safety clamp: mileage adjustment can never swing a single comp by more than ±15%
+  const boundedFactor = Math.max(0.85, Math.min(1.15, factor));
+  return Math.round(price * boundedFactor);
 }
 
 export function iqrFilter(prices: number[]): number[] {
@@ -1014,24 +1039,21 @@ export function iqrFilter(prices: number[]): number[] {
 
 export function robustAverage(prices: number[]): number | null {
   if (!prices || !prices.length) return null;
-  const s = [...prices].sort((a, b) => a - b);
+  const filtered = iqrFilter(prices);
+  const s = [...filtered].sort((a, b) => a - b);
+  if (!s.length) return null;
 
-  // Tiny sample (1–3 comps): bottom comps are usually damaged/auction liquidations.
-  // Anchor to the top clean retail comp in that pool.
-  if (s.length <= 3) {
-    return s[s.length - 1];
+  // Small to mid pools (1–8 comps): true statistical median
+  // Never anchor to maximum (s[s.length - 1]) or top-half average
+  if (s.length <= 8) {
+    const mid = Math.floor(s.length / 2);
+    return Math.round(s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2);
   }
 
-  // 4 comps: average of the top 2 comps
-  if (s.length === 4) {
-    return Math.round((s[2] + s[3]) / 2);
-  }
-
-  // Large pool (>= 5 comps): filter IQR outliers and take the dense cluster median
-  const filtered = iqrFilter(s);
-  if (!filtered.length) return median(s);
-  const mid = Math.floor(filtered.length / 2);
-  return Math.round(filtered.length % 2 ? filtered[mid] : (filtered[mid - 1] + filtered[mid]) / 2);
+  // Large pools (9+ comps): 10% trimmed mean for maximum cluster stability
+  const trim = Math.max(1, Math.floor(s.length * 0.1));
+  const core = s.slice(trim, s.length - trim);
+  return Math.round(core.reduce((a, b) => a + b, 0) / core.length);
 }
 
 /* ────────────────────────────────────────────────

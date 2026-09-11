@@ -252,7 +252,7 @@ export default function BulkImport({ onImportVehicles, existingStockNumbers }: P
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[color:var(--white)]">Bulk Vehicle Import</h2>
-          <p className="text-[12px] text-[color:var(--muted)]">Import stock from CSV — switch from VMG, AutoTrader export, or your own spreadsheet</p>
+          <p className="text-[12px] text-[color:var(--muted)]">Import stock from CSV — switch from VMG, third-party export, or your own spreadsheet</p>
         </div>
         <button
           onClick={downloadTemplate}

@@ -1,4 +1,4 @@
-// assets/js/vdp-page.js — VDP Controller & Hydration Fallback for Apex Auto Investments
+// assets/js/vdp-page.js — Flagship VDP Controller & TruOrbit 360 Fetcher for Apex Auto Investments
 
 (function() {
   'use strict';
@@ -49,6 +49,52 @@
     });
   }
 
+  function fetchTruOrbit(stockNumber, mainImgEl) {
+    if (!stockNumber || !mainImgEl) return;
+    var orbitUrl = 'https://lens.tru-saas.com/api/public/web3d/' + encodeURIComponent(stockNumber);
+
+    fetch(orbitUrl)
+      .then(function(res) { return res.ok ? res.json() : null; })
+      .then(function(data) {
+        if (data && data.package && Array.isArray(data.package.frames) && data.package.frames.length >= 6) {
+          var frames = data.package.frames;
+          var badge = document.getElementById('orbitBadge');
+          if (badge) badge.style.display = 'flex';
+
+          var currentIdx = 0;
+          var container = document.getElementById('vdpGalleryContainer');
+          if (!container) return;
+
+          var isDragging = false;
+          var startX = 0;
+
+          container.addEventListener('pointerdown', function(e) {
+            isDragging = true;
+            startX = e.clientX;
+            container.setPointerCapture(e.pointerId);
+          });
+
+          container.addEventListener('pointermove', function(e) {
+            if (!isDragging) return;
+            var dx = e.clientX - startX;
+            if (Math.abs(dx) > 15) {
+              var step = dx > 0 ? -1 : 1;
+              currentIdx = (currentIdx + step + frames.length) % frames.length;
+              var targetSrc = frames[currentIdx].image || frames[currentIdx].src;
+              if (targetSrc) mainImgEl.src = targetSrc;
+              startX = e.clientX;
+            }
+          });
+
+          container.addEventListener('pointerup', function(e) {
+            isDragging = false;
+            try { container.releasePointerCapture(e.pointerId); } catch(err) {}
+          });
+        }
+      })
+      .catch(function() {});
+  }
+
   function renderVDP(v) {
     if (!v) return;
 
@@ -70,6 +116,14 @@
     var rEl = document.getElementById('vdpRepay');
     if (rEl) rEl.textContent = 'Est. ' + estRepay(v.price);
 
+    // Sticky Deal Bar
+    if (document.getElementById('stickyTitle')) document.getElementById('stickyTitle').textContent = fullTitle;
+    if (document.getElementById('stickyPrice')) document.getElementById('stickyPrice').textContent = formatMoney(v.price);
+
+    // Full Report Link
+    var rptLink = document.getElementById('vdpFullReportBtn');
+    if (rptLink) rptLink.href = 'report.html?stock=' + encodeURIComponent(v.stockNumber || v.id) + '&title=' + encodeURIComponent(fullTitle);
+
     // Main Spec Tiles
     if (document.getElementById('spYear')) document.getElementById('spYear').textContent = v.year;
     if (document.getElementById('spKm')) document.getElementById('spKm').textContent = formatKm(v.mileage);
@@ -84,6 +138,9 @@
     var mImg = document.getElementById('vdpMainImg');
     if (mImg && v.heroImage) mImg.src = v.heroImage;
 
+    // Fetch TruOrbit 360° Walkaround Package if available
+    fetchTruOrbit(v.stockNumber || v.id, mImg);
+
     // Filmstrip Images
     var strip = document.getElementById('vdpFilmstrip');
     if (strip && Array.isArray(v.images) && v.images.length > 1) {
@@ -94,12 +151,15 @@
       strip.style.display = 'none';
     }
 
-    // WhatsApp CTA Button
+    // WhatsApp CTA Buttons
+    var waMsg = "Hi Apex Auto! I'm interested in this " + fullTitle + " (Stock #" + (v.stockNumber || v.id) + ") listed at " + formatMoney(v.price) + ". Link: " + window.location.href + " Is it still available?";
+    var waHref = "https://wa.me/27726047878?text=" + encodeURIComponent(waMsg);
+
     var waBtn = document.getElementById('vdpWaBtn');
-    if (waBtn) {
-      var waMsg = "Hi Apex Auto! I'm interested in this " + fullTitle + " (Stock #" + (v.stockNumber || v.id) + ") listed at " + formatMoney(v.price) + ". Link: " + window.location.href + " Is it still available?";
-      waBtn.href = "https://wa.me/27726047878?text=" + encodeURIComponent(waMsg);
-    }
+    if (waBtn) waBtn.href = waHref;
+
+    var stickyWa = document.getElementById('stickyWa');
+    if (stickyWa) stickyWa.href = waHref;
 
     // Share Button
     var shareBtn = document.getElementById('vdpShareBtn');

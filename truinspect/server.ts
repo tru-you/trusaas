@@ -1890,14 +1890,16 @@ const imagin8Configured = () => IMAGIN8_API_KEY && IMAGIN8_CUSTOMER_ID;
 // is safe to keep demo enabled even on the live prospect instances. Each
 // per-browser demo session (demo-<hex> uid) carries its own 2-of-each budget.
 
-const DEMO_ZERO_BUNDLES = { valuation: 0, regCheck: 0, accidentReport: 0 };
+const DEMO_ZERO_BUNDLES = { valuation: 0, regCheck: 0, accidentReport: 0, bankAvs: 0 };
 const demoBundles = new Map<string, typeof DEMO_IMAGIN8_ALLOWANCE>();
 
 /** Map the route feature name to the Imagin8Bundles slot the UI reads. */
-const DEMO_FEATURE_SLOT: Record<'valuation' | 'regcheck' | 'accident-report', keyof typeof DEMO_IMAGIN8_ALLOWANCE> = {
+const DEMO_FEATURE_SLOT: Record<'valuation' | 'regcheck' | 'accident-report' | 'avs' | 'bank-avs', keyof typeof DEMO_IMAGIN8_ALLOWANCE> = {
   valuation: 'valuation',
   regcheck: 'regCheck',
   'accident-report': 'accidentReport',
+  avs: 'bankAvs',
+  'bank-avs': 'bankAvs',
 };
 
 /** The dealership this request acts on. Per-dealer codes carry their slug;
@@ -1918,7 +1920,7 @@ function demoRemaining(req: any): typeof DEMO_IMAGIN8_ALLOWANCE {
 }
 
 /** Consume one demo credit; returns the new remaining budget. */
-function demoConsume(req: any, feature: 'valuation' | 'regcheck' | 'accident-report'): typeof DEMO_IMAGIN8_ALLOWANCE {
+function demoConsume(req: any, feature: 'valuation' | 'regcheck' | 'accident-report' | 'avs' | 'bank-avs'): typeof DEMO_IMAGIN8_ALLOWANCE {
   const key = req.user?.uid || 'demo';
   const b = demoRemaining(req);
   const slot = DEMO_FEATURE_SLOT[feature];
@@ -1932,7 +1934,7 @@ function demoConsume(req: any, feature: 'valuation' | 'regcheck' | 'accident-rep
 function handleDemoImagin8(
   req: any,
   res: any,
-  _feature: 'valuation' | 'regcheck' | 'accident-report',
+  _feature: 'valuation' | 'regcheck' | 'accident-report' | 'avs' | 'bank-avs',
   _params: Record<string, any>,
 ): boolean {
   if (!req.user?.demo) return false;
@@ -1947,7 +1949,7 @@ function handleDemoImagin8(
 async function imagin8Proxy(
   req: any,
   res: any,
-  feature: 'valuation' | 'regcheck' | 'accident-report',
+  feature: 'valuation' | 'regcheck' | 'accident-report' | 'avs',
   params: Record<string, unknown>,
 ) {
   if (!SYNC_KEY) {
@@ -1990,6 +1992,16 @@ app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
   if (!vin) return res.status(400).json({ error: 'vin is required' });
   if (handleDemoImagin8(req, res, 'accident-report', { vin })) return;
   await imagin8Proxy(req, res, 'accident-report', { vin });
+});
+
+// Bank AVS-R (chargeable per-call — bundle-gated).
+app.all('/api/imagin8/avs', authenticate, async (req: any, res) => {
+  const accountNo = req.body?.accountNo || req.body?.bankAccount || req.query?.accountNo || req.query?.bankAccount;
+  const branchCode = req.body?.branchCode || req.query?.branchCode;
+  const idNo = req.body?.idNo || req.body?.idNumber || req.query?.idNo || req.query?.idNumber;
+  if (!accountNo || !branchCode || !idNo) return res.status(400).json({ error: 'accountNo, branchCode, and idNo are required' });
+  if (handleDemoImagin8(req, res, 'avs', { ...(req.query || {}), ...(req.body || {}) })) return;
+  await imagin8Proxy(req, res, 'avs', { ...(req.query || {}), ...(req.body || {}) });
 });
 
 // Bundle balance — read from Flow central so there is ONE ledger. Demo tokens

@@ -602,7 +602,7 @@ export const GUIDES: Guide[] = [
         app: "inspect",
         title: "Pull the live prices",
         detail:
-          "Fetch Live Market Value shows what similar cars are asking on AutoTrader and Cars.co.za right now — free, unlimited. When you need the official figure, TransUnion Valuation returns trade/retail (uses one Premium credit).",
+          "TruRadar™ shows what similar cars are asking across live market sources right now — free, unlimited. When you need the official figure, TransUnion Valuation returns trade/retail (uses one Premium credit).",
       },
       {
         app: "inspect",
@@ -681,27 +681,27 @@ export const GUIDES: Guide[] = [
   {
     id: "market-price-free",
     title: "Get a market price — free",
-    goal: "A live read of what similar cars are asking on AutoTrader and Cars.co.za, without using any credits.",
-    blurb: "Scraped market asking prices. Free, unlimited.",
+    goal: "A live read of what similar cars are asking across live market sources, without using any credits.",
+    blurb: "Live market asking prices. Free, unlimited.",
     section: "inventory",
     steps: [
       {
         app: "flow",
         title: "Fill Make and Model",
         detail:
-          "On the car's Specs tab, make sure Make and Model are filled — Market Value searches by them.",
+          "On the car's Specs tab, make sure Make and Model are filled — TruRadar™ searches by them.",
       },
       {
         app: "flow",
-        title: "Tap Market Value",
+        title: "Tap TruRadar™",
         detail:
-          "It pulls live asking prices for similar cars off AutoTrader and Cars.co.za and shows the result right below the button.",
+          "It pulls live asking prices for similar cars across verified market sources and shows the result right below the button.",
       },
       {
         app: "flow",
         title: "Use it alongside TU",
         detail:
-          "Market Value is what the market is ASKING; the TU Valuation is the official trade/retail figure. Together they bracket your price — and Market Value never touches your Premium credits.",
+          "TruRadar™ is what the market is ASKING; the TU Valuation is the official trade/retail figure. Together they bracket your price — and TruRadar™ never touches your Premium credits.",
       },
     ],
   },
@@ -716,7 +716,7 @@ export const GUIDES: Guide[] = [
         app: "flow",
         title: "Three actions use credits",
         detail:
-          "TU Valuation, Reg Check and Accident Report each consume one credit from your dealership's balance. Everything else — photos, listings, the stock feed, Market Value — is unlimited.",
+          "TU Valuation, Reg Check and Accident Report each consume one credit from your dealership's balance. Everything else — photos, listings, the stock feed, TruRadar™ — is unlimited.",
       },
       {
         app: "flow",

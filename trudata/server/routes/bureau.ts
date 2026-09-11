@@ -22,19 +22,12 @@ router.post('/cipc', async (req, res) => {
       product: prodType,
     });
 
-    const item = API_PRICING_CATALOG['lexisnexis_cipc'];
-    const isTruCars = prodType === 'truflow' || prodType === 'trucars' || prodType === 'trulens' || prodType === 'truinspect';
-    const retail = isTruCars ? item.wholesaleCost : item.truDataRetailPrice;
-
     res.json({
       success: true,
       data: result,
       billing: {
-        wholesaleCost: item.wholesaleCost,
-        markupPct: isTruCars ? 0 : Math.round(((retail - item.wholesaleCost) / item.wholesaleCost) * 100),
-        retailPrice: retail,
-        marketBenchmarkRetail: item.marketBenchmarkRetail,
-        billingCycleCutoff: '25th of month',
+        creditsBurned: 3,
+        service: 'CIPC Company & Director Dossier',
       },
     });
   } catch (err: any) {
@@ -60,19 +53,12 @@ router.post('/deeds', async (req, res) => {
       product: prodType,
     });
 
-    const item = API_PRICING_CATALOG['lexisnexis_deeds_property'];
-    const isTruCars = prodType === 'truflow' || prodType === 'trucars' || prodType === 'trulens' || prodType === 'truinspect';
-    const retail = isTruCars ? item.wholesaleCost : (prodType === 'truproperty' ? item.truPropertyRetailPrice : item.truDataRetailPrice);
-
     res.json({
       success: true,
       data: result,
       billing: {
-        wholesaleCost: item.wholesaleCost,
-        markupPct: isTruCars ? 0 : Math.round(((retail - item.wholesaleCost) / item.wholesaleCost) * 100),
-        retailPrice: retail,
-        marketBenchmarkRetail: item.marketBenchmarkRetail,
-        billingCycleCutoff: '25th of month',
+        creditsBurned: 3,
+        service: 'Deeds Office Property Title & Transfer',
       },
     });
   } catch (err: any) {
@@ -98,19 +84,12 @@ router.post('/id-verify', async (req, res) => {
       product: prodType,
     });
 
-    const item = API_PRICING_CATALOG['lexisnexis_id_verify'];
-    const isTruCars = prodType === 'truflow' || prodType === 'trucars' || prodType === 'trulens' || prodType === 'truinspect';
-    const retail = isTruCars ? item.wholesaleCost : item.truDataRetailPrice;
-
     res.json({
       success: true,
       data: result,
       billing: {
-        wholesaleCost: item.wholesaleCost,
-        markupPct: isTruCars ? 0 : Math.round(((retail - item.wholesaleCost) / item.wholesaleCost) * 100),
-        retailPrice: retail,
-        marketBenchmarkRetail: item.marketBenchmarkRetail,
-        billingCycleCutoff: '25th of month',
+        creditsBurned: 3,
+        service: 'Home Affairs SA ID Verification',
       },
     });
   } catch (err: any) {
@@ -131,6 +110,77 @@ router.get('/statement', async (req, res) => {
     res.json(statement);
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Failed to fetch statement' });
+  }
+});
+
+/**
+ * POST /api/bureau/regcheck
+ * Standalone SAPS Police Stolen & Bank Finance Interest Verification
+ */
+import { regCheck, accidentReport, getImagin8Opts } from '../lib/imagin8';
+
+router.post('/regcheck', async (req, res) => {
+  try {
+    const { identifier, type = 'reg' } = req.body;
+    if (!identifier || typeof identifier !== 'string') {
+      return res.status(400).json({ error: 'Missing vehicle identifier (Registration Number or VIN)' });
+    }
+
+    const cleanId = identifier.trim().replace(/\s+/g, '');
+    const idType = type.toLowerCase() === 'vin' || cleanId.length === 17 ? 'vin' : 'reg';
+
+    const opts = getImagin8Opts();
+    if (!opts) {
+      return res.status(503).json({ error: 'Vehicle bureau verification service not configured' });
+    }
+
+    const result = await regCheck(cleanId, idType, opts);
+    res.json({
+      success: true,
+      identifier: cleanId,
+      type: idType,
+      data: result,
+      billing: {
+        creditsBurned: 3,
+        service: 'Vehicle Stolen & Bank Finance Verification',
+      },
+    });
+  } catch (err: any) {
+    console.error('[bureau:regcheck] Error:', err);
+    res.status(500).json({ error: err.message || 'Vehicle RegCheck failed' });
+  }
+});
+
+/**
+ * POST /api/bureau/accident
+ * Standalone Vehicle Insurance Claims & Accident History Report
+ */
+router.post('/accident', async (req, res) => {
+  try {
+    const { vin } = req.body;
+    if (!vin || typeof vin !== 'string') {
+      return res.status(400).json({ error: 'Missing VIN identifier' });
+    }
+
+    const cleanVin = vin.trim().toUpperCase().replace(/\s+/g, '');
+    const opts = getImagin8Opts();
+    if (!opts) {
+      return res.status(503).json({ error: 'Accident report service not configured' });
+    }
+
+    const result = await accidentReport(cleanVin, opts);
+    res.json({
+      success: true,
+      vin: cleanVin,
+      data: result,
+      billing: {
+        creditsBurned: 3,
+        service: 'Vehicle Accident & Insurance Claims History',
+      },
+    });
+  } catch (err: any) {
+    console.error('[bureau:accident] Error:', err);
+    res.status(500).json({ error: err.message || 'Accident report failed' });
   }
 });
 

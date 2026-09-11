@@ -266,8 +266,35 @@ export async function regCheck(
   type: "vin" | "reg" | "engine",
   opts: Imagin8Opts,
 ): Promise<RegCheckResult> {
+  // Sandbox Safety: Prevent chargeable live calls during testing
+  if (opts.sandbox) {
+    console.log(`[Imagin8:Sandbox] regCheck called for ${identifier} (${type}) — returning simulated test record.`);
+    const isVin = type === "vin" || identifier.length === 17;
+    return {
+      registered: true,
+      stolen: false,
+      financePending: false,
+      microdotted: true,
+      make: "TOYOTA",
+      model: "HILUX 2.8 GD-6 RB LEGEND 4X4 A/T P/U D/C",
+      year: 2022,
+      vin: isVin ? identifier.toUpperCase() : "AAVZZZ8K0BA129481",
+      engineNumber: "1GD8921849",
+      registrationNumber: isVin ? "CA 123-456" : identifier.toUpperCase(),
+      colour: "WHITE",
+      description: "2022 Toyota Hilux 2.8 GD-6 Double Cab",
+      alerts: [],
+      raw: { sandbox: true, simulated: true, status: "CLEAR" },
+    };
+  }
+
   const paramKey = type === "vin" ? "vinno" : type === "reg" ? "regno" : "engineno";
-  const data = await get("im8vehicle_api", "regCheck", { [paramKey]: identifier }, opts);
+  const data = await get("im8vehicle_api", "regCheck", {
+    [paramKey]: identifier,
+    userName: opts.userName,
+    password: opts.password,
+    applicationName: opts.appName,
+  }, opts);
 
   const alerts: string[] = [];
   if (toBool(data?.Stolen)) alerts.push("STOLEN — vehicle is flagged as stolen");
@@ -310,7 +337,23 @@ export async function accidentReport(
   vin: string,
   opts: Imagin8Opts,
 ): Promise<AccidentReportResult> {
-  const data = await get("im8vehicle_api", "accidentReport", { vin }, opts);
+  // Sandbox Safety: Prevent chargeable live calls during testing
+  if (opts.sandbox) {
+    console.log(`[Imagin8:Sandbox] accidentReport called for ${vin} — returning simulated test record.`);
+    return {
+      vin: vin.toUpperCase(),
+      hasClaims: false,
+      claims: [],
+      raw: { sandbox: true, simulated: true, claims: [] },
+    };
+  }
+
+  const data = await get("im8vehicle_api", "accidentReport", {
+    vin,
+    userName: opts.userName,
+    password: opts.password,
+    applicationName: opts.appName,
+  }, opts);
 
   const claims: AccidentClaim[] = [];
   const rawClaims: any[] = data?.Claims || data?.claims || [];
@@ -353,8 +396,8 @@ export function getImagin8Opts(): Imagin8Opts | null {
     customerId,
     userName: process.env.IMAGIN8_USERNAME,
     password: process.env.IMAGIN8_PASSWORD,
-    appName: process.env.IMAGIN8_APP_NAME,
-    sandbox: process.env.NODE_ENV !== "production"
+    appName: process.env.IMAGIN8_APP_NAME || "Flow",
+    sandbox: process.env.IMAGIN8_SANDBOX === "true"
   };
 }
 
@@ -381,6 +424,24 @@ export async function bankAvs(
   surname: string,
   opts: Imagin8Opts,
 ): Promise<AvsResult> {
+  // Sandbox Safety: Prevent chargeable live bank AVS calls during testing
+  if (opts.sandbox) {
+    console.log(`[Imagin8:Sandbox] bankAvs called for account ${bankAccount} — returning simulated test record.`);
+    return {
+      valid: true,
+      accountExists: true,
+      accountOpen: true,
+      idMatch: true,
+      nameMatch: true,
+      initials: initials || "J",
+      surname: surname || "DOE",
+      accountType: "CHEQUE",
+      acceptsCredits: true,
+      acceptsDebits: true,
+      accountAge: "> 12 Months",
+    };
+  }
+
   const data = await get('im8bank_api', 'avsr', {
     accountnumber: bankAccount,
     branchcode: branchCode,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight, ExternalLink, Loader2, TrendingDown, TrendingUp, Minus, Shield, Radio } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, Loader2, TrendingDown, TrendingUp, Minus, Shield, Radio, Banknote } from 'lucide-react';
 import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
@@ -86,6 +86,31 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
       alert(err?.message || 'TU valuation failed');
     } finally {
       setTuValLoading(false);
+    }
+  };
+
+  const [avsResult, setAvsResult] = React.useState<any>(null);
+  const [avsLoading, setAvsLoading] = React.useState(false);
+  const [showAvsForm, setShowAvsForm] = React.useState(false);
+  const [avsForm, setAvsForm] = React.useState({ bankAccount: '', branchCode: '', idNumber: '', initials: '', surname: '', accountType: '1' });
+  const runBankAvs = async () => {
+    if (!avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber || !user) return;
+    setAvsLoading(true);
+    setAvsResult(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/imagin8/avs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(avsForm),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setAvsResult(res.ok ? data : { error: data.error || `Verification failed (${res.status})` });
+    } catch (e: any) {
+      setAvsResult({ error: e?.message || 'Verification failed' });
+    } finally {
+      setAvsLoading(false);
     }
   };
 
@@ -209,7 +234,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           className={`market-btn w-full min-h-[52px] flex items-center justify-center gap-3 text-[16px] text-[#4FE3DC] font-semibold cursor-pointer select-none${fetching ? ' scanning' : ''}`}
         >
           {fetching ? <Loader2 size={18} className="animate-spin" /> : <Radio size={18} />}
-          {fetching ? 'Scanning market…' : 'Live Market Value'}
+          {fetching ? 'Verifying Live Sources…' : 'TruRadar™ Live Price'}
           <span className="mv-badge" style={{fontSize:'11px'}}>LIVE</span>
         </button>
 
@@ -280,7 +305,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                 rel="noopener noreferrer"
                 className="tru-btn-secondary inline-flex items-center gap-2 px-4 min-h-[44px] text-[13px]"
               >
-                <ExternalLink size={14} /> AutoTrader
+                <ExternalLink size={14} /> Live Market Listings
               </a>
               {carsUrl && (
                 <a
@@ -289,7 +314,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                   rel="noopener noreferrer"
                   className="tru-btn-secondary inline-flex items-center gap-2 px-4 min-h-[44px] text-[13px]"
                 >
-                  <ExternalLink size={14} /> Cars.co.za
+                  <ExternalLink size={14} /> Live Classifieds
                 </a>
               )}
             </div>
@@ -347,6 +372,105 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
             </p>
           )}
         </div>
+
+        {/* Customer Payout Bank Account Verification */}
+        {market.id === 'za' && (
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-[#4FE3DC] flex items-center gap-1.5">
+                <Banknote size={14} /> Seller Bank Verification (AVS-R)
+              </span>
+              <Imagin8GatedButton
+                feature="bankAvs"
+                bundles={imagin8Bundles}
+                onClick={() => setShowAvsForm((v) => !v)}
+                onUnlock={() => alert('Bank account verifications are bundle-gated. Contact your TruSaaS account manager to activate live AVS-R for this dealership.')}
+                icon={avsLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Banknote size={13} />}
+                label={showAvsForm ? "Hide Form" : "Verify Account"}
+              />
+            </div>
+
+            {showAvsForm && (
+              <div className="space-y-2.5 pt-2 border-t border-neutral-800">
+                <p className="text-[12px] text-[rgba(232,234,230,0.55)]">
+                  Verify the customer's payout account exists and ID number matches before authorizing trade-in settlement disbursement.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    placeholder="Account number"
+                    value={avsForm.bankAccount}
+                    onChange={(e) => setAvsForm((f) => ({ ...f, bankAccount: e.target.value }))}
+                    className="px-3 py-2 rounded-xl text-[13px] bg-neutral-950/80 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
+                  />
+                  <input
+                    placeholder="Branch code"
+                    value={avsForm.branchCode}
+                    onChange={(e) => setAvsForm((f) => ({ ...f, branchCode: e.target.value }))}
+                    className="px-3 py-2 rounded-xl text-[13px] bg-neutral-950/80 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
+                  />
+                  <input
+                    placeholder="ID number"
+                    value={avsForm.idNumber}
+                    onChange={(e) => setAvsForm((f) => ({ ...f, idNumber: e.target.value }))}
+                    className="px-3 py-2 rounded-xl text-[13px] bg-neutral-950/80 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
+                  />
+                  <input
+                    placeholder="Initials (e.g. JP)"
+                    value={avsForm.initials}
+                    onChange={(e) => setAvsForm((f) => ({ ...f, initials: e.target.value }))}
+                    className="px-3 py-2 rounded-xl text-[13px] bg-neutral-950/80 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
+                  />
+                  <input
+                    placeholder="Account surname"
+                    value={avsForm.surname}
+                    onChange={(e) => setAvsForm((f) => ({ ...f, surname: e.target.value }))}
+                    className="px-3 py-2 rounded-xl text-[13px] bg-neutral-950/80 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
+                  />
+                  <select
+                    value={avsForm.accountType}
+                    onChange={(e) => setAvsForm((f) => ({ ...f, accountType: e.target.value }))}
+                    className="px-3 py-2 rounded-xl text-[13px] bg-neutral-950/80 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
+                  >
+                    <option value="1">Current / Cheque</option>
+                    <option value="2">Savings</option>
+                    <option value="3">Transmission</option>
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  onClick={runBankAvs}
+                  disabled={avsLoading || !avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-semibold bg-cyan-500/15 text-[#4FE3DC] hover:bg-cyan-500/25 disabled:opacity-40 cursor-pointer transition"
+                >
+                  {avsLoading ? <Loader2 size={13} className="animate-spin" /> : <Shield size={13} />}
+                  {avsLoading ? "Verifying..." : "Run Account Verification"}
+                </button>
+                {avsResult && (
+                  <div className="rounded-xl p-3 text-[12px] space-y-1.5" style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(79,227,220,0.2)' }}>
+                    {avsResult.error ? (
+                      <span className="text-amber-400 font-medium">{avsResult.error}</span>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        <span className={avsResult.accountExists ? 'text-emerald-400 font-medium' : 'text-rose-400 font-medium'}>
+                          Account: {avsResult.accountExists ? 'Active / Exists' : 'Not found'}
+                        </span>
+                        <span className={avsResult.accountOpen ? 'text-emerald-400 font-medium' : 'text-rose-400 font-medium'}>
+                          Status: {avsResult.accountOpen ? 'Open' : 'Closed'}
+                        </span>
+                        <span className={avsResult.idMatch ? 'text-emerald-400 font-medium' : 'text-rose-400 font-medium'}>
+                          ID Match: {avsResult.idMatch ? 'Confirmed' : 'Mismatch'}
+                        </span>
+                        <span className={avsResult.nameMatch ? 'text-emerald-400 font-medium' : 'text-rose-400 font-medium'}>
+                          Name Match: {avsResult.nameMatch ? 'Confirmed' : 'Mismatch'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Valuation history */}
         {history.length > 1 && (() => {

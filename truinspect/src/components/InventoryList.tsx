@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, Sliders,
-  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History
+  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History, TrendingUp, Radio
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import { SetupChecklistCard } from './SetupPrompt';
 import type { SetupStatus } from '../lib/setupStatus';
+import { formatMoney, formatMoneyFromData, formatDistance } from './market';
 import { useMarket, useMoney, useRegLookup } from '../contexts/MarketContext';
 import type { RegLookupResult } from '../../../packages/reg-lookup';
 
@@ -279,7 +280,7 @@ export default function InventoryList({
   const [vin, setVin] = React.useState('');
   const [stockNumber, setStockNumber] = React.useState('');
   const [color, setColor] = React.useState('');
-  const [price, setPrice] = React.useState(24995);
+  const [price, setPrice] = React.useState<number | ''>('');
   const [vehicleType, setVehicleType] = React.useState('SUV');
   const [mileage, setMileage] = React.useState('');
   const [transmission, setTransmission] = React.useState<'Automatic' | 'Manual'>('Manual');
@@ -436,6 +437,67 @@ export default function InventoryList({
     return () => { alive = false; };
   }, [user]);
 
+  const isDemo = user?.email?.startsWith('demo@') || user?.isAnonymous;
+  const fmtZAR = (n?: number) => (n != null ? `R ${Math.round(n).toLocaleString('en-ZA')}` : '—');
+
+  // Live market valuation (scraped competitor stock + classifieds)
+  const [valuation, setValuation] = React.useState<any>(null);
+  const [valuationLoading, setValuationLoading] = React.useState(false);
+
+  const runValuation = React.useCallback(async () => {
+    if (!make.trim() || !model.trim()) return;
+    setValuationLoading(true);
+    try {
+      const res = await fetch('/api/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          make,
+          model,
+          year: year ? Number(year) : undefined,
+          mileage: mileage ? Number(mileage) : undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setValuation(data);
+      }
+    } catch {
+      // silently fail — field stays editable
+    } finally {
+      setValuationLoading(false);
+    }
+  }, [make, model, year, mileage]);
+
+  // TransUnion live pricing via Imagin8 (uses 1 credit)
+  const [tuPriceResult, setTuPriceResult] = React.useState<any>(null);
+  const [tuPriceLoading, setTuPriceLoading] = React.useState(false);
+
+  const runTuPrice = React.useCallback(async () => {
+    const yearNum = Number(year);
+    if (!yearNum || (!mmCode.trim() && !isDemo)) {
+      setTuPriceResult({ error: 'Enter an M&M code (or pick model/variant) for a TransUnion price.' });
+      return;
+    }
+    const mm = mmCode.trim() || ('DEMO-' + (make || 'car') + '-' + (model || 'x') + '-' + year)
+      .toUpperCase().replace(/[^A-Z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'DEMO-CAR';
+    setTuPriceLoading(true);
+    setTuPriceResult(null);
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch('/api/imagin8/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ mmCode: mm, year: yearNum, mileage: mileage ? Number(mileage) : undefined }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setTuPriceResult(res.ok ? data : { error: data.error || `Price failed (${res.status})` });
+    } catch (e: any) {
+      setTuPriceResult({ error: e?.message || 'Price failed' });
+    } finally { setTuPriceLoading(false); }
+  }, [year, mmCode, isDemo, make, model, mileage, user]);
+
   // Imagin8 data lookups — reg check & accident report (shown in Add Vehicle flow)
   const [regCheckResult, setRegCheckResult] = React.useState<any>(null);
   const [regCheckLoading, setRegCheckLoading] = React.useState(false);
@@ -504,7 +566,7 @@ export default function InventoryList({
     setVin(v.vin || '');
     setStockNumber(v.stockNumber || '');
     setColor(v.color || '');
-    setPrice(v.price || 24995);
+    setPrice(v.price != null && v.price > 0 ? v.price : '');
     setVehicleType(v.vehicleType || 'SUV');
     setMileage(v.mileage != null ? String(v.mileage) : '');
     setTransmission(v.transmission || 'Manual');
@@ -532,7 +594,7 @@ export default function InventoryList({
         regCheck: lookupResult || undefined,
         stockNumber: stockNumber.trim(),
         color: color.trim(),
-        price: Number(price),
+        price: price === '' ? 0 : Number(price),
         vehicleType,
         mileage: mileage.trim() ? Number(mileage) : undefined,
         transmission,
@@ -554,7 +616,7 @@ export default function InventoryList({
         regCheck: lookupResult || undefined,
         stockNumber: stockNumber || 'STK-' + Math.floor(10000 + Math.random() * 90000),
         color: color || 'Black',
-        price: Number(price),
+        price: price === '' ? 0 : Number(price),
         vehicleType,
         mileage: mileage.trim() ? Number(mileage) : undefined,
         transmission,
@@ -576,7 +638,7 @@ export default function InventoryList({
     setVin('');
     setStockNumber('');
     setColor('');
-    setPrice(24995);
+    setPrice('');
     setVehicleType('SUV');
     setMileage('');
     setTransmission('Manual');
@@ -949,19 +1011,79 @@ export default function InventoryList({
                 />
               </div>
               <div>
-                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Price (R)</label>
+                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Price ({market.currency})</label>
                 <input
                   type="number"
                   placeholder="35000"
                   value={price}
-                  onChange={(e) => setPrice(Number(e.target.value))}
+                  onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                 />
               </div>
             </div>
 
-            {/* Imagin8 lookups — reg check & accident report */}
+            {/* Live market valuation */}
+            <div className="mt-1">
+              <button
+                type="button"
+                onClick={runValuation}
+                disabled={valuationLoading || !make.trim() || !model.trim()}
+                className={`market-btn w-full inline-flex items-center justify-center gap-2 min-h-[46px] px-4 py-2.5 text-[#4FE3DC] text-[13px] font-semibold cursor-pointer select-none${valuationLoading ? ' scanning' : ''}`}
+              >
+                {valuationLoading ? <Loader2 size={15} className="animate-spin" /> : <Radio size={15} />}
+                <span className="truncate">{valuationLoading ? 'Verifying Live Sources…' : 'TruRadar™ Live Price'}</span>
+                <span className="mv-badge">LIVE</span>
+              </button>
+              {valuation && (
+                <div className="mt-2 rounded-[12px] border border-[rgba(79,227,220,0.3)] bg-[rgba(79,227,220,0.06)] p-3 text-[13px] text-[#E8EAE6]">
+                  {valuation.averageRetailPrice != null ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[rgba(232,234,230,0.72)]">Market average</span>
+                        <span className="font-mono font-semibold text-[#4FE3DC]">
+                          {formatMoneyFromData(valuation.averageRetailPrice, valuation)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-[rgba(232,234,230,0.6)]">
+                        <span>
+                          {valuation.listingsFound} listing{valuation.listingsFound === 1 ? '' : 's'}
+                          {valuation.mileageAdjusted ? ` · ${valuation.distanceUnit || 'km'}-adjusted` : ''}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setPrice(valuation.averageRetailPrice as number)}
+                          className="text-[#4FE3DC] underline cursor-pointer"
+                        >
+                          Use as price
+                        </button>
+                      </div>
+                      {valuation.sampleMedianKm != null && (
+                        <div className="mt-1 text-[rgba(232,234,230,0.5)]">
+                          Market median: {formatDistance(valuation.sampleMedianKm, valuation.distanceUnit || market.distanceUnit, market.locale)}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[rgba(232,234,230,0.6)]">No market data yet — price manually.</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Imagin8 lookups — TransUnion price + reg check + accident report.
+                SA-only stack (SA provider) — hidden on other markets. */}
+            {market.id === 'za' && (
+            <>
             <div className="grid grid-cols-2 gap-2">
+              <Imagin8GatedButton
+                feature="valuation"
+                bundles={imagin8Bundles}
+                onClick={runTuPrice}
+                onUnlock={() => alert('TransUnion valuations are bundle-gated. Contact your TruSaaS account manager to activate live pricing for this dealership.')}
+                className="w-full col-span-2"
+                label="TransUnion price"
+                icon={tuPriceLoading ? <Loader2 size={13} className="animate-spin" /> : <TrendingUp size={13} />}
+              />
               <Imagin8GatedButton
                 feature="regCheck"
                 bundles={imagin8Bundles}
@@ -979,6 +1101,26 @@ export default function InventoryList({
                 icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
               />
             </div>
+            {tuPriceResult && (
+              <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[rgba(232,234,230,0.72)]">TransUnion price</span>
+                  {tuPriceResult.error ? (
+                    <span className="text-amber-400 font-semibold">{tuPriceResult.error}</span>
+                  ) : (
+                    <span className="font-semibold text-[#4FE3DC]">
+                      Retail {fmtZAR(tuPriceResult.retailPrice)} · Trade {fmtZAR(tuPriceResult.tradePrice)}
+                    </span>
+                  )}
+                </div>
+                {!tuPriceResult.error && tuPriceResult.marketValue != null && (
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="text-[rgba(232,234,230,0.72)]">Market estimate</span>
+                    <span>{fmtZAR(tuPriceResult.marketValue)}</span>
+                  </div>
+                )}
+              </div>
+            )}
             {regCheckResult && (
               <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
                 <div className="flex items-center justify-between">
@@ -1006,6 +1148,8 @@ export default function InventoryList({
                   )}
                 </div>
               </div>
+            )}
+            </>
             )}
 
             {/* Everything else behind one disclosure. Values persist while hidden;

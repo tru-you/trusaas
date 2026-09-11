@@ -16,26 +16,36 @@
     facebook: "https://www.facebook.com/profile.php?id=61577491113199"
   };
 
-  // Light / Dark Theme Controller
+  // Light / Dark Theme Controller (Default: Dark Mode)
   function initTheme() {
-    const saved = localStorage.getItem('apex_theme') || 'light';
+    const saved = localStorage.getItem('apex_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', saved);
   }
 
   function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('apex_theme', next);
-    const btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.textContent = next === 'dark' ? 'Light Mode' : 'Dark Mode';
+    
+    // Update all toggle button instances
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+      const iconSun = btn.querySelector('.theme-icon-sun');
+      const iconMoon = btn.querySelector('.theme-icon-moon');
+      const text = btn.querySelector('.theme-toggle-text');
+      if (iconSun && iconMoon) {
+        iconSun.style.display = next === 'dark' ? 'inline-block' : 'none';
+        iconMoon.style.display = next === 'dark' ? 'none' : 'inline-block';
+      }
+      if (text) text.textContent = next === 'dark' ? 'Light' : 'Dark';
+    });
+
     window.dispatchEvent(new CustomEvent('apex:themeChange', { detail: { theme: next } }));
   }
 
   function renderTopbar() {
     const el = document.getElementById('site-topbar');
     if (!el) return;
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     el.innerHTML = `
       <div class="topbar">
         <div class="container">
@@ -54,49 +64,51 @@
               <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
               <a href="tel:${SITE_CONFIG.phone.replace(/\D/g,'')}" class="topbar-link">${SITE_CONFIG.phoneDisplay}</a>
             </div>
-            <button type="button" id="themeToggleBtn" class="theme-toggle">
-              ${currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </button>
           </div>
         </div>
       </div>
     `;
-
-    const btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.onclick = toggleTheme;
   }
 
   function renderHeader() {
     const el = document.getElementById('site-header');
     if (!el) return;
     const currentPath = window.location.pathname;
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
 
     el.innerHTML = `
       <header class="header">
         <div class="container">
           <div class="header-inner">
-            <a href="index.html" class="logo-wrap">
-              <div class="logo-brand">Apex <span>Auto</span></div>
-              <div class="logo-tag">Wholesale Floor</div>
+            <a href="index.html" class="logo-wrap" style="display: flex; align-items: center; text-decoration: none;">
+              <img src="assets/brand/apex-logo-3d.png" alt="Apex Auto Investments" class="brand-header-img" />
             </a>
             <ul class="nav-menu">
               <li><a href="index.html" class="nav-link ${currentPath === '/' || currentPath.endsWith('index.html') ? 'active' : ''}">Home</a></li>
               <li><a href="stock.html" class="nav-link ${currentPath.includes('stock') ? 'active' : ''}">Wholesale Stock</a></li>
-              <li><a href="index.html#finance" class="nav-link">Finance Calculator</a></li>
-              <li><a href="index.html#sell" class="nav-link">Sell / Trade-In</a></li>
+              <li><a href="finance.html" class="nav-link ${currentPath.includes('finance') ? 'active' : ''}">Bank Finance</a></li>
+              <li><a href="trade-in.html" class="nav-link ${currentPath.includes('trade-in') ? 'active' : ''}">Sell / Trade-In</a></li>
               <li><a href="index.html#why" class="nav-link">Why Us</a></li>
               <li><a href="index.html#visit" class="nav-link">Visit Us</a></li>
             </ul>
             <div class="header-ctas">
+              <button type="button" id="headerThemeToggleBtn" class="header-theme-toggle theme-toggle-btn" aria-label="Toggle dark/light mode" title="Toggle Theme">
+                <span class="theme-icon-sun" style="display: ${currentTheme === 'dark' ? 'inline-block' : 'none'};">☀️</span>
+                <span class="theme-icon-moon" style="display: ${currentTheme === 'dark' ? 'none' : 'inline-block'};">🌙</span>
+                <span class="theme-toggle-text">${currentTheme === 'dark' ? 'Light' : 'Dark'}</span>
+              </button>
               <a href="https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent("Hi Apex Auto! I'm interested in your pre-owned inventory.")}" target="_blank" rel="noopener" class="btn btn-wa btn-sm">
                 <span>WhatsApp Us</span>
               </a>
-              <a href="index.html#finance" class="btn btn-primary btn-sm">Apply For Finance</a>
+              <a href="finance.html" class="btn btn-primary btn-sm">Apply For Finance</a>
             </div>
           </div>
         </div>
       </header>
     `;
+
+    const btn = document.getElementById('headerThemeToggleBtn');
+    if (btn) btn.onclick = toggleTheme;
   }
 
   function renderSocialProofTicker() {
@@ -133,7 +145,9 @@
         <div class="container">
           <div class="footer-grid">
             <div>
-              <div class="footer-brand-title">Apex <span>Auto</span> Investments</div>
+              <div class="footer-brand-title" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <img src="assets/brand/apex-logo-3d.png" alt="Apex Auto Investments" class="brand-footer-img" />
+              </div>
               <p class="footer-desc">
                 Newton Park's trusted pre-owned vehicle specialists. Quality hand-picked cars, bakkies, and SUVs with verified inspection reports and multi-bank finance approval.
               </p>
@@ -146,8 +160,8 @@
               <ul class="footer-links">
                 <li><a href="index.html" class="footer-link">Home</a></li>
                 <li><a href="stock.html" class="footer-link">Wholesale Stock</a></li>
-                <li><a href="index.html#finance" class="footer-link">Finance Calculator</a></li>
-                <li><a href="index.html#sell" class="footer-link">Sell / Trade-In</a></li>
+                <li><a href="finance.html" class="footer-link">Bank Finance</a></li>
+                <li><a href="trade-in.html" class="footer-link">Sell / Trade-In</a></li>
                 <li><a href="index.html#why" class="footer-link">Why Choose Apex</a></li>
               </ul>
             </div>
@@ -155,8 +169,8 @@
               <div class="footer-col-title">Services</div>
               <ul class="footer-links">
                 <li><a href="stock.html" class="footer-link">Vehicle Sales</a></li>
-                <li><a href="index.html#finance" class="footer-link">Bank Asset Finance</a></li>
-                <li><a href="index.html#sell" class="footer-link">Trade-In Appraisal</a></li>
+                <li><a href="finance.html" class="footer-link">Bank Asset Finance</a></li>
+                <li><a href="trade-in.html" class="footer-link">Trade-In Appraisal</a></li>
                 <li><a href="index.html#why" class="footer-link">114-Point VIR® Scored</a></li>
                 <li><a href="https://wa.me/${SITE_CONFIG.whatsapp}" target="_blank" class="footer-link">WhatsApp Support</a></li>
               </ul>

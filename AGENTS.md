@@ -1,6 +1,6 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-09-08 by Antigravity
+**Last updated:** 2026-09-11 by Antigravity
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
 
 ---
@@ -135,7 +135,30 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ---
 
-## 4. Recent Changes (2026-09-05)
+## 4. Recent Changes (2026-09-11)
+
+### 💎 Apex Auto Investments Storefront & Widget System Polish (2026-09-11)
+
+**Client:** Apex Auto Investments (Newton Park, Gqeberha / Port Elizabeth)
+**Palette:** Dark mode first (`data-theme="dark"`), `#0D131C` dark anchor, `#B85B24` primary terracotta accent, `#E6762E` active glow accent.
+
+**Key upgrades completed:**
+1. **Header & Brand Alignment**:
+   - Resized navbar logo (`trudealer-logo-3d.svg`) to prominent scale (220px desktop, 160px mobile).
+   - Glassmorphic sticky navbar (`backdrop-filter: blur(16px)`) with top glowing terracotta border line (`#B85B24`).
+2. **Standalone Widget Visual Polish (`packages/standalone/`)**:
+   - `tru-repay.js`: Upgraded to dark obsidian glass, `@keyframes trFloatShine` continuous light glint sweeps on floating triggers and toggle handles, `@keyframes trPulse` pulsing aura rings on monthly repayment badges, quick deposit pills (0%, 10%, 20%), term pills (48m, 60m, 72m, 84m), and spring physics.
+   - `tru-afford.js`: Sahara Dark obsidian styling, glint sweeps, pulsing aura rings, and robust inline mount safety check.
+   - `tru-value.js`: Restyled in Sahara Dark palette, clean canonical script.
+3. **Trade-In Appraisal Engine (`trade-in.html`)**:
+   - Implemented full 3-step appraisal wizard matching `true-cars.co.za` flagship standard:
+     - Step 1: Specs & 8 one-tap Make Chips (VW, Toyota, Ford, BMW, Mercedes, Hyundai, Nissan, Isuzu).
+     - Step 2: Service History, Bodywork, Tyres, and Bank Settlement Status dropdowns.
+     - Step 3: Dual Hero Valuation Cards (Market Retail vs Trade Soft Offer), Build-Up Deductions Table, Showroom Vehicle Equity Matcher (`<select id="selTargetCar">` connected to stock array `TRU.vehicles`), and pre-filled WhatsApp inspection booking CTAs.
+4. **Vehicle Finance & Dynamic Repay Sync (`finance.html`)**:
+   - Implemented flagship two-column VDP layout:
+     - Left Column: 3D Vehicle Showcase Card (`fin-car-card`) with `<select id="carPicker">` stock dropdown, dynamic image, VIR 94/100 badge, stock ID, specs panel, and multi-bank credit partner tiles.
+     - Right Column: Dynamic `tru-repay.js` mounting/syncing per vehicle selected, multi-bank pre-approval card, and 1-tap WhatsApp inquiry.
 
 ### 🌟 Mandatory Dealer Storefront Standard (2026-09-05)
 
