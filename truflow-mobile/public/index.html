@@ -1225,7 +1225,7 @@ button,input,textarea,select{font-family:inherit;}
       '<div class="modal-msg">Book an appointment for '+esc(nm)+' on the floor.</div>'+
       '<div class="field"><label>Vehicle</label><select id="tdVeh">'+vehOptions+'</select></div>'+
       '<div class="field"><label>Date &amp; Time</label><input type="datetime-local" id="tdDate" value="'+todayISO()+'T10:00"></div>'+
-      '<div class="field"><label>Notes (optional)</label><input type="text" id="tdNotes" placeholder="e.g. Bring copy of driver's license" autocomplete="off"></div>'+
+      '<div class="field"><label>Notes (optional)</label><input type="text" id="tdNotes" placeholder="e.g. Bring copy of ID or license" autocomplete="off"></div>'+
       '<div class="modal-actions">'+
         '<button type="button" class="tru-btn-secondary" id="tdCancel">Cancel</button>'+
         '<button type="button" class="btn-primary" id="tdSave">Book appointment</button>'+
@@ -1614,17 +1614,14 @@ button,input,textarea,select{font-family:inherit;}
       var name=vName(v);
       var head=name+(vPrice(v)?" — "+money(vPrice(v)):"");
       var spec=[odo(v.mileage),v.transmission||"",v.fuelType||""].filter(Boolean).join(" · ");
-      var text=head+(spec?"
-"+spec:"");
+      var text=head+(spec?"\n"+spec:"");
       var url="";
       if(isPub(v)&&DEALER_SITE){
         var hero=vHero(v);
         var q=["stock="+encodeURIComponent(v.stockNumber||v.id),"year="+(v.year||""),"make="+encodeURIComponent(v.make||""),"name="+encodeURIComponent(v.model||""),"price="+(vPrice(v)||0)];
         if(hero)q.push("img="+encodeURIComponent(location.origin+hero));
         url=DEALER_SITE+"/vehicle/?"+q.join("&");
-        text+="
-
-"+url;
+        text+="\n\n"+url;
       }
       if(navigator.share&&url){navigator.share({title:name,text:text,url:url}).catch(function(){});}
       else{window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank","noopener");}
@@ -1636,43 +1633,23 @@ button,input,textarea,select{font-family:inherit;}
     var priceStr=vPrice(v)?money(vPrice(v)):"Contact for price";
     var dealerTitle=(AUTH&&AUTH.label)||"Our Dealership";
 
-    var mpText=name+"
-
-" +
-      "Price: "+priceStr+"
-" +
-      "Mileage: "+odo(v.mileage)+"
-" +
-      "Transmission: "+(v.transmission||"Standard")+"
-" +
-      "Fuel: "+(v.fuelType||"Standard")+"
-" +
-      "Stock Ref: #"+(v.stockNumber||v.id)+"
-
-" +
-      "Features:
-" +
-      "- Multi-point inspection completed
-" +
-      "- Full service history
-" +
-      "- Trade-ins welcome & finance arranged
-
-" +
+    var mpText=name+"\n\n" +
+      "Price: "+priceStr+"\n" +
+      "Mileage: "+odo(v.mileage)+"\n" +
+      "Transmission: "+(v.transmission||"Standard")+"\n" +
+      "Fuel: "+(v.fuelType||"Standard")+"\n" +
+      "Stock Ref: #"+(v.stockNumber||v.id)+"\n\n" +
+      "Features:\n" +
+      "- Multi-point inspection completed\n" +
+      "- Full service history\n" +
+      "- Trade-ins welcome & finance arranged\n\n" +
       "Available at "+dealerTitle+".";
 
-    var igText=name.toUpperCase()+"
-.
-" +
-      "Price: "+priceStr+" · "+odo(v.mileage)+"
-" +
-      "• Multi-point checked & approved
-" +
-      "• Trade-ins welcome · Finance available
-.
-" +
-      "Available now at "+dealerTitle+". DM for viewing!
-#carsforsale #dealership #usedcars";
+    var igText=name.toUpperCase()+"\n.\n" +
+      "Price: "+priceStr+" · "+odo(v.mileage)+"\n" +
+      "• Multi-point checked & approved\n" +
+      "• Trade-ins welcome · Finance available\n.\n" +
+      "Available now at "+dealerTitle+". DM for viewing!\n#carsforsale #dealership #usedcars";
 
     $("#sheetBody").innerHTML=
       '<div style="padding:14px 2px;">'+
