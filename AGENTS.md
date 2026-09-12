@@ -1,21 +1,36 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-09-11 by Antigravity
+**Last updated:** 2026-09-12 by Antigravity
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
 
 ---
 
 ## 0. Strict Agent Deployment & Brand Rules
 
-- **NEVER run live production deploys (Netlify, Render, etc.) automatically without explicit user review and confirmation.** Always preview changes locally or present generated assets in conversation/artifacts first.
-- **NEVER place internal administrative tools, scratch pages, or utility generators in public web root directories (e.g. `tddeploy/`).** Keep internal tools in `tools/` or local workspace directories to prevent public indexing and bad SEO.
-- **ALWAYS use official brand logo assets (`assets/brand/trudealer-logo-3d.svg` / `trudealer-logo-nav.svg`)** and get user review before finalizing co-branded banner designs.
-- **MANDATORY DEALER STOREFRONT STANDARD (ALL SITES GOING FORWARD):**
-  Every dealer storefront / showroom deployment MUST implement the complete 4-part standard:
-  1. **TruShare & Netlify Edge OG Unfurler**: `tru-share.js` widget loaded on all pages; `netlify/edge-functions/vehicle-og.js` registered in `netlify.toml` (`/vehicle`, `/vehicle/*`, `/vehicle.html`) with declared `1200x630` og:image dimensions, clean `. ` description separation, and server-rendered `Car` + `Offer` JSON-LD; VDP client-side hydration fallback from URL query parameters (`stock`, `year`, `make`, `name`, `variant`, `price`, `km`, `trans`, `fuel`, `body`, `img`) so shared links always render the exact car.
-  2. **AEO & LLM Search Engine Optimization**: `robots.txt` explicitly allowing AI crawlers (`GPTBot`, `ChatGPT-User`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, `Applebot-Extended`, `CCBot`, `meta-externalagent`), `llms.txt` dealership context doc, and structured Schema.org JSON-LD (`AutoDealer` on index/stock, `Car` + `Offer` on VDP).
-  3. **WhatsApp 1-Tap Qualified Lead CTAs**: Pre-filled structured lead message containing greeting, full vehicle title, stock ID, price, canonical link, and availability check.
-  4. **Scoped Spring Motion**: `transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow ...` on `.card:hover` and `.tile:hover`. NEVER monolithic external bulk CSS.
+- **BRAND IDENTITY & LOGO ARCHITECTURE (2026-09-12):**
+  - **Sibling Apps (TruFlow, TruInspect, TruLens, TruLive, TruTrade):**
+    - Strictly use the **3D Hex Icon mark ONLY** (`icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.svg`, login cards, and app headers). No wide text wordmark cluttering mobile headers.
+    - PWA Service Workers: Cache version MUST be bumped on icon/shell changes (`sw.js`) so yard handsets immediately drop old shells and display new marks.
+  - **Dealer Showroom & Marketing Web (trudealers.com):**
+    - Header uses the full **3D Horizontal Logo** (`trudealer-logo-3d-horizontal.png`) at bold scale: 52px desktop, 44px tablet, 40px mobile.
+    - Embedded SVG fallback (`trudealer-nav-logo.svg`) carries a self-contained base64 Data URI to prevent browser image sandbox blocking.
+
+- **MASTER TRUFLOW AUTHORITY & MULTI-TENANT ARCHITECTURE (HETZNER `2.29.17.123`):**
+  - **Master TruFlow is the Single Source of Truth for Identity & Product Entitlements:**
+    - Master Admin manages dealerships, grants product suites (`flow`, `lens`, `inspect`, `live`, `value`, `social`), and issues/rotates access codes via the Dealership Admin UI or API.
+    - Sibling apps (TruLens, TruInspect, TruLive, TruTrade) authenticate client codes dynamically against TruFlow via `POST /api/auth/verify-code`.
+  - **Current Production Access Codes & Tenant Profiles (Issued & Verified):**
+    - **Master Admin:** `GQR-GP8-WUF` / `tru2026` (Role: admin, platform-wide visibility across 49 units, administrative console only).
+    - **True Cars:** `6SY-WJH-5KY` / `true-cars` (Full suite: `flow`, `lens`, `inspect`, `live`, `value`, `social`; 36 units live).
+    - **Cars on Caledon:** `E6Z-XHB-F2F` / `cars-on-caledon` (Full suite: `flow`, `lens`, `inspect`, `live`, `value`, `social`; 13 units live).
+    - **MKR Auto Sales:** `YBA-RG4-SP7` / `mkr-autosales` (Full suite).
+    - **Apex Auto Investments:** `APX-7K9-W2M` / `apex-auto` (Inspect-only: 0 units in Flow DMS, 2 in TruInspect).
+    - **Your Car Guy:** `YCG-8M4-P9X` / `your-car-guy` (Inspect-only: 0 units in Flow DMS, 5 in TruInspect).
+  - **Tenant Boundary Enforcement:**
+    - Sibling apps and public feeds strictly enforce product entitlements returned by TruFlow.
+    - Inspect-only tenants have 0 inventory in TruFlow DMS and are never broadcast to public showroom feeds.
+  - **Photo Storage Architecture:**
+    - Photos are content-addressed files under `/var/data/trusaas/{premium,lens}/media/<sha256>.jpg`, referenced by URLs, never raw base64 database rows.
 
 
 ---
