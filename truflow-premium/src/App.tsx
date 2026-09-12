@@ -1472,43 +1472,7 @@ export default function App() {
       >
         <div className="mb-6 flex flex-col items-center">
           <div className="w-full flex items-center justify-center px-1">
-            <svg viewBox="0 0 512 512" className="h-20 w-20" aria-label="TruFlow">
-              <defs>
-                <radialGradient id="chassisBase" cx="50%" cy="30%" r="70%">
-                  <stop offset="0%" stopColor="#0E182A"/><stop offset="60%" stopColor="#04070D"/><stop offset="100%" stopColor="#000000"/>
-                </radialGradient>
-                <linearGradient id="cyanGlass" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#FFFFFF"/><stop offset="18%" stopColor="#E0F2FE"/><stop offset="42%" stopColor="#38BDF8"/><stop offset="70%" stopColor="#00F2FE"/><stop offset="90%" stopColor="#0D9488"/><stop offset="100%" stopColor="#022C2A"/>
-                </linearGradient>
-                <linearGradient id="machinedTitanium" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#FFFFFF"/><stop offset="15%" stopColor="#CBD5E1"/><stop offset="40%" stopColor="#64748B"/><stop offset="75%" stopColor="#1E293B"/><stop offset="100%" stopColor="#0A0E17"/>
-                </linearGradient>
-                <linearGradient id="specularWhite" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#FFFFFF"/><stop offset="50%" stopColor="#A5F3FC"/><stop offset="100%" stopColor="rgba(255,255,255,0.2)"/>
-                </linearGradient>
-                <filter id="neonBloom" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="16" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/>
-                </filter>
-              </defs>
-              <circle cx="256" cy="256" r="246" fill="url(#chassisBase)" stroke="rgba(255,255,255,0.12)" strokeWidth="2"/>
-              <circle cx="256" cy="240" r="130" fill="url(#cyanGlass)" opacity="0.25" filter="url(#neonBloom)"/>
-              <g transform="translate(256, 256) rotate(-30)">
-                <ellipse cx="0" cy="0" rx="212" ry="68" fill="none" stroke="url(#cyanGlass)" strokeWidth="7" filter="url(#neonBloom)" opacity="0.8"/>
-                <ellipse cx="0" cy="0" rx="212" ry="68" fill="none" stroke="#00F2FE" strokeWidth="2.5" opacity="0.95"/>
-                <circle cx="190" cy="-28" r="8" fill="#FFFFFF" filter="url(#neonBloom)"/>
-              </g>
-              <g transform="translate(256, 245) scale(1.18)">
-                <path d="M-88 -65 L0 -128 L0 -25 L-48 38 L-88 -10 Z" fill="url(#machinedTitanium)" stroke="#090D16" strokeWidth="1.5"/>
-                <path d="M-48 38 L0 -25 L0 98 L-48 38 Z" fill="url(#machinedTitanium)" opacity="0.9"/>
-                <path d="M88 -65 L0 -128 L0 -25 L48 38 L88 -10 Z" fill="url(#cyanGlass)" filter="url(#neonBloom)" opacity="0.95"/>
-                <path d="M88 -65 L0 -128 L0 -25 L48 38 L88 -10 Z" fill="url(#cyanGlass)"/>
-                <path d="M48 38 L0 -25 L0 98 L48 38 Z" fill="url(#cyanGlass)"/>
-                <polygon points="0,-128 34,-92 0,-56 -34,-92" fill="url(#specularWhite)" opacity="0.95" filter="url(#neonBloom)"/>
-                <polygon points="0,-128 34,-92 0,-56 -34,-92" fill="#FFFFFF"/>
-                <line x1="0" y1="-128" x2="0" y2="98" stroke="#FFFFFF" strokeWidth="3" opacity="0.95"/>
-                <path d="M-88 -65 L0 -128 L88 -65" fill="none" stroke="url(#specularWhite)" strokeWidth="2.5" opacity="0.9"/>
-              </g>
-            </svg>
+            <img src="/icons/icon-512.png" alt="TruFlow" className="h-16 w-16 object-contain drop-shadow-[0_4px_16px_rgba(0,242,254,0.35)]" />
           </div>
           {/* Admin dealer context switcher — pick a dealer to see their world. */}
           {isMasterAdmin && state?.dealerships && state.dealerships.length > 0 && (
@@ -2510,8 +2474,9 @@ export default function App() {
                       <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Retail Price ({market.currency})</label>
                       <input
                         type="number"
-                        value={newVehicleForm.retailPrice}
-                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, retailPrice: parseFloat(e.target.value) || 0 }))}
+                        placeholder="e.g. 450000"
+                        value={newVehicleForm.retailPrice || ''}
+                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, retailPrice: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 }))}
                         className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>
@@ -2519,8 +2484,9 @@ export default function App() {
                       <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Cost Price ({market.currency})</label>
                       <input
                         type="number"
-                        value={newVehicleForm.costPrice}
-                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, costPrice: parseFloat(e.target.value) || 0 }))}
+                        placeholder="e.g. 380000"
+                        value={newVehicleForm.costPrice || ''}
+                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, costPrice: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 }))}
                         className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>
@@ -2528,8 +2494,9 @@ export default function App() {
                       <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Mileage ({market.distanceUnit})</label>
                       <input
                         type="number"
-                        value={newVehicleForm.mileage}
-                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, mileage: parseInt(e.target.value) || 0 }))}
+                        placeholder="e.g. 45000"
+                        value={newVehicleForm.mileage || ''}
+                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, mileage: e.target.value === '' ? 0 : parseInt(e.target.value, 10) || 0 }))}
                         className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>

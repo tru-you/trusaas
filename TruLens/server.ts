@@ -73,15 +73,10 @@ const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d47
 // dev), never per-phone — a stale localhost in a phone's storage used to break
 // exports silently. Production default is TruFlow Premium.
 const DEFAULT_DMS_URL =
+  process.env.DEFAULT_DMS_URL ||
   process.env.TRUFLOW_DMS_URL ||
   process.env.DMS_URL ||
-  (process.env.NODE_ENV === 'production'
-    // TruFlow, not TruLens. This read lens.tru-saas.com — TruLens's own host —
-    // so with TRUFLOW_DMS_URL unset the app exported to itself and the dealer
-    // picker would find no dealerships. render.yaml does set it, so production
-    // is unaffected; this is the fallback being honest.
-    ? 'https://flow.tru-saas.com'
-    : 'http://localhost:3001');
+  'http://127.0.0.1:3003';
 // Which dealer owns captures made before dealer tagging existed (matches
 // TruFlow Premium's DEFAULT_DEALERSHIP_ID = d1 = mkr-autosales).
 /**
@@ -1142,7 +1137,7 @@ app.get('/api/health', (_req, res) => {
   // confirm from outside that the env var actually reached the process, which is
   // otherwise invisible until someone tries a bypass. Reveals nothing an attacker
   // couldn't already learn by sending a bogus token.
-  const accessCodeConfigured = !!ACCESS_CODE;
+  const accessCodeConfigured = !!ACCESS_CODE || DEALER_CODES.length > 0 || !!SYNC_KEY;
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     ok: true,
@@ -2236,14 +2231,19 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     const storedPhotos = vehicle.photos || {};
     const photos: Record<string, string> = {};
     for (const [slotId, value] of Object.entries(storedPhotos)) {
+      if (!value) continue;
       const uri = asDataUri(value);
-      if (uri) photos[slotId] = uri;
+      if (uri) {
+        photos[slotId] = uri;
+      } else if (typeof value === "string" && (isStoredRef(value) || /^https?:\/\//i.test(value) || value.startsWith("/media/"))) {
+        photos[slotId] = value;
+      }
     }
     const photoCount = Object.keys(photos).length;
     if (photoCount === 0) {
       return res.status(400).json({
         success: false,
-        error: 'No photos to export. Capture photos first.',
+        error: "No photos to export. Capture photos first.",
       });
     }
 

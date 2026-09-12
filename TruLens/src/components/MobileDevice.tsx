@@ -176,11 +176,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center w-full">
-          <img
-            src={trulensLogo}
-            alt="TruLens"
-            className="w-32 max-w-full object-contain mx-auto mb-6 [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
-          />
+          <img src="/icons/icon-512.png" alt="TruLens" className="h-16 w-16 object-contain mx-auto mb-6 drop-shadow-[0_4px_16px_rgba(79,227,220,0.35)]" />
           <h2 className="text-[20px] font-semibold text-[#E8EAE6] tracking-[-0.01em]">
             Scan with phone to open TruLens
           </h2>

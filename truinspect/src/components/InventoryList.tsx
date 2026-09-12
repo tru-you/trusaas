@@ -1014,7 +1014,7 @@ export default function InventoryList({
                 <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Price ({market.currency})</label>
                 <input
                   type="number"
-                  placeholder="35000"
+                  placeholder="e.g. 350000"
                   value={price}
                   onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"

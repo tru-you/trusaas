@@ -76,11 +76,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
 
   return (
     <div className="min-h-full flex flex-col justify-center px-6 py-10 bg-[#06080D] text-[#E8EAE6]">
-      <img
-        src={trulensLogo}
-        alt="TruLens"
-        className="h-9 w-auto object-contain mx-auto mb-8 [filter:brightness(2.1)_contrast(0.95)]"
-      />
+      <img src="/icons/icon-512.png" alt="TruLens" className="h-16 w-16 object-contain mx-auto mb-6 drop-shadow-[0_4px_16px_rgba(79,227,220,0.35)]" />
 
       <h1 className="text-[20px] font-semibold tracking-[-0.01em] text-center">Which dealership?</h1>
       <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center mt-2 mb-6 leading-relaxed">

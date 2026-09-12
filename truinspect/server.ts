@@ -61,7 +61,7 @@ dotenv.config();
 // Same Firebase project + named DB as TruFlow Premium photo sync
 const FIREBASE_PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0151924955';
 const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d4757ec-a059-4566-98db-d15a4840f4ec';
-const DEFAULT_DMS_URL = process.env.TRUFLOW_DMS_URL || process.env.DMS_URL || 'http://localhost:3001';
+const DEFAULT_DMS_URL = process.env.DEFAULT_DMS_URL || process.env.TRUFLOW_DMS_URL || process.env.DMS_URL || 'http://127.0.0.1:3003';
 
 // Local PC mode: no Google Cloud credentials needed. Stores inventory in data/local-inventory.json
 // Set LOCAL_MODE=0 and provide GOOGLE_APPLICATION_CREDENTIALS to use real Firestore.
@@ -907,7 +907,8 @@ app.get('/api/health', (_req, res) => {
     // A boolean, never the value — lets you confirm from outside that the env
     // var reached the process, which is otherwise invisible until someone
     // tries a bypass and gets in.
-    accessCodeConfigured: !!ACCESS_CODE,
+    accessCodeConfigured: !!ACCESS_CODE || !!SYNC_KEY,
+    syncKeyConfigured: !!SYNC_KEY,
     // True when DEEPSEEK_API_KEY reached the process — the AI listing writer
     // (and any DeepSeek call) runs in mock mode when this is false.
     aiConfigured,

@@ -72,8 +72,10 @@
       }
     }, { passive: true });
 
-    if (burger) {
+    if (burger && !burger.dataset.navBound) {
+      burger.dataset.navBound = 'true';
       burger.addEventListener('click', e => {
+        e.preventDefault();
         e.stopPropagation();
         const isOpen = nav.classList.toggle('open');
         burger.setAttribute('aria-expanded', isOpen);

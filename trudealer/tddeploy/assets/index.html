@@ -684,7 +684,7 @@ html{scroll-padding-top:90px;}
 <div class="scroll-prog"><div class="scroll-prog-fill" id="prog"></div></div>
 
 <nav class="nav">
-  <a href="#top" class="nav-brand"><div class="logo-3d navbar-logo"><span class="tru">Tru</span><span class="dealer">Dealer</span></div></a>
+  <a href="#top" class="nav-brand" aria-label="TruDealer"><img src="trudealer-logo-3d-horizontal.png" alt="TruDealer" height="52" style="height:52px;width:auto;max-height:56px;object-fit:contain;display:block;"></a>
   <div class="nav-links">
     <a href="#work">Dealer sites</a>
     <a href="packages.html">Packages</a>
@@ -1759,7 +1759,7 @@ document.querySelectorAll('.scene video,.mc-preview video,.case-preview video').
   const nav=document.querySelector('.nav');
   const mobile=document.getElementById('navMobile');
   if(!burger||!nav)return;
-  burger.addEventListener('click',function(e){
+  if(burger.dataset.navBound)return;burger.dataset.navBound='true';burger.addEventListener('click',function(e){
     e.stopPropagation();
     const open=nav.classList.toggle('open');
     burger.setAttribute('aria-expanded',open);

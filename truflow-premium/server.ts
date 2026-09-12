@@ -643,7 +643,7 @@ function isPublicPath(p: string): boolean {
 // TruLens pushes captures server-to-server and has no user session. Until a
 // shared key is configured on both services this stays open, so an unset key
 // can't silently break a dealer's photo export mid-capture.
-const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || "";
+const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || process.env.SYNC_SERVICE_KEY || "";
 const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.tru-saas.com").replace(/\/$/, "");
 
 function requireAuth(req: any, res: any, next: any) {

@@ -387,7 +387,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
           <div><label className={labelCls}>Year</label><input className={inputCls} type="number" value={f.year} onChange={set('year')} /></div>
           <div><label className={labelCls}>Trim</label><input className={inputCls} value={f.trim} onChange={set('trim')} placeholder="2.8 GD-6 Raider" /></div>
           <div><label className={labelCls}>Mileage ({market.distanceUnit}) *</label><input className={inputCls} type="number" value={f.mileage} onChange={set('mileage')} placeholder="45000" /></div>
-          <div><label className={labelCls}>Price ({market.currency})</label><input className={inputCls} type="number" value={f.price} onChange={set('price')} placeholder="459900" /></div>
+          <div><label className={labelCls}>Price ({market.currency})</label><input className={inputCls} type="number" value={f.price} onChange={set('price')} placeholder="e.g. 450000" /></div>
           <div><label className={labelCls}>Stock #</label><input className={inputCls} value={f.stockNumber} onChange={set('stockNumber')} placeholder="auto" style={{ fontFamily: 'var(--mono)' }} /></div>
           <div><label className={labelCls}>VIN</label><input className={inputCls} value={f.vin} onChange={set('vin')} placeholder="auto" style={{ fontFamily: 'var(--mono)' }} /></div>
           <div><label className={labelCls}>Colour</label><input className={inputCls} value={f.color} onChange={set('color')} placeholder="White" /></div>

@@ -51,8 +51,7 @@ export default function Login() {
         const res = await fetch('/api/health', { cache: 'no-store' });
         if (!res.ok) throw new Error(String(res.status));
         const d = await res.json();
-        const configured = !!d?.accessCodeConfigured || Number(d?.dealerCodesConfigured) > 0;
-        if (alive) setServer(configured ? 'secured' : 'unconfigured');
+        if (alive) setServer(isServerSecured(d) ? 'secured' : 'unconfigured');
       } catch {
         // Offline or the server is down. Keep the code field — a cached PWA
         // opening in a dead spot should still let someone try the code they
@@ -107,11 +106,7 @@ export default function Login() {
             which is a lot of work to read at that size, and it was absolutely
             positioned into the gap below the logo where it could collide. */}
         <div className="text-center mb-10">
-          <img
-            src={trulensLogo}
-            alt="TruLens"
-            className="w-44 max-w-full object-contain mx-auto [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
-          />
+          <img src="/icons/icon-512.png" alt="TruLens" className="h-16 w-16 object-contain mx-auto mb-6 drop-shadow-[0_4px_16px_rgba(79,227,220,0.35)]" />
           <p className="mt-3 text-[12px] text-[rgba(232,234,230,0.55)] tracking-[0.08em]">
             Dealer photo studio
           </p>

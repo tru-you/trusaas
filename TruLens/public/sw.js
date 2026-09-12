@@ -3,7 +3,7 @@
    bumping this is what makes an installed phone drop the shell cached by the
    version with the broken navigation fallback. Without the bump a device would
    keep serving the old entry indefinitely. */
-const CACHE_VERSION = 'trulens-v3';
+const CACHE_VERSION = 'trulens-v4-icon';
 
 /* Shown only when a navigation fails and nothing is cached — a first run with
    no signal. Inline and dependency-free: it has to render when the app bundle

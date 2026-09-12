@@ -72,13 +72,13 @@ const EXT_BY_MIME: Record<string, string> = {
   "video/quicktime": "mov",
 };
 
-/** A stored reference looks like "/media/<64 hex>.<ext>". Deliberately strict:
- *  this is what decides whether a value gets rewritten on migration, and a loose
- *  test would let a data URI through as though it were already a file. */
-const STORED_RE = new RegExp(`^${MEDIA_ROUTE}/[a-f0-9]{64}\\.[a-z0-9]{2,5}$`);
+const cleanMediaRoute = MEDIA_ROUTE.replace(/^\/+/, "");
+const STORED_RE = new RegExp(`(?:^|/)${cleanMediaRoute}/[a-f0-9]{64}(?:\\.[a-z0-9]{2,5})?$`, "i");
 
 export function isStoredRef(value: unknown): value is string {
-  return typeof value === "string" && STORED_RE.test(value);
+  if (typeof value !== "string") return false;
+  const clean = value.split("?")[0].trim();
+  return STORED_RE.test(clean) || /^\/media\/[a-f0-9]{64}(?:\.[a-z0-9]{2,5})?$/i.test(clean);
 }
 
 export function isDataUri(value: unknown): value is string {
@@ -166,10 +166,43 @@ export function putAll(values: unknown): string[] {
 /** Absolute path for a stored reference, or null if it is not one of ours.
  *  Rejects anything with a separator so a crafted value cannot escape the dir. */
 export function resolveRef(ref: string): string | null {
-  if (!isStoredRef(ref)) return null;
-  const name = ref.slice(MEDIA_ROUTE.length + 1);
-  if (name.includes("/") || name.includes("\\") || name.includes("..")) return null;
-  return path.join(MEDIA_DIR, name);
+  if (!ref || typeof ref !== "string") return null;
+  const clean = ref.split("?")[0].trim();
+  const match = /\/media\/([a-f0-9]{64}(?:\.[a-z0-9]{2,5})?)$/i.exec(clean);
+  const name = match ? match[1] : path.basename(clean);
+  if (!name || name.includes("/") || name.includes("\\") || name.includes("..")) return null;
+
+  // 1. Check primary MEDIA_DIR
+  if (MEDIA_DIR) {
+    const direct = path.join(MEDIA_DIR, name);
+    if (fs.existsSync(direct)) return direct;
+    for (const ext of Object.values(EXT_BY_MIME)) {
+      const withExt = path.join(MEDIA_DIR, `${name}.${ext}`);
+      if (fs.existsSync(withExt)) return withExt;
+    }
+  }
+
+  // 2. Check fallback media directories across the platform
+  const fallbackDirs = [
+    "/var/data/trusaas/premium/media",
+    "/var/data/trusaas/lens/media",
+    "/var/data/trusaas/inspect/media",
+    path.join(process.cwd(), "data", "media"),
+    path.join(process.cwd(), "..", "truflow-premium", "data", "media"),
+    path.join(process.cwd(), "..", "TruLens", "data", "media"),
+  ];
+
+  for (const fDir of fallbackDirs) {
+    if (fDir === MEDIA_DIR || !fs.existsSync(fDir)) continue;
+    const fPath = path.join(fDir, name);
+    if (fs.existsSync(fPath)) return fPath;
+    for (const ext of Object.values(EXT_BY_MIME)) {
+      const withExt = path.join(fDir, `${name}.${ext}`);
+      if (fs.existsSync(withExt)) return withExt;
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -179,17 +212,13 @@ export function resolveRef(ref: string): string | null {
  * { slotId: dataUri } map to TruFlow's push-photos. Once photos are files on the
  * sending side, something has to reconstitute them, and doing it at the edge
  * keeps the wire format unchanged while both sides move independently.
- *
- * This is a transitional shape, not the destination — the destination is the
- * sender posting references and the receiver fetching them, which is what makes
- * the upload itself small. Until then this keeps exports working.
  */
 export function toDataUri(ref: string): string | null {
   const file = resolveRef(ref);
   if (!file) return null;
-  const ext = path.extname(file).slice(1).toLowerCase();
-  const mime = Object.keys(EXT_BY_MIME).find((m) => EXT_BY_MIME[m] === ext);
-  if (!mime) return null;
+  let ext = path.extname(file).slice(1).toLowerCase();
+  if (!ext) ext = "jpg";
+  const mime = Object.keys(EXT_BY_MIME).find((m) => EXT_BY_MIME[m] === ext) || "image/jpeg";
   try {
     return `data:${mime};base64,${fs.readFileSync(file).toString("base64")}`;
   } catch {
@@ -201,7 +230,10 @@ export function toDataUri(ref: string): string | null {
  *  through, so callers need not know which era a record came from. */
 export function asDataUri(value: unknown): string | null {
   if (isDataUri(value)) return value as string;
-  if (isStoredRef(value)) return toDataUri(value);
+  if (typeof value === "string") {
+    const dataUri = toDataUri(value);
+    if (dataUri) return dataUri;
+  }
   return null;
 }
 

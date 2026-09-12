@@ -49,7 +49,7 @@ export default function Login() {
         const res = await fetch('/api/health', { cache: 'no-store' });
         if (!res.ok) throw new Error(String(res.status));
         const data = await res.json();
-        if (alive) setServer(data?.accessCodeConfigured ? 'secured' : 'unconfigured');
+        if (alive) setServer(isServerSecured(data) ? 'secured' : 'unconfigured');
       } catch {
         // Offline or the server is down. Keep the code field — a cached PWA
         // opening in a dead spot should still let someone try the code they
