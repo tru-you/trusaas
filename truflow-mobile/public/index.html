@@ -716,7 +716,7 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
     <div class="lp-h">Tru<b>Flow</b></div>
     <div class="lp-sub">Your TruFlow Mobile companion — manage leads, stock and deals from the showroom floor.</div>
     <div class="lp-rows">
-      <div class="lp-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg><span class="lp-url" id="lpUrl">app.tru-saas.com</span><span class="lp-act" id="lpCopy">Copy link</span></div>
+      <div class="lp-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg><span class="lp-url" id="lpUrl">app.trudealers.com</span><span class="lp-act" id="lpCopy">Copy link</span></div>
       <div class="lp-row link" id="lpEmail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg><span class="lp-lbl">Email the link to yourself</span></div>
     </div>
     <div class="lp-foot">Full DMS? Open TruFlow Premium on desktop.</div>
@@ -727,7 +727,7 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
 <script>
 (function(){
   "use strict";
-    var FLOW_BASE="https://premium.tru-saas.com";
+    var FLOW_BASE="https://premium.trudealers.com";
   var API="", TOKEN="", AUTH=null, cachedLeads=[], cachedStock=[], cachedTasks=[];
   var DEALER_SITE="", DEALER_SLUG="", DMS_CONNECTED=null, PROFILE_RESOLVED=false, mvCache={}, curTaskId=null;
 
@@ -759,8 +759,8 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
      localStorage overrides keep local dev + a running sibling pointed right.
      Inspect is standalone (pulls the DMS catalogue, never pushes back) —
      links go to its root, results stay there until the Inspect→Flow push exists. */
-  var LENS_URL=(function(){try{return (localStorage.getItem("tfm_lens_url")||"https://lens.tru-saas.com").replace(/\/+$/,"");}catch(e){return "https://lens.tru-saas.com";}})();
-  var INSPECT_URL=(function(){try{return (localStorage.getItem("tfm_inspect_url")||"https://inspect.tru-saas.com").replace(/\/+$/,"");}catch(e){return "https://inspect.tru-saas.com";}})();
+  var LENS_URL=(function(){try{return (localStorage.getItem("tfm_lens_url")||"https://lens.trudealers.com").replace(/\/+$/,"");}catch(e){return "https://lens.trudealers.com";}})();
+  var INSPECT_URL=(function(){try{return (localStorage.getItem("tfm_inspect_url")||"https://inspect.trudealers.com").replace(/\/+$/,"");}catch(e){return "https://inspect.trudealers.com";}})();
   var openStockLink=function(base,stock){window.open(base+"/?stock="+encodeURIComponent(stock||""),"_blank","noopener");};
   var $=function(s,r){return (r||document).querySelector(s);};
    var el=function(t,c,h,ds,act){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;if(ds)for(var k in ds)e.setAttribute(k,ds[k]);if(act)e.setAttribute("data-act",act);return e;};
@@ -2250,7 +2250,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
   guideBack.addEventListener("click",function(){renderGuideList();});
 
   /* ── Chat helper (Dealer Assist via TruChat API) ── */
-  var CHAT_API=(function(){try{return (localStorage.getItem("tfm_chat_url")||"https://trusaas-chat.onrender.com").replace(/\/+$/,"");}catch(e){return "https://trusaas-chat.onrender.com";}})();
+  var CHAT_API=(function(){try{return (localStorage.getItem("tfm_chat_url")||"https://trudealers.com").replace(/\/+$/,"");}catch(e){return "https://trudealers.com";}})();
   var chatHistory=[{role:"assistant",content:"Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor."}];
   var chatBusy=false;
   var chatPanel=$("#chatPanel"), chatMsgs=$("#chatMsgs"), chatInp=$("#chatInput"), chatSendBtn=$("#chatSend");

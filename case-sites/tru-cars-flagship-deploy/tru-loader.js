@@ -17,7 +17,7 @@
  *   <script src="tru-loader.js"
  *           data-dealer="Cars on Caledon"
  *           data-slug="cars-on-caledon"
- *           data-flow="https://premium.tru-saas.com"
+ *           data-flow="https://premium.trudealers.com"
  *           data-wa="27618759389"
  *           data-accent="#e30613"
  *           data-widgets="afford,repay,form,chat"

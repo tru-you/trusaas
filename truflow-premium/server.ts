@@ -644,7 +644,7 @@ function isPublicPath(p: string): boolean {
 // shared key is configured on both services this stays open, so an unset key
 // can't silently break a dealer's photo export mid-capture.
 const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || process.env.SYNC_SERVICE_KEY || "";
-const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.tru-saas.com").replace(/\/$/, "");
+const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.trudealers.com").replace(/\/$/, "");
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.path.startsWith("/api/") || isPublicPath(req.path)) return next();
@@ -6254,7 +6254,7 @@ import { fetchValuation } from "./src/lib/scraper";
 import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from "../packages/market-scraper/index";
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || "remote").toLowerCase();
-const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || "https://scraper.tru-saas.com").replace(/\/+$/, "");
+const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || "http://127.0.0.1:4300").replace(/\/+$/, "");
 const INSTANCE_MARKET = (process.env.MARKET || "za").toLowerCase();
 const INSTANCE_VERTICAL = (process.env.VERTICAL || "cars").toLowerCase();
 
@@ -6951,7 +6951,7 @@ app.post("/api/send", authenticate, async (req: any, res) => {
 async function startServer() {
   // TruFlow Light retired — redirect to TruFlow Mobile (standalone app)
   app.get("/light*", (_req, res) => {
-    res.redirect(301, "https://app.tru-saas.com");
+    res.redirect(301, "https://app.trudealers.com");
   });
 
   // Embed widget + static public assets (dealer websites load /embed/stock-widget.js)

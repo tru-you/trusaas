@@ -29,13 +29,13 @@ window.TRUECARS_TRUCHAT_CONFIG = {
 
   dealerSlug: "true-cars",
 
-  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
+  leadWebhook: "https://premium.trudealers.com/api/integration/webhook-lead",
   leadStorageKey: "truecars_truchat_leads_v1",
   portalPin: "true",
 
-  stockApi: "https://premium.tru-saas.com/api/public/stock?dealer=true-cars",
+  stockApi: "https://premium.trudealers.com/api/public/stock?dealer=true-cars",
   stockApiFallback: [
-    "https://premium.tru-saas.com/api/public/stock?dealer=demo",
+    "https://premium.trudealers.com/api/public/stock?dealer=demo",
   ],
 
   greeting:

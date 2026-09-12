@@ -48,7 +48,7 @@ interface InventoryListProps {
 // and to show the dealer where their stock lands. It read lens.tru-saas.com —
 // TruLens's own address — so "Open TruFlow DMS" reopened TruLens, and Settings
 // told the dealer their cars went to the wrong place. flow. is canonical.
-const DMS_URL = 'https://flow.tru-saas.com';
+const DMS_URL = 'https://premium.trudealers.com';
 
 export default function InventoryList({
   vehicles,

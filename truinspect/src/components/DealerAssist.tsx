@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Send } from "lucide-react";
 
-const CHAT_API = "https://trusaas-chat.onrender.com";
+const CHAT_API = "https://trudealers.com";
 
 interface ChatMsg {
   role: "user" | "assistant";

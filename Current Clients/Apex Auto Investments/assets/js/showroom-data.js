@@ -4,11 +4,10 @@
   'use strict';
 
   const SITE_CONFIG = {
-    dealerSlug: 'apex-wholesale-investments',
-    primaryApi: 'https://flow.tru-saas.com/api/public/stock?dealer=apex-wholesale-investments',
+    dealerSlug: 'apex-auto',
+    primaryApi: 'https://premium.trudealers.com/api/public/stock?dealer=apex-auto',
     fallbackApis: [
-      'https://premium.tru-saas.com/api/public/stock?dealer=apex-wholesale-investments',
-      'https://lens.tru-saas.com/api/public/stock?dealer=apex-wholesale-investments'
+      'https://premium.trudealers.com/api/public/stock?dealer=apex-wholesale-investments'
     ]
   };
 

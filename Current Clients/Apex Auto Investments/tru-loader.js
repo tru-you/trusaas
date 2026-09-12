@@ -21,7 +21,7 @@
   var globalCfg = {
     dealer: getAttr("data-dealer", "Apex Auto Investments"),
     slug: getAttr("data-slug", "apex-wholesale-investments"),
-    flow: getAttr("data-flow", "https://flow.tru-saas.com"),
+    flow: getAttr("data-flow", "https://premium.trudealers.com"),
     wa: (getAttr("data-wa", "27726047878") || "").replace(/\D/g, ""),
     accent: getAttr("data-accent", "#B85B24"),
     brand: getAttr("data-brand", "Apex Auto"),

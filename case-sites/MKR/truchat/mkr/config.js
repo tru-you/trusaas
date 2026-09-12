@@ -26,14 +26,14 @@ window.MKR_TRUCHAT_CONFIG = {
 
   dealerSlug: "true-cars",
 
-  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
+  leadWebhook: "https://premium.trudealers.com/api/integration/webhook-lead",
   leadStorageKey: "mkr_truchat_leads_v1",
   portalPin: "",
 
-  stockApi: "https://premium.tru-saas.com/api/public/stock?dealer=mkr-autosales",
+  stockApi: "https://premium.trudealers.com/api/public/stock?dealer=mkr-autosales",
   stockApiFallback: [
-    "https://flow.tru-saas.com/api/public/stock?dealer=mkr-autosales",
-    "https://lens.tru-saas.com/api/public/stock?dealer=mkr-autosales"
+    "https://premium.trudealers.com/api/public/stock?dealer=mkr-autosales",
+    "https://lens.trudealers.com/api/public/stock?dealer=mkr-autosales"
   ],
 
   greeting:

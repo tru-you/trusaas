@@ -12,7 +12,7 @@
 - Dealer Slug: apex-wholesale-investments
 
 ## Services & Technologies
-- Live Stock Feed: https://flow.tru-saas.com/api/public/stock?dealer=apex-wholesale-investments
+- Live Stock Feed: https://premium.trudealers.com/api/public/stock?dealer=apex-wholesale-investments
 - Vehicle Condition Reports: 114-point TruInspect VIR® certified inspection reports with 0-100 score
 - Finance Simulations: TruRepay bank-grade instalment calculator (NCA compliant)
 - Affordability Pre-qualification: TruAfford income vs expense qualifying tool

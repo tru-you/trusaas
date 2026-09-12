@@ -10,9 +10,6 @@
 
   var FEEDS = [
     "https://premium.trudealers.com/api/public/stock",
-    "https://premium.tru-saas.com/api/public/stock",
-    "https://flow.tru-saas.com/api/public/stock",
-    "https://trusaas-premium.onrender.com/api/public/stock",
   ];
   /* The storefront renders the true-cars tenant AND the demo tenant together,
      so a prospect in demo mode sees their own stock appear on the site — the
@@ -82,7 +79,7 @@
     if (stock && (!v.web3d || v.web3d.mock)) {
       var w3Urls = [
         "https://lens.trudealers.com/api/public/web3d/" + encodeURIComponent(stock),
-        "https://lens.tru-saas.com/api/public/web3d/" + encodeURIComponent(stock)
+        "https://lens.trudealers.com/api/public/web3d/" + encodeURIComponent(stock)
       ];
       var tryFetchW3 = function (idx) {
         if (idx >= w3Urls.length) return;

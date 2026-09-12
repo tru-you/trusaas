@@ -164,7 +164,7 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken }: Se
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <a
-            href="https://premium.tru-saas.com"
+            href="https://premium.trudealers.com"
             target="_blank"
             rel="noreferrer"
             onClick={() => void handleLater()}

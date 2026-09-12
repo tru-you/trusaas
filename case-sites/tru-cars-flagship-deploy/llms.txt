@@ -8,7 +8,7 @@ True Cars is an independent automotive dealership offering rigorously inspected 
 - **Website**: https://www.true-cars.co.za
 - **Physical Address**: Port Elizabeth (Gqeberha), Eastern Cape, South Africa
 - **WhatsApp / Direct Line**: +27 62 050 2091
-- **Live Inventory Feed**: https://premium.tru-saas.com/api/public/stock?dealer=true-cars
+- **Live Inventory Feed**: https://premium.trudealers.com/api/public/stock?dealer=true-cars
 - **Stock Range**: R150,000 to R1,200,000+ across SUVs, bakkies (pickups), hatchbacks, sedans, and performance vehicles.
 
 ## Key Services & Technology

@@ -1354,7 +1354,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
       <div><h4>Services</h4><a href="#finance">Vehicle Finance</a><a href="#sell">Trade-Ins</a><a href="#sell">Park & Sell</a><a href="#why">Inspection Reports</a></div>
       <div><h4>Contact</h4><button type="button" class="coc-call coc-call-text" data-tel="+27618759389"><span class="cc-num">Call us</span><span class="cc-arm">+27 61 875 9389 &middot; tap to call</span></button><a href="#" class="coc-mail" data-u="lance" data-d="carsoncaledon" data-t="co.za" rel="nofollow">Email the showroom</a><a href="#visit">257 Caledon Street, Kariega</a><a href="https://facebook.com/carsoncaledon" target="_blank" rel="noopener">Facebook ↗</a></div>
     </div>
-    <div class="f-bottom"><span>© 2026 Cars on Caledon · All prices include VAT · E&OE</span><span class="ax">Powered by <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener" style="color:inherit"><b>TruDealer</b></a></span></div>
+    <div class="f-bottom"><span>© 2026 Cars on Caledon · All prices include VAT · E&OE</span><span class="ax">Powered by <a href="https://trudealers.com" target="_blank" rel="noopener" style="color:inherit"><b>TruDealer</b></a></span></div>
   </div>
 </footer>
 
@@ -1396,9 +1396,11 @@ const DEALER_SLUGS = ["cars-on-caledon"];
    contract, so a yard running the capture app without the DMS still fills this
    page. */
 const STOCK_APIS = [
-  "https://premium.tru-saas.com/api/public/stock?dealer=",
-  "https://trusaas-premium.onrender.com/api/public/stock?dealer=",
-  "https://lens.tru-saas.com/api/public/stock?dealer="
+  "https://premium.trudealers.com/api/public/stock?dealer=",
+  "https://premium.trudealers.com/api/public/stock?dealer=",
+  "https://premium.trudealers.com/api/public/stock?dealer=",
+  "https://lens.trudealers.com/api/public/stock?dealer=",
+  "https://lens.trudealers.com/api/public/stock?dealer="
 ];
 
 /* ── Fallback stock — shown only until live DMS stock loads. ──
@@ -1877,7 +1879,7 @@ observeAll();
 <script src="tru-loader.js"
         data-dealer="Cars on Caledon"
         data-slug="true-cars"
-        data-flow="https://premium.tru-saas.com"
+        data-flow="https://premium.trudealers.com"
         data-wa="27618759389"
         data-accent="#23419A"
         data-position="left"
