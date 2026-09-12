@@ -9,6 +9,7 @@
   var TRU = (window.TruShowroom = window.TruShowroom || {});
 
   var FEEDS = [
+    "https://premium.trudealers.com/api/public/stock",
     "https://premium.tru-saas.com/api/public/stock",
     "https://flow.tru-saas.com/api/public/stock",
     "https://trusaas-premium.onrender.com/api/public/stock",
@@ -79,15 +80,25 @@
     // Attempt lazy upgrade from TruLens if stockNumber is available
     var stock = v.stockNumber || v.id || v.tag;
     if (stock && (!v.web3d || v.web3d.mock)) {
-      fetch("https://lens.tru-saas.com/api/public/web3d/" + encodeURIComponent(stock), { mode: "cors" })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (data) {
-          if (data && data.package && data.package.frames && data.package.frames.length) {
-            v.web3d = data.package;
-            window.dispatchEvent(new CustomEvent("tru:stock", { detail: { source: TRU.source, count: TRU.vehicles.length } }));
-          }
-        })
-        .catch(function () {});
+      var w3Urls = [
+        "https://lens.trudealers.com/api/public/web3d/" + encodeURIComponent(stock),
+        "https://lens.tru-saas.com/api/public/web3d/" + encodeURIComponent(stock)
+      ];
+      var tryFetchW3 = function (idx) {
+        if (idx >= w3Urls.length) return;
+        fetch(w3Urls[idx], { mode: "cors" })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (data) {
+            if (data && data.package && data.package.frames && data.package.frames.length) {
+              v.web3d = data.package;
+              window.dispatchEvent(new CustomEvent("tru:stock", { detail: { source: TRU.source, count: TRU.vehicles.length } }));
+            } else {
+              tryFetchW3(idx + 1);
+            }
+          })
+          .catch(function () { tryFetchW3(idx + 1); });
+      };
+      tryFetchW3(0);
     }
   }
 

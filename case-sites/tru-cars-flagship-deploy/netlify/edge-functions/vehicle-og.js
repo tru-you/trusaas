@@ -35,6 +35,7 @@ async function getStockFeed() {
   if (cachedFeed && now < cacheExpiry) return cachedFeed;
 
   const endpoints = [
+    "https://premium.trudealers.com/api/public/stock?dealer=true-cars",
     "https://premium.tru-saas.com/api/public/stock?dealer=true-cars",
     "https://trusaas-premium.onrender.com/api/public/stock?dealer=true-cars"
   ];

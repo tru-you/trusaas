@@ -5343,7 +5343,14 @@ function buildPublicStock(state: any, dealerSlug: string, source: string, origin
   const scoped = wantedId
     ? rawVehicles.filter((v: any) => v.dealershipId === wantedId || (wantedId === 'true-cars' && v.dealershipId === 'demo'))
     : [];
-  const vehicles = scoped
+  const seenKeys = new Set<string>();
+  const dedupedScoped = scoped.filter((v: any) => {
+    const key = String(v.stockNumber || v.id || "").toLowerCase();
+    if (!key || seenKeys.has(key)) return false;
+    seenKeys.add(key);
+    return true;
+  });
+  const vehicles = dedupedScoped
     .map((v: any) => toPublicVehicle(v, source, origin))
     .filter(Boolean)
     .filter((v: any) => !isJunkPublicVehicle(v));

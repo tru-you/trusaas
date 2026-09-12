@@ -611,8 +611,8 @@
   </div>
 </main>
 
-<script src="/assets/js/catalog.js?v=1"></script>
-<script src="/assets/js/showroom-data.js?v=1"></script>
+<script src="/assets/js/catalog.js?v=20260912"></script>
+<script src="/assets/js/showroom-data.js?v=20260912"></script>
 <script src="/assets/js/showroom.js?v=11"></script>
 
 <script src="/tru-loader.js?v=3"
@@ -710,25 +710,34 @@
   });
 
   async function fetchMarketValuation(year, make, model, km) {
-    try {
-      var res = await fetch("https://premium.tru-saas.com/api/valuation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ year: year, make: make, model: model, mileage: km })
-      });
-      if (res.ok) {
-        var data = await res.json();
-        if (data && data.averageRetailPrice) {
-          return {
-            retail: data.averageRetailPrice,
-            trade: Math.round(data.averageRetailPrice * 0.84),
-            source: "Live Scraper"
-          };
+    var valuationUrls = [
+      "https://premium.trudealers.com/api/public/trade-estimate",
+      "https://premium.trudealers.com/api/valuation",
+      "https://premium.tru-saas.com/api/valuation"
+    ];
+    for (var vUrl of valuationUrls) {
+      try {
+        var res = await fetch(vUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ year: year, make: make, model: model, mileage: km })
+        });
+        if (res.ok) {
+          var data = await res.json();
+          var ret = data.retail || data.averageRetailPrice;
+          if (ret) {
+            return {
+              retail: ret,
+              trade: data.estimate || Math.round(ret * 0.84),
+              source: "Live Scraper"
+            };
+          }
         }
+      } catch (e) {
+        console.warn("Valuation error on " + vUrl + ":", e);
       }
-    } catch (e) {
-      console.warn("Live scraper fallback engaged:", e);
     }
+    console.warn("Live scraper fallback engaged, falling back to algorithmic estimation");
 
     // Realistic market algorithmic estimation
     var currentYear = new Date().getFullYear();
