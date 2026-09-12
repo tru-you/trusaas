@@ -10,7 +10,7 @@
  *           data-dealer="Cars on Caledon"
  *           data-wa="27618759389"
  *           data-slug="cars-on-caledon"
- *           data-flow="https://premium.tru-saas.com"
+ *           data-flow="https://premium.trudealers.com"
  *           data-accent="#e30613"></script>
  *
  *   data-flow   TruFlow base URL · powers the live estimate + lead capture.
@@ -53,7 +53,7 @@
     accent: attr("data-accent", "#4FE3DC"),
     accent2: attr("data-accent-2", ""),
     accent3: attr("data-accent-3", ""),
-    flowUrl: (attr("data-flow", "https://premium.tru-saas.com") || "").replace(/\/$/, ""),
+    flowUrl: (attr("data-flow", "https://premium.trudealers.com") || "").replace(/\/$/, ""),
     webhook: attr("data-webhook", ""),
     cmbKey: attr("data-callmebot-key", ""),
     cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),

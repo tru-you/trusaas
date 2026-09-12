@@ -12,7 +12,7 @@
     { href: "/stock.html",    label: "Showroom" },
     { href: "/finance.html",  label: "Finance" },
     { href: "/trade-in.html", label: "Sell / trade-in" },
-    { href: "https://trudealer.tru-saas.com", label: "The system", ext: true },
+    { href: "https://trudealers.com", label: "The system", ext: true },
   ];
 
   var WA = "27620502091";
@@ -246,7 +246,7 @@
         '</div>' +
 
         /* Ecosystem pitch */
-        '<a class="footer-lead" href="https://trudealer.tru-saas.com" ' +
+        '<a class="footer-lead" href="https://trudealers.com" ' +
           'target="_blank" rel="noopener">' +
           'Inspection reports, guided capture, stock management and AI — ' +
           '<em>one stack, any market.</em> Built in Cape Town. Deployed anywhere. ' +
@@ -282,8 +282,8 @@
           "</ul></div>" +
           "<div><h4>Platform</h4><ul>" +
             '<li><a href="https://www.tru-saas.com" target="_blank" rel="noopener">TruDealer</a></li>' +
-            '<li><a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener">The system</a></li>' +
-            '<li><a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener">Client sites</a></li>' +
+            '<li><a href="https://trudealers.com" target="_blank" rel="noopener">The system</a></li>' +
+            '<li><a href="https://trudealers.com" target="_blank" rel="noopener">Client sites</a></li>' +
           "</ul></div>" +
         "</div>" +
 

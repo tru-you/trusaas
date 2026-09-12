@@ -65,7 +65,7 @@
     accent: attr("data-accent", "#4FE3DC"),
     accent2: attr("data-accent-2", ""),
     accent3: attr("data-accent-3", ""),
-    flowUrl: attr("data-flow", ""),
+    flowUrl: (attr("data-flow", "") || "").replace(/https?:\/\/(premium|flow)\.tru-saas\.com/g, "https://premium.trudealers.com"),
     webhook: attr("data-webhook", ""),
     cmbKey: attr("data-callmebot-key", ""),
     cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),

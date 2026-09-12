@@ -20,7 +20,7 @@
   <script src="tru-loader.js?v=3"
           data-dealer="Apex Auto Investments"
           data-slug="apex-wholesale-investments"
-          data-flow="https://flow.tru-saas.com"
+          data-flow="https://premium.trudealers.com"
           data-wa="27726047878"
           data-accent="#B85B24"
           data-brand="Apex Auto"
@@ -724,7 +724,7 @@
 
     async function fetchMarketValuation(year, make, model, km) {
       try {
-        var res = await fetch("https://flow.tru-saas.com/api/valuation", {
+        var res = await fetch("https://premium.trudealers.com/api/valuation", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ year: year, make: make, model: model, mileage: km })

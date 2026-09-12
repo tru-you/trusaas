@@ -476,7 +476,7 @@ export const GUIDES: Guide[] = [
         app: "flow",
         title: "Open the mobile app",
         detail:
-          "Go to app.tru-saas.com on your phone. Sign in with your dealer code — the same one you use on desktop.",
+          "Go to app.trudealers.com on your phone. Sign in with your dealer code — the same one you use on desktop.",
       },
       {
         app: "flow",
@@ -557,7 +557,7 @@ export const GUIDES: Guide[] = [
         app: "inspect",
         title: "Open TruInspect",
         detail:
-          "Go to inspect.tru-saas.com and sign in. Tap the vehicle, then start a new inspection.",
+          "Go to inspect.trudealers.com and sign in. Tap the vehicle, then start a new inspection.",
       },
       {
         app: "inspect",

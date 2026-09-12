@@ -89,6 +89,8 @@ scratch/
 *.patch
 *.lnk
 .playwright-mcp/
+tools/hetzner/
+*.tar.gz
 
 
 

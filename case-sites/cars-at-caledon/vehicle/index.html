@@ -308,7 +308,7 @@
       loader.src = "../tru-loader.js";
       loader.setAttribute("data-dealer", "Cars on Caledon");
       loader.setAttribute("data-slug", "true-cars");
-      loader.setAttribute("data-flow", "https://premium.tru-saas.com");
+      loader.setAttribute("data-flow", "https://premium.trudealers.com");
       loader.setAttribute("data-wa", "27618759389");
       loader.setAttribute("data-accent", "#23419A");
       loader.setAttribute("data-widgets", "afford,repay,form,chat,book,share");
@@ -347,8 +347,19 @@
     // Direct live API lookup if only ?stock=... was given and not preloaded
     if (stock) {
       document.getElementById('vTitle').textContent = 'Loading vehicle details…';
-      fetch('https://premium.tru-saas.com/api/public/stock?dealer=cars-on-caledon')
-        .then(function (r) { return r.json(); })
+      var fetchStock = function(url, fallback) {
+        return fetch(url).then(function(r) {
+          if (!r.ok) throw new Error('status ' + r.status);
+          return r.json();
+        }).catch(function(e) {
+          if (fallback) return fetchStock(fallback, null);
+          throw e;
+        });
+      };
+      fetchStock(
+        'https://premium.trudealers.com/api/public/stock?dealer=cars-on-caledon',
+        'https://premium.trudealers.com/api/public/stock?dealer=cars-on-caledon'
+      )
         .then(function (data) {
           var list = Array.isArray(data.vehicles) ? data.vehicles : (Array.isArray(data) ? data : []);
           var target = String(stock).toLowerCase().replace(/[^a-z0-9]/g, '');

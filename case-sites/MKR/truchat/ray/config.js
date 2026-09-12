@@ -39,15 +39,15 @@ window.RAY_TRUCHAT_CONFIG = {
    * Example Formspree: "https://formspree.io/f/xxxxxxxx"
    */
   dealerSlug: "true-cars",
-  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
+  leadWebhook: "https://premium.trudealers.com/api/integration/webhook-lead",
 
   /** Simple PIN for portal.html (leave "" to disable) */
   portalPin: "ycg",
 
   /** Public stock API — empty / fail → local catalog */
-  stockApi: "https://premium.tru-saas.com/api/public/stock?dealer=your-car-guy",
+  stockApi: "https://premium.trudealers.com/api/public/stock?dealer=your-car-guy",
   stockApiFallback: [
-    "https://premium.tru-saas.com/api/public/stock?dealer=demo",
+    "https://premium.trudealers.com/api/public/stock?dealer=demo",
   ],
 
   greeting:

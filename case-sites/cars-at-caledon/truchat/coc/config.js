@@ -26,7 +26,7 @@ window.COC_TRUCHAT_CONFIG = {
 
   dealerSlug: "true-cars",
 
-  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
+  leadWebhook: "https://premium.trudealers.com/api/integration/webhook-lead",
   leadStorageKey: "coc_truchat_leads_v1",
   portalPin: "",
 
@@ -36,9 +36,9 @@ window.COC_TRUCHAT_CONFIG = {
      cold-start while the page itself kept working, with nothing to show for it.
      The "caledon-cars" fallback slug is dropped: it does not exist in TruFlow,
      so it only ever bought a timeout. */
-  stockApi: "https://flow.tru-saas.com/api/public/stock?dealer=cars-on-caledon",
+  stockApi: "https://premium.trudealers.com/api/public/stock?dealer=cars-on-caledon",
   stockApiFallback: [
-    "https://premium.tru-saas.com/api/public/stock?dealer=cars-on-caledon"
+    "https://premium.trudealers.com/api/public/stock?dealer=cars-on-caledon"
   ],
 
   greeting:

@@ -46,7 +46,7 @@
   var globalCfg = {
     dealer: getAttr("data-dealer", "this dealership"),
     slug: getAttr("data-slug", ""),
-    flow: getAttr("data-flow", ""),
+    flow: (getAttr("data-flow", "") || "").replace(/https?:\/\/(premium|flow)\.tru-saas\.com/g, "https://premium.trudealers.com"),
     webhook: getAttr("data-webhook", ""),
     cmbKey: getAttr("data-callmebot-key", ""),
     cmbPhone: getAttr("data-callmebot-phone", ""),

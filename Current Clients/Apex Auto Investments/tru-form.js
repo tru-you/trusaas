@@ -8,7 +8,7 @@
  *   <script src="tru-form.js"
  *           data-dealer="True Cars"
  *           data-slug="true-cars"
- *           data-flow="https://premium.tru-saas.com"
+ *           data-flow="https://premium.trudealers.com"
  *           data-wa="27620502091"
  *           data-accent="#1466E0"
  *           data-fields="vehicle,tradein,finance,location"></script>

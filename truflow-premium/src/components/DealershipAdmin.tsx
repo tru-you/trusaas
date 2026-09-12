@@ -43,7 +43,7 @@ type Dealership = {
   vatNumber?: string;
 };
 
-const FEED_ORIGIN = "https://flow.tru-saas.com";
+const FEED_ORIGIN = "https://premium.trudealers.com";
 
 /** Keep in step with PRODUCTS in server.ts. */
 const PRODUCT_OPTIONS: Array<{ id: string; label: string; hint: string }> = [

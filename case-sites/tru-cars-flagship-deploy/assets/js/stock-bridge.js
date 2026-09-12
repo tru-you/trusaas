@@ -11,9 +11,6 @@
     dealer: "true-cars",
     apis: [
       "https://premium.trudealers.com/api/public/stock",
-      "https://premium.tru-saas.com/api/public/stock",
-      "https://flow.tru-saas.com/api/public/stock",
-      "https://trusaas-premium.onrender.com/api/public/stock",
     ],
     /** Keep static demo cars when live feed is empty or partial */
     mergeMode: "prepend-live", // "prepend-live" | "live-only" | "static-only"

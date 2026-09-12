@@ -51,7 +51,7 @@
 
   function fetchTruOrbit(stockNumber, mainImgEl) {
     if (!stockNumber || !mainImgEl) return;
-    var orbitUrl = 'https://lens.tru-saas.com/api/public/web3d/' + encodeURIComponent(stockNumber);
+    var orbitUrl = 'https://lens.trudealers.com/api/public/web3d/' + encodeURIComponent(stockNumber);
 
     fetch(orbitUrl)
       .then(function(res) { return res.ok ? res.json() : null; })

@@ -28,7 +28,7 @@ import { fetchValuation as pkgFetchValuation, markets as pkgMarkets } from '../p
 import { lookupRegistration, lookupCarHistory, regLookupConfigured, regLookupProvider, historyCheckEnabled } from '../packages/reg-lookup';
 
 const VALUATION_ENGINE = (process.env.VALUATION_ENGINE || 'remote').toLowerCase();
-const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || 'https://scraper.tru-saas.com').replace(/\/+$/, '');
+const SCRAPER_REMOTE_URL = (process.env.SCRAPER_REMOTE_URL || 'http://127.0.0.1:4300').replace(/\/+$/, '');
 const INSTANCE_MARKET = (process.env.MARKET || 'za').toLowerCase();
 const INSTANCE_VERTICAL = (process.env.VERTICAL || 'cars').toLowerCase();
 
