@@ -58,7 +58,7 @@
 
 - **Build:** `npm run build:webapp` → esbuild → `webapp/server.cjs`
 - **Deploy to Hetzner:** SFTP upload engine.ts + index.ts + server.cjs + markets/ → `pm2 restart scraper`
-- **SSH:** `root@2.29.17.123` password `TruSaaS2026!Het`
+- **SSH:** Key-based auth only (password auth disabled). See server admin for access.
 - **Public URL:** `https://scraper.tru-saas.com`
 
 ### Data Flow

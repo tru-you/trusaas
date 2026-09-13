@@ -12,7 +12,7 @@ All six microservices across the TruSaaS ecosystem are online in PM2, communicat
 
 | Pillar | Service | Port | Auth / Gating Rule | Verified Status |
 |:---|:---|:---|:---|:---|
-| **Master DMS** | `trusaas-premium` | `3003` | Admin: `GQR-GP8-WUF`<br>Legacy `tru2026`: **BLOCKED (401)** | **PASS (200)** · Full fleet management & centralized photo ledger |
+| **Master DMS** | `trusaas-premium` | `3003` | Admin: `[REDACTED]`<br>Legacy `tru2026`: **BLOCKED (401)** | **PASS (200)** · Full fleet management & centralized photo ledger |
 | **PWA Studio** | `trusaas-lens` | `3001` | Dynamic validation via `POST /api/auth/device`<br>Proxy over `x-tru-sync-key` | **PASS (200)** · 33 True Cars vehicles + 13 Caledon vehicles loaded |
 | **Inspections** | `trusaas-inspect` | `3002` | Tenant entitlement gating via Master Flow | **PASS (200)** · Inspect tenants active (`APX-7K9-W2M`, `YCG-8M4-P9X`) |
 | **Mobile App** | `trusaas-mobile` | `3004` | Direct proxy to Flow `:3003` + Chat `:5000` | **PASS (200)** · True Cars (`6SY-WJH-5KY`) loads 36 live vehicles |
@@ -28,12 +28,12 @@ All six microservices across the TruSaaS ecosystem are online in PM2, communicat
 
 | Tenant Name | Slug | Access Code | Role | Entitled Product Suite | Live Units in Flow DMS |
 |:---|:---|:---|:---|:---|:---|
-| **Master Admin** | `admin` | `GQR-GP8-WUF` | `admin` | Global Management Console | 49 units (fleet-wide) |
-| **True Cars** | `true-cars` | `6SY-WJH-5KY` | `principal` | `flow`, `lens`, `inspect`, `live`, `value`, `social` | 36 units |
-| **Cars on Caledon** | `cars-on-caledon` | `E6Z-XHB-F2F` | `principal` | `flow`, `lens`, `inspect`, `live`, `value`, `social` | 13 units |
-| **MKR Auto Sales** | `mkr-autosales` | `YBA-RG4-SP7` | `principal` | `flow`, `lens`, `inspect`, `live`, `value`, `social` | Provisioned |
-| **Apex Auto Investments** | `apex-auto` | `APX-7K9-W2M` | `principal` | `inspect` *(Lens locked: 403)* | 0 in Flow / Standalone Inspect |
-| **Your Car Guy** | `your-car-guy` | `YCG-8M4-P9X` | `principal` | `inspect` *(Lens locked: 403)* | 0 in Flow / Standalone Inspect |
+| **Master Admin** | `admin` | `[REDACTED]` | `admin` | Global Management Console | 49 units (fleet-wide) |
+| **True Cars** | `true-cars` | `[REDACTED]` | `principal` | `flow`, `lens`, `inspect`, `live`, `value`, `social` | 36 units |
+| **Cars on Caledon** | `cars-on-caledon` | `[REDACTED]` | `principal` | `flow`, `lens`, `inspect`, `live`, `value`, `social` | 13 units |
+| **MKR Auto Sales** | `mkr-autosales` | `[REDACTED]` | `principal` | `flow`, `lens`, `inspect`, `live`, `value`, `social` | Provisioned |
+| **Apex Auto Investments** | `apex-auto` | `[REDACTED]` | `principal` | `inspect` *(Lens locked: 403)* | 0 in Flow / Standalone Inspect |
+| **Your Car Guy** | `your-car-guy` | `[REDACTED]` | `principal` | `inspect` *(Lens locked: 403)* | 0 in Flow / Standalone Inspect |
 
 ---
 
@@ -56,16 +56,16 @@ All six microservices across the TruSaaS ecosystem are online in PM2, communicat
 - **Re-Export Verification**: Tested `POST /api/export/dms` for vehicle `v_lens_1785857184107` (Volkswagen Polo). Synced all 23 photo references to Flow with `200 OK { ok: true, synced: true }`.
 
 ### B. TruFlow Mobile (Companion App — Port 3004)
-- **Environment & Routing**: Configured in `/var/www/trusaas/truflow-mobile/.env` with `API_TARGET=http://127.0.0.1:3003`, `CHAT_API=http://127.0.0.1:5000`, and `TRUFLOW_SYNC_KEY=truflow_internal_sync_key_prod_2026`.
+- **Environment & Routing**: Configured in `/var/www/trusaas/truflow-mobile/.env` with `API_TARGET=http://127.0.0.1:3003`, `CHAT_API=http://127.0.0.1:5000`, and `TRUFLOW_SYNC_KEY=[REDACTED — set via server environment]`.
 - **Authentication**: Logging in with `6SY-WJH-5KY` yields an auth session with `GET /api/state` streaming all 36 live vehicles.
 
 ### C. TruChat API (Dealer Assist & Web Chat — Port 5000)
 - **Daemon Configuration**: Running under PM2 as `trusaas-chat` (:5000).
-- **Brain Integration**: Powered by DeepSeek (`sk-cf7153aa5a3642fb8af6e4c941924205`) with live catalog streaming from Master Flow (`http://127.0.0.1:3003/api/public/stock?dealer=true-cars`).
+- **Brain Integration**: Powered by DeepSeek (`[REDACTED — set via DEEPSEEK_API_KEY env var]`) with live catalog streaming from Master Flow (`http://127.0.0.1:3003/api/public/stock?dealer=true-cars`).
 - **Live Test Response**: Natural language queries (e.g. *"What Polo do you have?"*) successfully return accurate real-time inventory cards, prices (e.g. R 350,000 / 18,500 km), and WhatsApp lead generation buttons.
 
 ### D. Inter-Service Security & Sync Key
-- **Shared Secret**: `TRUFLOW_SYNC_KEY=truflow_internal_sync_key_prod_2026` configured across all apps and ecosystem file (`/var/www/trusaas/tools/hetzner/ecosystem.config.cjs`).
+- **Shared Secret**: `TRUFLOW_SYNC_KEY=[REDACTED]` configured across all apps and ecosystem file (`/var/www/trusaas/tools/hetzner/ecosystem.config.cjs`).
 - **Inter-service Code Verification**: `POST /api/auth/verify-code` checks dealership existence and product entitlements; unauthorized or unentitled products fail closed with 403.
 
 ---

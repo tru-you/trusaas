@@ -79,6 +79,7 @@ if (!getFirebaseApps().length) {
 }
 
 const app = express();
+app.set('trust proxy', 'loopback');
 // Hosts (Render free tier, etc.) inject PORT — keep 3001 for local dev
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -97,10 +98,21 @@ app.use((_req, res, next) => {
   next();
 });
 
-// Custom lightweight CORS middleware for external website plugins & widget integrations
+// CORS middleware — wildcard for public routes (widgets, feeds, webhooks), restricted for everything else
+const PUBLIC_CORS_PREFIXES = ["/api/public", "/api/feed", "/media", "/embed", "/api/integration/webhook"];
+const ALLOWED_ORIGINS = /^https?:\/\/([^/]*\.)?(trudealers\.com|tru-saas\.com|trusaas\.co\.za|localhost:\d+)$/i;
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  const isPublicCors = PUBLIC_CORS_PREFIXES.some(p => req.path.startsWith(p));
+  if (isPublicCors) {
+    res.header("Access-Control-Allow-Origin", "*");
+  } else {
+    const origin = req.headers.origin || "";
+    if (ALLOWED_ORIGINS.test(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Vary", "Origin");
+    }
+  }
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-tru-sync-key");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
@@ -295,7 +307,8 @@ interface SharedState {
 type DealerData = { [K in TenantKey]: any[] };
 
 function dealerFile(id: string): string {
-  return path.join(DATA_DIR, `dealer-${id}.json`);
+  const safeId = String(id).replace(/[^a-zA-Z0-9_-]/g, "");
+  return path.join(DATA_DIR, `dealer-${safeId}.json`);
 }
 
 function readShared(): SharedState {
@@ -3638,6 +3651,9 @@ app.get("/api/drift", (req: any, res) => {
  *  whitelist: nothing outside this set (products, slug, id) can be changed
  *  through here — those remain admin-only via /api/dealerships/:id. */
 app.put("/api/dealership/self", (req: any, res) => {
+  if (req.auth?.role !== 'admin' && req.auth?.role !== 'principal') {
+    return res.status(403).json({ error: "Access denied" });
+  }
   const state = readState();
   const targetId =
     req.auth?.role === "admin" ? (req.body?.dealershipId || req.auth?.dealershipId) : req.auth?.dealershipId;
@@ -4253,6 +4269,7 @@ Response MUST be a valid JSON array of objects with keys "leadId", "assignedUser
 
 // --- AI SECURITY CO-PILOT CHATBOT ENDPOINT ---
 app.post("/api/chat", async (req: any, res) => {
+  if (req.auth?.dealershipId === 'demo') return res.status(403).json({ error: 'Not available in demo mode' });
   const { query } = req.body;
   if (!query) {
     return res.status(400).json({ error: "Missing query" });
@@ -4752,6 +4769,9 @@ app.post("/api/sync/push-photos", (req, res) => {
        vehicle. Scope the search the same way the public feed scopes reads, so
        write and read agree on who owns an untagged row. */
     const pushDealerId = dealerIdForSlug(dealerSlug)!;
+    if ((req as any).auth?.role !== 'admin' && (req as any).auth?.dealershipId !== pushDealerId) {
+      return res.status(403).json({ error: "Access denied" });
+    }
     const ownedByPusher = (v: any) =>
       v.dealershipId === pushDealerId;
 
@@ -4996,6 +5016,9 @@ app.post("/api/sync/web3d", (req, res) => {
 
     const state = readState();
     const pushDealerId = dealerIdForSlug(dealerSlug)!;
+    if ((req as any).auth?.role !== 'admin' && (req as any).auth?.dealershipId !== pushDealerId) {
+      return res.status(403).json({ error: "Access denied" });
+    }
     const idx = state.vehicles.findIndex(
       (v: any) => v.stockNumber === stockNumber && v.dealershipId === pushDealerId
     );
@@ -5774,6 +5797,10 @@ app.post("/api/integration/webhook-lead", (req, res) => {
     });
   }
 
+  if (!readShared().dealerships.some(d => d.id === leadDealershipId)) {
+    return res.status(400).json({ error: "Invalid dealership." });
+  }
+
   try {
     const state = readState();
     const newLead: Lead = {
@@ -5845,7 +5872,8 @@ app.post("/api/integration/sync-inventory", (req: any, res) => {
 // --- TRULENS: LISTING COPY WRITER (DeepSeek) ---
 // Kept at /api/gemini/analyze for frontend compatibility; no image is sent.
 
-app.post('/api/gemini/analyze', async (req, res) => {
+app.post('/api/gemini/analyze', async (req: any, res) => {
+  if (req.auth?.dealershipId === 'demo') return res.status(403).json({ error: 'Not available in demo mode' });
   const { base64Image, slotName, vehicleInfo } = req.body;
 
   if (!base64Image) {
@@ -6199,6 +6227,9 @@ async function pushInvoiceToAccounting(
 // Codat webhook receiver — data-connection status changes land here.
 app.post("/api/integration/webhook-codat", (req, res) => {
   const payload = req.body;
+  if (!CODAT_WEBHOOK_SECRET) {
+    return res.status(503).json({ error: "Webhook not configured" });
+  }
   if (!payload || typeof payload !== "object") {
     return res.status(400).json({ error: "Invalid JSON" });
   }
@@ -6879,6 +6910,7 @@ let nodemailer: any = null;
 try { nodemailer = require("nodemailer"); } catch {}
 
 app.post("/api/send", authenticate, async (req: any, res) => {
+  if (req.auth?.dealershipId === 'demo') return res.status(403).json({ error: 'Not available in demo mode' });
   const { channel, to, subject, body, from } = req.body || {};
 
   if (!channel || !to || !body) {

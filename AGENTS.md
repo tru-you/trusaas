@@ -23,12 +23,12 @@
     - Master Admin manages dealerships, grants product suites (`flow`, `lens`, `inspect`, `live`, `value`, `social`), and issues/rotates access codes via the Dealership Admin UI or API.
     - Sibling apps (TruLens, TruInspect, TruLive, TruTrade) authenticate client codes dynamically against TruFlow via `POST /api/auth/verify-code`.
   - **Current Production Access Codes & Tenant Profiles (Issued & Verified):**
-    - **Master Admin:** `GQR-GP8-WUF` / `tru2026` (Role: admin, platform-wide visibility across 49 units, administrative console only).
-    - **True Cars:** `6SY-WJH-5KY` / `true-cars` (Full suite: `flow`, `lens`, `inspect`, `live`, `value`, `social`; 36 units live).
-    - **Cars on Caledon:** `E6Z-XHB-F2F` / `cars-on-caledon` (Full suite: `flow`, `lens`, `inspect`, `live`, `value`, `social`; 13 units live).
-    - **MKR Auto Sales:** `YBA-RG4-SP7` / `mkr-autosales` (Full suite).
-    - **Apex Auto Investments:** `APX-7K9-W2M` / `apex-auto` (Inspect-only: 0 units in Flow DMS, 2 in TruInspect).
-    - **Your Car Guy:** `YCG-8M4-P9X` / `your-car-guy` (Inspect-only: 0 units in Flow DMS, 5 in TruInspect).
+    - **Master Admin:** `[REDACTED — rotate via Master Admin UI]` (Role: admin, platform-wide visibility across 49 units, administrative console only).
+    - **True Cars:** `[REDACTED — rotate via Master Admin UI]` / `true-cars` (Full suite: `flow`, `lens`, `inspect`, `live`, `value`, `social`; 36 units live).
+    - **Cars on Caledon:** `[REDACTED — rotate via Master Admin UI]` / `cars-on-caledon` (Full suite: `flow`, `lens`, `inspect`, `live`, `value`, `social`; 13 units live).
+    - **MKR Auto Sales:** `[REDACTED — rotate via Master Admin UI]` / `mkr-autosales` (Full suite).
+    - **Apex Auto Investments:** `[REDACTED — rotate via Master Admin UI]` / `apex-auto` (Inspect-only: 0 units in Flow DMS, 2 in TruInspect).
+    - **Your Car Guy:** `[REDACTED — rotate via Master Admin UI]` / `your-car-guy` (Inspect-only: 0 units in Flow DMS, 5 in TruInspect).
   - **Tenant Boundary Enforcement:**
     - Sibling apps and public feeds strictly enforce product entitlements returned by TruFlow.
     - Inspect-only tenants have 0 inventory in TruFlow DMS and are never broadcast to public showroom feeds.
@@ -86,10 +86,10 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 **Status:** Active, `applicationName` = `Flow` (confirmed working)
 
 **Env vars (all services):**
-- `IMAGIN8_API_KEY` — `A454229B-BB12-4105-A0BC-E2B765A4CC38`
-- `IMAGIN8_CUSTOMER_ID` — `11030`
-- `IMAGIN8_USERNAME` — `trusaas`
-- `IMAGIN8_PASSWORD` — `Fruity22!@!@`
+- `IMAGIN8_API_KEY` — Set in server environment (secret, never commit)
+- `IMAGIN8_CUSTOMER_ID` — Set in server environment
+- `IMAGIN8_USERNAME` — Set in server environment
+- `IMAGIN8_PASSWORD` — Set in server environment (secret, never commit)
 - `IMAGIN8_APP_NAME` — `Flow`
 - `IMAGIN8_SANDBOX` — `false` (Live API)
 
