@@ -9,8 +9,11 @@
 
 - **BRAND IDENTITY & LOGO ARCHITECTURE (2026-09-12):**
   - **Sibling Apps (TruFlow, TruInspect, TruLens, TruLive, TruTrade):**
-    - Strictly use the **3D Hex Icon mark ONLY** (`icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.svg`, login cards, and app headers). No wide text wordmark cluttering mobile headers.
-    - PWA Service Workers: Cache version MUST be bumped on icon/shell changes (`sw.js`) so yard handsets immediately drop old shells and display new marks.
+    - **Wordmark Front, Icon Inside**:
+      - **Front (Login cards, Auth Gate, Splash, Laptop QR fallback screens)**: Render the full brand **Wordmark** (`trudealer-logo-3d-horizontal.png` or product wordmarks) prominently with subtitle.
+      - **Inside (App Header, Top Navigation Bar, Desktop Sidebar when signed in)**: Render the **3D Hex Icon mark ONLY** (`icon-192.png`, `icon-512.png`), sized boldly and prominently (36px–40px, not tiny).
+    - **PWA Shell & Icons**: Strictly use the **3D Hex Icon mark** (`icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.svg`).
+    - **PWA Service Workers**: Cache version MUST be bumped on icon/shell changes (`sw.js`) so yard handsets immediately drop old shells and display new marks.
   - **Dealer Showroom & Marketing Web (trudealers.com):**
     - Header uses the full **3D Horizontal Logo** (`trudealer-logo-3d-horizontal.png`) at bold scale: 52px desktop, 44px tablet, 40px mobile.
     - Embedded SVG fallback (`trudealer-nav-logo.svg`) carries a self-contained base64 Data URI to prevent browser image sandbox blocking.
@@ -83,11 +86,12 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 **Status:** Active, `applicationName` = `Flow` (confirmed working)
 
 **Env vars (all services):**
-- `IMAGIN8_API_KEY` — platform API key
-- `IMAGIN8_CUSTOMER_ID` — account ID
-- `IMAGIN8_USERNAME` — account login
-- `IMAGIN8_PASSWORD` — account password
-- `IMAGIN8_APP_NAME` — **`Flow`** (changed from `eValue8Broker`)
+- `IMAGIN8_API_KEY` — `A454229B-BB12-4105-A0BC-E2B765A4CC38`
+- `IMAGIN8_CUSTOMER_ID` — `11030`
+- `IMAGIN8_USERNAME` — `trusaas`
+- `IMAGIN8_PASSWORD` — `Fruity22!@!@`
+- `IMAGIN8_APP_NAME` — `Flow`
+- `IMAGIN8_SANDBOX` — `false` (Live API)
 
 **API methods used:**
 - `getStaticInfo(mmCode)` → vehicle specs (flat-fee, unlimited calls) — used in Add Vehicle auto-fill
@@ -95,6 +99,10 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 - `getValues(mmCode, year, mileage)` → TU valuation (chargeable per-call) — **bundle-gated**, returns `mmRetail`/`mmTrade`/`mmNew`/`mmEstimator`
 - `regCheck(identifier, type)` → vehicle background check (chargeable per-call) — **bundle-gated**
 - `accidentReport(vin)` → claims history, damaged areas, claim amounts (chargeable per-call) — **bundle-gated, new 2026-08-22**
+
+**Mandatory Call Sequence for Valuations:**
+- **Step 1 (Static Lookup)**: Call `getStaticInfo(mmCode)` or `getModels(make)` to resolve vehicle specifications, intro/discontinue years, and exact M&M code.
+- **Step 2 (Valuation / Gated Call)**: `getValues(mmCode, year, mileage)` can ONLY be called once the vehicle's `mmCode` and matching `year` are fully set from the static record. TransUnion requires both keys to look up the valuation price matrix.
 
 **Pricing tiers:**
 - **Free (flat-fee, unlimited):** `getStaticInfo`, `getModels`

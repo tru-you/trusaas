@@ -73,6 +73,15 @@ export default function DesktopShell({
         className="ti-sidebar w-[340px] shrink-0 flex flex-col"
         style={{ background: 'var(--ink)', borderRight: '1px solid var(--glass-line)' }}
       >
+        {/* Brand header — 3D Hex icon inside */}
+        <div className="px-4 pt-4 pb-2 flex items-center gap-3 border-b border-[var(--glass-line)]">
+          <img src="/icons/in-app-icon.png" alt="TruInspect" className="h-9 w-9 rounded-[9px] object-contain shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.5)] border border-white/10" />
+          <div className="min-w-0">
+            <h1 className="text-[15px] font-semibold text-[#E8EAE6] truncate leading-tight">{dealerName || 'TruInspect'}</h1>
+            <p className="text-[11px] text-[rgba(232,234,230,0.55)] font-mono tracking-[0.04em] uppercase mt-0.5">Condition & VIR</p>
+          </div>
+        </div>
+
         {/* Section nav */}
         {onSectionChange && (
           <div className="px-4 pt-4">

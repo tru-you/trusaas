@@ -330,6 +330,8 @@
     "#" + ID + "-root .ta-fine{font-size:10px;color:var(--ta-faint);line-height:1.45;margin-top:12px}",
     "#" + ID + "-root .ta-foot{padding:10px 14px 12px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;",
     "font-size:10px;color:var(--ta-muted);text-align:center}",
+    "#" + ID + "-root .ta-foot a{color:inherit;text-decoration:none}",
+    "#" + ID + "-root .ta-foot a:hover{text-decoration:underline}",
     "#" + ID + "-root .ta-foot b{color:var(--ta-signal-bright)}",
     /* Mobile: collapse the launcher to an icon-only round FAB so several
        widgets can stack on the same side without colliding. The panel goes
@@ -421,7 +423,7 @@
             '<div class="ta-step-dot on"></div><div class="ta-step-dot"></div><div class="ta-step-dot"></div><div class="ta-step-dot"></div>' +
           "</div>" +
           '<div class="ta-body" id="' + ID + '-body"></div>' +
-          '<div class="ta-foot">Powered by <b>TruSaaS TruAfford</b> · Soft estimate only · Not a credit bureau check</div>' +
+          '<div class="ta-foot">Powered by <a href="https://trudealers.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"><b>TruDealer TruAfford</b></a> · Soft estimate only · Not a credit bureau check</div>' +
         "</div>" +
         '<button type="button" class="ta-launcher" id="' + ID + '-open" aria-label="Check affordability">' +
           '<span class="ta-ico">' +

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Lock, AlertCircle, Loader2, Monitor, ShieldOff, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import trulensLogo from '../assets/images/trulens-wordmark.png';
+import trudealerWordmark from '../assets/images/trudealer-wordmark.png';
 
 /**
  * One field: the access code issued for this dealership.
@@ -105,11 +105,15 @@ export default function Login() {
         {/* The tagline under the mark used to be 13px with 0.3em of tracking,
             which is a lot of work to read at that size, and it was absolutely
             positioned into the gap below the logo where it could collide. */}
-        <div className="text-center mb-10">
-          <img src="/icons/icon-512.png" alt="TruLens" className="h-16 w-16 object-contain mx-auto mb-6 drop-shadow-[0_4px_16px_rgba(79,227,220,0.35)]" />
-          <p className="mt-3 text-[12px] text-[rgba(232,234,230,0.55)] tracking-[0.08em]">
-            Dealer photo studio
-          </p>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img
+            src={trudealerWordmark}
+            alt="TruDealer"
+            className="w-52 max-w-full object-contain mx-auto mb-3 brand-3d-glow"
+          />
+          <span className="pill-cyan-shimmer">
+            TruLens Photo Studio
+          </span>
         </div>
 
         <div className="text-center mb-7">

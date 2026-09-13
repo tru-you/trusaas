@@ -3,7 +3,7 @@
   var e = TRU.esc;
 
 /* ---- Immersive Gallery + Lightbox ---- */
-function galleryHTML(images, title) {
+function galleryHTML(images, title, isHidden) {
   if (!images || !images.length) return '';
   var hero = images[0];
   var thumbs = images.map(function(img, i) {
@@ -12,7 +12,7 @@ function galleryHTML(images, title) {
     '</button>';
   }).join('');
   return (
-    '<div class="vdp-gallery-immersive">' +
+    '<div class="vdp-gallery-immersive" id="galleryContainer"' + (isHidden ? ' style="display:none"' : '') + '>' +
       '<div class="vdp-gallery-hero" id="galleryHero" role="button" tabindex="0" aria-label="Open full-screen gallery">' +
         '<img id="galleryHeroImg" src="' + e(hero) + '" alt="' + e(title) + '">' +
         '<span class="vdp-gallery-count">' + images.length + ' photos</span>' +
@@ -109,7 +109,7 @@ function openLightbox(images, startIdx) {
     ];
     return rows
       .filter(function (r) { return r[1] != null && r[1] !== ""; })
-      .map(function (r) { return "<tr><td>" + e(r[0]) + "</td><td>" + e(r[1]) + "</td></tr>"; })
+      .map(function (r) { return '<tr><td class="spec-label">' + e(r[0]) + '</td><td class="spec-val">' + e(r[1]) + "</td></tr>"; })
       .join("");
   }
 
@@ -559,6 +559,23 @@ function openLightbox(images, startIdx) {
       return notFound();
     }
 
+    if ((!v.web3d || !v.web3d.frames || !v.web3d.frames.length) && (v.stockNumber || v.id)) {
+      if (TRU.enrichVehicleOrbit) TRU.enrichVehicleOrbit(v);
+      var sKey = v.stockNumber || v.id;
+      if (!v.__web3dFetching) {
+        v.__web3dFetching = true;
+        fetch("https://lens.trudealers.com/api/public/web3d/" + encodeURIComponent(sKey), { mode: "cors" })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (data) {
+            if (data && data.package && data.package.frames && data.package.frames.length) {
+              v.web3d = data.package;
+              render();
+            }
+          })
+          .catch(function () {});
+      }
+    }
+
     try {
       document.title = TRU.title(v) + " — Truecars";
       var crumbEl = document.getElementById("crumb");
@@ -582,63 +599,56 @@ function openLightbox(images, startIdx) {
     }
 
     var price = v.truPrice && v.truPrice < v.price ? v.truPrice : v.price;
-    var hasOrbit = !!(v.web3d && v.web3d.frames && v.web3d.frames.length);
-    var frames = hasOrbit ? v.web3d.frames : [];
-
-    var chips = frames.map(function (f, i) {
-      var az = typeof f.azimuth === "number" ? f.azimuth : i / frames.length;
-      return { i: i, az: ((az % 1) + 1) % 1, name: f.name };
-    });
-    function nearest(target) {
-      var best = chips[0];
-      chips.forEach(function (c) {
-        var d = Math.min(Math.abs(c.az - target), 1 - Math.abs(c.az - target));
-        var bd = Math.min(Math.abs(best.az - target), 1 - Math.abs(best.az - target));
-        if (d < bd) best = c;
+    function buildOrbitMarkup(car) {
+      if (!car.web3d || !car.web3d.frames || !car.web3d.frames.length) return "";
+      var frms = car.web3d.frames;
+      var chps = frms.map(function (f, i) {
+        var az = typeof f.azimuth === "number" ? f.azimuth : i / frms.length;
+        return { i: i, az: ((az % 1) + 1) % 1, name: f.name };
       });
-      return best;
-    }
-    var jumps = hasOrbit
-      ? [["Front", 0], ["Side", 0.25], ["Rear", 0.5], ["Other side", 0.75]]
-          .map(function (p) { var c = nearest(p[1]); return { label: p[0], i: c.i }; })
-      : [];
+      function nearest(target) {
+        var best = chps[0];
+        chps.forEach(function (c) {
+          var d = Math.min(Math.abs(c.az - target), 1 - Math.abs(c.az - target));
+          var bd = Math.min(Math.abs(best.az - target), 1 - Math.abs(best.az - target));
+          if (d < bd) best = c;
+        });
+        return best;
+      }
+      var jmps = [["Front", 0], ["Side", 0.25], ["Rear", 0.5], ["Other side", 0.75]]
+        .map(function (p) { var c = nearest(p[1]); return { label: p[0], i: c.i }; });
 
-    /* Orbit markup */
-    var orbitMarkup = hasOrbit
-      ? '<figure class="orbit-hero" id="orbitContainer">' +
-          '<div class="orbit-head">' +
-            '<span class="eyebrow" style="display:flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> 360° TruOrbit Interactive Studio</span>' +
-            '<span class="orbit-count">' + frames.length + " studio angles</span>" +
-          "</div>" +
-          '<div class="orbit" id="orbit" tabindex="0" role="group" ' +
-            'aria-label="360 degree walkaround — drag, or use arrow keys, to rotate">' +
-            frames.map(function (f, i) {
-              return '<img src="' + e(f.image) + '" alt="' + e(f.name) + '"' +
-                (i === 0 ? ' class="is-active"' : "") +
-                (i === 0 ? "" : ' loading="lazy"') + ">";
-            }).join("") +
-            '<div class="orbit-label" id="orbitLabel">' + e(frames[0].name) + "</div>" +
-            '<button class="orbit-autospin" id="orbitAutoSpin" type="button" aria-label="Auto spin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Auto Spin</button>' +
-            '<button class="orbit-reset" id="orbitReset" type="button" aria-label="Reset to front">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" ' +
-              'stroke-linecap="round"><path d="M1 4v6h6"/>' +
-              '<path d="M3.5 20A9 9 0 1 0 4 10l-3 0"/></svg>' +
-            "</button>" +
-            '<div class="orbit-hint" id="orbitHint">' +
-              'Drag to spin · <b id="orbitDeg">0°</b>' +
-            "</div>" +
-          "</div>" +
-          '<div class="orbit-chips" id="orbitChips">' +
-            jumps.map(function (j, k) {
-              return '<button type="button" data-i="' + j.i + '"' +
-                (k === 0 ? ' class="is-on"' : "") + ">" + e(j.label) + "</button>";
-            }).join("") +
-          "</div>" +
-        "</figure>"
-      : "";
+      return '<figure class="orbit-hero" id="orbitContainer">' +
+        '<div class="orbit-head">' +
+          '<span class="eyebrow" style="display:flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> 360° TruOrbit Interactive Studio</span>' +
+          '<span class="orbit-count">' + frms.length + " studio angles</span>" +
+        '</div>' +
+        '<div class="orbit" id="orbit" tabindex="0" role="group" aria-label="360 degree walkaround — drag, or use arrow keys, to rotate">' +
+          frms.map(function (f, i) {
+            return '<img src="' + e(f.image) + '" alt="' + e(f.name) + '"' +
+              (i === 0 ? ' class="is-active"' : "") +
+              (i === 0 ? "" : ' loading="lazy"') + ">";
+          }).join("") +
+          '<div class="orbit-label" id="orbitLabel">' + e(frms[0].name) + '</div>' +
+          '<button class="orbit-autospin" id="orbitAutoSpin" type="button" aria-label="Auto spin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Auto Spin</button>' +
+          '<button class="orbit-reset" id="orbitReset" type="button" aria-label="Reset to front">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.5 20A9 9 0 1 0 4 10l-3 0"/></svg>' +
+          '</button>' +
+          '<div class="orbit-hint" id="orbitHint">Drag to spin · <b id="orbitDeg">0°</b></div>' +
+        '</div>' +
+        '<div class="orbit-chips" id="orbitChips">' +
+          jmps.map(function (j, k) {
+            return '<button type="button" data-i="' + j.i + '"' + (k === 0 ? ' class="is-on"' : "") + '>' + e(j.label) + '</button>';
+          }).join("") +
+        '</div>' +
+      '</figure>';
+    }
+
+    var hasOrbit = !!(v.web3d && v.web3d.frames && v.web3d.frames.length);
+    var orbitMarkup = buildOrbitMarkup(v);
 
     /* Gallery markup */
-    var galleryMarkup = galleryHTML(v.images && v.images.length ? v.images : [v.heroImage || ""], TRU.title(v));
+    var galleryMarkup = galleryHTML(v.images && v.images.length ? v.images : [v.heroImage || ""], TRU.title(v), hasOrbit);
 
     /* Media Switcher */
     var mediaSwitcherMarkup =
@@ -657,17 +667,25 @@ function openLightbox(images, startIdx) {
           renderHighlights(v) +
 
           (v.notes
-            ? '<div class="panel" style="margin-top:28px">' +
-                '<h4 style="margin-bottom:10px">Dealership Notes</h4>' +
+            ? '<div class="vdp-card-panel" style="margin-top:28px">' +
+                '<h4 style="margin-bottom:10px;font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-0.02em">Dealership Notes</h4>' +
                 '<p style="font-size:15px;line-height:1.65;color:var(--ink-quiet);margin:0">' +
                   e(v.notes) +
                 "</p>" +
               "</div>"
             : "") +
 
-          '<div class="panel" style="margin-top:28px">' +
-            '<h4 style="margin-bottom:14px">Technical Specification</h4>' +
-            '<table class="spec-table">' + specRows(v) + "</table>" +
+          '<div class="vdp-card-panel vdp-spec-card">' +
+            '<div class="vdp-spec-head">' +
+              '<div>' +
+                '<h3 style="font-family:var(--serif);font-size:20px;font-weight:700;margin:0;color:var(--ink);letter-spacing:-0.02em">Technical Specification</h3>' +
+                '<span style="font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);letter-spacing:0.14em;text-transform:uppercase">Verified by TransUnion & TruFlow DMS</span>' +
+              '</div>' +
+              '<span class="vdp-spec-badge">11 Verified Specs</span>' +
+            '</div>' +
+            '<div class="vdp-spec-table-wrap">' +
+              '<table class="spec-table">' + specRows(v) + "</table>" +
+            "</div>" +
           "</div>" +
 
           virPanel(v) +
@@ -809,10 +827,10 @@ function openLightbox(images, startIdx) {
       var mode = btn.dataset.tab;
       if (mode === "orbit") {
         if (orbit) orbit.style.display = "block";
-        if (gallery) { gallery.classList.add("is-secondary"); }
+        if (gallery) gallery.style.display = "none";
       } else if (mode === "gallery") {
         if (orbit) orbit.style.display = "none";
-        if (gallery) { gallery.classList.remove("is-secondary"); }
+        if (gallery) gallery.style.display = "block";
       }
     });
   }
@@ -1008,12 +1026,15 @@ function openLightbox(images, startIdx) {
         var email = document.getElementById("resEmail").value;
         var date = document.getElementById("resDate").value;
 
-        if (window.TruForm && window.TruForm.open) {
-          window.TruForm.open({
+        if (window.TruShowroom && window.TruShowroom.postLead) {
+          window.TruShowroom.postLead({
+            source: "VDP 48-Hour Priority Hold",
+            name: name,
+            phone: cell,
+            email: email,
             vehicle: TRU.title(v) + (v.trim ? " " + v.trim : ""),
             vehicleId: v.stockNumber || v.id,
-            interest: "48-Hour Priority Hold (R2,500 Deposit): " + name + " (" + cell + ", " + email + ", Viewing: " + (date || "Immediate") + ")",
-            source: "vdp-hold-guarantee"
+            notes: "48-Hour Priority Hold (R2,500 Deposit). Requested viewing: " + (date || "Immediate")
           });
         }
         resModal.classList.remove("is-open");
@@ -1047,12 +1068,13 @@ function openLightbox(images, startIdx) {
         var contact = document.getElementById("alertContact").value;
         var trigger = document.getElementById("alertType").value;
 
-        if (window.TruForm && window.TruForm.open) {
-          window.TruForm.open({
+        if (window.TruShowroom && window.TruShowroom.postLead) {
+          window.TruShowroom.postLead({
+            source: "VDP Price Alert",
+            phone: contact,
             vehicle: TRU.title(v) + (v.trim ? " " + v.trim : ""),
             vehicleId: v.stockNumber || v.id,
-            interest: "Price & Stock Alert Request: " + contact + " (Trigger: " + trigger + ")",
-            source: "vdp-price-alert"
+            notes: "Price & Stock Alert Request. Trigger: " + trigger
           });
         }
         alertModal.classList.remove("is-open");

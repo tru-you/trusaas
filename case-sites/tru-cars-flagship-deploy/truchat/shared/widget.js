@@ -68,7 +68,7 @@
       return;
     }
 
-    var brandColor = CFG.brandRed || CFG.brandPrimary || "#e30613";
+    var brandColor = CFG.brandRed || CFG.brandPrimary || "#07879A";
     var brandColorDark = CFG.brandRedDark || CFG.brandPrimaryDark || brandColor;
     var assistantName = CFG.assistantName || "Assistant";
     var dealerName = CFG.dealerName || "Showroom";
@@ -324,11 +324,16 @@
 
     if (autoOpen) setOpen(true);
 
-    window.TruChatWidget = {
+    var controller = {
       open: function () { setOpen(true); },
       close: function () { setOpen(false); },
       toggle: function () { setOpen(!open); },
+      isOpen: function () { return open; },
+      getUi: function () { return ui; }
     };
+    window.TruChatWidget = controller;
+    window.TruChat = controller;
+    window.TrueCarsTruChatWidget = controller;
   }
 
   ready(boot);

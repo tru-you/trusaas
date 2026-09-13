@@ -102,6 +102,7 @@
        a default of "Powered by TruDealer" rendered "Powered by Powered by
        TruDealer" on every site using the default. */
     brand: attr("data-brand", "TruDealer"),
+    brandUrl: attr("data-brand-url", attr("data-brand-link", "https://trudealers.com")),
     theme: attr("data-theme", "dark"),
     vertical: (attr("data-vertical", "") || "").toLowerCase(),
   /* data-surface="#hex" — retune the panel to the host's ground tone. Custom
@@ -371,6 +372,8 @@
     /* footer */
     ".tf-foot{padding:8px 14px 10px;border-top:1px solid var(--tf-hair);flex-shrink:0;",
     "font-size:9.5px;color:var(--tf-muted);text-align:center;letter-spacing:.03em}",
+    ".tf-foot a{color:inherit;text-decoration:none}",
+    ".tf-foot a:hover{text-decoration:underline}",
     ".tf-foot b{color:var(--tf-signal-bright);font-weight:700}",
 
     /* mobile */
@@ -618,7 +621,7 @@
           '</div>',
         '</div>',
 
-        '<div class="tf-foot">Powered by <b>', esc(cfg.brand), '</b></div>',
+        '<div class="tf-foot">Powered by <a href="', esc(cfg.brandUrl || 'https://trudealers.com'), '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"><b>', esc(cfg.brand), '</b></a></div>',
       '</div>',
       '</div>'
     ].join('');

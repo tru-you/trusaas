@@ -144,7 +144,7 @@
     window.tcClose = () => document.getElementById('tc')?.classList.remove('open');
 
     const chatHistory = [
-      { role: 'system', content: 'You are TruChat, the AI assistant for TruDealer (trudealer.tru-saas.com), an all-in-one vertical SaaS platform for independent car dealerships in South Africa. You are knowledgeable, direct, and concise (1-3 sentences max). Answer questions about pricing (TruStart R1,599/mo, TruPro R3,599/mo), TruShowroom custom sites, TruLens 28-shot photo studio, TruInspect 35-point VIR condition inspections, TruFlow DMS & F&I invoicing, and 13+ platform syndication. Offer WhatsApp demo handoff when helpful.' }
+      { role: 'system', content: 'You are TruChat, the AI assistant for TruDealer (trudealers.com), an all-in-one vertical SaaS platform for independent car dealerships in South Africa. You are knowledgeable, direct, and concise (1-3 sentences max). Answer questions about pricing (TruStart R1,599/mo, TruPro R3,599/mo), TruShowroom custom sites, TruLens 28-shot photo studio, TruInspect 35-point VIR condition inspections, TruFlow DMS & F&I invoicing, and 13+ platform syndication. Offer WhatsApp demo handoff when helpful.' }
     ];
 
     const localBrain = {
@@ -207,9 +207,9 @@
           signal: controller.signal
         }).catch(() => null);
 
-        // Fallback to chat.tru-saas.com if netlify function isn't available
+        // Fallback to trudealers.com if netlify function isn't available
         if (!res || !res.ok) {
-          res = await fetch('https://chat.tru-saas.com/api/chat', {
+          res = await fetch('https://trudealers.com/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

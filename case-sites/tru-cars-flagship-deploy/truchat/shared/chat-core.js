@@ -15,9 +15,9 @@
     s.id = STYLE_ID;
     s.textContent = [
       /* tokens */
-      ".tc-root{--tc-red:#e30613;--tc-red-dark:#9b0410;--tc-gold:#ffffff;--tc-gold-dim:var(--tc-hair);",
+      ".tc-root{--tc-red:#07879A;--tc-red-dark:#056274;--tc-gold:#ffffff;--tc-gold-dim:var(--tc-hair);",
       "--tc-bg:#08090f;--tc-panel:rgba(16,18,28,.92);--tc-border:rgba(255,255,255,.1);--tc-text:#f8fafc;",
-      "--tc-muted:#94a3b8;--tc-green:#34d399;--tc-user:rgba(227,6,19,.2);",
+      "--tc-muted:#94a3b8;--tc-green:#34d399;--tc-user:rgba(7,135,154,.2);",
       "--tc-pill-fg:var(--tc-red);--tc-pill-bg:color-mix(in srgb,var(--tc-red) 12%,transparent);",
       "--tc-shell-bg:linear-gradient(165deg,rgba(18,20,30,.95) 0%,rgba(12,14,22,.97) 42%,rgba(10,12,18,.98) 100%);",
       "--tc-strong:#fff;--tc-glow:color-mix(in srgb,var(--tc-red) 22%,transparent);--tc-fill-strong:rgba(0,0,0,.5);",
@@ -675,7 +675,7 @@
 
     function remoteTicket() {
       var s = remoteSession || {};
-      var dealer = (CFG.dealerName || "Your Car Guy").toUpperCase();
+      var dealer = (CFG.dealerName || "True-Cars").toUpperCase();
       var msg = "🚗 *" + dealer + " — CHAT LEAD* 🚗\n\n";
       if (s.name) msg += "👤 *Name:* " + s.name + "\n";
       msg += "📞 *Phone:* " + (s.phone || "Not provided") + "\n";
@@ -712,16 +712,17 @@
         }
       });
 
-      var showWa = actions.some(function (a) {
+      var showWa = (res.handoff === true) || actions.some(function (a) {
         return a.type === "whatsapp" || a.type === "booked" || a.type === "lead";
       });
       if (showWa) waBar.classList.add("show");
 
-      var qualified = (remoteSession && remoteSession.qualified) ||
+      var qualified = (remoteSession && remoteSession.qualified) || (res.handoff === true) ||
         actions.some(function (a) { return a.type === "booked" || a.type === "lead"; });
       if (qualified && !handoffPrompted) {
         handoffPrompted = true;
-        addBotText("You're all set — tap **Open WhatsApp** and the yard gets your full details instantly.", ["Continue on WhatsApp"]);
+        waBar.classList.add("show");
+        addBotText("You're all set — tap **Open WhatsApp** and the team gets your full details instantly.", ["Continue on WhatsApp"]);
       }
     }
 
@@ -730,9 +731,11 @@
       setTyping(true);
 
       var stockList = [];
-      if (window.TRU && window.TRU.vehicles) {
-        stockList = window.TRU.vehicles.map(function(v) {
-          return v.year + " " + v.make + " " + v.model + " (R" + (v.truPrice || v.price) + ")";
+      var showroomVehicles = (window.TRU && window.TRU.vehicles) || (window.TruShowroom && window.TruShowroom.vehicles) || (window.TCSA && window.TCSA.catalog);
+      if (showroomVehicles && showroomVehicles.length) {
+        stockList = showroomVehicles.slice(0, 36).map(function(v) {
+          var priceVal = v.truPrice || v.price || v.retailPrice || 0;
+          return v.year + " " + v.make + " " + v.model + (v.trim ? " " + v.trim : "") + " (R" + Number(priceVal).toLocaleString("en-ZA") + ")";
         });
       }
 
@@ -829,6 +832,27 @@
     }
 
     async function loadStock() {
+      // Sync from in-memory showroom stock immediately if available
+      var showroomVehicles = (window.TRU && window.TRU.vehicles) || (window.TruShowroom && window.TruShowroom.vehicles) || (window.TCSA && window.TCSA.catalog);
+      if (showroomVehicles && showroomVehicles.length) {
+        var localMapped = showroomVehicles.slice(0, 36).map(function (v) {
+          var imgs = v.images || (v.heroImage ? [v.heroImage] : []);
+          return {
+            id: v.stockNumber || v.id,
+            brand: String(v.make || "").toUpperCase(),
+            model: (v.model || "") + (v.trim ? " " + v.trim : ""),
+            year: v.year,
+            price: v.truPrice || v.price || v.retailPrice || 0,
+            km: (v.mileage || v.km || "") + (v.mileage ? " km" : ""),
+            fuel: v.fuelType || v.fuel || "",
+            image: imgs[0] || v.heroImage || v.imageUrl || v.image || "",
+          };
+        });
+        if (localMapped.length && bot.setCatalog) {
+          bot.setCatalog(localMapped);
+        }
+      }
+
       var urls = [CFG.stockApi].concat(CFG.stockApiFallback || []).filter(Boolean);
       for (var i = 0; i < urls.length; i++) {
         try {
@@ -837,7 +861,7 @@
           var data = await res.json();
           var list = data.vehicles || [];
           if (!list.length) continue;
-          var mapped = list.slice(0, 12).map(function (v) {
+          var mapped = list.slice(0, 36).map(function (v) {
             var imgs = v.images || [];
             return {
               id: v.stockNumber || v.id,

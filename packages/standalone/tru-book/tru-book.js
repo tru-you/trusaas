@@ -57,6 +57,7 @@
     accent: attr("data-accent", "#1466E0"),
     address: attr("data-address", "Showroom Branch"),
     brand: attr("data-brand", "Powered by TruDealer"),
+    brandUrl: attr("data-brand-url", attr("data-brand-link", "https://trudealers.com")),
     theme: attr("data-theme", "dark"),
     vertical: (attr("data-vertical", "") || "").toLowerCase()
   };
@@ -184,7 +185,9 @@
       ".tb-when{margin-top:18px;padding:14px 16px;border-radius:14px;background:", T.fill, ";border:1px solid ", T.edge, ";font-size:13px;color:", T.quiet, ";display:flex;align-items:center;gap:10px}",
       ".tb-btn{width:100%;margin-top:20px;padding:16px;border-radius:16px;background:", cfg.accent, ";color:", T.onAcc, ";border:none;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 8px 24px -4px ", cfg.accent, "80;transition:all 0.2s}",
       ".tb-btn:hover{transform:translateY(-2px)}",
-      ".tb-foot{text-align:center;font-size:12px;color:", T.mute, ";margin-top:16px}"
+      ".tb-foot{text-align:center;font-size:12px;color:", T.mute, ";margin-top:16px}",
+      ".tb-foot a{color:inherit;text-decoration:none}",
+      ".tb-foot a:hover{text-decoration:underline}"
     ].join("");
     document.head.appendChild(s);
   }
@@ -242,7 +245,7 @@
       + '</div>'
       + '<div class="tb-when" id="tbWhen"></div>'
       + '<button class="tb-btn" id="tbConfirm">Confirm Appointment</button>'
-      + '<div class="tb-foot">' + esc(cfg.brand) + '</div>'
+      + '<div class="tb-foot"><a href="' + esc(cfg.brandUrl || 'https://trudealers.com') + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">' + esc(cfg.brand) + '</a></div>'
       + '</div>';
 
     bind();

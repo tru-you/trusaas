@@ -27,5 +27,5 @@ User-agent: Applebot-Extended
 Allow: /
 
 # Sitemaps & LLM documentation
-Sitemap: https://trudealer.tru-saas.com/sitemap.xml
-# LLMs documentation: https://trudealer.tru-saas.com/llms.txt
+Sitemap: https://trudealers.com/sitemap.xml
+# LLMs documentation: https://trudealers.com/llms.txt

@@ -5200,15 +5200,28 @@ function toPublicVehicle(v: any, source: string = "premium", origin: string = ""
   /* Stored photos are served from this instance, but the sites consuming this
      feed are on their own domains — true-cars.co.za, carsoncaledon.co.za — so a
      relative "/media/…" would resolve against the dealer's own host and 404.
-     Absolute, derived from the request rather than configured, so staging and
-     localhost work with no extra setting. Legacy base64 is passed through
-     untouched: a feed must keep working on an instance whose migration has not
-     run yet. */
-  const abs = (s: any) =>
-    isStoredRef(s) && origin ? `${origin}${s}` : s;
+     Clean away duplicate origins, legacy Render domains, and raw HTML tags. */
+  const cleanPhoto = (s: any): string => {
+    if (typeof s !== "string") return "";
+    let str = s.trim();
+    if (!str || str.startsWith("<") || str.includes("[image content") || str.toLowerCase().includes("<html>")) {
+      return "";
+    }
+    if (str.startsWith("data:")) return str;
 
-  const images = (Array.isArray(v.images) ? v.images.filter(notVideo) : []).map(abs);
-  const extras = (Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(notVideo) : []).map(abs);
+    const m = str.match(/\/media\/([a-f0-9]{64}(?:\.[a-z0-9]{2,5})?)/i);
+    if (m) {
+      const mediaPath = `/media/${m[1]}`;
+      return origin ? `${origin.replace(/\/$/, "")}${mediaPath}` : mediaPath;
+    }
+
+    if (/^https?:\/\//i.test(str)) return str;
+    if (str.startsWith("/") && origin) return `${origin.replace(/\/$/, "")}${str}`;
+    return str;
+  };
+
+  const images = (Array.isArray(v.images) ? v.images.filter(notVideo) : []).map(cleanPhoto).filter(Boolean);
+  const extras = (Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(notVideo) : []).map(cleanPhoto).filter(Boolean);
   const allImages = [...images, ...extras];
   /* Strict, and deliberately the same test TruLens's own feed applies — a site
      pointed at either source has to make the same call about the same car.
@@ -5264,7 +5277,7 @@ function toPublicVehicle(v: any, source: string = "premium", origin: string = ""
     /* Frames get the same absolute treatment as the gallery — an orbit is just
        more photos, and a relative path would 404 on the dealer's own domain. */
     web3d: v.web3d?.frames?.length
-      ? { ...v.web3d, frames: v.web3d.frames.map((f: any) => ({ ...f, image: abs(f?.image) })) }
+      ? { ...v.web3d, frames: v.web3d.frames.map((f: any) => ({ ...f, image: cleanPhoto(f?.image) })) }
       : undefined,
     /** TruLens inspection score 0–100, absent when the car was never scored. */
     vir: typeof v.vir === "number" ? v.vir : undefined,
@@ -5734,8 +5747,16 @@ app.get("/api/widget/inventory.js", (req, res) => {
 // --- HTML / WORDPRESS INTEGRATION API ENDPOINTS ---
 app.post("/api/integration/webhook-lead", (req, res) => {
   const { firstName, lastName, phone, email, notes, vehicleId, dealershipId, dealerSlug, source, journey } = req.body;
-  if (!firstName || !phone) {
-    return res.status(400).json({ error: "Missing required fields: firstName and phone are mandatory." });
+  
+  const rawName = String(req.body.name || "").trim();
+  const nameParts = rawName ? rawName.split(/\s+/) : [];
+  const finalFirst = String(firstName || nameParts[0] || (email ? email.split('@')[0] : '') || "Customer").trim();
+  const finalLast = String(lastName || nameParts.slice(1).join(" ") || "").trim();
+  const finalPhone = String(phone || req.body.cell || req.body.mobile || req.body.contact || "").trim();
+  const finalEmail = String(email || (req.body.contact && req.body.contact.includes('@') ? req.body.contact : "")).trim();
+
+  if (!finalFirst || (!finalPhone && !finalEmail)) {
+    return res.status(400).json({ error: "Missing required contact info: name/firstName and phone or email are mandatory." });
   }
 
   /* The route is public and unauthenticated, so the payload is the only thing
@@ -5759,10 +5780,10 @@ app.post("/api/integration/webhook-lead", (req, res) => {
       id: newId("lead_"),
       // Which dealer's website sent this — validated above, never unset.
       dealershipId: leadDealershipId,
-      firstName,
-      lastName: lastName || "",
-      phone,
-      email: email || "",
+      firstName: finalFirst,
+      lastName: finalLast,
+      phone: finalPhone || "Not provided",
+      email: finalEmail,
       // Was "New Lead", which is not a LeadStatus — the union is
       // New | Contacted | Test Drive Scheduled | Negotiating | Closed Won |
       // Closed Lost. Every enquiry from a dealer's WordPress site therefore
@@ -6550,8 +6571,8 @@ app.post("/api/imagin8/bundles", authenticate, async (req: any, res) => {
 });
 
 // Static specs for the Add Vehicle flow (platform key / flat subscription).
-app.post("/api/imagin8/static", authenticate, async (req: any, res) => {
-  const { mmCode } = req.body || {};
+app.all("/api/imagin8/static", authenticate, async (req: any, res) => {
+  const mmCode = req.query?.mmCode || req.body?.mmCode;
   if (!mmCode) return res.status(400).json({ error: "mmCode is required" });
   const state = readState();
   const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;

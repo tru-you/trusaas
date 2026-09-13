@@ -3,7 +3,7 @@ import { Battery, Wifi, Signal, Sparkles } from 'lucide-react';
 import { isMobileViewport, isStandaloneDisplay } from '../lib/pwa';
 import PwaInstallBanner from './PwaInstallBanner';
 import QRCode from 'qrcode';
-import trulensLogo from '../assets/images/trulens-wordmark.png';
+import trudealerWordmark from '../assets/images/trudealer-wordmark.png';
 
 interface MobileDeviceProps {
   children: React.ReactNode;
@@ -176,7 +176,11 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center w-full">
-          <img src="/icons/icon-512.png" alt="TruLens" className="h-16 w-16 object-contain mx-auto mb-6 drop-shadow-[0_4px_16px_rgba(79,227,220,0.35)]" />
+          <img
+            src={trudealerWordmark}
+            alt="TruDealer"
+            className="w-52 max-w-full object-contain mx-auto mb-4 brand-3d-glow"
+          />
           <h2 className="text-[20px] font-semibold text-[#E8EAE6] tracking-[-0.01em]">
             Scan with phone to open TruLens
           </h2>

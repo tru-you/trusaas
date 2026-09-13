@@ -44,17 +44,24 @@
 
   // Base configurations
   var globalCfg = {
-    dealer: getAttr("data-dealer", "this dealership"),
-    slug: getAttr("data-slug", ""),
-    flow: getAttr("data-flow", ""),
-    wa: (getAttr("data-wa", "") || "").replace(/\D/g, ""),
-    accent: getAttr("data-accent", "#1466E0"),
-    accent2: getAttr("data-accent-2", ""),
+    dealer: getAttr("data-dealer", "Truecars"),
+    slug: getAttr("data-slug", "true-cars"),
+    flow: (getAttr("data-flow", "https://premium.trudealers.com") || "").replace(/https?:\/\/(premium|flow)\.tru-saas\.com/g, "https://premium.trudealers.com"),
+    webhook: getAttr("data-webhook", ""),
+    cmbKey: getAttr("data-callmebot-key", ""),
+    cmbPhone: getAttr("data-callmebot-phone", ""),
+    wa: (getAttr("data-wa", "27620502091") || "").replace(/\D/g, ""),
+    accent: getAttr("data-accent", "#07879A"),
+    accent2: getAttr("data-accent-2", "#5DE9D4"),
     brand: getAttr("data-brand", "TruDealer"),
-    theme: getAttr("data-theme", "dark"),
+    theme: getAttr("data-theme", "light"),
+    text: getAttr("data-text", ""),
+    scale: getAttr("data-scale", ""),
+    vertical: getAttr("data-vertical", ""),
     position: getAttr("data-position", "right"),
     baseBottom: parseInt(getAttr("data-bottom", "24"), 10) || 24,
-    widgets: (getAttr("data-widgets", "afford,repay,form,chat") || "")
+    layout: (getAttr("data-layout", "flat") || "flat").toLowerCase(),
+    widgets: (getAttr("data-widgets", "form,chat,share,book,afford,repay") || "")
       .split(",")
       .map(function (s) {
         return s.trim().toLowerCase();
@@ -79,10 +86,23 @@
     document.head.appendChild(s);
   }
 
-/* DEPLOY-ADAPTED COPY — do NOT blind-copy canonical over this file.
-   Widgets sit FLAT in this site root, not in packages/<name>/.
-   Canonical resolves "tru-form/tru-form.js"; here that 404s and every
-   widget silently fails to mount. Port canonical changes by hand. */
+  function applyPrefixed(tag, prefix) {
+    if (!script || !script.attributes) return;
+    var pre = "data-" + prefix + "-";
+    for (var i = 0; i < script.attributes.length; i++) {
+      var at = script.attributes[i];
+      if (at.name.indexOf(pre) === 0 && at.name.length > pre.length) {
+        tag.setAttribute("data-" + at.name.slice(pre.length), at.value);
+      }
+    }
+  }
+
+  function applyGlobalStyle(tag) {
+    if (globalCfg.text) tag.setAttribute("data-text", globalCfg.text);
+    if (globalCfg.scale) tag.setAttribute("data-scale", globalCfg.scale);
+    if (globalCfg.vertical) tag.setAttribute("data-vertical", globalCfg.vertical);
+  }
+
   function getScriptUrl(relPath) {
     if (baseUrl.includes("tru-loader")) {
       return baseUrl.replace(/tru-loader.*$/, relPath);
@@ -90,12 +110,16 @@
     return baseUrl + relPath;
   }
 
+  function widgetUrl(name) {
+    return globalCfg.layout === "nested"
+      ? getScriptUrl(name + "/" + name + ".js")
+      : getScriptUrl(name + ".js");
+  }
+
   // Helper to load chat stack in order
   function loadChatStack(onComplete) {
     var chatBase = getScriptUrl("truchat/shared/qualifier.js").replace("qualifier.js", "");
-
-    // Load dealer-specific config if available (e.g. truchat/coc/config.js)
-    var configUrl = getScriptUrl("truchat/true-cars/config.js");
+    var configUrl = getAttr("data-chat-config", "") || getScriptUrl("truchat/true-cars/config.js");
 
     loadScript(configUrl, function () {
       loadScript(chatBase + "qualifier.js", function () {
@@ -106,10 +130,11 @@
               dealerName: globalCfg.dealer,
               brandRed: globalCfg.accent,
               brandRedDark: globalCfg.accent2 || globalCfg.accent,
-              assistantName: "TruDealer Assistant",
+              assistantName: "True",
               salesWhatsApp: globalCfg.wa,
               flowUrl: globalCfg.flow,
               slug: globalCfg.slug,
+              theme: globalCfg.theme,
             };
           }
           loadScript(chatBase + "widget.js", function () {
@@ -126,31 +151,40 @@
 
     // 1. TruAfford
     if (wanted.indexOf("afford") !== -1 || wanted.indexOf("tru-afford") !== -1) {
-      var affordSrc = getScriptUrl("tru-afford.js");
+      var affordSrc = widgetUrl("tru-afford");
       var tag = document.createElement("script");
       tag.src = affordSrc;
       tag.setAttribute("data-dealer", globalCfg.dealer);
       tag.setAttribute("data-wa", globalCfg.wa);
       tag.setAttribute("data-accent", globalCfg.accent);
       tag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) tag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) tag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) tag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       tag.setAttribute("data-slug", globalCfg.slug);
-      tag.setAttribute("data-position", globalCfg.position);
-      tag.setAttribute("data-bottom", "92px");
+      tag.setAttribute("data-position", getAttr("data-afford-position", globalCfg.position));
+      tag.setAttribute("data-bottom", getAttr("data-afford-bottom", "92px"));
       tag.setAttribute("data-theme", globalCfg.theme);
+      applyGlobalStyle(tag);
+      applyPrefixed(tag, "afford");
       document.head.appendChild(tag);
     }
 
     // 2. TruRepay
     if (wanted.indexOf("repay") !== -1 || wanted.indexOf("tru-repay") !== -1) {
-      var repaySrc = getScriptUrl("tru-repay.js");
+      var repaySrc = widgetUrl("tru-repay");
       var rTag = document.createElement("script");
       rTag.src = repaySrc;
       rTag.setAttribute("data-dealer", globalCfg.dealer);
       rTag.setAttribute("data-slug", globalCfg.slug);
       rTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) rTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) rTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) rTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       rTag.setAttribute("data-wa", globalCfg.wa);
       rTag.setAttribute("data-accent", globalCfg.accent);
       rTag.setAttribute("data-mode", getAttr("data-repay-mode", "float"));
+      rTag.setAttribute("data-position", getAttr("data-repay-position", globalCfg.position));
       rTag.setAttribute("data-target", getAttr("data-repay-target", "#finance-calc"));
       rTag.setAttribute("data-price", getAttr("data-repay-price", "0"));
       rTag.setAttribute("data-vehicle", getAttr("data-repay-vehicle", ""));
@@ -158,17 +192,22 @@
       rTag.setAttribute("data-bottom", getAttr("data-repay-bottom", "24px"));
       rTag.setAttribute("data-theme", globalCfg.theme);
       rTag.setAttribute("data-collapsible", getAttr("data-repay-collapsible", "0"));
+      applyGlobalStyle(rTag);
+      applyPrefixed(rTag, "repay");
       document.head.appendChild(rTag);
     }
 
     // 3. TruForm
     if (wanted.indexOf("form") !== -1 || wanted.indexOf("tru-form") !== -1) {
-      var formSrc = getScriptUrl("tru-form.js");
+      var formSrc = widgetUrl("tru-form");
       var fTag = document.createElement("script");
       fTag.src = formSrc;
       fTag.setAttribute("data-dealer", globalCfg.dealer);
       fTag.setAttribute("data-slug", globalCfg.slug);
       fTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) fTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) fTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) fTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       fTag.setAttribute("data-wa", globalCfg.wa);
       fTag.setAttribute("data-accent", globalCfg.accent);
       fTag.setAttribute("data-mode", getAttr("data-form-mode", "float"));
@@ -178,6 +217,8 @@
       fTag.setAttribute("data-theme", globalCfg.theme);
       fTag.setAttribute("data-position", getAttr("data-form-position", globalCfg.position));
       fTag.setAttribute("data-bottom", getAttr("data-form-bottom", "24px"));
+      applyGlobalStyle(fTag);
+      applyPrefixed(fTag, "form");
       document.head.appendChild(fTag);
     }
 
@@ -188,26 +229,47 @@
 
     // 5. TruBook
     if (wanted.indexOf("book") !== -1 || wanted.indexOf("tru-book") !== -1) {
-      var bookSrc = getScriptUrl("tru-book.js");
+      var bookSrc = widgetUrl("tru-book");
       var bTag = document.createElement("script");
       bTag.src = bookSrc;
       bTag.setAttribute("data-dealer", globalCfg.dealer);
       bTag.setAttribute("data-slug", globalCfg.slug);
       bTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) bTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) bTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) bTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       bTag.setAttribute("data-wa", globalCfg.wa);
       bTag.setAttribute("data-accent", globalCfg.accent);
       bTag.setAttribute("data-brand", globalCfg.brand);
       bTag.setAttribute("data-theme", globalCfg.theme);
+      applyGlobalStyle(bTag);
+      applyPrefixed(bTag, "book");
       document.head.appendChild(bTag);
     }
 
-    // 6. TruShare — per-vehicle sharing. No OAuth, no tokens, no backend:
-    //    the buttons are plain intent URLs and the native share sheet.
-    //    Distinct from TruSocial (Zernio) in TruFlow Premium, which posts on
-    //    the dealer's behalf to connected accounts and is a paid DMS module.
-    //    A site can run both: this is the floor, that one automates.
+    // 6. TruValue
+    if (wanted.indexOf("value") !== -1 || wanted.indexOf("tru-value") !== -1) {
+      var valueSrc = widgetUrl("tru-value");
+      var vTag = document.createElement("script");
+      vTag.src = valueSrc;
+      vTag.setAttribute("data-dealer", globalCfg.dealer);
+      vTag.setAttribute("data-slug", globalCfg.slug);
+      vTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) vTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) vTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) vTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
+      vTag.setAttribute("data-wa", globalCfg.wa);
+      vTag.setAttribute("data-accent", globalCfg.accent);
+      vTag.setAttribute("data-brand", globalCfg.brand);
+      vTag.setAttribute("data-theme", globalCfg.theme);
+      applyGlobalStyle(vTag);
+      applyPrefixed(vTag, "value");
+      document.head.appendChild(vTag);
+    }
+
+    // 7. TruShare
     if (wanted.indexOf("share") !== -1 || wanted.indexOf("tru-share") !== -1) {
-      var shareSrc = getScriptUrl("tru-share.js");
+      var shareSrc = widgetUrl("tru-share");
       var sTag = document.createElement("script");
       sTag.src = shareSrc;
       sTag.setAttribute("data-dealer", globalCfg.dealer);
@@ -218,6 +280,8 @@
       sTag.setAttribute("data-fb-page", getAttr("data-share-fb-page", ""));
       sTag.setAttribute("data-ig-handle", getAttr("data-share-ig-handle", ""));
       sTag.setAttribute("data-gbp", getAttr("data-share-gbp", ""));
+      applyGlobalStyle(sTag);
+      applyPrefixed(sTag, "share");
       document.head.appendChild(sTag);
     }
   }
@@ -238,15 +302,26 @@
       if (w === "repay" && root.TruRepay) root.TruRepay.open(payload);
       if (w === "form" && root.TruForm) root.TruForm.open(payload);
       if (w === "book" && (root.TruBook || root.COCBook)) (root.TruBook || root.COCBook).open(payload);
-      if (w === "chat" && root.TruChatUI) {
-        var el = document.getElementById("tc-fab");
-        if (el) el.click();
+      if (w === "value" && root.TruValue) root.TruValue.open(payload);
+      if (w === "chat") {
+        if (root.TruChatWidget && root.TruChatWidget.open) {
+          root.TruChatWidget.open();
+        } else if (root.TruChat && root.TruChat.open) {
+          root.TruChat.open();
+        } else if (root.TrueCarsTruChatWidget && root.TrueCarsTruChatWidget.open) {
+          root.TrueCarsTruChatWidget.open();
+        } else {
+          var el = document.getElementById("tc-fab");
+          if (el) el.click();
+        }
       }
     },
     closeAll: function () {
       if (root.TruAfford) root.TruAfford.close();
       if (root.TruRepay) root.TruRepay.close();
       if (root.TruForm) root.TruForm.close();
+      if (root.TruValue) root.TruValue.close();
+      if (root.TruChatWidget && root.TruChatWidget.close) root.TruChatWidget.close();
     },
   };
 })(window);

@@ -501,6 +501,16 @@
   var cta = document.getElementById("ctaApply");
   if (cta) {
     cta.addEventListener("click", function () {
+      var vTitle = selected ? TRU.title(selected) : "Showroom vehicle";
+      if (window.TruShowroom && window.TruShowroom.postLead) {
+        window.TruShowroom.postLead({
+          source: "Finance Pre-Approval CTA",
+          notes: "Finance pre-approval request for " + vTitle,
+          vehicle: vTitle,
+          vehicleId: selected ? (selected.stockNumber || selected.id) : "",
+          finance: { interest: true }
+        });
+      }
       if (window.TruForm && window.TruForm.open) {
         window.TruForm.open({
           vehicle: selected ? TRU.title(selected) : "",

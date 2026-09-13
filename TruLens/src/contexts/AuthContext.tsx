@@ -154,6 +154,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (new URLSearchParams(window.location.search).has('demo')) {
+        enterDemoMode().catch(() => {});
+        return;
+      }
       if (realDemoSession()) {
         // Resume a genuine server-minted demo session
         setIsDemo(true);

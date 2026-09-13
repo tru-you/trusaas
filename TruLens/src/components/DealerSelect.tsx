@@ -1,6 +1,5 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import trulensLogo from '../assets/images/trulens-wordmark.png';
 
 /**
  * "Which dealership are you?" — shown once, straight after the generic login,

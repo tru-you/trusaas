@@ -1,5 +1,5 @@
 /**
- * TruChat AI Proxy — TruDealer Platform (trudealer.tru-saas.com)
+ * TruChat AI Proxy — TruDealer Platform (trudealers.com)
  * Serverless Netlify function backed by DeepSeek LLM (deepseek-chat).
  *
  * Netlify env var required: DEEPSEEK_API_KEY
@@ -8,7 +8,7 @@
 const MODEL = "deepseek-chat";
 const HANDOFF_TOKEN = "[[HANDOFF]]";
 
-const SYSTEM_PROMPT = `You are TruChat, the 24/7 AI Sales Assistant for TruDealer (trudealer.tru-saas.com), the vertical SaaS operating system for independent car dealerships in South Africa and the UK.
+const SYSTEM_PROMPT = `You are TruChat, the 24/7 AI Sales Assistant for TruDealer (trudealers.com), the vertical SaaS operating system for independent car dealerships in South Africa and the UK.
 
 TONE & STYLE:
 - Calm, direct, sharp, and helpful — like an experienced dealership director.

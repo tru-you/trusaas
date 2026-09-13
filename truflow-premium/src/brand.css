@@ -86,3 +86,55 @@
   --r-card: 18px;
   --r-pill: 100px;
 }
+
+/* ── 3D Brand Mark & Glow Effects ── */
+.brand-3d-glow {
+  filter: drop-shadow(0 6px 20px rgba(79, 227, 220, 0.20)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+  animation: brandFloat 4.8s ease-in-out infinite;
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+@keyframes brandFloat {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 6px 20px rgba(79, 227, 220, 0.18)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+  }
+  50% {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 10px 28px rgba(79, 227, 220, 0.30)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  }
+}
+
+/* ── Full Cyan Pill with Shimmer ── */
+.pill-cyan-shimmer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #06b6d4;
+  color: #04131d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  border-radius: 9999px;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+.pill-cyan-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: rotate(25deg);
+  animation: pillGlint 2.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+@keyframes pillGlint {
+  0% { left: -60%; }
+  40%, 100% { left: 140%; }
+}

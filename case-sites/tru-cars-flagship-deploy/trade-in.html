@@ -827,12 +827,29 @@
   });
 
   els.ctaApplyWizard.addEventListener("click", function () {
+    var targetCar = els.selTargetCar.value ? TRU.get(els.selTargetCar.value) : null;
+    var leadInfo = "Trade-in Pre-Approval: " + (currentVehicleData.year || "") + " " + (currentVehicleData.make || "") + " " + (currentVehicleData.model || "") + " (" + TRU.money(currentValuation) + " trade equity)";
+    if (window.TruShowroom && window.TruShowroom.postLead) {
+      window.TruShowroom.postLead({
+        source: "Trade-In Pre-Approval Wizard",
+        notes: leadInfo + (targetCar ? " against target stock: " + TRU.title(targetCar) : ""),
+        vehicle: targetCar ? TRU.title(targetCar) : "",
+        vehicleId: targetCar ? (targetCar.stockNumber || targetCar.id) : "",
+        tradein: {
+          year: currentVehicleData.year,
+          make: currentVehicleData.make,
+          model: currentVehicleData.model,
+          km: currentVehicleData.km,
+          valuation: currentValuation
+        }
+      });
+    }
     if (window.TruForm && window.TruForm.open) {
       window.TruForm.open({
-        interest: "Trade-in Pre-Approval: " + (currentVehicleData.year || "") + " " + (currentVehicleData.make || "") + " " + (currentVehicleData.model || "") + " (" + TRU.money(currentValuation) + " trade equity)",
+        interest: leadInfo,
         tradein: true,
         source: "trade-in-wizard",
-        vehicle: els.selTargetCar.value ? TRU.get(els.selTargetCar.value) : null,
+        vehicle: targetCar,
       });
     } else {
       location.href = els.ctaWaWizard.href;

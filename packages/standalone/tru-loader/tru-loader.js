@@ -54,6 +54,7 @@
     accent: getAttr("data-accent", "#1466E0"),
     accent2: getAttr("data-accent-2", ""),
     brand: getAttr("data-brand", "TruDealer"),
+    brandUrl: getAttr("data-brand-url", getAttr("data-brand-link", "https://trudealers.com")),
     theme: getAttr("data-theme", "dark"),
     text: getAttr("data-text", ""),
     scale: getAttr("data-scale", ""),
@@ -112,6 +113,7 @@
     if (globalCfg.text) tag.setAttribute("data-text", globalCfg.text);
     if (globalCfg.scale) tag.setAttribute("data-scale", globalCfg.scale);
     if (globalCfg.vertical) tag.setAttribute("data-vertical", globalCfg.vertical);
+    if (globalCfg.brandUrl) tag.setAttribute("data-brand-url", globalCfg.brandUrl);
   }
 
   // Resolve a path relative to the standalone package root (the folder that
@@ -334,9 +336,14 @@
       if (w === "form" && root.TruForm) root.TruForm.open(payload);
       if (w === "book" && (root.TruBook || root.COCBook)) (root.TruBook || root.COCBook).open(payload);
       if (w === "value" && root.TruValue) root.TruValue.open(payload);
-      if (w === "chat" && root.TruChatUI) {
-        var el = document.getElementById("tc-fab");
-        if (el) el.click();
+      if (w === "chat") {
+        if (root.TruChatUI && root.TruChatUI.open) root.TruChatUI.open();
+        else if (root.TruChat && root.TruChat.open) root.TruChat.open();
+        else if (root.TruChatWidget && root.TruChatWidget.open) root.TruChatWidget.open();
+        else {
+          var el = document.getElementById("tc-fab");
+          if (el) el.click();
+        }
       }
     },
     closeAll: function () {

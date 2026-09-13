@@ -3,7 +3,7 @@
    bumping this is what makes an installed phone drop the shell cached by the
    version with the broken navigation fallback. Without the bump a device would
    keep serving the old entry indefinitely. */
-const CACHE_VERSION = 'trulens-v4-icon';
+const CACHE_VERSION = 'trulens-2026-09-13-wm';
 
 /* Shown only when a navigation fails and nothing is cached — a first run with
    no signal. Inline and dependency-free: it has to render when the app bundle
@@ -26,6 +26,8 @@ const SHELL = [
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
   '/icons/apple-touch-icon.png',
+  '/icons/in-app-icon.png',
+  '/trudealer-wordmark.png',
 ];
 
 self.addEventListener('install', (event) => {

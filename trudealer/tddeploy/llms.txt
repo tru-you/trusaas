@@ -52,15 +52,15 @@ TruDealer features true bi-directional data flow across the entire dealership:
 - **TruEnterprise**: R3,599/rooftop/mo (ZA) / £239/rooftop/mo (UK). Multi-branch groups, custom API, dedicated SLA.
 
 ## Key Comparison Pages
-- TruDealer vs VMG Software: https://trudealer.tru-saas.com/trudealer-vs-vmg.html
-- TruDealer vs AutoXloo: https://trudealer.tru-saas.com/trudealer-vs-autoxloo.html
-- TruDealer vs Traditional DMS: https://trudealer.tru-saas.com/trudealer-vs-dms.html
+- TruDealer vs VMG Software: https://trudealers.com/trudealer-vs-vmg.html
+- TruDealer vs AutoXloo: https://trudealers.com/trudealer-vs-autoxloo.html
+- TruDealer vs Traditional DMS: https://trudealers.com/trudealer-vs-dms.html
 
 ## Official Links
-- Website: https://trudealer.tru-saas.com/
-- UK Landing Page: https://trudealer.tru-saas.com/uk.html
-- TruDealer Moto: https://trudealer.tru-saas.com/moto.html
-- Master FAQ: https://trudealer.tru-saas.com/faq.html
-- Pricing: https://trudealer.tru-saas.com/packages.html
-- Field Guides: https://trudealer.tru-saas.com/guides/
+- Website: https://trudealers.com/
+- UK Landing Page: https://trudealers.com/uk.html
+- TruDealer Moto: https://trudealers.com/moto.html
+- Master FAQ: https://trudealers.com/faq.html
+- Pricing: https://trudealers.com/packages.html
+- Field Guides: https://trudealers.com/guides/
 - Contact: sales@tru-saas.com | ZA: +44 7476 995694 | UK: +44 7476 995694

@@ -68,34 +68,38 @@
       else if (v.img) v.images = [v.img];
       else v.images = [];
     }
-    /* removed fake 360 injection */
+    // Local Studio Orbit available for TC-101..TC-114
+    var stock = v.stockNumber || v.id || v.tag;
+    if (stock && /^TC-1(0[1-79]|1[0124])$/.test(stock) && (!v.web3d || !v.web3d.frames || !v.web3d.frames.length)) {
+      var frameCount = (stock === "TC-109" || stock === "TC-111" || stock === "TC-112") ? 10 : 8;
+      var localFrames = [];
+      for (var fi = 1; fi <= frameCount; fi++) {
+        localFrames.push({
+          index: fi - 1,
+          name: "Studio Angle " + fi,
+          azimuth: (fi - 1) / frameCount,
+          image: "/assets/stock/" + stock + "/orbit/" + fi + ".jpg"
+        });
+      }
+      v.web3d = { version: "2.0", stockNumber: stock, frames: localFrames };
+    }
+
     /* Demo/seed cars have no photos — give them the orbit's first frame as a
        card image so the floor never renders a broken <img>. */
     if ((!v.heroImage || v.heroImage === "null") && v.web3d && v.web3d.frames && v.web3d.frames.length) {
       v.heroImage = v.web3d.frames[0].image;
     }
     // Attempt lazy upgrade from TruLens if stockNumber is available
-    var stock = v.stockNumber || v.id || v.tag;
     if (stock && (!v.web3d || v.web3d.mock)) {
-      var w3Urls = [
-        "https://lens.trudealers.com/api/public/web3d/" + encodeURIComponent(stock),
-        "https://lens.trudealers.com/api/public/web3d/" + encodeURIComponent(stock)
-      ];
-      var tryFetchW3 = function (idx) {
-        if (idx >= w3Urls.length) return;
-        fetch(w3Urls[idx], { mode: "cors" })
-          .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (data) {
-            if (data && data.package && data.package.frames && data.package.frames.length) {
-              v.web3d = data.package;
-              window.dispatchEvent(new CustomEvent("tru:stock", { detail: { source: TRU.source, count: TRU.vehicles.length } }));
-            } else {
-              tryFetchW3(idx + 1);
-            }
-          })
-          .catch(function () { tryFetchW3(idx + 1); });
-      };
-      tryFetchW3(0);
+      fetch("https://lens.trudealers.com/api/public/web3d/" + encodeURIComponent(stock), { mode: "cors" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (data && data.package && data.package.frames && data.package.frames.length) {
+            v.web3d = data.package;
+            window.dispatchEvent(new CustomEvent("tru:stock", { detail: { source: TRU.source, count: TRU.vehicles.length, updatedStock: stock } }));
+          }
+        })
+        .catch(function () {});
     }
   }
 
@@ -104,6 +108,7 @@
   }
 
   enrichAllVehicles(TRU.vehicles);
+  TRU.enrichVehicleOrbit = enrichVehicleOrbit;
 
   TRU.get = function (stockNumber, allowFallback) {
     if (!stockNumber) {

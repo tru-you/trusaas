@@ -645,10 +645,11 @@
       var body = document.getElementById("saBody").value;
       var maxPrice = document.getElementById("saMaxPrice").value;
 
-      if (window.TruForm && window.TruForm.open) {
-        window.TruForm.open({
-          interest: "Stock Alert Request: " + contact + " (Make: " + (make || "Any") + ", Body: " + (body || "Any") + ", Max: " + (maxPrice ? "R" + maxPrice : "Any") + ")",
-          source: "srp-stock-alert"
+      if (window.TruShowroom && window.TruShowroom.postLead) {
+        window.TruShowroom.postLead({
+          source: "Stock Alert Request",
+          phone: contact,
+          notes: "Stock Alert Request: (Make: " + (make || "Any") + ", Body: " + (body || "Any") + ", Max: " + (maxPrice ? "R" + maxPrice : "Any") + ")"
         });
       }
       saModal.classList.remove("is-open");

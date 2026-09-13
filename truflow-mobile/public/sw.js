@@ -3,14 +3,17 @@
    Strategy: never touch writes; navigations network-first with a cached shell
    fallback; API network-first with cache fallback (last-synced data offline);
    fonts + own static assets cache-first. */
-var VERSION = "tfm-2026-09-12-icon";
+var VERSION = "tfm-2026-09-13-wm";
 var CORE = [
   "/",
   "/index.html",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
-  "/apple-touch-icon.png"
+  "/apple-touch-icon.png",
+  "/in-app-icon.png",
+  "/trudealer-wordmark.png",
+  "/trudealer-logo-3d-horizontal.png"
 ];
 
 self.addEventListener("install", function (e) {

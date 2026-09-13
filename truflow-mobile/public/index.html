@@ -323,7 +323,16 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
 .gate{position:fixed;inset:0;z-index:80;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;transition:.4s var(--ease);}
 .gate.hide{opacity:0;transform:scale(1.03);pointer-events:none;}
 .gate .glow{position:absolute;width:260px;height:260px;border-radius:50%;filter:blur(90px);background:var(--cyan);opacity:.1;top:14%;}
-.gate .gmark{width:74px;height:74px;margin-bottom:20px;z-index:1;}
+.gate .gmark{width:240px;max-width:85%;height:auto;margin-bottom:14px;z-index:1;}
+.brand-3d-glow{
+  filter:drop-shadow(0 8px 24px rgba(79,227,220,0.22)) drop-shadow(0 2px 6px rgba(0,0,0,0.45));
+  animation:brandFloat 4.8s ease-in-out infinite;
+  transition:transform .3s ease, filter .3s ease;
+}
+@keyframes brandFloat{
+  0%,100%{transform:translateY(0);filter:drop-shadow(0 8px 24px rgba(79,227,220,0.20)) drop-shadow(0 2px 6px rgba(0,0,0,0.45));}
+  50%{transform:translateY(-3.5px);filter:drop-shadow(0 12px 30px rgba(79,227,220,0.30)) drop-shadow(0 4px 10px rgba(0,0,0,0.5));}
+}
 .gate h1{font-size:26px;font-weight:600;letter-spacing:-.02em;z-index:1;} .gate h1 b{color:var(--cyan);font-weight:600;}
 .gate .tag{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--cyan);border:1px solid var(--cyan-soft);background:var(--cyan-faint);padding:4px 12px;border-radius:var(--r-pill);margin-top:12px;z-index:1;}
 .gate p{color:var(--muted);font-size:13.5px;margin:22px 0 16px;z-index:1;}
@@ -427,7 +436,7 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
   .laptop{position:fixed;inset:0;z-index:90;background:var(--ink);display:flex;align-items:center;justify-content:center;gap:56px;padding:48px;flex-wrap:wrap;}
   .laptop .glow{position:absolute;width:340px;height:340px;border-radius:50%;filter:blur(100px);background:var(--cyan);opacity:.1;top:12%;}
   .laptop .lp-left{max-width:400px;z-index:1;}
-  .laptop .lp-mark{width:74px;height:74px;}
+  .laptop .lp-mark{width:260px;max-width:85%;height:auto;margin-bottom:14px;}
   .laptop .lp-h{font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:18px;}
   .laptop .lp-h b{color:var(--cyan);font-weight:600;}
   .laptop .lp-sub{color:var(--muted);font-size:15px;line-height:1.55;margin-top:14px;}
@@ -566,6 +575,68 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
 .sold-buyerrow b{font-weight:600;font-size:14.5px;}
 .sold-actions{display:flex;gap:10px;margin-top:16px;width:100%;}
 .sold-actions button{flex:1 1 0%;min-width:0;height:48px;min-height:48px;}
+
+/* ── 3D Brand Mark & Glow Effects ── */
+.brand-3d-glow {
+  filter: drop-shadow(0 6px 20px rgba(79, 227, 220, 0.20)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+  animation: brandFloat 4.8s ease-in-out infinite;
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+@keyframes brandFloat {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 6px 20px rgba(79, 227, 220, 0.18)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+  }
+  50% {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 10px 28px rgba(79, 227, 220, 0.30)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  }
+}
+.mark-3d {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 9px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.mark-3d:active {
+  transform: scale(0.95);
+}
+.pill-cyan-shimmer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #06b6d4;
+  color: #04131d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  border-radius: 9999px;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+.pill-cyan-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: rotate(25deg);
+  animation: pillGlint 2.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+@keyframes pillGlint {
+  0% { left: -60%; }
+  40%, 100% { left: 140%; }
+}
 </style>
 </head>
 <body>
@@ -574,7 +645,7 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
 <div class="app" id="app" style="display:none">
   <header class="top">
     <div class="brand">
-      <img src="/icon-192.png" class="mark" alt="TruFlow" style="width:32px;height:32px;object-fit:contain;display:block;">
+      <img src="/in-app-icon.png" class="mark mark-3d" alt="TruFlow">
     </div>
     <span id="offlinePill" style="display:none;background:#f59e0b;color:#000;font-size:11px;padding:2px 8px;border-radius:99px;margin-left:8px;">Offline · Cached</span>
     <div class="sp"></div>
@@ -698,9 +769,9 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
 
 <div class="gate" id="gate">
   <div class="glow"></div>
-  <img src="/icon-512.png" class="gmark" alt="TruFlow" style="width:72px;height:72px;object-fit:contain;display:block;margin-bottom:20px;">
-  <h1>Tru<b>Flow</b></h1><span class="tag">Mobile</span>
-  <input id="gateCode" type="password" inputmode="text" placeholder="Dealer code" autocomplete="off" autocapitalize="off" style="margin-top:26px">
+  <img src="/trudealer-wordmark.png" class="gmark brand-3d-glow" alt="TruDealer" style="width:210px;max-width:80%;height:auto;object-fit:contain;display:block;margin:0 auto 14px;">
+  <span class="pill-cyan-shimmer" style="margin-top:0;margin-bottom:16px;">TruFlow Mobile</span>
+  <input id="gateCode" type="password" inputmode="text" placeholder="Dealer code" autocomplete="off" autocapitalize="off" style="margin-top:16px">
   <button class="enter btn-primary" id="gateEnter">Sign in</button>
   <button class="enter btn-demo" id="gateDemo">Try demo (24h)</button>
   <div class="err-msg" id="gateErr"></div>
@@ -712,8 +783,9 @@ button:not(.btn-primary):not(.btn-danger):not(.mvbtn):not(.tru-btn-secondary):no
      self-contained QR (no external image, no third-party endpoint). -->
 <div class="laptop" id="laptop">
   <div class="glow"></div>
-    <img src="/icon-512.png" class="lp-mark" alt="TruFlow" style="width:72px;height:72px;object-fit:contain;display:block;">
-    <div class="lp-h">Tru<b>Flow</b></div>
+  <div class="lp-left">
+    <img src="/trudealer-wordmark.png" class="lp-mark brand-3d-glow" alt="TruDealer" style="width:220px;max-width:80%;height:auto;object-fit:contain;display:block;margin-bottom:14px;">
+    <div class="lp-h" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span class="pill-cyan-shimmer">TruFlow Mobile</span></div>
     <div class="lp-sub">Your TruFlow Mobile companion — manage leads, stock and deals from the showroom floor.</div>
     <div class="lp-rows">
       <div class="lp-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg><span class="lp-url" id="lpUrl">app.trudealers.com</span><span class="lp-act" id="lpCopy">Copy link</span></div>
@@ -2331,6 +2403,7 @@ Array.prototype.forEach.call($("#statusSeg").children,function(b){
 
   (function restore(){
     try{
+      if(new URLSearchParams(location.search).has("demo")){doDemo();return;}
       var t=localStorage.getItem("tflx_token"),a=localStorage.getItem("tflx_auth");
       if(!t){
         // Carry a dealer over from the previous console (sessionStorage) so

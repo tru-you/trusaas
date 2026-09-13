@@ -2,7 +2,7 @@
 (function () {
   window.TCSA = window.TCSA || {};
 
-  const TRUSAAS_URL = "https://www.tru-saas.com";
+  const TRUSAAS_URL = "https://trudealers.com";
   TCSA.TRUSAAS_URL = TRUSAAS_URL;
 
   function openTruSaaSPopup(e) {

@@ -236,7 +236,7 @@
             '<h3>Stay in the loop</h3>' +
             '<p>New stock alerts, market insights, and platform updates. No spam — ever.</p>' +
           '</div>' +
-          '<form class="footer-newsletter-form" onsubmit="event.preventDefault();this.querySelector(\'.fn-ok\').style.display=\'flex\';this.querySelector(\'.fn-fields\').style.display=\'none\'">' +
+          '<form class="footer-newsletter-form" onsubmit="event.preventDefault();var emailIn=this.querySelector(\'input[type=email]\');var val=emailIn?emailIn.value:\'\';if(window.TruShowroom&&window.TruShowroom.postLead){window.TruShowroom.postLead({source:\'Footer Newsletter\',email:val,notes:\'Subscribed to newsletter and market updates\'});}this.querySelector(\'.fn-ok\').style.display=\'flex\';this.querySelector(\'.fn-fields\').style.display=\'none\'">' +
             '<div class="fn-fields">' +
               '<input type="email" placeholder="you@email.com" required aria-label="Email address">' +
               '<button type="submit" class="fn-btn">Subscribe →</button>' +
@@ -281,7 +281,7 @@
             '<li><a href="https://wa.me/' + WA + '">WhatsApp us</a></li>' +
           "</ul></div>" +
           "<div><h4>Platform</h4><ul>" +
-            '<li><a href="https://www.tru-saas.com" target="_blank" rel="noopener">TruDealer</a></li>' +
+            '<li><a href="https://trudealers.com" target="_blank" rel="noopener">TruDealer</a></li>' +
             '<li><a href="https://trudealers.com" target="_blank" rel="noopener">The system</a></li>' +
             '<li><a href="https://trudealers.com" target="_blank" rel="noopener">Client sites</a></li>' +
           "</ul></div>" +
@@ -298,7 +298,7 @@
         '<div class="footer-note">' +
           "<span>© " + new Date().getFullYear() + " TruSaaS · Cape Town</span>" +
           "<span>Vehicles, prices &amp; inspection data are illustrative</span>" +
-          '<span>Powered by <a href="https://www.tru-saas.com" target="_blank" rel="noopener" style="color:var(--accent)">TruDealer</a></span>' +
+          '<span>Powered by <a href="https://trudealers.com" target="_blank" rel="noopener" style="color:var(--accent)">TruDealer</a></span>' +
         "</div>" +
       "</div>";
     document.body.appendChild(f);
@@ -420,11 +420,11 @@
   /* Hide default TruForm + TruAfford launchers (we use custom glass FABs)
      and restyle TruChat FAB to glassmorphic */
   var GLASS_CSS =
-    "background: rgba(255,255,255,0.82) !important;" +
+    "background: rgba(251,248,243,0.88) !important;" +
     "backdrop-filter: blur(18px) saturate(1.6) !important;" +
     "-webkit-backdrop-filter: blur(18px) saturate(1.6) !important;" +
-    "border: 1px solid rgba(26,26,46,0.1) !important;" +
-    "box-shadow: 0 4px 20px -4px rgba(26,26,46,0.1), 0 1px 3px rgba(26,26,46,0.06) !important;";
+    "border: 1px solid rgba(14,26,38,0.12) !important;" +
+    "box-shadow: 0 4px 20px -4px rgba(14,26,38,0.10), 0 1px 3px rgba(14,26,38,0.06) !important;";
 
   TRU.glassifyWidgets = function () {
     function sweep() {
@@ -484,11 +484,15 @@
     document.addEventListener("click", function (ev) {
       var chat = ev.target.closest("#fabChat");
       if (chat) {
-        var tcFab = document.getElementById("tc-fab");
-        if (tcFab) {
-          tcFab.click();
+        if (window.TruChatWidget && window.TruChatWidget.open) {
+          window.TruChatWidget.open();
         } else if (window.TruChat && window.TruChat.open) {
           window.TruChat.open();
+        } else if (window.TrueCarsTruChatWidget && window.TrueCarsTruChatWidget.open) {
+          window.TrueCarsTruChatWidget.open();
+        } else {
+          var tcFab = document.getElementById("tc-fab");
+          if (tcFab) tcFab.click();
         }
       }
       var enq = ev.target.closest("#fabEnquiry");
@@ -860,6 +864,41 @@
       ev.preventDefault();
       badge.classList.toggle("is-open");
       badge.setAttribute("aria-expanded", badge.classList.contains("is-open") ? "true" : "false");
+    });
+  };
+
+  /* ---- Universal lead posting to TruFlow DMS webhook ---- */
+  TRU.postLead = function (data) {
+    var d = data || {};
+    var nameParts = String(d.name || d.firstName || "Showroom").trim().split(/\s+/);
+    var payload = {
+      dealerSlug: d.dealerSlug || "true-cars",
+      source: d.source || "True Cars Showroom",
+      firstName: d.firstName || nameParts[0] || "Showroom",
+      lastName: d.lastName || nameParts.slice(1).join(" ") || "Lead",
+      phone: String(d.phone || d.cell || "").trim(),
+      email: String(d.email || "").trim(),
+      vehicle: d.vehicle || "",
+      vehicleId: d.vehicleId || d.stock || "",
+      notes: d.notes || d.interest || "",
+      finance: d.finance || undefined,
+      tradein: d.tradein || undefined
+    };
+    var url = (d.flowUrl || "https://premium.trudealers.com").replace(/\/$/, "") + "/api/integration/webhook-lead";
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(payload),
+      mode: "cors",
+      keepalive: true
+    }).then(function (r) {
+      try {
+        window.dispatchEvent(new CustomEvent("tru:lead", { detail: payload }));
+      } catch (e) {}
+      return r.ok;
+    }).catch(function (err) {
+      console.warn("[TruShowroom] Webhook lead post error:", err);
+      return false;
     });
   };
 

@@ -3571,10 +3571,12 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
   max-width: 280px !important;
   object-fit: contain !important;
   display: block !important;
-  transition: transform 0.2s ease !important;
+  filter: drop-shadow(0 0 14px rgba(6, 182, 212, 0.40)) !important;
+  transition: transform 0.2s ease, filter 0.2s ease !important;
 }
 .nav-brand:hover img {
   transform: scale(1.02);
+  filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.65)) !important;
 }
 
 /* Nav Burger button */

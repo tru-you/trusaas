@@ -1,5 +1,5 @@
 /* TruLens PWA service worker — app shell cache; never cache API photo payloads */
-const CACHE_VERSION = 'truflow-premium-v3-icon';
+const CACHE_VERSION = 'truflow-2026-09-13-wm';
 const SHELL = [
   '/',
   '/index.html',
@@ -8,6 +8,8 @@ const SHELL = [
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
   '/icons/apple-touch-icon.png',
+  '/icons/in-app-icon-512.png',
+  '/trudealer-wordmark.png',
 ];
 
 self.addEventListener('install', (event) => {

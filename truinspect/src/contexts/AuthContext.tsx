@@ -145,6 +145,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('demo')) {
+      enterDemoMode().catch(() => {});
+      return;
+    }
     // Check for existing demo session
     const demoRaw = localStorage.getItem(DEMO_KEY);
     if (demoRaw && Number(demoRaw) > Date.now() && localStorage.getItem(DEVICE_TOKEN_KEY)) {

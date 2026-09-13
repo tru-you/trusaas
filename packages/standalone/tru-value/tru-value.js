@@ -230,6 +230,8 @@
     "#" + ID + "-root .tv-spin i{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.12);border-top-color:var(--tv-signal);animation:tvSpin .8s linear infinite}",
     "@keyframes tvSpin{to{transform:rotate(360deg)}}",
     "#" + ID + "-root .tv-foot{padding:10px 14px 12px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;font-size:10px;color:var(--tv-muted);text-align:center}",
+    "#" + ID + "-root .tv-foot a{color:inherit;text-decoration:none}",
+    "#" + ID + "-root .tv-foot a:hover{text-decoration:underline}",
     "#" + ID + "-root .tv-foot b{color:var(--tv-signal-bright)}",
     "@media (max-width:480px){",
     "#" + ID + "-root{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}",
@@ -309,7 +311,7 @@
             '<div class="tv-step-dot on"></div><div class="tv-step-dot"></div><div class="tv-step-dot"></div>' +
           "</div>" +
           '<div class="tv-body" id="' + ID + '-body"></div>' +
-          '<div class="tv-foot">Powered by <b>TruSaaS TruValue</b> · Indicative estimate · Subject to full assessment</div>' +
+          '<div class="tv-foot">Powered by <a href="https://trudealers.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"><b>TruDealer TruValue</b></a> · Indicative estimate · Subject to full assessment</div>' +
         "</div>" +
         '<button type="button" class="tv-launcher" id="' + ID + '-open" aria-label="What\'s my ' + shortNoun + ' worth">' +
           '<span class="tv-ico">' + carIco + "</span>" +

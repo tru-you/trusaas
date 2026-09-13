@@ -1,4 +1,4 @@
-import logo from "../assets/truflow-logo.png";
+import trudealerWordmark from "../assets/trudealer-wordmark.png";
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { TRUESAAS_URL } from '../lib/ecosystem';
@@ -69,15 +69,15 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
           boxShadow: '0 1px 0 rgba(232,234,230,0.06) inset, 0 40px 90px -40px rgba(0,0,0,0.95)',
         }}
       >
-        <div className="flex flex-col items-center justify-center mb-6 gap-2">
-          <img src={logo} alt="TruFlow Premium" className="h-14 w-auto max-w-full object-contain logo-float" />
-          {/* This screen is the first thing a prospect sees on a demo, and it
-              said nothing about what the product is — a logo and a password
-              box. One line naming the job it does costs nothing and stops the
-              screen reading like an internal tool someone left exposed. */}
-          <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center leading-snug">
-            Dealer management Ecosystem for Dealers by Dealers
-          </p>
+        <div className="flex flex-col items-center justify-center mb-6 gap-3">
+          <img
+            src={trudealerWordmark}
+            alt="TruDealer"
+            className="w-56 max-w-full h-auto object-contain brand-3d-glow"
+          />
+          <span className="pill-cyan-shimmer">
+            TruFlow DMS
+          </span>
         </div>
 
         <form onSubmit={handleSubmit}>

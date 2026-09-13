@@ -1,6 +1,7 @@
 import React from 'react';
 import { LogIn, Lock, AlertCircle, Loader2, ShieldOff, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import trudealerWordmark from '../assets/images/trudealer-wordmark.png';
 
 /**
  * One field: the access code issued for this instance.
@@ -98,16 +99,16 @@ export default function Login() {
 
       <div className="w-full max-w-sm z-10 flex flex-col items-center">
 
-        {/* Wordmark. The one place the brand is allowed to be loud — 38px is
-            --t-h1 from brand.css. The tagline under it used to be 13px with
-            0.3em of tracking, which is a lot of work to read at that size. */}
-        <div className="text-center mb-10">
-          <div className="font-display font-semibold text-[38px] leading-none tracking-[-0.022em]">
-            <span className="text-[#E8EAE6]">Tru</span><span className="text-[#4FE3DC]">Inspect</span>
-          </div>
-          <p className="mt-3 text-[12px] text-[rgba(232,234,230,0.55)] tracking-[0.08em]">
-            Vehicle inspection reports
-          </p>
+        {/* Wordmark. Front of app branding */}
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img
+            src={trudealerWordmark}
+            alt="TruDealer"
+            className="w-52 max-w-full object-contain mx-auto mb-3 brand-3d-glow"
+          />
+          <span className="pill-cyan-shimmer">
+            TruInspect Condition
+          </span>
         </div>
 
         <div className="text-center mb-7">

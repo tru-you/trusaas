@@ -114,6 +114,7 @@
     market: market,
     locale: attr("data-locale", "") || MARKET_LOCALE[market] || "en-ZA",
     brand: attr("data-brand", "TruDealer"),
+    brandUrl: attr("data-brand-url", attr("data-brand-link", "https://trudealers.com")),
     theme: attr("data-theme", "dark"),
     z: attr("data-z", "2147200000")
   };
@@ -330,6 +331,8 @@
     ".tr-done-sub{font-size:13px;color:var(--tr-muted);margin-bottom:18px;line-height:1.5}",
 
     ".tr-foot{padding:8px 14px 10px;border-top:1px solid var(--tr-hair);flex-shrink:0;font-size:9.5px;color:var(--tr-muted);text-align:center}",
+    ".tr-foot a{color:inherit;text-decoration:none}",
+    ".tr-foot a:hover{text-decoration:underline}",
     ".tr-foot b{color:var(--tr-signal-bright);font-weight:700}",
 
     isInline ? "" : "@media(max-width:480px){@keyframes trShine{0%{transform:translateX(-160%) skewX(-20deg)}55%,100%{transform:translateX(300%) skewX(-20deg)}}.tr-launcher{width:76px;min-height:76px;height:76px;padding:12px;border-radius:50%;justify-content:center;gap:0;position:relative;overflow:hidden}.tr-launcher>div:last-child{display:none}.tr-launcher::after{content:'';position:absolute;top:0;left:0;width:48%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-160%) skewX(-20deg);animation:trShine 3.6s ease-in-out infinite;pointer-events:none;z-index:2}#tr{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}.tr-panel{width:100%}}",
@@ -501,7 +504,7 @@
           '</div>',
         '</div>',
 
-        '<div class="tr-foot">Powered by <b>', esc(cfg.brand), '</b></div>',
+        '<div class="tr-foot">Powered by <a href="', esc(cfg.brandUrl || 'https://trudealers.com'), '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"><b>', esc(cfg.brand), '</b></a></div>',
       '</div>',
       '</div>'
     ].join('');

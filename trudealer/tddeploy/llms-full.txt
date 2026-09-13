@@ -1,7 +1,7 @@
 # TruDealer — Full Technical & Operational Specification (TruSaaS)
 
 > Authoritative reference for AI models, automated crawlers, and system integrators.
-> Canonical URL: https://trudealer.tru-saas.com/llms-full.txt
+> Canonical URL: https://trudealers.com/llms-full.txt
 > Last updated: 2026-09-03
 
 ---
@@ -11,13 +11,13 @@
 TruDealer is structured as a high-performance, single-codebase vertical SaaS platform running on low-latency Render starter tiers in Frankfurt (EU-West) and South Africa regions.
 
 ### Active Services:
-- `trusaas-lens` (`lens.tru-saas.com`): TruLens PWA mobile studio.
-- `trusaas-inspect` (`inspect.tru-saas.com`): TruInspect condition reports & desktop manager.
-- `trusaas-premium` (`premium.tru-saas.com`): TruFlow central DMS, accounting hub, and TransUnion ledger.
-- `trusaas-mobile` (`app.tru-saas.com`): TruFlow Mobile companion app.
+- `trusaas-lens` (`lens.trudealers.com`): TruLens PWA mobile studio.
+- `trusaas-inspect` (`inspect.trudealers.com`): TruInspect condition reports & desktop manager.
+- `trusaas-premium` (`premium.trudealers.com`): TruFlow central DMS, accounting hub, and TransUnion ledger.
+- `trusaas-mobile` (`app.trudealers.com`): TruFlow Mobile companion app.
 - `trusaas-live` (`live.tru-saas.com`): WebRTC live video walkarounds.
 - `trusaas-trade` (`trade.tru-saas.com`): Remote trade-in valuation portal.
-- `trusaas-chat` (`chat.tru-saas.com`): TruChat conversational AI service.
+- `trusaas-chat` (`trudealers.com`): TruChat conversational AI service.
 
 ### Multi-Region Markets:
 - **South Africa (`MARKET=za`)**: Currency ZAR (R), distance in kilometres, native TransUnion eValue8 integration, POPIA compliant.
