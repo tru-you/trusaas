@@ -120,9 +120,12 @@
     if (document.getElementById('stickyTitle')) document.getElementById('stickyTitle').textContent = fullTitle;
     if (document.getElementById('stickyPrice')) document.getElementById('stickyPrice').textContent = formatMoney(v.price);
 
-    // Full Report Link
+    // Request Vehicle Inspection WhatsApp CTA
     var rptLink = document.getElementById('vdpFullReportBtn');
-    if (rptLink) rptLink.href = 'report.html?stock=' + encodeURIComponent(v.stockNumber || v.id) + '&title=' + encodeURIComponent(fullTitle);
+    if (rptLink) {
+      var inspMsg = "Hi Apex Auto! I'd like to request the detailed 114-point vehicle inspection report for the " + fullTitle + " (Stock #" + (v.stockNumber || v.id) + ").";
+      rptLink.href = 'https://wa.me/27726047878?text=' + encodeURIComponent(inspMsg);
+    }
 
     // Main Spec Tiles
     if (document.getElementById('spYear')) document.getElementById('spYear').textContent = v.year;
@@ -181,6 +184,10 @@
 
     if (!vehicle) {
       vehicle = parseUrlVehicle();
+    }
+
+    if (!vehicle && window.TRU_STOCK && window.TRU_STOCK.length) {
+      vehicle = window.TRU_STOCK[0];
     }
 
     if (vehicle) {

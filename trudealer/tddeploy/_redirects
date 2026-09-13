@@ -1,17 +1,22 @@
 # ── TruDealers 301 Canonical & Domain Redirects ────────────────
 
-# 1. 301 Redirect old domain (trudealer.com) to www.trudealers.com
-http://trudealer.com/*             https://www.trudealers.com/:splat  301!
-https://trudealer.com/*            https://www.trudealers.com/:splat  301!
-http://www.trudealer.com/*         https://www.trudealers.com/:splat  301!
-https://www.trudealer.com/*        https://www.trudealers.com/:splat  301!
+# 1. 301 Redirect www to bare domain (www cert is broken)
+http://www.trudealers.com/*        https://trudealers.com/:splat  301!
+https://www.trudealers.com/*       https://trudealers.com/:splat  301!
 
-# 2. 301 Redirect legacy subdomain (trudealer.tru-saas.com) to www.trudealers.com
-http://trudealer.tru-saas.com/*    https://www.trudealers.com/:splat  301!
-https://trudealer.tru-saas.com/*   https://www.trudealers.com/:splat  301!
+# 2. 301 Redirect old domain (trudealer.com — no 's') to trudealers.com
+http://trudealer.com/*             https://trudealers.com/:splat  301!
+https://trudealer.com/*            https://trudealers.com/:splat  301!
+http://www.trudealer.com/*         https://trudealers.com/:splat  301!
+https://www.trudealer.com/*        https://trudealers.com/:splat  301!
 
-# 3. Chat API Proxy to Hetzner
-/api/chat/*    https://chat.trudealers.com/api/chat/:splat    200
+# 3. 301 Redirect legacy subdomain (trudealer.tru-saas.com) to trudealers.com
+http://trudealer.tru-saas.com/*    https://trudealers.com/:splat  301!
+https://trudealer.tru-saas.com/*   https://trudealers.com/:splat  301!
 
-# 4. Canonical / Root
+# 4. Chat API Proxy to Hetzner
+/api/chat    https://premium.trudealers.com/api/chat    200!
+/api/chat/*  https://premium.trudealers.com/api/chat/:splat  200!
+
+# 5. SPA fallback
 /*             /index.html                                    200

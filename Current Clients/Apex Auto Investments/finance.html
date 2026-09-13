@@ -17,7 +17,7 @@
 
   <link rel="stylesheet" href="assets/css/showroom.css">
 
-  <script src="tru-loader.js?v=3"
+  <script src="tru-loader.js?v=4"
           data-dealer="Apex Auto Investments"
           data-slug="apex-wholesale-investments"
           data-flow="https://premium.trudealers.com"
@@ -366,7 +366,7 @@
             </div>
 
             <div class="fin-car-media">
-              <img id="finCarImg" src="assets/img/hero-showroom.jpg" alt="Selected Vehicle">
+              <img id="finCarImg" src="audi.jpg" alt="Selected Vehicle">
               <div class="fin-car-vir-pill" id="finCarVir">
                 <span class="vir-dot"></span>
                 <span id="finVirScore">VIR 94 / 100</span>
@@ -477,13 +477,13 @@
       var body = document.getElementById("finCarBody");
 
       var vPrice = v.truPrice || v.price || 350000;
-      if (img) img.src = v.heroImage || (v.images && v.images[0]) || "assets/img/hero-showroom.jpg";
-      if (vir) vir.textContent = "VIR " + (v.vir || 94) + " / 100";
+      if (img) img.src = v.heroImage || (v.images && v.images[0]) || "audi.jpg";
+      if (vir) vir.textContent = "VIR " + (v.virScore || v.vir || 94) + " / 100";
       if (ym) ym.textContent = v.year + " · " + formatTitleCase(v.make);
       if (stock) stock.textContent = "STOCK: " + (v.stockNumber || v.id || "APEX");
       
       var modelName = formatTitleCase(v.model);
-      var trimName = v.trim ? " " + formatTitleCase(v.trim) : "";
+      var trimName = (v.variant || v.trim) ? (" " + formatTitleCase(v.variant || v.trim)) : "";
       if (title) title.textContent = formatTitleCase(v.make) + " " + modelName + trimName;
       
       if (price) price.textContent = TRU ? TRU.money(vPrice) : ("R " + Number(vPrice).toLocaleString("en-ZA"));
@@ -498,6 +498,25 @@
     function mountRepay(v) {
       var host = document.getElementById("finance-calc");
       if (!host) return;
+      var vPrice = v ? (v.truPrice || v.price || 350000) : 350000;
+      var vTitle = v && TRU ? (TRU.title(v) + (v.variant ? (" " + v.variant) : (v.trim ? (" " + v.trim) : ""))) : "";
+
+      // Try updating active TruRepay instance directly first
+      if (window.TruRepay && Array.isArray(window.TruRepay.instances) && window.TruRepay.instances.length) {
+        var inst = window.TruRepay.instances[window.TruRepay.instances.length - 1];
+        if (inst && inst.root && inst.root.getRootNode) {
+          var shadow = inst.root.getRootNode();
+          var pInput = shadow.getElementById ? shadow.getElementById("tr-price") : null;
+          if (pInput) {
+            pInput.value = "R " + Math.round(vPrice).toLocaleString("en-ZA");
+            pInput.dispatchEvent(new Event("input", { bubbles: true }));
+            if (inst.recalc) inst.recalc();
+            return;
+          }
+        }
+      }
+
+      // Initial mount
       host.innerHTML = "";
       var tag = document.createElement("script");
       tag.src = "tru-repay.js?v=4";
@@ -510,15 +529,15 @@
       tag.setAttribute("data-target", "#finance-calc");
       tag.setAttribute("data-collapsible", "0");
       tag.setAttribute("data-theme", "dark");
-      tag.setAttribute("data-price", String(v ? (v.truPrice || v.price) : 350000));
-      if (v && TRU) tag.setAttribute("data-vehicle", TRU.title(v) + (v.trim ? " " + v.trim : ""));
+      tag.setAttribute("data-price", String(vPrice));
+      if (vTitle) tag.setAttribute("data-vehicle", vTitle);
       document.body.appendChild(tag);
     }
 
     function render() {
       var picker = document.getElementById("carPicker");
       if (!picker || !TRU) return;
-      var list = TRU.sort(TRU.vehicles || [], "price-asc");
+      var list = TRU.sort(TRU.vehicles || window.TRU_STOCK || [], "price-asc");
       if (!list.length) return;
 
       picker.innerHTML = list.map(function (v) {

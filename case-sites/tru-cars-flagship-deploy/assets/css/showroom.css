@@ -4644,6 +4644,161 @@ select.trade-input {
 [data-theme="dark"] .fin-value { color: #F4F0E8; }
 [data-theme="dark"] .fin-note { color: rgba(244,240,232,0.5); }
 
+/* Dark mode: VDP Card Panel & Spec Table (Fix cream on white contrast) */
+[data-theme="dark"] .vdp-card-panel { background: #16283A; border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 20px -6px rgba(0,0,0,0.4); }
+[data-theme="dark"] .vdp-spec-card { background: #16283A; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .vdp-spec-head { border-bottom-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .vdp-spec-table-wrap { background: #12202E; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .spec-table tr { border-top-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .spec-table tr:nth-child(even) { background-color: rgba(255,255,255,0.03); }
+[data-theme="dark"] .spec-table tr:hover { background-color: rgba(93,233,212,0.06); }
+[data-theme="dark"] .spec-table td { border-top-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .spec-table td.spec-label,
+[data-theme="dark"] .spec-table td:first-child { color: rgba(244,240,232,0.65); }
+[data-theme="dark"] .spec-table td.spec-val,
+[data-theme="dark"] .spec-table td:last-child { color: #F4F0E8; }
+
+/* Dark mode: VDP Highlights Grid */
+[data-theme="dark"] .highlight-tile { background: #16283A; border-color: rgba(255,255,255,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+[data-theme="dark"] .highlight-tile:hover { border-color: var(--teal-bright); box-shadow: 0 8px 20px rgba(7,135,154,0.3); }
+[data-theme="dark"] .highlight-label { color: rgba(244,240,232,0.55); }
+[data-theme="dark"] .highlight-value { color: #F4F0E8; }
+
+/* Dark mode: VDP Rail & Buy Panel */
+[data-theme="dark"] .vdp-rail > div { background: #16283A !important; border-color: rgba(255,255,255,0.1) !important; box-shadow: 0 4px 20px -6px rgba(0,0,0,0.4) !important; }
+[data-theme="dark"] .vdp-title { color: #F4F0E8; }
+[data-theme="dark"] .vdp-meta { color: rgba(244,240,232,0.55); }
+[data-theme="dark"] .vdp-trim { color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .vdp-price .price-now { color: #F4F0E8; }
+[data-theme="dark"] .vdp-pm { color: rgba(244,240,232,0.65); }
+[data-theme="dark"] .vdp-pm b { color: var(--teal-bright); }
+[data-theme="dark"] .price-alert-trigger { border-color: var(--teal-bright); color: var(--teal-bright); }
+[data-theme="dark"] .price-alert-trigger:hover { background: var(--teal-bright); color: #0E1A26; }
+[data-theme="dark"] .btn-deal-sheet { background: #12202E; border-color: rgba(255,255,255,0.15); color: #F4F0E8; }
+[data-theme="dark"] .btn-deal-sheet:hover { background: #1D3348; border-color: var(--teal-bright); color: #FFFFFF; }
+
+/* Dark mode: VDP TruInspect VIR Card */
+[data-theme="dark"] .vir-seal-meta h4 { color: #F4F0E8; }
+[data-theme="dark"] .vir-seal-meta p { color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .vir-ring-bg { stroke: rgba(255,255,255,0.08); }
+[data-theme="dark"] .vir-ring-label .vir-ring-num { color: #F4F0E8; }
+[data-theme="dark"] .vir-ring-label .vir-ring-max { color: rgba(244,240,232,0.5); }
+[data-theme="dark"] .vir-cat-info span { color: rgba(244,240,232,0.75); }
+[data-theme="dark"] .vir-cat-info b { color: #F4F0E8; }
+[data-theme="dark"] .vir-progress-track { background: #12202E; border: 1px solid rgba(255,255,255,0.06); }
+[data-theme="dark"] .vir-trust-item { background: #12202E; border: 1px solid rgba(255,255,255,0.08); color: rgba(244,240,232,0.85); }
+
+/* Dark mode: VDP TruRepay Calculator Card */
+[data-theme="dark"] .fin-calc-card { background: #16283A; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .fin-calc-title { color: #F4F0E8; }
+[data-theme="dark"] .fin-calc-badge { background: rgba(93, 233, 212, 0.12); color: #5DE9D4; border-color: rgba(93, 233, 212, 0.3); }
+[data-theme="dark"] .fin-breakdown { background: #12202E; border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .fin-bd-label { color: rgba(244,240,232,0.6); }
+[data-theme="dark"] .fin-bd-val { color: var(--teal-bright); }
+[data-theme="dark"] .fin-bd-sub { color: #F4F0E8 !important; }
+[data-theme="dark"] .fin-control-label { color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .fin-control-val { color: #F4F0E8; }
+[data-theme="dark"] .fin-slider { background: #1D3348; }
+
+/* Dark mode: Inputs & Trade-In Card */
+[data-theme="dark"] .trade-card { background: #16283A; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .trade-card h3 { color: #F4F0E8; }
+[data-theme="dark"] .trade-label { color: rgba(244,240,232,0.6); }
+[data-theme="dark"] .trade-input { background: #12202E; color: #F4F0E8; border-color: rgba(255,255,255,0.15); }
+[data-theme="dark"] .trade-input:focus { background: #16283A; border-color: var(--teal-bright); color: #FFFFFF; }
+[data-theme="dark"] .trade-input::placeholder { color: rgba(244,240,232,0.35); }
+[data-theme="dark"] select.trade-input {
+  background-color: #12202E;
+  color: #F4F0E8;
+  border-color: rgba(255,255,255,0.15);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke='%235DE9D4' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+[data-theme="dark"] select.trade-input option { background: #12202E !important; color: #F4F0E8 !important; }
+[data-theme="dark"] .trade-result { background: rgba(7, 135, 154, 0.15); border-color: rgba(93, 233, 212, 0.3); color: #F4F0E8; }
+[data-theme="dark"] .trade-result-row span { color: rgba(244,240,232,0.75); }
+[data-theme="dark"] .trade-result-row b { color: var(--teal-bright); }
+
+/* Dark mode: Media Switcher & Orbit */
+[data-theme="dark"] .media-tabs { background: #12202E; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .media-tab-btn { color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .media-tab-btn:hover { color: #F4F0E8; }
+[data-theme="dark"] .media-tab-btn.is-active { background: #1D3348; color: #FFFFFF; border-color: rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+[data-theme="dark"] .orbit { background: #12202E; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .orbit-label,
+[data-theme="dark"] .orbit-reset,
+[data-theme="dark"] .orbit-hint,
+[data-theme="dark"] .orbit-autospin { background: rgba(18, 32, 46, 0.85); border: 1px solid rgba(255,255,255,0.15); color: #F4F0E8; }
+[data-theme="dark"] .orbit-chips button { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: rgba(244,240,232,0.8); }
+[data-theme="dark"] .orbit-chips button:hover { border-color: var(--teal-bright); color: #FFFFFF; }
+[data-theme="dark"] .orbit-chips button.is-on { background: rgba(7, 135, 154, 0.3); border-color: var(--teal-bright); color: var(--teal-bright); }
+
+/* Dark mode: Modals & Dialogs */
+[data-theme="dark"] .tru-dialog-modal { background: #16283A; border: 1px solid rgba(255,255,255,0.12); color: #F4F0E8; }
+[data-theme="dark"] .tru-dialog-head h3 { color: #F4F0E8; }
+[data-theme="dark"] .tru-dialog-head p { color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .tru-dialog-close { background: rgba(255,255,255,0.08); color: #F4F0E8; }
+[data-theme="dark"] .tru-dialog-close:hover { background: rgba(255,255,255,0.15); color: #FFFFFF; }
+[data-theme="dark"] .reserve-perks { background: #12202E; border: 1px solid rgba(255,255,255,0.08); }
+[data-theme="dark"] .reserve-perk-item span { color: rgba(244,240,232,0.8); }
+[data-theme="dark"] .reserve-perk-item b { color: #F4F0E8; }
+[data-theme="dark"] .tru-form-field label { color: rgba(244,240,232,0.65); }
+[data-theme="dark"] .tru-form-field input,
+[data-theme="dark"] .tru-form-field select { background: #12202E; color: #F4F0E8; border-color: rgba(255,255,255,0.15); }
+[data-theme="dark"] .tru-form-field input:focus,
+[data-theme="dark"] .tru-form-field select:focus { background: #16283A; border-color: var(--teal-bright); color: #FFFFFF; }
+[data-theme="dark"] .tru-form-field select option { background: #12202E !important; color: #F4F0E8 !important; }
+
+/* Dark mode: Mobile Sticky Bar */
+[data-theme="dark"] .vdp-mobile-bar { background: rgba(18, 32, 46, 0.95); border-top-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .vdp-mobile-now { color: #F4F0E8; }
+[data-theme="dark"] .vdp-mobile-pm { color: rgba(244,240,232,0.6); }
+
+/* Dark mode: Trade-In Wizard Page */
+[data-theme="dark"] .wiz-card { background: #16283A; border-color: rgba(7, 135, 154, 0.35); box-shadow: 0 20px 50px -15px rgba(0,0,0,0.5); }
+[data-theme="dark"] .wiz-bar { border-bottom-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .wiz-step-pill { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .wiz-step-pill.is-active { background: var(--navy-950); color: #FFFFFF; border-color: var(--teal-bright); box-shadow: 0 6px 20px -4px rgba(7, 135, 154, 0.4); }
+[data-theme="dark"] .wiz-step-num { background: rgba(255,255,255,0.08); color: rgba(244,240,232,0.6); }
+[data-theme="dark"] .wiz-step-pill.is-active .wiz-step-num { background: #5DE9D4; color: #0E1A26; }
+[data-theme="dark"] .make-chip { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #F4F0E8; }
+[data-theme="dark"] .make-chip:hover { background: #1D3348; border-color: var(--teal-bright); color: var(--teal-bright); }
+[data-theme="dark"] .buildup-table { background: #12202E; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .buildup-table tr { border-bottom-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .buildup-table td:first-child { color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .buildup-table td:last-child { color: #F4F0E8; }
+[data-theme="dark"] .buildup-table tr.total-row { background: rgba(255,255,255,0.04); border-top-color: rgba(255,255,255,0.2); }
+[data-theme="dark"] .buildup-table tr.total-row td { color: #F4F0E8; }
+[data-theme="dark"] .equity-panel { background: #12202E; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .equity-panel-title { color: #F4F0E8; }
+[data-theme="dark"] .equity-panel-sub { color: rgba(244,240,232,0.7); }
+[data-theme="dark"] .equity-breakdown-card { background: #16283A; border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+[data-theme="dark"] .equity-row { color: rgba(244,240,232,0.75); }
+[data-theme="dark"] .equity-row b { color: #F4F0E8; }
+[data-theme="dark"] .equity-row.is-total { border-top-color: rgba(255,255,255,0.12); }
+[data-theme="dark"] .equity-row.is-total b { color: #F4F0E8; }
+[data-theme="dark"] .equity-row.is-instalment { color: var(--teal-bright); }
+[data-theme="dark"] .equity-row.is-instalment b { color: var(--teal-bright); }
+[data-theme="dark"] .val-card.market { background: rgba(7, 136, 155, 0.15); border-color: rgba(93, 233, 212, 0.3); }
+[data-theme="dark"] .val-card.market .val-card-price { color: #F4F0E8; }
+[data-theme="dark"] .trade-trust-item { background: #16283A; border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .trade-trust-info h4 { color: #F4F0E8; }
+[data-theme="dark"] .trade-trust-info p { color: rgba(244,240,232,0.7); }
+
+/* Dark mode: Finance Page Components */
+[data-theme="dark"] .fin-car-card { background: #16283A; border-color: rgba(7, 135, 154, 0.35); box-shadow: 0 20px 50px -15px rgba(0,0,0,0.5); }
+[data-theme="dark"] .fin-car-title { color: #F4F0E8; }
+[data-theme="dark"] .fin-car-price-main { color: #F4F0E8; }
+[data-theme="dark"] .fin-car-price-pm { color: var(--teal-bright); }
+[data-theme="dark"] .fin-car-pill { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: #F4F0E8; }
+[data-theme="dark"] .fin-spec-card { background: #16283A; border-color: rgba(7, 135, 154, 0.35); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+[data-theme="dark"] .fin-spec-title { color: #F4F0E8; }
+[data-theme="dark"] .fin-calc-box { background: #16283A; border-color: rgba(7, 135, 154, 0.35); }
+[data-theme="dark"] .fin-approval-card { background: #16283A; border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .fin-approval-card h3 { color: #F4F0E8; }
+[data-theme="dark"] .fin-partner-card { background: #16283A; border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .fin-partner-card h4 { color: #F4F0E8; }
+[data-theme="dark"] .fin-partner-card p { color: rgba(244,240,232,0.7); }
+
 /* Dark mode: all panels, sections, and generic content */
 [data-theme="dark"] .section { color: #F4F0E8; }
 [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3 { color: #F4F0E8; }

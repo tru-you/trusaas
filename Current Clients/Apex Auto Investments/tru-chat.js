@@ -15,9 +15,9 @@
     s.id = STYLE_ID;
     s.textContent = [
       /* tokens */
-      ".tc-root{--tc-red:#e30613;--tc-red-dark:#9b0410;--tc-gold:#ffffff;--tc-gold-dim:rgba(255,255,255,.08);",
+      ".tc-root{--tc-red:#B85B24;--tc-red-dark:#8C3D12;--tc-gold:#ffffff;--tc-gold-dim:rgba(255,255,255,.08);",
       "--tc-bg:#08090f;--tc-panel:rgba(16,18,28,.92);--tc-border:rgba(255,255,255,.1);--tc-text:#f8fafc;",
-      "--tc-muted:#94a3b8;--tc-green:#34d399;--tc-user:rgba(227,6,19,.2);",
+      "--tc-muted:#94a3b8;--tc-green:#34d399;--tc-user:rgba(184,91,36,.22);",
       "--tc-ease:cubic-bezier(.22,1,.36,1);--tc-spring:cubic-bezier(.34,1.56,.64,1);",
       "font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--tc-text);box-sizing:border-box;",
       "-webkit-font-smoothing:antialiased}",
@@ -42,14 +42,14 @@
 
       /* shell — glass */
       ".tc-shell{position:relative;display:flex;flex-direction:column;height:100%;min-height:0;",
-      "background:linear-gradient(165deg,rgba(28,12,16,.95) 0%,rgba(12,14,22,.97) 42%,rgba(10,12,18,.98) 100%);",
+      "background:linear-gradient(165deg,rgba(28,20,16,.95) 0%,rgba(12,14,22,.97) 42%,rgba(10,12,18,.98) 100%);",
       "border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;",
-      "box-shadow:0 28px 80px -24px rgba(0,0,0,.75),0 0 0 1px rgba(227,6,19,.08),inset 0 1px 0 rgba(255,255,255,.08);",
-      "backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);",
+      "box-shadow:0 28px 80px -24px rgba(0,0,0,.75),0 0 0 1px rgba(184,91,36,.12),inset 0 1px 0 rgba(255,255,255,.08);",
+      "backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);",
       "animation:tcShellIn .45s var(--tc-ease) both}",
       ".tc-shell::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;",
-      "background:radial-gradient(ellipse 90% 50% at 50% -10%,rgba(227,6,19,.22),transparent 55%),",
-      "radial-gradient(ellipse 40% 30% at 100% 100%,rgba(232,185,35,.06),transparent 50%)}",
+      "background:radial-gradient(ellipse 90% 50% at 50% -10%,rgba(184,91,36,.22),transparent 55%),",
+      "radial-gradient(ellipse 40% 30% at 100% 100%,rgba(230,118,46,.08),transparent 50%)}",
       ".tc-shell > *{position:relative;z-index:1}",
 
       /* header */
@@ -59,15 +59,16 @@
       ".tc-who{display:flex;align-items:center;gap:11px;min-width:0}",
       ".tc-avatar-wrap{position:relative;width:44px;height:44px;flex-shrink:0}",
       ".tc-avatar-wrap::after{content:'';position:absolute;inset:-3px;border-radius:16px;",
-      "border:1.5px solid rgba(227,6,19,.45);animation:tcRing 2.4s ease-out infinite}",
+      "border:1.5px solid rgba(184,91,36,.45);animation:tcRing 2.4s ease-out infinite}",
       ".tc-avatar{width:44px;height:44px;border-radius:14px;",
-      "background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));",
+      "background:linear-gradient(145deg,#1c1512,#0d131c);",
       "display:grid;place-items:center;font-weight:800;font-size:15px;",
-      "box-shadow:0 8px 20px -6px rgba(227,6,19,.65);overflow:hidden}",
-      ".tc-avatar img{width:100%;height:100%;object-fit:cover;background:#0a0b10;padding:0}",
+      "border:1px solid rgba(184,91,36,.4);",
+      "box-shadow:0 8px 20px -6px rgba(184,91,36,.65);overflow:hidden}",
+      ".tc-avatar img{width:100%;height:100%;object-fit:contain;background:transparent;padding:3px;display:block}",
       ".tc-name{font-weight:700;font-size:14px;line-height:1.2;letter-spacing:-.01em;",
       "white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
-      ".tc-name em{font-style:normal;background:linear-gradient(90deg,#fff 20%,#fecaca 100%);",
+      ".tc-name em{font-style:normal;background:linear-gradient(90deg,#fff 20%,#E6762E 100%);",
       "-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}",
       ".tc-status{font-size:11px;color:var(--tc-green);display:flex;align-items:center;margin-top:2px;font-weight:500}",
       ".tc-status .tc-live{display:inline-block;width:7px;height:7px;border-radius:50%;",
@@ -91,11 +92,11 @@
       ".tc-msg.bot{align-self:flex-start;background:rgba(20,22,32,.9);border:1px solid rgba(255,255,255,.09);",
       "border-bottom-left-radius:6px;box-shadow:0 4px 16px -8px rgba(0,0,0,.4);",
       "animation:tcMsgIn .42s var(--tc-ease) both}",
-      ".tc-msg.user{align-self:flex-end;background:linear-gradient(145deg,rgba(227,6,19,.35),rgba(227,6,19,.18));",
-      "border:1px solid rgba(227,6,19,.4);border-bottom-right-radius:6px;",
-      "box-shadow:0 6px 18px -10px rgba(227,6,19,.5);animation:tcMsgUser .38s var(--tc-ease) both}",
+      ".tc-msg.user{align-self:flex-end;background:linear-gradient(145deg,rgba(184,91,36,.38),rgba(184,91,36,.2));",
+      "border:1px solid rgba(184,91,36,.45);border-bottom-right-radius:6px;",
+      "box-shadow:0 6px 18px -10px rgba(184,91,36,.55);animation:tcMsgUser .38s var(--tc-ease) both}",
       ".tc-msg strong{color:#fff;font-weight:700}",
-      ".tc-msg a{color:#fca5a5}",
+      ".tc-msg a{color:#E6762E}",
 
       /* chips */
       ".tc-sugs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}",
@@ -116,8 +117,8 @@
       "animation:tcFadeUp .45s var(--tc-ease) both;transition:border-color .25s,transform .25s var(--tc-ease),box-shadow .25s}",
       ".tc-car:nth-child(1){animation-delay:.05s}.tc-car:nth-child(2){animation-delay:.12s}",
       ".tc-car:nth-child(3){animation-delay:.19s}.tc-car:nth-child(4){animation-delay:.26s}",
-      ".tc-car:hover{border-color:rgba(227,6,19,.4);transform:translateY(-2px);",
-      "box-shadow:0 12px 28px -14px rgba(227,6,19,.35)}",
+      ".tc-car:hover{border-color:rgba(184,91,36,.45);transform:translateY(-2px);",
+      "box-shadow:0 12px 28px -14px rgba(184,91,36,.4)}",
       ".tc-car::after{content:'';position:absolute;top:0;left:0;width:40%;height:100%;",
       "background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);",
       "transform:translateX(-120%);pointer-events:none}",
@@ -133,7 +134,7 @@
       ".tc-car-acts button:hover{transform:translateY(-2px);filter:brightness(1.08)}",
       ".tc-car-acts button:active{transform:scale(.97)}",
       ".tc-pri{background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));color:#fff;",
-      "box-shadow:0 6px 16px -8px rgba(227,6,19,.7)}",
+      "box-shadow:0 6px 16px -8px rgba(184,91,36,.7)}",
       ".tc-sec{background:rgba(255,255,255,.06);color:var(--tc-text);border:1px solid rgba(255,255,255,.12)!important}",
 
       /* calendar */
@@ -145,7 +146,7 @@
       "border-radius:10px;padding:9px;font-size:11px;cursor:pointer;font-weight:600;",
       "transition:border-color .15s,background .15s,transform .15s var(--tc-spring)}",
       ".tc-grid button:hover{transform:scale(1.03);border-color:rgba(255,255,255,.2)}",
-      ".tc-grid button.sel{border-color:var(--tc-red);background:rgba(227,6,19,.22);box-shadow:0 0 0 1px rgba(227,6,19,.2)}",
+      ".tc-grid button.sel{border-color:var(--tc-red);background:rgba(184,91,36,.22);box-shadow:0 0 0 1px rgba(184,91,36,.2)}",
 
       /* typing */
       ".tc-typing{font-size:11px;color:var(--tc-muted);min-height:20px;padding:0 16px 6px;display:flex;align-items:center;gap:8px}",
@@ -164,19 +165,19 @@
       "background:rgba(0,0,0,.4);color:var(--tc-text);padding:13px 15px;font-size:14px;outline:none;",
       "transition:border-color .2s,box-shadow .25s,background .2s}",
       ".tc-composer input::placeholder{color:#64748b}",
-      ".tc-composer input:focus{border-color:rgba(227,6,19,.55);background:rgba(0,0,0,.5);",
-      "box-shadow:0 0 0 4px rgba(227,6,19,.14)}",
+      ".tc-composer input:focus{border-color:rgba(184,91,36,.55);background:rgba(0,0,0,.5);",
+      "box-shadow:0 0 0 4px rgba(184,91,36,.18)}",
       ".tc-composer button{border:none;border-radius:14px;min-width:52px;",
       "background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));color:#fff;padding:0 16px;",
       "font-weight:800;cursor:pointer;font-size:13px;letter-spacing:.02em;",
-      "box-shadow:0 8px 20px -8px rgba(227,6,19,.75);",
+      "box-shadow:0 8px 20px -8px rgba(184,91,36,.75);",
       "transition:transform .2s var(--tc-spring),filter .15s,box-shadow .2s}",
-      ".tc-composer button:hover{filter:brightness(1.1);transform:scale(1.04);box-shadow:0 10px 24px -8px rgba(227,6,19,.85)}",
+      ".tc-composer button:hover{filter:brightness(1.1);transform:scale(1.04);box-shadow:0 10px 24px -8px rgba(184,91,36,.85)}",
       ".tc-composer button:active{transform:scale(.96)}",
 
       ".tc-foot{text-align:center;font-size:10px;color:#64748b;padding:4px 10px 12px;",
       "letter-spacing:.04em;text-transform:uppercase}",
-      ".tc-foot span{color:rgba(227,6,19,.7);font-weight:700}",
+      ".tc-foot span{color:var(--tc-red);font-weight:700}",
 
       /* WA bar */
       ".tc-wa-bar{display:none;padding:10px 14px;gap:10px;align-items:center;",
@@ -193,8 +194,8 @@
       ".tc-intro{align-self:center;text-align:center;padding:8px 14px 4px;max-width:92%;",
       "animation:tcFadeUp .5s var(--tc-ease) both}",
       ".tc-intro .pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;",
-      "letter-spacing:.08em;text-transform:uppercase;color:#fecaca;",
-      "background:rgba(227,6,19,.12);border:1px solid rgba(227,6,19,.3);padding:5px 10px;border-radius:999px;margin-bottom:6px}",
+      "letter-spacing:.08em;text-transform:uppercase;color:#fbd38d;",
+      "background:rgba(184,91,36,.15);border:1px solid rgba(184,91,36,.35);padding:5px 10px;border-radius:999px;margin-bottom:6px}",
 
       /* after-hours banner */
       ".tc-after-hours{align-self:center;text-align:center;padding:8px 14px;max-width:92%;margin-bottom:4px;",
@@ -296,7 +297,7 @@
       '<div class="tc-shell">' +
       '<div class="tc-head">' +
       '<div class="tc-who">' +
-      '<div class="tc-avatar-wrap"><div class="tc-avatar" id="tcAv">R</div></div>' +
+      '<div class="tc-avatar-wrap"><div class="tc-avatar" id="tcAv"><img src="assets/brand/apex-chat-icon.png" alt="Apex AI" onerror="this.onerror=null;this.src=\'assets/brand/apex-logo-mark.svg\';" /></div></div>' +
       "<div><div class=\"tc-name\"><em>" +
       esc(CFG.assistantName || "Assistant") +
       "</em> · " +
@@ -324,7 +325,7 @@
 
     if (CFG.logoUrl) {
       container.querySelector("#tcAv").innerHTML =
-        '<img src="' + esc(CFG.logoUrl) + '" alt="" />';
+        '<img src="' + esc(CFG.logoUrl) + '" alt="' + esc(CFG.assistantName || "Apex AI") + '" onerror="this.onerror=null;this.src=\'assets/brand/apex-logo-mark.svg\';" />';
     }
 
     var historyEl = container.querySelector("#tcHist");
@@ -889,46 +890,245 @@
     detectVehicleFromPage: detectVehicleFromPage,
   };
 
-  /* Auto-mount standalone if TruChatQualifier is not present or standalone tag loaded */
+  /* Auto-mount standalone glassmorphic widget for Apex Auto Investments */
   if (typeof window !== "undefined") {
-    (function() {
-      var s = document.currentScript;
-      var autoMount = s && (s.getAttribute("data-dealer") || s.getAttribute("data-assistant"));
-      if (!autoMount && !window.RAY_TRUCHAT_CONFIG && !window.TRUECARS_TRUCHAT_CONFIG) {
-        // Provide built-in minimal qualifier fallback
-        if (!root.TruChatQualifier) {
-          root.TruChatQualifier = {
-            createQualifier: function(cfg) {
-              var session = { name: "Customer", phone: "", email: "", vehicleInterest: "Browsing", tradeInDetails: "", financeInterest: false, qualified: false, pathway: [] };
-              return {
-                getSession: function() { return session; },
-                setCatalog: function() {},
-                process: function(t) {
-                  var str = String(t || "").toLowerCase();
-                  var text = "I can help with our inspected inventory, financing options, trade-in valuations, or connecting directly with our sales specialists at 17b Burt Drive, Newton Park.";
-                  var sugs = ["View stock", "Vehicle finance", "Trade-in", "WhatsApp team"];
-                  if (str.includes("finance") || str.includes("repay")) {
-                    text = "We structure vehicle finance through ABSA, WesBank, Standard Bank, Nedbank MFC, and Capitec with same-day pre-approval.";
-                    sugs = ["Under R3 500 / mo", "R3 500 - R5 500 / mo", "Over R5 500 / mo"];
-                  } else if (str.includes("hour") || str.includes("time") || str.includes("open")) {
-                    text = "Our showroom is open Monday–Friday 08:00–17:30 and Saturdays 08:30–13:00 at 17b Burt Drive, Newton Park, Gqeberha.";
-                    sugs = ["Browse stock", "Book a test drive", "WhatsApp sales"];
-                  } else if (/\b(0\d{9}|27\d{9}|\+27\d{9})\b/.test(str)) {
-                    session.phone = str.match(/\b(0\d{9}|27\d{9}|\+27\d{9})\b/)[0];
-                    session.qualified = true;
-                    text = "Thank you! I have noted your contact number " + session.phone + ". Davrin or Curt from our sales team will reach out to you shortly.";
-                    sugs = ["Continue on WhatsApp"];
+    (function () {
+      var s =
+        document.currentScript ||
+        (function () {
+          var list = document.getElementsByTagName("script");
+          return list[list.length - 1];
+        })();
+
+      function attr(name, fb) {
+        return (s && s.getAttribute(name)) || fb;
+      }
+
+      var dealerName = attr("data-dealer", "Apex Auto Investments");
+      var dealerSlug = attr("data-slug", "apex-wholesale-investments");
+      var waPhone = (attr("data-wa", "27726047878") || "").replace(/\D/g, "");
+      var accent = attr("data-accent", "#B85B24");
+      var position = attr("data-position", "left");
+      var bottom = attr("data-bottom", "24px");
+      var zIndex = attr("data-z", "2147300000");
+      var assistantName = attr("data-assistant", "Apex AI");
+
+      // Qualifier fallback
+      if (!root.TruChatQualifier) {
+        root.TruChatQualifier = {
+          createQualifier: function () {
+            var session = {
+              name: "Customer",
+              phone: "",
+              email: "",
+              vehicleInterest: "Browsing",
+              tradeInDetails: "",
+              financeInterest: false,
+              qualified: false,
+              pathway: []
+            };
+            return {
+              getSession: function () { return session; },
+              setCatalog: function () {},
+              process: function (t) {
+                var str = String(t || "").toLowerCase();
+                var text =
+                  "I can help with our inspected inventory, financing options, trade-in valuations, or connecting directly with our sales specialists at 17b Burt Drive, Newton Park.";
+                var sugs = ["Browse stock", "Vehicle finance", "Trade-in", "WhatsApp sales"];
+
+                if (str.includes("finance") || str.includes("repay") || str.includes("afford") || str.includes("bank") || str.includes("deposit")) {
+                  text =
+                    "We structure vehicle finance through ABSA, WesBank, Standard Bank, Nedbank MFC, and Capitec with flexible terms and same-day pre-approval.";
+                  sugs = ["Calculate repayments", "Check affordability", "Under R4 000 / mo", "WhatsApp team"];
+                } else if (str.includes("stock") || str.includes("car") || str.includes("vehicle") || str.includes("price") || str.includes("browse")) {
+                  var vList = (window.TruShowroom && window.TruShowroom.vehicles) || [];
+                  if (vList.length > 0) {
+                    text =
+                      "We currently have " + vList.length + " inspected vehicles on our showroom floor at 17b Burt Drive. Every vehicle includes our multi-point condition report.";
+                    sugs = ["View all stock", "Calculate finance", "Book test drive"];
+                  } else {
+                    text =
+                      "Our hand-picked pre-owned inventory is updated daily. You can browse our showroom floor or tell me what make and budget you have in mind!";
+                    sugs = ["Browse stock", "Vehicle finance", "WhatsApp team"];
                   }
-                  return { replies: [{ type: "text", text: text, suggestions: sugs }] };
-                },
-                getIdleNudge: function() { return { text: "Still browsing? Let me know if you would like me to check vehicle availability or calculate monthly repayments!", suggestions: ["Browse stock", "Finance calculator"] }; },
-                whatsappHandoffUrl: function() { return "https://wa.me/27726047878?text=" + encodeURIComponent("Hi Apex Auto Investments! I'm chatting on your website and would like assistance."); },
-                buildTicket: function() { return "Chat lead for Apex Auto Investments"; },
-                computeDigitalScore: function() { return 75; }
-              };
+                } else if (str.includes("trade") || str.includes("valua") || str.includes("worth") || str.includes("sell")) {
+                  text =
+                    "We offer condition-adjusted market trade-in appraisals and competitive trade assistance. You can evaluate your vehicle on our Trade-In page.";
+                  sugs = ["Trade-In appraisal", "Showroom stock", "Contact sales"];
+                } else if (str.includes("hour") || str.includes("time") || str.includes("open") || str.includes("where") || str.includes("location") || str.includes("address") || str.includes("visit")) {
+                  text =
+                    "Our showroom is located at **17b Burt Drive, Newton Park, Gqeberha**.\n\n• Monday–Friday: 08:00 – 17:30\n• Saturday: 08:30 – 13:00\n• Sunday: Closed";
+                  sugs = ["Browse stock", "Book a test drive", "WhatsApp sales"];
+                } else if (/\b(0\d{9}|27\d{9}|\+27\d{9})\b/.test(str)) {
+                  session.phone = str.match(/\b(0\d{9}|27\d{9}|\+27\d{9})\b/)[0];
+                  session.qualified = true;
+                  text =
+                    "Thank you! I have noted your contact number **" + session.phone + "**. Davrin or Curt from our sales team will reach out to you shortly.";
+                  sugs = ["Continue on WhatsApp", "Browse stock"];
+                }
+                return { replies: [{ type: "text", text: text, suggestions: sugs }] };
+              },
+              getIdleNudge: function () {
+                return {
+                  text: "Still browsing? Let me know if you would like me to check vehicle availability, calculate monthly repayments, or arrange a test drive at 17b Burt Drive!",
+                  suggestions: ["Browse stock", "Finance calculator", "Trade-in valuation"]
+                };
+              },
+              whatsappHandoffUrl: function () {
+                return (
+                  "https://wa.me/" +
+                  waPhone +
+                  "?text=" +
+                  encodeURIComponent("Hi " + dealerName + "! I'm chatting on your website and would like assistance.")
+                );
+              },
+              buildTicket: function () { return "Chat lead for " + dealerName; },
+              computeDigitalScore: function () { return 75; }
+            };
+          }
+        };
+      }
+
+      function bootWidget() {
+        if (document.getElementById("truchat-floating-root")) return;
+
+        var CFG = {
+          assistantName: assistantName,
+          dealerName: dealerName,
+          brandLine: dealerName + " · Newton Park, Gqeberha",
+          address: "17b Burt Drive, Newton Park, Gqeberha",
+          siteUrl: window.location.origin,
+          logoUrl: "assets/brand/apex-chat-icon.png",
+          brandPrimary: accent,
+          brandPrimaryDark: "#8C3D12",
+          brandRed: accent,
+          brandRedDark: "#8C3D12",
+          hoursText:
+            "*" + dealerName + " hours:*\n• Mon–Fri: 08:00 – 17:30\n• Saturday: 08:30 – 13:00\n• Sunday: Closed",
+          personalWhatsApp: waPhone,
+          salesWhatsApp: waPhone,
+          waBusinessNumber: waPhone,
+          dealerSlug: dealerSlug,
+          greeting:
+            "Hi — I'm the **" +
+            dealerName +
+            "** AI assistant.\n\nI can help you browse our stock, calculate monthly finance repayments, value your trade-in, or connect directly with our sales specialists at 17b Burt Drive. What can I help you find?",
+          suggestions: [
+            "Browse stock",
+            "Calculate finance",
+            "Trade-in valuation",
+            "Showroom hours",
+            "Chat on WhatsApp"
+          ]
+        };
+
+        var rootEl = document.createElement("div");
+        rootEl.id = "truchat-floating-root";
+
+        var style = document.createElement("style");
+        style.id = "truchat-floating-style";
+        style.textContent = [
+          "#truchat-floating-root{position:fixed;z-index:" + zIndex + ";bottom:" + bottom + ";left:20px;pointer-events:none;font-family:Inter,system-ui,-apple-system,sans-serif}",
+          "#truchat-floating-root *{box-sizing:border-box}",
+          "#truchat-launcher{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:10px 18px 10px 12px;position:relative;overflow:hidden;",
+          "border-radius:100px;background:linear-gradient(135deg,rgba(255,255,255,.16) 0%,rgba(24,30,42,.45) 45%,rgba(13,19,28,.65) 100%);",
+          "border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;",
+          "box-shadow:0 16px 42px -10px rgba(0,0,0,.65),0 0 24px -6px " + accent + "59,inset 0 1.5px 1px rgba(255,255,255,.38),inset 0 -1px 1px rgba(0,0,0,.45);",
+          "backdrop-filter:blur(28px) saturate(200%);-webkit-backdrop-filter:blur(28px) saturate(200%);",
+          "transition:transform .35s cubic-bezier(.34,1.4,.64,1),box-shadow .35s ease,border-color .25s,background .25s;text-align:left}",
+          "#truchat-launcher::after{content:'';position:absolute;top:0;left:0;width:45%;height:100%;",
+          "background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),rgba(255,255,255,.32),rgba(255,255,255,.08),transparent);",
+          "transform:translateX(-160%) skewX(-20deg);animation:tcLauncherShine 5s ease-in-out infinite;pointer-events:none}",
+          "@keyframes tcLauncherShine{0%,35%{transform:translateX(-160%) skewX(-20deg)}65%,100%{transform:translateX(320%) skewX(-20deg)}}",
+          "#truchat-launcher:hover{transform:translateY(-4px) scale(1.02);background:linear-gradient(135deg,rgba(255,255,255,.24) 0%,rgba(32,40,56,.55) 45%,rgba(13,19,28,.72) 100%);border-color:rgba(255,255,255,.48);",
+          "box-shadow:0 22px 52px -10px rgba(0,0,0,.75),0 0 32px -4px " + accent + "8c,inset 0 2px 1.5px rgba(255,255,255,.55),inset 0 -1px 1px rgba(0,0,0,.5)}",
+          "#truchat-launcher:active{transform:scale(.97)}",
+          "#truchat-launcher .tc-pill-ico{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1c1512 0%,#0d131c 100%);position:relative;z-index:1;display:grid;place-items:center;border:1.5px solid " + accent + "8c;box-shadow:0 6px 18px -3px " + accent + "b3,inset 0 1px 1px rgba(255,255,255,.25);overflow:hidden}",
+          "#truchat-launcher .tc-pill-ico::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid " + accent + "73;animation:tcPulseAura 2.4s ease-out infinite;pointer-events:none}",
+          "@keyframes tcPulseAura{0%{transform:scale(1);opacity:.65}100%{transform:scale(1.45);opacity:0}}",
+          "#truchat-launcher .tc-pill-ico img{width:100%;height:100%;object-fit:contain;padding:4px;border-radius:50%;display:block}",
+          "#truchat-launcher .tc-pill-txt{display:flex;flex-direction:column;position:relative;z-index:1}",
+          "#truchat-launcher .tc-pill-title{font-size:13px;font-weight:700;line-height:1.2;letter-spacing:.01em;color:#fff}",
+          "#truchat-launcher .tc-pill-sub{font-size:10px;color:#A8A29E;line-height:1.35;margin-top:2px}",
+          "#truchat-panel{pointer-events:auto;display:none;position:fixed;left:20px;bottom:calc(" + bottom + " + 74px);width:min(420px,calc(100vw - 24px));height:min(640px,calc(100vh - 120px));",
+          "border-radius:22px;overflow:hidden;background:linear-gradient(165deg,rgba(20,26,38,.88) 0%,rgba(13,19,28,.94) 100%);",
+          "backdrop-filter:blur(32px) saturate(190%);-webkit-backdrop-filter:blur(32px) saturate(190%);border:1px solid rgba(255,255,255,.18);",
+          "box-shadow:0 32px 80px -20px rgba(0,0,0,.8),0 0 40px -12px " + accent + "4d,inset 0 1.5px 1px rgba(255,255,255,.2);z-index:" + zIndex + ";}",
+          "#truchat-panel.is-open{display:flex;flex-direction:column;animation:tcPanelSlideIn .38s cubic-bezier(.22,1,.36,1) both}",
+          "@keyframes tcPanelSlideIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}",
+          "#truchat-mount-inner{flex:1;min-height:0;display:flex;flex-direction:column}",
+          "#truchat-floating-root.is-open #truchat-launcher{display:none}",
+          "@media(max-width:640px){#truchat-panel{left:0;right:0;bottom:0;width:100%;height:min(92vh,680px);border-radius:22px 22px 0 0}}"
+        ].join("");
+        document.head.appendChild(style);
+
+        rootEl.innerHTML = [
+          '<div id="truchat-launcher" role="button" aria-label="Chat with ' + assistantName + '" tabindex="0">',
+            '<div class="tc-pill-ico">',
+              '<img src="assets/brand/apex-chat-icon.png" alt="' + assistantName + '" onerror="this.onerror=null;this.src=\'assets/brand/apex-logo-mark.svg\';" />',
+            '</div>',
+            '<div class="tc-pill-txt">',
+              '<span class="tc-pill-title">' + assistantName + '</span>',
+              '<span class="tc-pill-sub">Live showroom assistant</span>',
+            '</div>',
+          '</div>',
+          '<div id="truchat-panel" role="dialog" aria-label="Chat with ' + assistantName + '">',
+            '<div id="truchat-mount-inner"></div>',
+          '</div>'
+        ].join("");
+
+        document.body.appendChild(rootEl);
+
+        var launcher = document.getElementById("truchat-launcher");
+        var panel = document.getElementById("truchat-panel");
+        var mountInner = document.getElementById("truchat-mount-inner");
+        var isOpen = false;
+        var chatUiInstance = null;
+
+        function toggleChat(openState) {
+          isOpen = typeof openState === "boolean" ? openState : !isOpen;
+          if (isOpen) {
+            rootEl.classList.add("is-open");
+            panel.classList.add("is-open");
+            if (!chatUiInstance) {
+              chatUiInstance = root.TruChatUI.mount(mountInner, {
+                config: CFG,
+                showFoot: true,
+                onClose: function () { toggleChat(false); }
+              });
             }
-          };
+            setTimeout(function () {
+              if (chatUiInstance && chatUiInstance.focus) chatUiInstance.focus();
+            }, 100);
+          } else {
+            rootEl.classList.remove("is-open");
+            panel.classList.remove("is-open");
+          }
         }
+
+        launcher.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleChat();
+        });
+
+        launcher.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleChat();
+          }
+        });
+
+        window.TruChatWidget = {
+          open: function () { toggleChat(true); },
+          close: function () { toggleChat(false); },
+          toggle: function () { toggleChat(); }
+        };
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bootWidget);
+      } else {
+        bootWidget();
       }
     })();
   }

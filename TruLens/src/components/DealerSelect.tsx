@@ -29,22 +29,25 @@ type Dealership = { slug: string; name: string; location: string };
  * the last known list and say it is offline — but we never fall back to a
  * built-in list, because a wrong list is what caused the problem.
  */
+import trudealerWordmark from '../assets/images/trudealer-wordmark.png';
+
 const CACHE_KEY = 'trulens_dealerships_v1';
 
-function readCache(): Dealership[] {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+interface DealerSelectProps {
+  onSelected: (slug: string, name?: string) => void;
 }
 
-export default function DealerSelect({ onSelected }: { onSelected: (slug: string, name: string) => void }) {
-  const [choice, setChoice] = React.useState<string | null>(null);
-  const [dealerships, setDealerships] = React.useState<Dealership[]>(() => readCache());
-  const [loading, setLoading] = React.useState(true);
+export default function DealerSelect({ onSelected }: DealerSelectProps) {
+  const [dealerships, setDealerships] = React.useState<Dealership[]>(() => {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      return raw ? (JSON.parse(raw) as Dealership[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = React.useState(false);
+  const [choice, setChoice] = React.useState<string>('');
   const [stale, setStale] = React.useState(false);
 
   const load = React.useCallback(async () => {
@@ -75,7 +78,16 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
 
   return (
     <div className="min-h-full flex flex-col justify-center px-6 py-10 bg-[#06080D] text-[#E8EAE6]">
-      <img src="/icons/icon-512.png" alt="TruLens" className="h-16 w-16 object-contain mx-auto mb-6 drop-shadow-[0_4px_16px_rgba(79,227,220,0.35)]" />
+      <div className="text-center mb-6 flex flex-col items-center">
+        <img
+          src={trudealerWordmark}
+          alt="TruDealer"
+          className="w-52 max-w-full object-contain mx-auto mb-3 brand-3d-glow"
+        />
+        <span className="pill-cyan-shimmer">
+          TruLens Photo Studio
+        </span>
+      </div>
 
       <h1 className="text-[20px] font-semibold tracking-[-0.01em] text-center">Which dealership?</h1>
       <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center mt-2 mb-6 leading-relaxed">

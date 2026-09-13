@@ -97,18 +97,103 @@
                 <span class="theme-icon-moon" style="display: ${currentTheme === 'dark' ? 'none' : 'inline-block'};">🌙</span>
                 <span class="theme-toggle-text">${currentTheme === 'dark' ? 'Light' : 'Dark'}</span>
               </button>
-              <a href="https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent("Hi Apex Auto! I'm interested in your pre-owned inventory.")}" target="_blank" rel="noopener" class="btn btn-wa btn-sm">
+              <a href="https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent("Hi Apex Auto! I'm interested in your pre-owned inventory.")}" target="_blank" rel="noopener" class="btn btn-wa btn-sm header-wa-btn">
                 <span>WhatsApp Us</span>
               </a>
-              <a href="finance.html" class="btn btn-primary btn-sm">Apply For Finance</a>
+              <a href="finance.html" class="btn btn-primary btn-sm header-finance-btn">Apply For Finance</a>
+              <button type="button" id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavDrawer">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+              </button>
             </div>
           </div>
         </div>
       </header>
+
+      <!-- Glassmorphic Mobile Navigation Drawer -->
+      <div id="mobileNavDrawer" class="mobile-nav-drawer" aria-hidden="true">
+        <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+        <div class="mobile-nav-panel">
+          <div class="mobile-nav-top">
+            <img src="assets/brand/apex-logo-3d.png" alt="Apex Auto Investments" class="mobile-nav-logo" />
+            <button type="button" id="mobileNavClose" class="mobile-nav-close" aria-label="Close navigation menu">&times;</button>
+          </div>
+          <div class="mobile-nav-links">
+            <a href="index.html" class="mobile-nav-link ${currentPath === '/' || currentPath.endsWith('index.html') ? 'active' : ''}">
+              <span>Home</span>
+            </a>
+            <a href="stock.html" class="mobile-nav-link ${currentPath.includes('stock') ? 'active' : ''}">
+              <span>Wholesale Stock</span>
+              <span class="mobile-nav-badge">Certified</span>
+            </a>
+            <a href="finance.html" class="mobile-nav-link ${currentPath.includes('finance') ? 'active' : ''}">
+              <span>Bank Finance</span>
+              <span class="mobile-nav-badge">4 Banks</span>
+            </a>
+            <a href="trade-in.html" class="mobile-nav-link ${currentPath.includes('trade-in') ? 'active' : ''}">
+              <span>Sell / Trade-In</span>
+              <span class="mobile-nav-badge">Instant</span>
+            </a>
+            <a href="index.html#why" class="mobile-nav-link">
+              <span>Why Choose Apex</span>
+            </a>
+            <a href="index.html#visit" class="mobile-nav-link">
+              <span>Visit Showroom</span>
+            </a>
+            <a href="https://trudealers.com" target="_blank" rel="noopener" class="mobile-nav-link">
+              <span>TruInspect VIR® Standard</span>
+              <span class="mobile-nav-badge">Verified</span>
+            </a>
+          </div>
+          <div class="mobile-nav-footer">
+            <a href="finance.html" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">Apply For Finance</a>
+            <a href="https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent("Hi Apex Auto! I would like to inquire about your pre-owned inventory.")}" target="_blank" rel="noopener" class="btn btn-wa" style="width: 100%; margin-bottom: 14px;">
+              <span>WhatsApp Sales (Curt & Davrin)</span>
+            </a>
+            <div class="mobile-nav-dealer-meta">
+              <div>📍 17b Burt Drive, Newton Park, Gqeberha</div>
+              <div>📞 072 604 7878 &middot; Certified Showroom</div>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
 
-    const btn = document.getElementById('headerThemeToggleBtn');
-    if (btn) btn.onclick = toggleTheme;
+    const themeBtn = document.getElementById('headerThemeToggleBtn');
+    if (themeBtn) themeBtn.onclick = toggleTheme;
+
+    // Wire mobile nav drawer handlers
+    const navToggle = document.getElementById('mobileNavToggle');
+    const navClose = document.getElementById('mobileNavClose');
+    const navBackdrop = document.getElementById('mobileNavBackdrop');
+    const navDrawer = document.getElementById('mobileNavDrawer');
+
+    function openMobileNav() {
+      if (!navDrawer) return;
+      navDrawer.classList.add('is-open');
+      navDrawer.setAttribute('aria-hidden', 'false');
+      if (navToggle) navToggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileNav() {
+      if (!navDrawer) return;
+      navDrawer.classList.remove('is-open');
+      navDrawer.setAttribute('aria-hidden', 'true');
+      if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    if (navToggle) navToggle.onclick = openMobileNav;
+    if (navClose) navClose.onclick = closeMobileNav;
+    if (navBackdrop) navBackdrop.onclick = closeMobileNav;
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && navDrawer && navDrawer.classList.contains('is-open')) {
+        closeMobileNav();
+      }
+    });
   }
 
   function renderSocialProofTicker() {
@@ -117,7 +202,7 @@
     el.innerHTML = `
       <div class="proof-ticker">
         <div class="proof-ticker-track">
-          <span>114-Point VIR® Scored Stock</span>
+          <span><a href="https://trudealers.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">TruInspect VIR® Scored Stock</a></span>
           <span>&middot;</span>
           <span>ABSA & WesBank Approved Finance</span>
           <span>&middot;</span>
@@ -127,7 +212,7 @@
           <span>&middot;</span>
           <span>Zero Hidden Administration Fees</span>
           <span>&middot;</span>
-          <span>114-Point VIR® Scored Stock</span>
+          <span><a href="https://trudealers.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">TruInspect VIR® Scored Stock</a></span>
           <span>&middot;</span>
           <span>ABSA & WesBank Approved Finance</span>
           <span>&middot;</span>
@@ -149,7 +234,7 @@
                 <img src="assets/brand/apex-logo-3d.png" alt="Apex Auto Investments" class="brand-footer-img" />
               </div>
               <p class="footer-desc">
-                Newton Park's trusted pre-owned vehicle specialists. Quality hand-picked cars, bakkies, and SUVs with verified inspection reports and multi-bank finance approval.
+                Newton Park's trusted pre-owned vehicle specialists. Quality hand-picked cars, bakkies, and SUVs with TruInspect VIR® certified condition reports and multi-bank finance approval.
               </p>
               <div style="font-family: var(--font-sans); font-size: 0.84rem; color: rgba(250,245,238,0.7);">
                 17b Burt Drive, Newton Park, Gqeberha (PE), 6045
@@ -166,12 +251,12 @@
               </ul>
             </div>
             <div>
-              <div class="footer-col-title">Services</div>
+              <div class="footer-col-title">Services & Standards</div>
               <ul class="footer-links">
                 <li><a href="stock.html" class="footer-link">Vehicle Sales</a></li>
                 <li><a href="finance.html" class="footer-link">Bank Asset Finance</a></li>
                 <li><a href="trade-in.html" class="footer-link">Trade-In Appraisal</a></li>
-                <li><a href="index.html#why" class="footer-link">114-Point VIR® Scored</a></li>
+                <li><a href="https://trudealers.com" target="_blank" rel="noopener" class="footer-link" style="color: var(--color-primary-light); font-weight: 700;">TruInspect VIR® Certified &rarr;</a></li>
                 <li><a href="https://wa.me/${SITE_CONFIG.whatsapp}" target="_blank" class="footer-link">WhatsApp Support</a></li>
               </ul>
             </div>
@@ -189,8 +274,10 @@
           </div>
           <div class="footer-bottom">
             <div>&copy; ${new Date().getFullYear()} Apex Auto Investments (Pty) Ltd. All rights reserved.</div>
-            <div>
-              Powered by <a href="https://tru-saas.com" target="_blank" class="footer-trudealer">Tru<span>Dealer</span>™ Engine</a>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span>Powered by <a href="https://trudealers.com" target="_blank" rel="noopener" class="footer-trudealer">Tru<span>Dealer</span>™</a></span>
+              <span>&middot;</span>
+              <span>Vehicle Condition by <a href="https://trudealers.com" target="_blank" rel="noopener" style="color:var(--color-primary-light);text-decoration:none;font-weight:700;">TruInspect VIR®</a></span>
             </div>
           </div>
         </div>

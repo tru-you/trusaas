@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://www.true-cars.co.za/og-card.jpg">
 <link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">
-<link rel="stylesheet" href="/assets/css/showroom.css?v=13">
+<link rel="stylesheet" href="/assets/css/showroom.css?v=14">
 <meta name="view-transition" content="same-origin">
 <style>
 /* ============================================================
@@ -538,7 +538,7 @@
           <h4 class="equity-panel-title">Apply estimated equity to a showroom vehicle</h4>
           <p class="equity-panel-sub">Select any car currently in stock to see your estimated net purchase price and updated monthly instalment.</p>
 
-          <select class="trade-input" id="selTargetCar" style="background:#FFFFFF;font-weight:600">
+          <select class="trade-input" id="selTargetCar" style="font-weight:600">
             <option value="">Select a showroom vehicle to trade against...</option>
           </select>
 
@@ -679,13 +679,39 @@
   // Populate target car dropdown from catalog
   function populateTargetCars() {
     var cars = TRU.vehicles || [];
+    if (!els.selTargetCar) return;
+    var prevVal = els.selTargetCar.value;
     els.selTargetCar.innerHTML = '<option value="">Select a showroom vehicle to trade against...</option>' +
       cars.map(function (c) {
         var p = c.truPrice && c.truPrice < c.price ? c.truPrice : c.price;
-        return '<option value="' + TRU.esc(c.stockNumber || c.id) + '">' +
+        var sId = c.stockNumber || c.id;
+        return '<option value="' + TRU.esc(sId) + '">' +
           c.year + ' ' + TRU.esc(c.make + ' ' + c.model) + ' (' + TRU.money(p) + ')' +
         '</option>';
       }).join("");
+    if (prevVal) {
+      els.selTargetCar.value = prevVal;
+    }
+  }
+
+  function updateEquityCalculation() {
+    var targetId = els.selTargetCar ? els.selTargetCar.value : "";
+    if (!targetId) {
+      if (els.targetCalcRow) els.targetCalcRow.style.display = "none";
+      return;
+    }
+    var car = TRU.get(targetId);
+    if (!car) return;
+
+    var p = car.truPrice && car.truPrice < car.price ? car.truPrice : car.price;
+    var net = Math.max(0, p - currentValuation);
+    var monthly = TRU.monthly(net);
+
+    els.targetCarPrice.textContent = TRU.money(p);
+    els.targetCarTrade.textContent = "-" + TRU.money(currentValuation);
+    els.targetCarNet.textContent = TRU.money(net);
+    els.targetCarMonthly.textContent = TRU.money(monthly) + " / mo";
+    if (els.targetCalcRow) els.targetCalcRow.style.display = "block";
   }
 
   // Step Navigation
@@ -712,7 +738,6 @@
   async function fetchMarketValuation(year, make, model, km) {
     var valuationUrls = [
       "https://premium.trudealers.com/api/public/trade-estimate",
-      "https://premium.trudealers.com/api/valuation",
       "https://premium.trudealers.com/api/valuation"
     ];
     for (var vUrl of valuationUrls) {
@@ -791,6 +816,9 @@
     els.bTotalOffer.textContent = TRU.money(val.trade);
 
     populateTargetCars();
+    if (els.selTargetCar && els.selTargetCar.value) {
+      updateEquityCalculation();
+    }
 
     els.step2.style.display = "none";
     els.step3.style.display = "block";
@@ -806,25 +834,7 @@
     window.scrollTo({ top: els.step3.offsetTop - 100, behavior: "smooth" });
   });
 
-  els.selTargetCar.addEventListener("change", function () {
-    var targetId = els.selTargetCar.value;
-    if (!targetId) {
-      els.targetCalcRow.style.display = "none";
-      return;
-    }
-    var car = TRU.get(targetId);
-    if (!car) return;
-
-    var p = car.truPrice && car.truPrice < car.price ? car.truPrice : car.price;
-    var net = Math.max(0, p - currentValuation);
-    var monthly = TRU.monthly(net);
-
-    els.targetCarPrice.textContent = TRU.money(p);
-    els.targetCarTrade.textContent = "-" + TRU.money(currentValuation);
-    els.targetCarNet.textContent = TRU.money(net);
-    els.targetCarMonthly.textContent = TRU.money(monthly) + " / mo";
-    els.targetCalcRow.style.display = "block";
-  });
+  els.selTargetCar.addEventListener("change", updateEquityCalculation);
 
   els.ctaApplyWizard.addEventListener("click", function () {
     var targetCar = els.selTargetCar.value ? TRU.get(els.selTargetCar.value) : null;
@@ -864,7 +874,17 @@
     window.scrollTo({ top: els.step1.offsetTop - 100, behavior: "smooth" });
   });
 
-  function boot() { populateTargetCars(); }
+  function boot() {
+    populateTargetCars();
+    var params = TRU.params ? TRU.params() : {};
+    var targetStock = params.stock || params.target || params.v;
+    if (targetStock && els.selTargetCar) {
+      els.selTargetCar.value = targetStock;
+      if (els.selTargetCar.value) {
+        updateEquityCalculation();
+      }
+    }
+  }
   boot();
   window.addEventListener("tru:stock", boot);
 })();

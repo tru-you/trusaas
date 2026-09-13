@@ -144,33 +144,45 @@
     window.tcClose = () => document.getElementById('tc')?.classList.remove('open');
 
     const chatHistory = [
-      { role: 'system', content: 'You are TruChat, the AI assistant for TruDealer (trudealers.com), an all-in-one vertical SaaS platform for independent car dealerships in South Africa. You are knowledgeable, direct, and concise (1-3 sentences max). Answer questions about pricing (TruStart R1,599/mo, TruPro R3,599/mo), TruShowroom custom sites, TruLens 28-shot photo studio, TruInspect 35-point VIR condition inspections, TruFlow DMS & F&I invoicing, and 13+ platform syndication. Offer WhatsApp demo handoff when helpful.' }
-    ];
+    { role: 'system', content: 'You are DealerAssist, the chilled, pleasant, and knowledgeable automotive AI co-pilot for TruDealer (trudealers.com). You know all live inventory and every software module (TruLens 28-shot photo studio & 360 spin, TruInspect 35-point VIR condition reports & digital trade-in appraisal, TruFlow cloud DMS & SARS invoicing, TruAfford finance calculator, TruSocial syndication) inside out. You speak warmly, casually, and directly (1-3 sentences). Offer WhatsApp demo handoff when helpful.' }
+  ];
 
-    const localBrain = {
-      pricing: 'TruDealer packages start at R 1,599/mo for TruStart (single lot, unlimited listings, capture studio, inspections, mobile stock app, 24/7 AI chat, branded website) and R 3,599/mo for TruPro (full cloud DMS, F&I calculators, live market price scraper, deal jackets, OTPs, SARS tax invoicing). <a href="packages.html" style="color:var(--accent);text-decoration:underline;">View full packages breakdown →</a>',
-      golive: "Ten working days from scope call to live on your domain. Day 1 we scope, days 2–7 we build or reskin to your brand, day 10 you're live with your stock loaded. If we miss the deadline we don't invoice.",
-      start: "Depends on your bottleneck. Lot of stale stock? TruLens 28-shot guided studio. Losing leads after hours? TruChat 24/7 AI. Buyers ghosting on finance? TruShowroom finance sliders. <a href='https://wa.me/447476995694' target='_blank' style='color:var(--accent);text-decoration:underline;'>WhatsApp TruDealer Support</a> to discuss your floor.",
-      showroom: "Every TruShowroom is custom-designed from the ground up with 100 Web Vitals speed. If you have an existing site, we can faithfully reskin your brand onto TruDealer with zero downtime.",
-      dms: "TruFlow DMS includes full vehicle cost tracking, reconditioning expense logging, bank interest & balloon calculations, OTP deal jackets, and compliant SARS tax invoices generated in two clicks.",
-      inspect: "TruInspect provides a 35-point condition checklist, interactive damage pin tagger, TransUnion verification checks, and dispute-proof PDF reports signed with digital inspector e-signatures.",
-      lens: "TruLens uses on-screen ghost wireframes to guide lot staff through 28 photos across 3 phases in under 90 seconds, with automated TruOrbit 360° spin generation and free market price scraping.",
-      demo: "Best move — <a href='https://wa.me/447476995694' target='_blank' style='color:var(--accent);text-decoration:underline;'>tap here to WhatsApp our team</a> or book a walkthrough on our site.",
-      default: "Great question! TruDealer gives you custom storefronts, 28-shot photo studio, digital condition reports, full DMS invoicing, and 24/7 AI chat. <a href='https://wa.me/447476995694' target='_blank' style='color:var(--accent);text-decoration:underline;'>Chat with TruDealer on WhatsApp</a> for immediate answers."
-    };
+  const localBrain = {
+    pricing: 'TruDealer packages start at **R 1,599/mo** for **TruStart** (single lot, unlimited listings, capture studio, inspections, mobile stock app, 24/7 AI chat, branded website) and **R 3,599/mo** for **TruPro** (full cloud DMS, F&I calculators, live market price scraper, deal jackets, OTPs, SARS tax invoicing). <a href="packages.html" style="color:var(--cyan);text-decoration:underline;">View full packages breakdown →</a>',
+    golive: "Ten working days from scope call to live on your domain. Day 1 we scope, days 2–7 we build or reskin to your brand, day 10 you're live with your stock loaded. If we miss the deadline we don't invoice.",
+    modules: "TruDealer is a complete dealership operating system:
 
-    function getLocalFallback(q) {
-      const s = q.toLowerCase();
-      if (/price|cost|how much|monthly|fee|package|tier/i.test(s)) return localBrain.pricing;
-      if (/live|deploy|launch|ship|day|time|setup/i.test(s)) return localBrain.golive;
-      if (/showroom|website|site|template|reskin/i.test(s)) return localBrain.showroom;
-      if (/dms|flow|invoice|f&i|finance|tax|otp/i.test(s)) return localBrain.dms;
-      if (/inspect|vir|damage|condition|report/i.test(s)) return localBrain.inspect;
-      if (/lens|photo|shoot|360|orbit|camera/i.test(s)) return localBrain.lens;
-      if (/start|begin|first|which|module/i.test(s)) return localBrain.start;
-      if (/demo|walkthrough|book|call|test/i.test(s)) return localBrain.demo;
-      return localBrain.default;
-    }
+• **TruLens**: 28-shot guided photo studio with AI damage scanning & 360° TruOrbit spins.
+• **TruInspect**: 35-point condition checklists & dispute-proof VIR condition reports.
+• **TruFlow DMS**: Lot inventory, sales CRM, deal jackets, OTPs, SARS tax invoicing & multi-portal syndication.
+• **TruAfford**: Soft-pull affordability & repayment calculators.
+• **DealerAssist**: 24/7 automotive AI assistant with WhatsApp routing.",
+    start: "Depends on your biggest bottleneck right now! High reconditioning or damage disputes? **TruInspect VIR**. Weak vehicle photos or stale listings? **TruLens 28-shot studio**. Losing leads after hours? **DealerAssist AI**. Invoicing and OTP chaos? **TruFlow DMS**. <a href='https://wa.me/447476995694?text=Hi%20Paul%2C%20which%20TruDealer%20module%20is%20best%20for%20my%20dealership%3F' target='_blank' style='color:var(--cyan);text-decoration:underline;'>WhatsApp our team</a> to discuss your floor.",
+    showroom: "Every TruShowroom is custom-built with 100 Web Vitals speed (see live proof at <a href='https://true-cars.co.za' target='_blank' style='color:var(--cyan);text-decoration:underline;'>www.true-cars.co.za</a>). If you have an existing website, we can faithfully reskin your brand onto TruDealer with zero downtime.",
+    dms: "**TruFlow DMS** manages vehicle cost tracking, reconditioning expense logging, bank interest & balloon calculations, OTP deal jackets, and compliant SARS tax invoices generated in two clicks.",
+    inspect: "**TruInspect** provides a 35-point condition checklist, interactive damage pin tagger, TransUnion valuation checks, and dispute-proof PDF reports signed with digital inspector e-signatures.",
+    lens: "**TruLens** uses on-screen ghost wireframes to guide lot staff through 28 photos across 3 phases in under 90 seconds, with automated TruOrbit 360° spin generation and background cleanups.",
+    global: "Yes! Built in Cape Town, deployed anywhere globally. Multi-currency support (ZAR, GBP, USD, EUR), flexible F&I rate structures, and full data compliance built in.",
+    demo: "Keen for a demo? <a href='https://wa.me/447476995694?text=Hi%20Paul%2C%20I%27d%20like%20a%20demo%20of%20TruDealer' target='_blank' style='color:var(--cyan);text-decoration:underline;'>Tap here to WhatsApp our team</a> or <a href='https://cal.com/pgdebeer' target='_blank' style='color:var(--cyan);text-decoration:underline;'>book a live 1-on-1 walkthrough</a>!",
+    stock: "You can explore our live dealer stock right on the showroom, or let me know what model or budget you're eyeing and I'll pull the matching vehicles!",
+    default: "Howzit! I'm DealerAssist. I can show you live stock, calculate finance instalments, pull VIR condition reports, or walk you through our dealership modules (TruLens, TruInspect, TruFlow DMS). <a href='https://wa.me/447476995694?text=Hi%20Paul%2C%20I%20have%20a%20question%20about%20TruDealer' target='_blank' style='color:var(--cyan);text-decoration:underline;'>Chat on WhatsApp</a> anytime!"
+  };
+
+  function getLocalFallback(q) {
+    const s = q.toLowerCase();
+    if (/price|cost|how much|monthly|fee|package|tier/i.test(s)) return localBrain.pricing;
+    if (/live|deploy|launch|ship|day|time|setup/i.test(s)) return localBrain.golive;
+    if (/module|feature|all module|overview|what does/i.test(s)) return localBrain.modules;
+    if (/showroom|website|site|template|reskin|true-cars/i.test(s)) return localBrain.showroom;
+    if (/dms|flow|invoice|f&i|finance|tax|otp/i.test(s)) return localBrain.dms;
+    if (/inspect|vir|damage|condition|report/i.test(s)) return localBrain.inspect;
+    if (/lens|photo|shoot|360|orbit|camera/i.test(s)) return localBrain.lens;
+    if (/stock|car|vehicle|bakkie|suv|bmw|ford/i.test(s)) return localBrain.stock;
+    if (/start|begin|first|which|module/i.test(s)) return localBrain.start;
+    if (/global|outside|country|market|international|world|uk|us|europe/i.test(s)) return localBrain.global;
+    if (/demo|walkthrough|book|call|test/i.test(s)) return localBrain.demo;
+    return localBrain.default;
+  }
 
     window.tcAsk = async function(q) {
       const body = document.getElementById('tc-body');

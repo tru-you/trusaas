@@ -28,7 +28,7 @@
     theme: getAttr("data-theme", "dark"),
     position: getAttr("data-position", "right"),
     baseBottom: parseInt(getAttr("data-bottom", "24"), 10) || 24,
-    widgets: (getAttr("data-widgets", "afford,repay,form,share,book,value") || "")
+    widgets: (getAttr("data-widgets", "afford,repay,form,share,book,value,chat") || "")
       .split(",")
       .map(function (s) { return s.trim().toLowerCase(); })
       .filter(Boolean),

@@ -101,7 +101,6 @@
           <span>VIR®</span>
           <span class="card-vir-score">${v.virScore || 92} / 100</span>
         </div>
-        <div class="card-body-tag">${v.bodyType || 'Vehicle'}</div>
       </div>
       <div class="card-content">
         <div class="card-year-make">${v.year} · ${v.make}</div>

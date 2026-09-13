@@ -11,7 +11,7 @@ import { DEFAULT_TEMPLATE } from '../templates';
 import { SignaturePad } from './signature-pad';
 import { useMarket, useMoney } from '../contexts/MarketContext';
 import trulensLockup from '../assets/images/trulens-wordmark.png';
-import trudealerLockup from '../assets/images/trudealer-lockup.png';
+import trudealerLockup from '../assets/images/trudealer-logo-3d-horizontal.png';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
