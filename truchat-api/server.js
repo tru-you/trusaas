@@ -336,6 +336,7 @@ async function deepseek(messages, system, tools) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
     });
     const data = await res.json();
     if (!res.ok) return { error: data?.error?.message || `HTTP ${res.status}` };
@@ -361,21 +362,112 @@ function whatsappText(s) {
 }
 
 function finalize(reply, actions, session, extra = {}) {
+  const textReply = String(reply || '').trim();
   for (const a of actions) {
     if (a.type === 'whatsapp') { a.text = whatsappText(session); a.phone = CFG.salesWhatsApp; }
   }
-  return { reply, actions, session, ...extra };
+  return { reply: textReply, text: textReply, actions, session, ...extra };
+}
+
+/* ---- Intelligent Dealer Assist Fallback Engine -------------------------- */
+function dealerAssistFallback(query, app, stock = [], session = {}) {
+  const q = String(query || '').toLowerCase().trim();
+
+  // 1. Photo Studio / Photography / TruLens queries
+  if (q.includes('photo') || q.includes('shoot') || q.includes('camera') || q.includes('lens') || q.includes('studio') || q.includes('angle') || q.includes('orbit') || q.includes('360') || q.includes('cutout') || q.includes('background') || app === 'trulens') {
+    return {
+      reply: `**TruLens Photo Guide (27 Slots in 3 Phases):**\n- **Phase 1: Front & Engine (5 slots)** — Bonnet, engine bay (shoot straight down), bumper & grill, windscreen, licence disc.\n- **Phase 2: Clockwise Exterior (17 slots)** — Stand 3-4m back at bumper height for corner 3/4 angles.\n- **Phase 3: Interior (5 slots)** — Open all doors for natural light, turn ignition ON for odometer.\n\nOnce captured, tap **Export to DMS** to sync all photos and auto-generate the **TruOrbit 360° spin**.`,
+      suggestions: ['Quality score rules', 'How to tag damage', 'Studio backgrounds']
+    };
+  }
+
+  // 2. Inspection / Checklist / Trade-in / TruInspect queries
+  if (q.includes('inspect') || q.includes('checklist') || q.includes('damage') || q.includes('vir') || q.includes('trade') || q.includes('appraisal') || q.includes('report') || q.includes('tyre') || app === 'truinspect') {
+    return {
+      reply: `**TruInspect VIR & Appraisal Flow:**\n1. **35-Point Checklist** across 6 groups: Exterior, Glass & Lights, Wheels & Tyres (tread depth), Interior, Engine & Underbody, Identity & Docs.\n2. **Damage Tagger**: Tap any photo to pin scratch, dent, chip or paint defect with severity.\n3. **Trade-In Appraisal**: Capture walkaround photos, pull TransUnion valuation, and generate a signed digital VIR report for the customer.`,
+      suggestions: ['Trade-in 3-step guide', 'TransUnion valuation', 'Damage pin types']
+    };
+  }
+
+  // 3. Leads / CRM / Follow-ups
+  if (q.includes('lead') || q.includes('crm') || q.includes('customer') || q.includes('follow') || q.includes('walk in') || q.includes('walk-in') || q.includes('call') || q.includes('whatsapp') || q.includes('prospect')) {
+    return {
+      reply: `**Lead Management & CRM:**\n- **Pipeline Stages**: New → Contacted → Test Drive Scheduled → Negotiating → Closed Won.\n- **Quick Actions**: Tap any lead to 1-tap call, WhatsApp, or log interaction notes.\n- **Walk-ins**: Use the **+ Walk-in** button on Mobile or Desktop to instantly log a buyer on the showroom floor.`,
+      suggestions: ['Add walk-in lead', 'Deal checklist', 'DocHub OTP flow']
+    };
+  }
+
+  // 4. DocHub / Documents / Finance / Invoicing
+  if (q.includes('doc') || q.includes('dochub') || q.includes('otp') || q.includes('invoice') || q.includes('tax') || q.includes('vat') || q.includes('agreement') || q.includes('natis') || q.includes('finance')) {
+    return {
+      reply: `**DocHub Deal Flow (5 Stages):**\n1. **Proforma** → 2. **Deed of Sale (OTP)** → 3. **Compliance (NATIS & Roadworthy)** → 4. **SARS Tax Invoice (15% VAT)** → 5. **Handover & Delivery**.\n\nGenerate PDFs, record digital signatures, and push directly to Xero, QuickBooks, or Zoho in 1 click.`,
+      suggestions: ['Generate OTP', 'Tax invoice setup', 'Delivery checklist']
+    };
+  }
+
+  // 5. Stock / Inventory / Aging / Pricing queries
+  if (q.includes('stock') || q.includes('inventory') || q.includes('car') || q.includes('vehicle') || q.includes('aging') || q.includes('price') || q.includes('oldest') || q.includes('slow')) {
+    if (stock && stock.length > 0) {
+      const topCar = stock[0];
+      const count = stock.length;
+      if (q.includes('oldest') || q.includes('aging') || q.includes('slow')) {
+        return {
+          reply: `You currently have **${count} vehicles** in inventory. For aging units over 40+ days, review pricing against the TransUnion market matrix in TruFlow or push a featured promo to Facebook & Instagram via TruSocial.`,
+          suggestions: ['Check inventory', 'Pricing strategy', 'How to push to TruSocial']
+        };
+      }
+      return {
+        reply: `You have **${count} active vehicles** in the showroom. Top unit is the **${topCar.year} ${topCar.brand} ${topCar.model}** at **${priceFmt.format(topCar.price)}**. Tap any vehicle in the Stock tab to edit pricing, toggle web visibility, or mark as Sold.`,
+        suggestions: ['How to publish stock', 'Add new vehicle', 'Export to portals']
+      };
+    }
+    return {
+      reply: `To manage stock: navigate to the **Stock** tab in TruFlow Mobile or **All Vehicles** in TruFlow Desktop. You can adjust retail prices, add recon tasks (polishing, brake pads), sync 27-slot photos from TruLens, and toggle "Live on website".`,
+      suggestions: ['How to add vehicle', 'TruLens photo sync', 'Recon task setup']
+    };
+  }
+
+  // 6. Platform / General How-to
+  return {
+    reply: `Hi! I'm **Dealer Assist**, your TruSaaS co-pilot. I can help you with:\n- **TruFlow DMS**: Stock pricing, recon tasks, DocHub OTPs & tax invoices, lead CRM.\n- **TruLens**: 27-slot guided walkaround, 360° TruOrbit spins, quality scoring.\n- **TruInspect**: 35-point VIR condition inspection & trade-in valuations.\n- **TruSocial**: 1-click marketing packs for Facebook & Instagram.\n\nWhat would you like to do?`,
+    suggestions: ['How to shoot a car', 'Manage stock & pricing', '35-point inspection', 'DocHub OTP flow']
+  };
 }
 
 /* ---- Main handler ------------------------------------------------------- */
 async function handleChat(body) {
-  const app = String(body?.app || 'website').toLowerCase();
+  let app = String(body?.app || '').toLowerCase();
   const session = Object.assign({
     name: '', phone: '', email: '', vehicleInterest: '',
     financeInterest: false, qualified: false,
   }, (body && typeof body.session === 'object' && body.session) || {});
 
   const actions = [];
+
+  // Normalise incoming message/query
+  let messages = [];
+  if (Array.isArray(body?.messages)) {
+    for (const m of body.messages) {
+      if (!m || !m.role || m.content == null) continue;
+      if (m.role !== 'user' && m.role !== 'assistant') continue;
+      messages.push({ role: m.role, content: String(m.content) });
+    }
+  } else if (body?.query || body?.message || body?.prompt || body?.text) {
+    const singleMsg = String(body.query || body.message || body.prompt || body.text || '').trim();
+    if (singleMsg) {
+      messages.push({ role: 'user', content: singleMsg });
+    }
+  }
+
+  while (messages.length && messages[0].role !== 'user') messages.shift();
+  if (!messages.length) {
+    return finalize('Ask me anything about stock, leads, shooting photos, inspections, or how to run your DMS.', [], session);
+  }
+
+  // Infer app mode if omitted
+  if (!app) {
+    app = body?.query ? 'mobile' : 'website';
+  }
 
   // Stock: load for website and mobile modes; not needed for trulens/truinspect
   let stock = [];
@@ -401,22 +493,16 @@ async function handleChat(body) {
     tools = websiteTools();
   }
 
-  // Normalise history
-  let messages = [];
-  for (const m of (body?.messages || [])) {
-    if (!m || !m.role || m.content == null) continue;
-    if (m.role !== 'user' && m.role !== 'assistant') continue;
-    messages.push({ role: m.role, content: m.content });
-  }
-  while (messages.length && messages[0].role !== 'user') messages.shift();
-  if (!messages.length) return { reply: '', actions: [], session };
-
-  // Knowledge-first FAQ (website mode only — staff apps always go to LLM)
-  if (app === 'website') {
-    let lastUser = '';
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === 'user' && typeof messages[i].content === 'string') { lastUser = messages[i].content; break; }
+  let lastUser = '';
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'user' && typeof messages[i].content === 'string') {
+      lastUser = messages[i].content;
+      break;
     }
+  }
+
+  // Knowledge-first FAQ (website mode only)
+  if (app === 'website') {
     const faq = faqMatch(lastUser);
     if (faq) return finalize(faq.reply, faq.actions, session, { suggestions: faq.suggestions, source: 'knowledge' });
   }
@@ -433,7 +519,9 @@ async function handleChat(body) {
           [{ type: 'whatsapp' }], session, { source: 'fallback' }
         );
       }
-      return finalize("Sorry, I couldn't process that — the AI service is temporarily unavailable. Try again in a moment.", [], session, { source: 'fallback' });
+      // Provide smart domain-specific fallback for dealer apps
+      const fb = dealerAssistFallback(lastUser, app, stock, session);
+      return finalize(fb.reply, [], session, { suggestions: fb.suggestions, source: 'fallback' });
     }
 
     const choice = data.choices?.[0];
@@ -482,7 +570,12 @@ async function handleChat(body) {
     }
   }
 
-  return finalize(finalText || 'Sorry — could you say that again?', actions, session);
+  if (!finalText) {
+    const fb = dealerAssistFallback(lastUser, app, stock, session);
+    return finalize(fb.reply, actions, session, { suggestions: fb.suggestions });
+  }
+
+  return finalize(finalText, actions, session);
 }
 
 /* ---- HTTP server -------------------------------------------------------- */

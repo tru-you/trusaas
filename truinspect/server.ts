@@ -594,6 +594,7 @@ async function deepseekText(
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10000),
   });
   if (!r.ok) throw new Error(`DeepSeek API error ${r.status}`);
   const data = await r.json();

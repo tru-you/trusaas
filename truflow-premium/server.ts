@@ -59,6 +59,7 @@ async function deepseekText(
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10000),
   });
   if (!r.ok) throw new Error(`DeepSeek API error ${r.status}`);
   const data = await r.json();
@@ -4270,10 +4271,14 @@ Response MUST be a valid JSON array of objects with keys "leadId", "assignedUser
 // --- AI SECURITY CO-PILOT CHATBOT ENDPOINT ---
 app.post("/api/chat", async (req: any, res) => {
   if (req.auth?.dealershipId === 'demo') return res.status(403).json({ error: 'Not available in demo mode' });
-  const { query } = req.body;
-  if (!query) {
-    return res.status(400).json({ error: "Missing query" });
-  }
+  const query = String(
+    req.body?.query ||
+    req.body?.message ||
+    req.body?.prompt ||
+    req.body?.text ||
+    (Array.isArray(req.body?.messages) ? req.body.messages[req.body.messages.length - 1]?.content : '') ||
+    ''
+  ).trim();
 
   try {
     const raw = readState();
@@ -4288,6 +4293,11 @@ app.post("/api/chat", async (req: any, res) => {
       tasks: scopeToDealer(raw.tasks, req.auth),
       invoices: scopeToDealer(raw.invoices, req.auth),
     };
+
+    if (!query) {
+      const welcome = "Hi! I'm Dealer Assist. Ask me anything about stock, leads, pricing, photo shooting, inspections, or DocHub deals.";
+      return res.json({ text: welcome, reply: welcome, source: "fallback" });
+    }
 
     const activeVehicles = state.vehicles.filter(v => v.status === "INVENTORY");
     const soldVehicles = state.vehicles.filter(v => v.status === "SOLD");
@@ -4397,61 +4407,78 @@ ${tasksContext || "None"}
 `;
 
     if (!aiConfigured) {
-      // If API key is missing, fall back to smart template responses
-      console.warn("DEEPSEEK_API_KEY environment variable is not defined. Falling back to local intelligence.");
-      return res.json({ text: getSmartFallbackResponse(query, state) });
+      const fallback = getSmartFallbackResponse(query, state);
+      return res.json({ text: fallback, reply: fallback, source: "fallback" });
     }
 
-    const resultText = await deepseekText([
-      { role: "system", content: systemInstruction },
-      { role: "user", content: query },
-    ], { temperature: 0.7 });
+    try {
+      const resultText = await deepseekText([
+        { role: "system", content: systemInstruction },
+        { role: "user", content: query },
+      ], { temperature: 0.7 });
 
-    if (!resultText) {
-      return res.json({ text: getSmartFallbackResponse(query, state) });
+      if (!resultText) {
+        const fallback = getSmartFallbackResponse(query, state);
+        return res.json({ text: fallback, reply: fallback, source: "fallback" });
+      }
+
+      res.json({ text: resultText, reply: resultText, source: "deepseek" });
+    } catch (deepseekErr: any) {
+      console.warn("DeepSeek call failed, using intelligent local fallback:", deepseekErr?.message || deepseekErr);
+      const fallback = getSmartFallbackResponse(query, state);
+      res.json({ text: fallback, reply: fallback, source: "fallback" });
     }
-
-    res.json({ text: resultText });
   } catch (error: any) {
-    console.error("DeepSeek Co-Pilot integration failure:", error);
-    res.status(500).json({ error: "AI assistant service is currently sleeping or configured incorrectly. Please check settings.", details: error.message });
+    console.error("Dealer Assist error:", error);
+    const fallback = "I'm Dealer Assist. I can help with stock pricing, leads follow-up, 27-slot photo guide, 35-point VIR inspection, and DocHub deals.";
+    res.json({ text: fallback, reply: fallback, source: "fallback" });
   }
 });
 
 function getSmartFallbackResponse(query: string, state: any): string {
-  const text = query.toLowerCase();
+  const text = (query || "").toLowerCase();
   const formatZAR = (num: number) => 'R ' + Math.round(num).toLocaleString('en-ZA');
 
-  if (text.includes("inventory") || text.includes("stock") || text.includes("cars")) {
-    const active = state.vehicles.filter((v: any) => v.status === "INVENTORY");
-    const avgAge = active.length > 0 ? Math.round(active.reduce((sum: number, v: any) => sum + v.daysInInventory, 0) / active.length) : 0;
+  if (text.includes("inventory") || text.includes("stock") || text.includes("cars") || text.includes("unit")) {
+    const active = state?.vehicles?.filter((v: any) => v.status === "INVENTORY") || [];
+    const avgAge = active.length > 0 ? Math.round(active.reduce((sum: number, v: any) => sum + (v.daysInInventory || 0), 0) / active.length) : 0;
+    if (active.length === 0) return "Showroom Update: No active inventory found in this yard. Add a vehicle or sync captures from TruLens.";
     return `Showroom Update: We have ${active.length} active units on the floor. Average stock age is ${avgAge} days. The top-of-funnel unit is the ${active[0]?.year} ${active[0]?.make} ${active[0]?.model} (${active[0]?.stockNumber}) priced at ${formatZAR(active[0]?.retailPrice || 0)}.`;
   }
   if (text.includes("slow") || text.includes("oldest") || text.includes("aging")) {
-    const active = state.vehicles.filter((v: any) => v.status === "INVENTORY");
+    const active = state?.vehicles?.filter((v: any) => v.status === "INVENTORY") || [];
     if (active.length === 0) return "No active inventory found to analyze.";
-    const oldest = [...active].sort((a: any, b: any) => b.daysInInventory - a.daysInInventory)[0];
-    return `Critical Aging Alert: The ${oldest.year} ${oldest.make} ${oldest.model} (Stock ${oldest.stockNumber}) has been on the floor for ${oldest.daysInInventory} days. It's currently at ${formatZAR(oldest.retailPrice)}. We should consider a price-drop or featuring it on the TrueSites hero banner.`;
+    const oldest = [...active].sort((a: any, b: any) => (b.daysInInventory || 0) - (a.daysInInventory || 0))[0];
+    return `Critical Aging Alert: The ${oldest.year} ${oldest.make} ${oldest.model} (Stock ${oldest.stockNumber}) has been on the floor for ${oldest.daysInInventory || 0} days. It's currently at ${formatZAR(oldest.retailPrice || 0)}. We should consider a price adjustment or featuring it on TruSocial marketing.`;
   }
-  if (text.includes("hot") || text.includes("score") || text.includes("best lead") || text.includes("prospect")) {
-    const activeLeads = state.leads.filter((l: any) => l.status !== "Closed Won" && l.status !== "Closed Lost");
-    if (activeLeads.length === 0) return "No active leads found in the CRM.";
-    const topLead = [...activeLeads].sort((a: any, b: any) => b.digitalScore - a.digitalScore)[0];
-    return `Hot Prospect Found: ${topLead.firstName} ${topLead.lastName} has a Digital Intent Score of ${topLead.digitalScore}%. They are focusing on the ${topLead.vehicleId} and were last active on ${topLead.lastContactedAt || topLead.createdAt}. Dispatch a follow-up via TrueCRM immediately!`;
+  if (text.includes("hot") || text.includes("score") || text.includes("best lead") || text.includes("prospect") || text.includes("lead")) {
+    const activeLeads = state?.leads?.filter((l: any) => l.status !== "Closed Won" && l.status !== "Closed Lost") || [];
+    if (activeLeads.length === 0) return "No active leads found in the CRM. Walk-ins can be logged with the + Walk-in button.";
+    const topLead = [...activeLeads].sort((a: any, b: any) => (b.digitalScore || 0) - (a.digitalScore || 0))[0];
+    return `Hot Prospect Found: ${topLead.firstName} ${topLead.lastName} has a Digital Intent Score of ${topLead.digitalScore || 0}%. They are interested in vehicle ${topLead.vehicleId || 'stock'} and were last active on ${topLead.lastContactedAt || topLead.createdAt || 'recently'}. Dispatch a follow-up via WhatsApp or phone.`;
   }
-  if (text.includes("task") || text.includes("todo") || text.includes("action")) {
-    const pending = state.tasks.filter((t: any) => t.status !== "Completed");
-    if (pending.length === 0) return "All operational directives are currently resolved. Good job!";
-    return `Operational Brief: You have ${pending.length} pending tasks. The most urgent is "${pending[0]?.title}" due on ${pending[0]?.dueDate}.`;
+  if (text.includes("task") || text.includes("todo") || text.includes("action") || text.includes("recon")) {
+    const pending = state?.tasks?.filter((t: any) => t.status !== "Completed") || [];
+    if (pending.length === 0) return "All operational directives and recon tasks are currently resolved. Good job!";
+    return `Operational Brief: You have ${pending.length} pending tasks. The most urgent is "${pending[0]?.title}" due on ${pending[0]?.dueDate || 'today'}.`;
   }
-  if (text.includes("revenue") || text.includes("sales") || text.includes("sold") || text.includes("profit")) {
-    const sold = state.vehicles.filter((v: any) => v.status === "SOLD");
-    const totalRev = state.invoices.filter((i: any) => i.status === "Paid").reduce((sum: number, i: any) => sum + i.amount, 0);
-    const totalCost = sold.reduce((sum: number, v: any) => sum + v.costPrice, 0);
-    return `Financial Snapshot: We have delivered ${sold.length} units this period. Total cleared revenue stands at ${formatZAR(totalRev)}. Estimated gross profit on delivered units is approximately ${formatZAR(totalRev - totalCost)}.`;
+  if (text.includes("revenue") || text.includes("sales") || text.includes("sold") || text.includes("profit") || text.includes("financial")) {
+    const sold = state?.vehicles?.filter((v: any) => v.status === "SOLD") || [];
+    const totalRev = (state?.invoices?.filter((i: any) => i.status === "Paid") || []).reduce((sum: number, i: any) => sum + (i.amount || 0), 0);
+    const totalCost = sold.reduce((sum: number, v: any) => sum + (v.costPrice || 0), 0);
+    return `Financial Snapshot: We have delivered ${sold.length} units. Total cleared revenue stands at ${formatZAR(totalRev)}. Estimated gross profit on delivered units is ${formatZAR(totalRev - totalCost)}.`;
+  }
+  if (text.includes("photo") || text.includes("shoot") || text.includes("lens") || text.includes("camera") || text.includes("360") || text.includes("orbit")) {
+    return `TruLens Photography Guide: Complete the 27-slot walkaround (Phase 1: Front & Engine 5 slots, Phase 2: Exterior 17 slots, Phase 3: Interior 5 slots). Stand 3-4m back at bumper height for corner 3/4 angles. Tap 'Export to DMS' to sync photos and auto-generate the TruOrbit 360° spin.`;
+  }
+  if (text.includes("inspect") || text.includes("checklist") || text.includes("vir") || text.includes("damage") || text.includes("trade")) {
+    return `TruInspect VIR & Appraisal: Complete the 35-point inspection across 6 vehicle groups. Pin any cosmetic or structural damage directly on photos. Use Trade-In Appraisal to pull TransUnion valuations and generate a signed PDF VIR report.`;
+  }
+  if (text.includes("doc") || text.includes("dochub") || text.includes("otp") || text.includes("invoice") || text.includes("tax") || text.includes("vat")) {
+    return `DocHub Deal Workflow: 1. Proforma → 2. Deed of Sale (OTP) → 3. Compliance (NATIS/Roadworthy) → 4. SARS Tax Invoice (15% VAT) → 5. Handover Checklist. PDFs can be generated and signed digitally at each milestone.`;
   }
 
-  return "I am the TruFlow AI Co-Pilot. I am trained on 'showroom inventory', 'aging stock', 'hot CRM prospects', 'operational tasks', and 'financial snapshots' for TruFlow (www.real-cars.co.za). How can I help you move stock today?";
+  return "I am Dealer Assist, your TruSaaS co-pilot. Ask me about showroom inventory, aging stock, CRM leads, operational recon tasks, photo capture (TruLens), inspections (TruInspect), or DocHub deals.";
 }
 
 // --- AUTOLENS PHOTO SYNC ENDPOINTS ---
