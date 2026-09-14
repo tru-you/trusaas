@@ -31,9 +31,9 @@ export const CREDIT_COSTS: Record<string, number> = {
 
 // Credit pack pricing (ZAR)
 export const CREDIT_PACKS = [
-  { id: 'paygo', name: 'Pay-As-You-Go', credits: 15, price: 199, description: '15 credits for once-off use' },
-  { id: 'pro', name: 'Pro Desk', credits: 150, price: 999, description: '150 credits / month for dealers & agents', monthly: true },
-  { id: 'enterprise', name: 'Enterprise', credits: 600, price: 3499, description: '600 credits / month for agencies', monthly: true },
+  { id: 'paygo', name: 'Pay-As-You-Go', credits: 35, price: 129, description: '35 credits for once-off use' },
+  { id: 'pro', name: 'Pro Desk', credits: 250, price: 599, description: '250 credits / month for dealers & agents', monthly: true },
+  { id: 'enterprise', name: 'Enterprise', credits: 1000, price: 1899, description: '1,000 credits / month for high-volume teams', monthly: true },
 ];
 
 let wallets: Map<string, CreditWallet> = new Map();

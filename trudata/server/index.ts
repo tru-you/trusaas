@@ -24,6 +24,7 @@ import electronicsRoutes from './routes/electronics';
 import extractRoutes from './routes/extract';
 import bureauRoutes from './routes/bureau';
 import aeoRoutes from './routes/aeo';
+import keysRoutes from './routes/keys';
 
 // Initialize DB store
 import { initDb } from './lib/db';
@@ -31,6 +32,11 @@ initDb();
 
 import { initWallets } from './lib/credits';
 initWallets();
+
+import { initApiKeys } from './lib/keys';
+initApiKeys();
+
+import { apiAuthMiddleware } from './lib/api-auth';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -62,11 +68,15 @@ const candidates = [
 const publicDir = candidates.find(p => fs.existsSync(p)) || path.resolve(process.cwd(), 'public');
 app.use(express.static(publicDir));
 
+// API Auth Middleware (extracts Bearer/x-api-key if present)
+app.use('/api', apiAuthMiddleware as express.RequestHandler);
+
 // Routes
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'trudata', timestamp: new Date().toISOString() });
 });
 
+app.use('/api/keys', keysRoutes);
 app.use('/api/valuation', strictLimiter, valuationRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/payfast', payfastRoutes);

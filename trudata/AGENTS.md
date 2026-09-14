@@ -85,22 +85,22 @@ TruData is a **B2B data marketplace** for South Africa. Five product verticals, 
 
 | Tier | Price | Credits | Per Credit |
 |------|-------|---------|-----------|
-| Pay-As-You-Go | R199 once-off | 15 | R13.27 |
-| Pro Desk | R999/mo | 150 | R6.66 |
-| Enterprise | R3,499/mo | 600 | R5.83 |
+| Pay-As-You-Go | R129 once-off | 35 | R3.68 |
+| Pro Desk | R599/mo | 250 | R2.40 |
+| Enterprise | R1,899/mo | 1,000 | R1.90 |
 
 ### Burn Rates
 
-| Product | Credits | Our Cost | Margin (PAYG) |
-|---------|---------|----------|--------------|
-| Vehicle market value (scrape) | 1 | ~R0.50 | 96% |
-| Property suburb comps (scrape) | 1 | ~R0.50 | 96% |
-| Business website audit | 2 | ~R0.36 | 98% |
-| SafePay bank verification | 3 | ~R10-12 | 70% |
-| TransUnion vehicle valuation | 3 | ~R6.50 | 84% |
-| TransUnion reg check | 3 | ~R6.50 | 84% |
-| TransUnion accident report | 3 | ~R6.50 | 84% |
-| B2B dossier with CIPC directors | 5 | ~R41 | 38% (TBC) |
+| Product | Credits | Our Cost | Margin (PAYG) | Margin (Pro) |
+|---------|---------|----------|---------------|--------------|
+| Vehicle market value (scrape) | 1 | ~R0.50 | 86% | 79% |
+| Property suburb comps (scrape) | 1 | ~R0.50 | 86% | 79% |
+| AI Web-to-Markdown / Crawler | 1 | ~R0.10 | 97% | 95% |
+| Business website audit | 2 | ~R0.36 | 95% | 92% |
+| TransUnion reg check (stolen/lien) | 3 | ~R6.50 | 41% | 10% |
+| TransUnion accident report | 3 | ~R6.50 | 41% | 10% |
+| SafePay bank verification | 3 | ~R10.00 | 10% | Breakeven |
+| B2B dossier with CIPC directors | 3 | ~R6.50 | 41% | 10% |
 
 ### API Routes
 

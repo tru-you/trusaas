@@ -74,7 +74,7 @@ function renderError(message = 'An unexpected error occurred during data retriev
 // ──────────────────────────────────────────────────
 // CREDIT WALLET ECONOMY
 // ──────────────────────────────────────────────────
-const PAYG_RATE = 13.27; // R per credit (PAYG tier)
+const PAYG_RATE = 3.68; // R per credit (PAYG tier: R129 / 35 credits)
 const BURN_RATES = {
   'valuation': 1,
   'electronics_valuation': 1,
@@ -130,8 +130,8 @@ async function updateWalletUI() {
   } catch (err) {
     console.warn('Could not fetch wallet balance:', err);
   }
-  if (pillText) pillText.textContent = '15 Credits';
-  return { balance: 15 };
+  if (pillText) pillText.textContent = '35 Credits';
+  return { balance: 35 };
 }
 
 async function burnCredits(productKey, customAmount) {
@@ -2233,3 +2233,412 @@ if (btnTabTable && btnTabJson && containerTable && containerJson) {
     containerTable.classList.add('hidden');
   });
 }
+
+// ──────────────────────────────────────────────────
+// UNIFIED SMART OMNIBAR & AUTO-DETECTION ENGINE
+// ──────────────────────────────────────────────────
+const omnibarInput = document.getElementById('omnibar-input');
+const omnibarBadge = document.getElementById('omnibar-detector-badge');
+const btnOmnibarGo = document.getElementById('btn-omnibar-go');
+
+function detectQueryIntent(raw) {
+  const q = String(raw || '').trim();
+  if (!q) {
+    return { type: 'none', label: 'Type to Auto-Detect', colorClass: 'bg-slate-100 text-slate-700' };
+  }
+
+  // 1. South African ID check (13 digits)
+  if (/^\d{13}$/.test(q.replace(/\s+/g, ''))) {
+    return { type: 'bureau', submode: 'id', label: 'SA Citizen ID Verification', colorClass: 'bg-indigo-100 text-indigo-900 border-indigo-950' };
+  }
+
+  // 2. 17-digit VIN check
+  if (/^[A-HJ-NPR-Z0-9]{17}$/i.test(q)) {
+    return { type: 'vehicles', submode: 'regcheck', label: 'VIN Police & Lien Verification', colorClass: 'bg-sky-100 text-sky-900 border-sky-950' };
+  }
+
+  // 3. SA Vehicle License Plate check (e.g. CA 123-456, ND 123456, 123 ABC GP, GP/WP/FS/EC/NC/MP/NW/LP/ZN)
+  const platePattern = /^([A-Z]{1,3}\s?[0-9]{1,6}(\s?[A-Z]{1,2})?|[0-9]{2,3}\s?[A-Z]{2,3}\s?[A-Z]{2}|[A-Z]{2}\s?[0-9]{2}\s?[A-Z]{2}\s?(GP|WP|FS|EC|NC|MP|NW|LP|ZN)?)$/i;
+  if (platePattern.test(q.replace(/[-]/g, ' '))) {
+    return { type: 'vehicles', submode: 'regcheck', label: 'Vehicle License Plate Check', colorClass: 'bg-sky-100 text-sky-900 border-sky-950' };
+  }
+
+  // 4. Electronics / Consumer Tech check
+  const techPattern = /\b(iphone|macbook|ipad|airpods|apple\s?watch|galaxy|playstation|ps5|ps4|xbox|nintendo|switch|rtx|geforce|oled|qled|laptop|desktop|intel|amd|ryzen|sonos|dyson)\b/i;
+  if (techPattern.test(q)) {
+    return { type: 'electronics', label: 'Electronics & Retail Comps', colorClass: 'bg-emerald-100 text-emerald-900 border-emerald-950' };
+  }
+
+  // 5. Property Suburbs / Addresses / Deeds
+  const propPattern = /\b(camps bay|sandton|ballito|stellenbosch|umhlanga|waterkloof|constantia|fourways|rosebank|sea point|rondebosch|durbanville|bellville|centurion|erf|township|suburb|estate|ridge|heights|valley|glen|close|crescent|road|street|drive|avenue)\b/i;
+  if (propPattern.test(q) || /,\s*(cape town|jhb|johannesburg|durban|pretoria|gauteng|western cape)/i.test(q)) {
+    return { type: 'property', label: 'Property Comps & FSBO Radar', colorClass: 'bg-amber-100 text-amber-900 border-amber-950' };
+  }
+
+  // 6. B2B / Local Business / Domain Crawl
+  const bizPattern = /^(https?:\/\/)?([a-z0-9-]+\.)+(co\.za|com|org|net|africa|io)/i;
+  const bizKeywords = /\b(plumber|electrician|attorney|lawyer|accountant|builder|mechanic|dentist|cleaning|logistics|transport|distributor|dealer|agency|contractor|consulting)\b/i;
+  if (bizPattern.test(q) || bizKeywords.test(q)) {
+    return { type: 'business', label: 'B2B Commercial & Site Audit', colorClass: 'bg-purple-100 text-purple-900 border-purple-950' };
+  }
+
+  // 7. Bureau Corporate / CIPC Check (Company name or reg no e.g. 2018/123456/07)
+  if (/^\d{4}\/\d{6}\/\d{2}$/.test(q) || /\b(pty|ltd|cc|holding|holdings|enterprises|logistics)\b/i.test(q)) {
+    return { type: 'bureau', submode: 'cipc', label: 'CIPC Company Registry Dossier', colorClass: 'bg-indigo-100 text-indigo-900 border-indigo-950' };
+  }
+
+  // Default fallback: treat as vehicle model or keyword
+  return { type: 'vehicles', submode: 'valuation', label: 'Vehicle Market Intelligence', colorClass: 'bg-sky-100 text-sky-900 border-sky-950' };
+}
+
+function updateOmnibarUI() {
+  if (!omnibarInput || !omnibarBadge) return;
+  const val = omnibarInput.value.trim();
+  const detection = detectQueryIntent(val);
+
+  omnibarBadge.className = `px-2 py-0.5 border font-bold text-[11px] uppercase flex items-center gap-1 ${detection.colorClass}`;
+  omnibarBadge.innerHTML = `
+    <span class="w-1.5 h-1.5 rounded-full ${val ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'} inline-block"></span>
+    <span>${esc(detection.label)}</span>
+  `;
+}
+
+if (omnibarInput) {
+  omnibarInput.addEventListener('input', updateOmnibarUI);
+  omnibarInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') executeOmnibarSearch();
+  });
+}
+
+if (btnOmnibarGo) {
+  btnOmnibarGo.addEventListener('click', executeOmnibarSearch);
+}
+
+function setOmnibarExample(val) {
+  if (omnibarInput) {
+    omnibarInput.value = val;
+    updateOmnibarUI();
+    executeOmnibarSearch();
+  }
+}
+
+async function executeOmnibarSearch() {
+  if (!omnibarInput) return;
+  const q = omnibarInput.value.trim();
+  if (!q) {
+    showToast('Please enter a query in the search bar', 'error');
+    return;
+  }
+
+  const intent = detectQueryIntent(q);
+
+  // Switch to corresponding tab
+  openConsoleTab(intent.type);
+
+  if (intent.type === 'vehicles') {
+    if (intent.submode === 'regcheck') {
+      const btnReg = document.getElementById('btn-mode-regcheck');
+      if (btnReg) btnReg.click();
+      const inputReg = document.getElementById('input-regcheck-query');
+      if (inputReg) {
+        inputReg.value = q;
+        const btnSubmit = document.getElementById('btn-run-regcheck');
+        if (btnSubmit) btnSubmit.click();
+      }
+    } else {
+      showToast(`Searching vehicle catalogue for "${q}"...`);
+    }
+  } else if (intent.type === 'electronics') {
+    const inputElect = document.getElementById('input-electronics-query');
+    if (inputElect) {
+      inputElect.value = q;
+      const btnElect = document.getElementById('btn-run-electronics');
+      if (btnElect) btnElect.click();
+    }
+  } else if (intent.type === 'property') {
+    const inputSuburb = document.getElementById('input-property-suburb');
+    if (inputSuburb) {
+      inputSuburb.value = q.replace(/,\s*(south africa|sa)/i, '').trim();
+      const btnProp = document.getElementById('btn-run-property');
+      if (btnProp) btnProp.click();
+    }
+  } else if (intent.type === 'business') {
+    const inputBiz = document.getElementById('input-biz-query') || document.getElementById('input-agency-query');
+    if (inputBiz) {
+      inputBiz.value = q;
+      const btnBiz = document.getElementById('btn-run-agency');
+      if (btnBiz) btnBiz.click();
+    }
+  } else if (intent.type === 'bureau') {
+    if (intent.submode === 'id') {
+      const selectBureau = document.getElementById('select-bureau-type');
+      if (selectBureau) {
+        selectBureau.value = 'id';
+        selectBureau.dispatchEvent(new Event('change'));
+      }
+      const inputId = document.getElementById('input-bureau-id-number');
+      if (inputId) {
+        inputId.value = q.replace(/\s+/g, '');
+        const btnBureau = document.getElementById('btn-run-bureau');
+        if (btnBureau) btnBureau.click();
+      }
+    } else if (intent.submode === 'cipc') {
+      const selectBureau = document.getElementById('select-bureau-type');
+      if (selectBureau) {
+        selectBureau.value = 'cipc';
+        selectBureau.dispatchEvent(new Event('change'));
+      }
+      const inputCipc = document.getElementById('input-bureau-query');
+      if (inputCipc) {
+        inputCipc.value = q;
+        const btnBureau = document.getElementById('btn-run-bureau');
+        if (btnBureau) btnBureau.click();
+      }
+    }
+  }
+}
+
+// ──────────────────────────────────────────────────
+// DEVELOPER API MODAL & SELF-SERVE KEY MANAGER
+// ──────────────────────────────────────────────────
+const btnOpenApiModal = document.getElementById('btn-open-api-modal');
+const btnCloseApiModal = document.getElementById('close-api-modal');
+const apiModal = document.getElementById('api-modal');
+
+function openApiModal() {
+  if (!apiModal) return;
+  const emailInput = document.getElementById('api-gen-email');
+  if (emailInput && !emailInput.value) {
+    emailInput.value = getUserEmail();
+  }
+  loadActiveApiKeys();
+  apiModal.classList.remove('hidden');
+}
+
+function closeApiModal() {
+  if (apiModal) apiModal.classList.add('hidden');
+}
+
+if (btnOpenApiModal) btnOpenApiModal.addEventListener('click', openApiModal);
+if (btnCloseApiModal) btnCloseApiModal.addEventListener('click', closeApiModal);
+
+// API Key Generator Form
+const apiKeyGenForm = document.getElementById('api-key-gen-form');
+if (apiKeyGenForm) {
+  apiKeyGenForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const emailInput = document.getElementById('api-gen-email');
+    const submitBtn = document.getElementById('btn-submit-key-gen');
+    const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+
+    if (!email || !email.includes('@')) {
+      showToast('Please enter a valid developer email', 'error');
+      return;
+    }
+
+    setUserEmail(email);
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Generating...';
+    }
+
+    try {
+      const res = await fetch('/api/keys/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: 'Live Application Key' }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate key');
+
+      showToast('Live API Key generated successfully!');
+      
+      const resultBox = document.getElementById('api-key-result-box');
+      const keyText = document.getElementById('api-key-text');
+      if (resultBox && keyText) {
+        keyText.textContent = data.key;
+        resultBox.classList.remove('hidden');
+      }
+
+      // Update code snippets with generated key
+      window._currentGeneratedApiKey = data.key;
+      updateApiSnippet();
+
+      // Refresh keys list
+      loadActiveApiKeys();
+    } catch (err) {
+      console.error('API key generation error:', err);
+      showToast(err.message || 'Key generation failed', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create API Key';
+      }
+    }
+  });
+}
+
+// Copy API Key
+const btnCopyApiKey = document.getElementById('btn-copy-api-key');
+if (btnCopyApiKey) {
+  btnCopyApiKey.addEventListener('click', () => {
+    const keyText = document.getElementById('api-key-text')?.textContent?.trim();
+    if (keyText) {
+      navigator.clipboard.writeText(keyText).then(() => {
+        showToast('API Key copied to clipboard!');
+      });
+    }
+  });
+}
+
+// Snippet Language Switcher
+let currentSnippetLang = 'curl';
+
+const API_SNIPPETS = {
+  curl: (k) => `# 1. Vehicle Valuation Quick Check
+curl -X POST https://data.tru-saas.com/api/valuation/quick \\
+  -H "Authorization: Bearer ${k}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"make":"Toyota","model":"Hilux","year":"2022"}'
+
+# 2. National Vehicle RegCheck (SAPS Stolen & Finance Lien)
+curl -X POST https://data.tru-saas.com/api/bureau/regcheck \\
+  -H "Authorization: Bearer ${k}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query":"CA 829-102"}'`,
+
+  js: (k) => `// Node.js (ESM / Fetch)
+import fetch from 'node-fetch';
+
+const response = await fetch('https://data.tru-saas.com/api/valuation/quick', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ${k}',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    make: 'Toyota',
+    model: 'Hilux',
+    year: '2022'
+  })
+});
+
+const data = await response.json();
+console.log('Valuation:', data.median, data.confidence);`,
+
+  python: (k) => `# Python (requests)
+import requests
+
+url = "https://data.tru-saas.com/api/valuation/quick"
+headers = {
+    "Authorization": "Bearer ${k}",
+    "Content-Type": "application/json"
+}
+payload = {
+    "make": "Toyota",
+    "model": "Hilux",
+    "year": "2022"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`
+};
+
+function showApiSnippet(lang) {
+  currentSnippetLang = lang;
+  ['curl', 'js', 'python'].forEach(l => {
+    const btn = document.getElementById(`btn-snip-${l}`);
+    if (btn) {
+      if (l === lang) {
+        btn.className = 'px-2 py-0.5 bg-sky-600 text-white font-bold border border-slate-950';
+      } else {
+        btn.className = 'px-2 py-0.5 bg-white text-slate-900 hover:bg-slate-100 font-bold border border-slate-950';
+      }
+    }
+  });
+  updateApiSnippet();
+}
+
+function updateApiSnippet() {
+  const codeBlock = document.getElementById('api-snippet-code');
+  if (!codeBlock) return;
+  const k = window._currentGeneratedApiKey || 'YOUR_API_KEY';
+  codeBlock.textContent = API_SNIPPETS[currentSnippetLang](k);
+}
+
+// Load Active Keys Table
+async function loadActiveApiKeys() {
+  const container = document.getElementById('api-keys-list-container');
+  if (!container) return;
+  const email = getUserEmail();
+
+  try {
+    const res = await fetch(`/api/keys?email=${encodeURIComponent(email)}`);
+    if (!res.ok) throw new Error('Could not load keys');
+    const data = await res.json();
+
+    if (!data.keys || data.keys.length === 0) {
+      container.innerHTML = '<p class="text-slate-500 py-2">No active API keys found for your account. Generate one above.</p>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="border border-slate-950 bg-white">
+        <table class="w-full text-left text-[11px]">
+          <thead class="bg-slate-100 border-b border-slate-950">
+            <tr>
+              <th class="p-2">Key Identifier</th>
+              <th class="p-2">Created</th>
+              <th class="p-2">Status</th>
+              <th class="p-2 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.keys.map(k => `
+              <tr class="border-b border-slate-200">
+                <td class="p-2 font-mono font-bold text-slate-900">${esc(k.maskedKey)}</td>
+                <td class="p-2 text-slate-600">${new Date(k.createdAt).toLocaleDateString()}</td>
+                <td class="p-2">
+                  <span class="px-1.5 py-0.5 ${k.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} font-bold">
+                    ${esc(k.status)}
+                  </span>
+                </td>
+                <td class="p-2 text-right">
+                  ${k.status === 'active' ? `
+                    <button type="button" onclick="revokeKeyAction('${esc(k.id)}')" class="text-rose-600 hover:underline font-bold">
+                      Revoke
+                    </button>
+                  ` : '<span class="text-slate-400">Revoked</span>'}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = '<p class="text-slate-500 py-2">Generate a key above to view active keys.</p>';
+  }
+}
+
+const btnRefreshKeys = document.getElementById('btn-refresh-keys');
+if (btnRefreshKeys) btnRefreshKeys.addEventListener('click', loadActiveApiKeys);
+
+async function revokeKeyAction(keyId) {
+  if (!confirm('Are you sure you want to revoke this API key? Applications using it will immediately stop working.')) return;
+  const email = getUserEmail();
+  try {
+    const res = await fetch(`/api/keys/${encodeURIComponent(keyId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) throw new Error('Failed to revoke key');
+    showToast('API Key revoked.');
+    loadActiveApiKeys();
+  } catch (err) {
+    showToast(err.message || 'Revoke failed', 'error');
+  }
+}
+

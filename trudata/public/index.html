@@ -32,7 +32,7 @@
         "operatingSystem": "All",
         "offers": {
           "@type": "Offer",
-          "price": "199.00",
+          "price": "129.00",
           "priceCurrency": "ZAR"
         }
       },
@@ -219,6 +219,10 @@
           Buy Credits
         </button>
 
+        <button id="btn-open-api-modal" class="font-display font-semibold text-xs px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white border border-slate-950 brutal-shadow-sm active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5">
+          <span class="font-mono text-[10px] bg-sky-500 text-slate-950 px-1 font-bold">API</span> Developer Keys
+        </button>
+
         <button onclick="openConsoleTab('vehicles')" class="hidden sm:inline-flex font-display font-semibold text-xs px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow-sm active:translate-x-0.5 active:translate-y-0.5 transition-all">
           Live Console
         </button>
@@ -259,6 +263,56 @@
         <p class="font-body text-sm md:text-base text-slate-700 leading-relaxed">
           Access real-time showroom floor valuations across 282 vehicle makes, find direct homeowners selling without agent commission, uncover local B2B leads with direct decision-maker contacts, and verify bank accounts before releasing funds — all on honest pay-as-you-go credits.
         </p>
+      </div>
+
+      <!-- UNIFIED SMART OMNIBAR -->
+      <div class="max-w-4xl mx-auto w-full">
+        <div class="bg-white border-2 border-slate-950 p-2 md:p-3 brutal-shadow-lg space-y-2">
+          <div class="flex flex-col md:flex-row items-stretch gap-2">
+            <div class="relative flex-1 flex items-center">
+              <span class="absolute left-3 text-slate-400 font-mono text-sm pointer-events-none">
+                <span class="material-symbols-outlined text-base">search</span>
+              </span>
+              <input 
+                type="text" 
+                id="omnibar-input" 
+                placeholder="Type anything: Vehicle Plate (e.g. CA 123-456), VIN, SA ID, Suburb (e.g. Camps Bay), or Tech (iPhone 15)..." 
+                class="w-full pl-10 pr-4 py-3 bg-slate-50 focus:bg-white border border-slate-950 font-mono text-xs md:text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-600 transition-all placeholder:text-slate-400 font-medium"
+                autocomplete="off"
+              />
+            </div>
+            <button 
+              id="btn-omnibar-go" 
+              type="button"
+              class="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-display font-bold text-xs md:text-sm uppercase tracking-wider border border-slate-950 brutal-shadow active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              <span>Instant Check</span>
+              <span class="font-mono text-xs">&rarr;</span>
+            </button>
+          </div>
+          
+          <!-- Live Auto-Detection Pill & Quick Filters -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200 text-xs font-mono">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-500 text-[11px] font-semibold uppercase">Auto-Detection:</span>
+              <span id="omnibar-detector-badge" class="px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-950 font-bold text-[11px] uppercase flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block"></span>
+                <span>Type to Auto-Detect</span>
+              </span>
+            </div>
+            
+            <div class="hidden sm:flex items-center gap-1 text-[11px] text-slate-600">
+              <span class="text-slate-400">Examples:</span>
+              <button type="button" onclick="setOmnibarExample('CA 829-102')" class="hover:underline text-sky-700 font-semibold">CA 829-102</button>
+              <span class="text-slate-300">&middot;</span>
+              <button type="button" onclick="setOmnibarExample('Camps Bay, Cape Town')" class="hover:underline text-sky-700 font-semibold">Camps Bay</button>
+              <span class="text-slate-300">&middot;</span>
+              <button type="button" onclick="setOmnibarExample('iPhone 15 Pro 256GB')" class="hover:underline text-sky-700 font-semibold">iPhone 15</button>
+              <span class="text-slate-300">&middot;</span>
+              <button type="button" onclick="setOmnibarExample('Plumbers Durban')" class="hover:underline text-sky-700 font-semibold">Plumbers</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Hero Console Workbench Grid -->
@@ -870,9 +924,9 @@
         <div class="bg-white border-1.5 border-slate-950 p-6 space-y-4 brutal-shadow flex flex-col justify-between">
           <div class="space-y-2">
             <span class="font-mono text-xs font-semibold text-slate-500 uppercase">PAY-AS-YOU-GO</span>
-            <div class="font-display font-bold text-3xl text-slate-950">R 199</div>
-            <div class="font-mono text-sm font-bold text-sky-800">15 Credits</div>
-            <p class="font-body text-xs text-slate-600">R13.27 per credit &middot; Best for individual or occasional verification lookups.</p>
+            <div class="font-display font-bold text-3xl text-slate-950">R 129</div>
+            <div class="font-mono text-sm font-bold text-sky-800">35 Credits</div>
+            <p class="font-body text-xs text-slate-600">R3.68 per credit &middot; Best for individual or occasional verification lookups.</p>
           </div>
           <button onclick="openCreditModal('paygo')" class="w-full font-mono text-xs font-bold py-2.5 bg-white hover:bg-slate-100 text-slate-950 border border-slate-950 brutal-shadow-sm">
             BUY PAY-AS-YOU-GO
@@ -886,9 +940,9 @@
           </div>
           <div class="space-y-2">
             <span class="font-mono text-xs font-semibold text-sky-900 uppercase">PRO DESK</span>
-            <div class="font-display font-bold text-3xl text-slate-950">R 999 <span class="text-xs font-normal text-slate-600">/mo</span></div>
-            <div class="font-mono text-sm font-bold text-sky-900">150 Credits</div>
-            <p class="font-body text-xs text-slate-700">R6.66 per credit &middot; Designed for active car dealerships, brokers, and real estate offices.</p>
+            <div class="font-display font-bold text-3xl text-slate-950">R 599 <span class="text-xs font-normal text-slate-600">/mo</span></div>
+            <div class="font-mono text-sm font-bold text-sky-900">250 Credits</div>
+            <p class="font-body text-xs text-slate-700">R2.40 per credit &middot; Designed for active car dealerships, brokers, and real estate offices.</p>
           </div>
           <button onclick="openCreditModal('pro')" class="w-full font-mono text-xs font-bold py-2.5 bg-sky-600 hover:bg-sky-700 text-white border border-slate-950 brutal-shadow-sm">
             BUY PRO DESK PACK
@@ -899,9 +953,9 @@
         <div class="bg-white border-1.5 border-slate-950 p-6 space-y-4 brutal-shadow flex flex-col justify-between">
           <div class="space-y-2">
             <span class="font-mono text-xs font-semibold text-slate-500 uppercase">ENTERPRISE</span>
-            <div class="font-display font-bold text-3xl text-slate-950">R 3,499 <span class="text-xs font-normal text-slate-600">/mo</span></div>
-            <div class="font-mono text-sm font-bold text-sky-800">600 Credits</div>
-            <p class="font-body text-xs text-slate-600">R5.83 per credit &middot; High-volume rate for data aggregators, fleets, and agencies.</p>
+            <div class="font-display font-bold text-3xl text-slate-950">R 1,899 <span class="text-xs font-normal text-slate-600">/mo</span></div>
+            <div class="font-mono text-sm font-bold text-sky-800">1,000 Credits</div>
+            <p class="font-body text-xs text-slate-600">R1.90 per credit &middot; High-volume rate for data aggregators, fleets, and agencies.</p>
           </div>
           <button onclick="openCreditModal('enterprise')" class="w-full font-mono text-xs font-bold py-2.5 bg-white hover:bg-slate-100 text-slate-950 border border-slate-950 brutal-shadow-sm">
             BUY ENTERPRISE PACK
@@ -928,27 +982,27 @@
               <tr>
                 <td class="p-2 font-medium">Vehicle Market Value &amp; Showroom Comps</td>
                 <td class="p-2 text-center font-bold text-sky-700">1 Credit</td>
-                <td class="p-2 text-right">R 13.27</td>
+                <td class="p-2 text-right">R 3.68</td>
               </tr>
               <tr>
                 <td class="p-2 font-medium">Property Suburb Comps &amp; Direct Homeowner Leads</td>
                 <td class="p-2 text-center font-bold text-sky-700">1 - 2 Credits</td>
-                <td class="p-2 text-right">R 13.27 - R 26.54</td>
+                <td class="p-2 text-right">R 3.68 - R 7.36</td>
               </tr>
               <tr>
                 <td class="p-2 font-medium">B2B Business Leads &amp; Technical Health Audit</td>
                 <td class="p-2 text-center font-bold text-sky-700">1 - 8 Credits</td>
-                <td class="p-2 text-right">from R 13.27</td>
+                <td class="p-2 text-right">from R 3.68</td>
               </tr>
               <tr>
                 <td class="p-2 font-medium">Official Bureau Vehicle Valuation</td>
                 <td class="p-2 text-center font-bold text-sky-700">3 Credits</td>
-                <td class="p-2 text-right">R 39.81</td>
+                <td class="p-2 text-right">R 11.04</td>
               </tr>
               <tr>
                 <td class="p-2 font-medium">SafePay Real-Time Bank Account Verification</td>
                 <td class="p-2 text-center font-bold text-sky-700">3 Credits</td>
-                <td class="p-2 text-right">R 39.81</td>
+                <td class="p-2 text-right">R 11.04</td>
               </tr>
             </tbody>
           </table>
@@ -1082,9 +1136,9 @@
           <div class="pack-radio"><input type="radio" name="pack-choice" value="paygo" checked/></div>
           <div class="pack-info font-mono text-xs">
             <strong class="block text-slate-900">Pay-As-You-Go</strong>
-            <span class="text-slate-600">15 Credits &middot; R13.27 / credit</span>
+            <span class="text-slate-600">35 Credits &middot; R3.68 / credit</span>
           </div>
-          <div class="pack-price font-display font-bold text-base text-slate-950">R 199</div>
+          <div class="pack-price font-display font-bold text-base text-slate-950">R 129</div>
         </div>
 
         <div class="pack-option selected" data-pack="pro">
@@ -1092,18 +1146,18 @@
           <div class="pack-radio"><input type="radio" name="pack-choice" value="pro"/></div>
           <div class="pack-info font-mono text-xs">
             <strong class="block text-slate-900">Pro Desk</strong>
-            <span class="text-slate-600">150 Credits &middot; R6.66 / credit (Dealers &amp; Brokers)</span>
+            <span class="text-slate-600">250 Credits &middot; R2.40 / credit (Dealers &amp; Brokers)</span>
           </div>
-          <div class="pack-price font-display font-bold text-base text-slate-950">R 999</div>
+          <div class="pack-price font-display font-bold text-base text-slate-950">R 599</div>
         </div>
 
         <div class="pack-option" data-pack="enterprise">
           <div class="pack-radio"><input type="radio" name="pack-choice" value="enterprise"/></div>
           <div class="pack-info font-mono text-xs">
             <strong class="block text-slate-900">Enterprise Desk</strong>
-            <span class="text-slate-600">600 Credits &middot; R5.83 / credit (Agencies &amp; Fleets)</span>
+            <span class="text-slate-600">1,000 Credits &middot; R1.90 / credit (Agencies &amp; Fleets)</span>
           </div>
-          <div class="pack-price font-display font-bold text-base text-slate-950">R 3,499</div>
+          <div class="pack-price font-display font-bold text-base text-slate-950">R 1,899</div>
         </div>
       </div>
 
@@ -1120,6 +1174,85 @@
           Proceed to PayFast Checkout
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- Developer API Keys Modal -->
+  <div id="api-modal" class="modal hidden">
+    <div class="modal-content modal-lg max-h-[90vh] overflow-y-auto">
+      <button class="close-modal" id="close-api-modal">&times;</button>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="font-mono text-[10px] bg-sky-600 text-white px-2 py-0.5 font-bold uppercase border border-slate-950">
+          DEVELOPER API
+        </span>
+        <h2 class="font-display font-bold text-xl uppercase text-slate-950">Self-Serve API Keys</h2>
+      </div>
+      <p class="font-body text-xs text-slate-600 mb-4">
+        Integrate TruData valuations, vehicle registry lookups, property comps, and bank verification into your apps, CRM, or backend with 3 lines of code.
+      </p>
+
+      <!-- Key Generator Section -->
+      <div class="bg-slate-100 border border-slate-950 p-4 mb-5 brutal-shadow-sm space-y-3">
+        <h3 class="font-mono text-xs font-bold uppercase text-slate-950">1. Generate Live API Key</h3>
+        <form id="api-key-gen-form" class="flex flex-col sm:flex-row gap-2">
+          <input 
+            type="email" 
+            id="api-gen-email" 
+            required 
+            placeholder="developer@yourcompany.co.za" 
+            class="flex-1 font-mono text-xs p-2 bg-white border border-slate-950 text-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-600"
+          />
+          <button 
+            type="submit" 
+            class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-mono text-xs font-bold uppercase border border-slate-950 brutal-shadow whitespace-nowrap active:translate-x-0.5 active:translate-y-0.5 transition-all"
+            id="btn-submit-key-gen"
+          >
+            Create API Key
+          </button>
+        </form>
+
+        <!-- Key Result Display -->
+        <div id="api-key-result-box" class="hidden space-y-2 pt-2 border-t border-slate-200">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-emerald-800 font-bold">API Key Generated (Keep Secret):</span>
+            <button type="button" id="btn-copy-api-key" class="text-sky-700 hover:underline font-bold">Copy Key</button>
+          </div>
+          <div class="p-2.5 bg-slate-950 text-emerald-400 font-mono text-xs border border-slate-950 overflow-x-auto select-all" id="api-key-text">
+            td_live_...
+          </div>
+        </div>
+      </div>
+
+      <!-- Quickstart Code Snippets -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="font-mono text-xs font-bold uppercase text-slate-950">2. Quickstart Code Snippets</h3>
+          <div class="flex gap-1 font-mono text-[10px]">
+            <button type="button" onclick="showApiSnippet('curl')" id="btn-snip-curl" class="px-2 py-0.5 bg-sky-600 text-white font-bold border border-slate-950">cURL</button>
+            <button type="button" onclick="showApiSnippet('js')" id="btn-snip-js" class="px-2 py-0.5 bg-white text-slate-900 hover:bg-slate-100 font-bold border border-slate-950">Node.js</button>
+            <button type="button" onclick="showApiSnippet('python')" id="btn-snip-python" class="px-2 py-0.5 bg-white text-slate-900 hover:bg-slate-100 font-bold border border-slate-950">Python</button>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 text-slate-100 p-3 font-mono text-xs border border-slate-950 overflow-x-auto relative brutal-shadow-sm" id="api-snippet-container">
+          <pre><code id="api-snippet-code"># 1. Vehicle Valuation Quick Check
+curl -X POST https://data.tru-saas.com/api/valuation/quick \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"make":"Toyota","model":"Hilux","year":"2022"}'</code></pre>
+        </div>
+      </div>
+
+      <!-- Active Keys Table -->
+      <div class="mt-5 pt-4 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-mono text-xs font-bold uppercase text-slate-950">3. Active API Keys</h3>
+          <button type="button" id="btn-refresh-keys" class="text-xs font-mono text-sky-700 hover:underline">Refresh</button>
+        </div>
+        <div id="api-keys-list-container" class="font-mono text-xs">
+          <p class="text-slate-500 py-2">Generate a key above to view active keys.</p>
+        </div>
+      </div>
     </div>
   </div>
 
