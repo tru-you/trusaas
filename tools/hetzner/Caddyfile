@@ -1,0 +1,85 @@
+# TruSaaS — Hetzner Caddyfile (Reverse Proxy & Auto-SSL)
+# Primary domain: *.trudealers.com | Legacy: *.tru-saas.com
+
+# 1. Market Scraper API
+scraper.tru-saas.com {
+    reverse_proxy 127.0.0.1:4300
+    encode gzip zstd
+}
+
+# 2. TruFlow Premium (DMS)
+premium.trudealers.com, premium.tru-saas.com {
+    reverse_proxy 127.0.0.1:3003
+    encode gzip zstd
+    request_body {
+        max_size 50MB
+    }
+}
+
+stage-premium.tru-saas.com {
+    reverse_proxy 127.0.0.1:3003
+    encode gzip zstd
+    request_body {
+        max_size 50MB
+    }
+}
+
+# 3. TruInspect (Condition Reports)
+inspect.trudealers.com, inspect.tru-saas.com {
+    reverse_proxy 127.0.0.1:3002
+    encode gzip zstd
+    request_body {
+        max_size 50MB
+    }
+}
+
+stage-inspect.tru-saas.com {
+    reverse_proxy 127.0.0.1:3002
+    encode gzip zstd
+    request_body {
+        max_size 50MB
+    }
+}
+
+# 4. TruLens (Photo Studio PWA)
+lens.trudealers.com, lens.tru-saas.com {
+    reverse_proxy 127.0.0.1:3001
+    encode gzip zstd
+    request_body {
+        max_size 50MB
+    }
+}
+
+stage-lens.tru-saas.com {
+    reverse_proxy 127.0.0.1:3001
+    encode gzip zstd
+    request_body {
+        max_size 50MB
+    }
+}
+
+# 5. TruFlow Mobile (Companion App)
+app.trudealers.com, app.tru-saas.com {
+    reverse_proxy 127.0.0.1:3004
+    encode gzip zstd
+}
+
+stage-app.tru-saas.com {
+    reverse_proxy 127.0.0.1:3004
+    encode gzip zstd
+}
+
+# 6. TruChat (DeepSeek AI Chat)
+chat.trudealers.com, chat.tru-saas.com {
+    reverse_proxy 127.0.0.1:5000
+    encode gzip zstd
+}
+
+# 7. TruCRM (Sales & Lead Management CRM)
+crm.trudealers.com, crm.tru-saas.com {
+    reverse_proxy 127.0.0.1:3005
+    encode gzip zstd
+    request_body {
+        max_size 50MB
+    }
+}
