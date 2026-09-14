@@ -2241,6 +2241,91 @@ const omnibarInput = document.getElementById('omnibar-input');
 const omnibarBadge = document.getElementById('omnibar-detector-badge');
 const btnOmnibarGo = document.getElementById('btn-omnibar-go');
 
+const KNOWN_MAKES_MAP = [
+  { match: /\b(volkswagen|vw)\b/i, name: 'Volkswagen' },
+  { match: /\b(toyota)\b/i, name: 'Toyota' },
+  { match: /\b(ford)\b/i, name: 'Ford' },
+  { match: /\b(bmw)\b/i, name: 'BMW' },
+  { match: /\b(mercedes|mercedes-benz|merc|benz)\b/i, name: 'Mercedes-Benz' },
+  { match: /\b(audi)\b/i, name: 'Audi' },
+  { match: /\b(isuzu)\b/i, name: 'Isuzu' },
+  { match: /\b(hyundai)\b/i, name: 'Hyundai' },
+  { match: /\b(nissan)\b/i, name: 'Nissan' },
+  { match: /\b(suzuki)\b/i, name: 'Suzuki' },
+  { match: /\b(kia)\b/i, name: 'Kia' },
+  { match: /\b(renault)\b/i, name: 'Renault' },
+  { match: /\b(mazda)\b/i, name: 'Mazda' },
+  { match: /\b(honda)\b/i, name: 'Honda' },
+  { match: /\b(volvo)\b/i, name: 'Volvo' },
+  { match: /\b(land\s?rover|range\s?rover)\b/i, name: 'Land Rover' },
+  { match: /\b(porsche)\b/i, name: 'Porsche' },
+  { match: /\b(jeep)\b/i, name: 'Jeep' },
+  { match: /\b(haval)\b/i, name: 'Haval' },
+  { match: /\b(chery)\b/i, name: 'Chery' },
+  { match: /\b(mahindra)\b/i, name: 'Mahindra' },
+  { match: /\b(subaru)\b/i, name: 'Subaru' },
+  { match: /\b(mitsubishi)\b/i, name: 'Mitsubishi' },
+  { match: /\b(chevrolet|chevy)\b/i, name: 'Chevrolet' },
+  { match: /\b(opel)\b/i, name: 'Opel' },
+  { match: /\b(peugeot)\b/i, name: 'Peugeot' },
+  { match: /\b(fiat)\b/i, name: 'Fiat' },
+  { match: /\b(lexus)\b/i, name: 'Lexus' },
+  { match: /\b(jaguar)\b/i, name: 'Jaguar' },
+  { match: /\b(alfa\s?romeo)\b/i, name: 'Alfa Romeo' },
+  { match: /\b(mini)\b/i, name: 'Mini' },
+];
+
+function parseVehicleQuery(raw) {
+  let q = String(raw || '').trim();
+  let extractedYear = '2022';
+
+  // 1. Extract 4-digit year
+  const yearMatch = q.match(/\b(19\d\d|20[0-2]\d|2030)\b/);
+  if (yearMatch) {
+    extractedYear = yearMatch[1];
+    q = q.replace(yearMatch[0], '').trim();
+  }
+
+  // 2. Identify Make
+  let extractedMake = '';
+  for (const item of KNOWN_MAKES_MAP) {
+    if (item.match.test(q)) {
+      extractedMake = item.name;
+      q = q.replace(item.match, '').trim();
+      break;
+    }
+  }
+
+  // Fallback if make was not found in map
+  if (!extractedMake) {
+    const parts = q.split(/\s+/);
+    if (parts.length >= 2) {
+      extractedMake = parts[0];
+      q = parts.slice(1).join(' ');
+    } else {
+      extractedMake = 'Toyota';
+    }
+  }
+
+  // 3. Model and Variant
+  const remainingTokens = q.trim().replace(/\s+/g, ' ');
+  let model = remainingTokens || 'Hilux';
+  let variant = '';
+
+  const words = remainingTokens.split(' ');
+  if (words.length > 1) {
+    model = words[0];
+    variant = words.slice(1).join(' ');
+  }
+
+  return {
+    make: extractedMake,
+    model: model,
+    variant: variant,
+    year: extractedYear
+  };
+}
+
 function detectQueryIntent(raw) {
   const q = String(raw || '').trim();
   if (!q) {
@@ -2287,8 +2372,15 @@ function detectQueryIntent(raw) {
     return { type: 'bureau', submode: 'cipc', label: 'CIPC Company Registry Dossier', colorClass: 'bg-indigo-100 text-indigo-900 border-indigo-950' };
   }
 
-  // Default fallback: treat as vehicle model or keyword
-  return { type: 'vehicles', submode: 'valuation', label: 'Vehicle Market Intelligence', colorClass: 'bg-sky-100 text-sky-900 border-sky-950' };
+  // Check if query contains a known vehicle make or model
+  const parsed = parseVehicleQuery(q);
+  return { 
+    type: 'vehicles', 
+    submode: 'valuation', 
+    label: `Vehicle: ${parsed.make} ${parsed.model} (${parsed.year})`, 
+    colorClass: 'bg-sky-100 text-sky-900 border-sky-950',
+    parsedVehicle: parsed
+  };
 }
 
 function updateOmnibarUI() {
@@ -2339,14 +2431,17 @@ async function executeOmnibarSearch() {
     if (intent.submode === 'regcheck') {
       const btnReg = document.getElementById('btn-mode-regcheck');
       if (btnReg) btnReg.click();
-      const inputReg = document.getElementById('input-regcheck-query');
+      const inputReg = document.getElementById('input-vehicle-reg-standalone') || document.getElementById('input-regcheck-query');
       if (inputReg) {
         inputReg.value = q;
-        const btnSubmit = document.getElementById('btn-run-regcheck');
+        const btnSubmit = document.getElementById('btn-run-vehicle-regcheck-standalone') || document.getElementById('btn-run-regcheck');
         if (btnSubmit) btnSubmit.click();
       }
     } else {
-      showToast(`Searching vehicle catalogue for "${q}"...`);
+      const parsed = intent.parsedVehicle || parseVehicleQuery(q);
+      switchVehicleMode('valuation');
+      showToast(`Analyzing ${parsed.make} ${parsed.model} (${parsed.year})...`);
+      runVehicleValuation(parsed.make, parsed.model, parsed.year, parsed.variant);
     }
   } else if (intent.type === 'electronics') {
     const inputElect = document.getElementById('input-electronics-query');
