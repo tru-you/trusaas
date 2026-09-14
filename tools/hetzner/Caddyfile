@@ -76,7 +76,7 @@ chat.trudealers.com, chat.tru-saas.com {
 }
 
 # 7. TruCRM (Sales & Lead Management CRM)
-crm.trusaas.dev {
+crm.trusaas.dev, crm.tru-saas.com {
     reverse_proxy 127.0.0.1:3005
     encode gzip zstd
     request_body {
