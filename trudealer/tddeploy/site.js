@@ -150,13 +150,7 @@
   const localBrain = {
     pricing: 'TruDealer packages start at **R 1,599/mo** for **TruStart** (single lot, unlimited listings, capture studio, inspections, mobile stock app, 24/7 AI chat, branded website) and **R 3,599/mo** for **TruPro** (full cloud DMS, F&I calculators, live market price scraper, deal jackets, OTPs, SARS tax invoicing). <a href="packages.html" style="color:var(--cyan);text-decoration:underline;">View full packages breakdown →</a>',
     golive: "Ten working days from scope call to live on your domain. Day 1 we scope, days 2–7 we build or reskin to your brand, day 10 you're live with your stock loaded. If we miss the deadline we don't invoice.",
-    modules: "TruDealer is a complete dealership operating system:
-
-• **TruLens**: 28-shot guided photo studio with AI damage scanning & 360° TruOrbit spins.
-• **TruInspect**: 35-point condition checklists & dispute-proof VIR condition reports.
-• **TruFlow DMS**: Lot inventory, sales CRM, deal jackets, OTPs, SARS tax invoicing & multi-portal syndication.
-• **TruAfford**: Soft-pull affordability & repayment calculators.
-• **DealerAssist**: 24/7 automotive AI assistant with WhatsApp routing.",
+    modules: "TruDealer is a complete dealership operating system:\n\n• **TruLens**: 28-shot guided photo studio with AI damage scanning & 360° TruOrbit spins.\n• **TruInspect**: 35-point condition checklists & dispute-proof VIR condition reports.\n• **TruFlow DMS**: Lot inventory, sales CRM, deal jackets, OTPs, SARS tax invoicing & multi-portal syndication.\n• **TruAfford**: Soft-pull affordability & repayment calculators.\n• **DealerAssist**: 24/7 automotive AI assistant with WhatsApp routing.",
     start: "Depends on your biggest bottleneck right now! High reconditioning or damage disputes? **TruInspect VIR**. Weak vehicle photos or stale listings? **TruLens 28-shot studio**. Losing leads after hours? **DealerAssist AI**. Invoicing and OTP chaos? **TruFlow DMS**. <a href='https://wa.me/447476995694?text=Hi%20Paul%2C%20which%20TruDealer%20module%20is%20best%20for%20my%20dealership%3F' target='_blank' style='color:var(--cyan);text-decoration:underline;'>WhatsApp our team</a> to discuss your floor.",
     showroom: "Every TruShowroom is custom-built with 100 Web Vitals speed (see live proof at <a href='https://true-cars.co.za' target='_blank' style='color:var(--cyan);text-decoration:underline;'>www.true-cars.co.za</a>). If you have an existing website, we can faithfully reskin your brand onto TruDealer with zero downtime.",
     dms: "**TruFlow DMS** manages vehicle cost tracking, reconditioning expense logging, bank interest & balloon calculations, OTP deal jackets, and compliant SARS tax invoices generated in two clicks.",

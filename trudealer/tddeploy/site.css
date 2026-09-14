@@ -3243,39 +3243,256 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
   margin-bottom: 6px;
 }
 
-/* ═══ STICKY MOBILE BOTTOM BAR (3D TACTILE CAPSULES WITH SHIMMER & SPARKLES) ═══ */
-/* ═══ TRUDEALER DUAL-MODE FLOATING FAB & MOBILE STICKY FOOTER ═══ */
-@media (min-width: 601px) {
-  .mobile-bottom-bar {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 1000;
-    display: inline-flex !important; align-items: center; gap: 8px;
-    background: rgba(14, 22, 32, 0.94);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(11, 124, 114, 0.6);
-    padding: 7px 14px; border-radius: 100px;
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(11, 124, 114, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .mobile-bottom-bar:hover {
-    transform: translateX(-50%) translateY(-3px);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.75), 0 0 32px rgba(11, 124, 114, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  }
-  .mobile-bottom-bar .bar-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 16px !important; border-radius: 100px !important;
-    font-size: 13px; font-weight: 700; color: #FFFFFF;
-    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);
-    text-decoration: none; cursor: pointer; transition: all 0.2s ease;
-  }
-  .mobile-bottom-bar .bar-btn-inner {
-    display: flex; flex-direction: row; align-items: center; gap: 6px; background: none; border: none; box-shadow: none; padding: 0;
-  }
-  .mobile-bottom-bar .bar-btn.chat .bar-btn-inner { background: none; }
-  .mobile-bottom-bar .bar-btn.chat { background: var(--cyan, #0B7C72); color: #FFF; border-color: transparent; }
-  .mobile-bottom-bar .bar-btn.chat:hover { background: #0E9F92; }
+/* ═══ TRUDEALER DUAL-MODE FLOATING FAB & BOTTOM BAR (3D TACTILE CAPSULES) ═══ */
+
+/* ─── Shared Base Effects & Animations ─── */
+.bar-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.bar-btn-inner {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bar-icon-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bar-icon-box svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+.bar-btn:hover .bar-icon-box,
+.bar-btn:active .bar-icon-box {
+  transform: scale(1.12);
 }
 
+/* Continuous Shimmer Light Sweep */
+.bar-shine {
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: skewX(-20deg);
+  animation: barShineSweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+.bar-btn.book .bar-shine { animation-delay: 0.2s; }
+.bar-btn.chat .bar-shine { animation-delay: 1.6s; }
+.bar-btn.whatsapp .bar-shine { animation-delay: 3s; }
+.bar-btn.call .bar-shine { animation-delay: 4.2s; }
+
+@keyframes barShineSweep {
+  0% { left: -120%; }
+  25%, 100% { left: 160%; }
+}
+
+/* Sparkle Twinkle Badge */
+.bar-sparkle {
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.85;
+  animation: sparkleTwinkle 2.4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes sparkleTwinkle {
+  0% { opacity: 0.3; transform: scale(0.7) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1.3) rotate(25deg); }
+}
+
+/* Live Pulse Indicator Dot on AI Chat */
+.bar-pulse-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00F2FE;
+  box-shadow: 0 0 8px #00F2FE;
+  animation: pulseDotLive 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes pulseDotLive {
+  0%, 100% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 12px #00F2FE; }
+}
+
+/* Color Accent Variables & Glyph Details */
+.bar-btn.book .bar-icon-box { color: #F59E0B; }
+.bar-btn.book .bar-sparkle { color: #FBBF24; text-shadow: 0 0 8px rgba(245, 158, 11, 0.9); }
+.bar-btn.book .bar-text { color: #FBBF24; }
+
+.bar-btn.chat .bar-icon-box { color: #00F2FE; }
+.bar-btn.chat .bar-sparkle { color: #38BDF8; text-shadow: 0 0 8px rgba(0, 242, 254, 0.9); }
+.bar-btn.chat .bar-text { color: #00F2FE; }
+
+.bar-btn.whatsapp .bar-icon-box { color: #25D366; }
+.bar-btn.whatsapp .bar-sparkle { color: #4ADE80; text-shadow: 0 0 8px rgba(37, 211, 102, 0.9); }
+.bar-btn.whatsapp .bar-text { color: #4ADE80; }
+
+.bar-btn.call .bar-icon-box { color: #818CF8; }
+.bar-btn.call .bar-sparkle { color: #A5B4FC; text-shadow: 0 0 8px rgba(129, 140, 248, 0.9); }
+.bar-btn.call .bar-text { color: #A5B4FC; }
+
+/* ─── DESKTOP FLOATING DOCK (>= 601px) ─── */
+@media (min-width: 601px) {
+  .mobile-bottom-bar {
+    position: fixed;
+    bottom: 26px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(11, 17, 26, 0.90);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 0 0 32px rgba(0, 242, 254, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  }
+  [data-theme="light"] .mobile-bottom-bar {
+    background: rgba(248, 245, 238, 0.94);
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12), 0 0 24px rgba(11, 124, 114, 0.08), inset 0 1px 0 #FFFFFF;
+  }
+  .mobile-bottom-bar:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 242, 254, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  .mobile-bottom-bar .bar-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+  .mobile-bottom-bar .bar-btn-inner {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+  .mobile-bottom-bar .bar-icon-box {
+    width: 20px;
+    height: 20px;
+  }
+  .mobile-bottom-bar .bar-icon-box svg {
+    width: 17px;
+    height: 17px;
+  }
+  .mobile-bottom-bar .bar-text {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* Desktop Individual Pill Theming - Dark */
+  .mobile-bottom-bar .bar-btn.book .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.16) 0%, rgba(245, 158, 11, 0.04) 100%);
+    border-color: rgba(245, 158, 11, 0.38);
+  }
+  .mobile-bottom-bar .bar-btn.book:hover .bar-btn-inner {
+    transform: translateY(-2px);
+    border-color: rgba(245, 158, 11, 0.8);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .mobile-bottom-bar .bar-btn.chat .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(0, 242, 254, 0.26) 0%, rgba(0, 242, 254, 0.08) 100%);
+    border-color: rgba(0, 242, 254, 0.52);
+  }
+  .mobile-bottom-bar .bar-btn.chat:hover .bar-btn-inner {
+    transform: translateY(-2px);
+    border-color: #00F2FE;
+    box-shadow: 0 8px 28px rgba(0, 242, 254, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+
+  .mobile-bottom-bar .bar-btn.whatsapp .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(37, 211, 102, 0.18) 0%, rgba(37, 211, 102, 0.04) 100%);
+    border-color: rgba(37, 211, 102, 0.38);
+  }
+  .mobile-bottom-bar .bar-btn.whatsapp:hover .bar-btn-inner {
+    transform: translateY(-2px);
+    border-color: rgba(37, 211, 102, 0.8);
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .mobile-bottom-bar .bar-btn.call .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.16) 0%, rgba(99, 102, 241, 0.04) 100%);
+    border-color: rgba(99, 102, 241, 0.35);
+  }
+  .mobile-bottom-bar .bar-btn.call:hover .bar-btn-inner {
+    transform: translateY(-2px);
+    border-color: rgba(99, 102, 241, 0.8);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .mobile-bottom-bar .bar-btn:active .bar-btn-inner {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  /* Desktop Individual Pill Theming - Light Mode */
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.book .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(254, 243, 199, 0.95) 0%, rgba(253, 230, 138, 0.75) 100%);
+    border-color: rgba(217, 119, 6, 0.32);
+    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.12), inset 0 1px 0 #fff;
+  }
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.book .bar-text,
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.book .bar-icon-box { color: #B45309; }
+
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.chat .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(224, 242, 254, 0.95) 0%, rgba(186, 230, 253, 0.75) 100%);
+    border-color: rgba(2, 132, 199, 0.35);
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15), inset 0 1px 0 #fff;
+  }
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.chat .bar-text,
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.chat .bar-icon-box { color: #0284C7; }
+
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.whatsapp .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(220, 252, 231, 0.95) 0%, rgba(187, 247, 208, 0.75) 100%);
+    border-color: rgba(22, 163, 74, 0.32);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.12), inset 0 1px 0 #fff;
+  }
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.whatsapp .bar-text,
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.whatsapp .bar-icon-box { color: #15803D; }
+
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.call .bar-btn-inner {
+    background: linear-gradient(180deg, rgba(238, 242, 255, 0.95) 0%, rgba(224, 231, 255, 0.75) 100%);
+    border-color: rgba(79, 70, 229, 0.32);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12), inset 0 1px 0 #fff;
+  }
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.call .bar-text,
+  [data-theme="light"] .mobile-bottom-bar .bar-btn.call .bar-icon-box { color: #4338CA; }
+}
+
+/* ─── MOBILE STICKY DOCK (<= 600px) ─── */
 @media (max-width: 600px) {
   .mobile-bottom-bar {
     position: fixed;
@@ -3301,19 +3518,9 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
   .bar-btn {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
     padding: 3px 0;
-    -webkit-tap-highlight-color: transparent;
   }
   .bar-btn-inner {
-    position: relative;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -3325,8 +3532,6 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   [data-theme="light"] .bar-btn-inner {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 236, 226, 0.85) 100%);
@@ -3337,116 +3542,14 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     transform: translateY(2px) scale(0.96);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
-  /* Continuous Shimmer Light Sweep */
-  .bar-shine {
-    position: absolute;
-    top: 0;
-    left: -120%;
-    width: 70%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transform: skewX(-20deg);
-    animation: barShineSweep 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    pointer-events: none;
-  }
-  .bar-btn.chat .bar-shine {
-    animation-delay: 1.5s;
-  }
-  .bar-btn.whatsapp .bar-shine {
-    animation-delay: 3s;
-  }
-  @keyframes barShineSweep {
-    0% { left: -120%; }
-    25%, 100% { left: 160%; }
-  }
-  /* 3D Icon Container */
   .bar-icon-box {
-    position: relative;
     width: 28px;
     height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 8px;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .bar-btn:hover .bar-icon-box, .bar-btn:active .bar-icon-box {
-    transform: scale(1.12);
   }
   .bar-icon-box svg {
     width: 19px;
     height: 19px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-  }
-  /* Sparkle Twinkle Badge */
-  .bar-sparkle {
-    position: absolute;
-    top: -3px;
-    right: -2px;
-    font-size: 8px;
-    line-height: 1;
-    opacity: 0.85;
-    animation: sparkleTwinkle 2.4s ease-in-out infinite alternate;
-  }
-  @keyframes sparkleTwinkle {
-    0% { opacity: 0.3; transform: scale(0.7) rotate(0deg); }
-    100% { opacity: 1; transform: scale(1.3) rotate(25deg); }
-  }
-  /* Live Pulse Indicator Dot on AI Chat */
-  .bar-pulse-dot {
-    position: absolute;
-    bottom: -1px;
-    right: -1px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #00F2FE;
-    box-shadow: 0 0 8px #00F2FE;
-    animation: pulseDotLive 1.8s ease-in-out infinite;
-  }
-  @keyframes pulseDotLive {
-    0%, 100% { transform: scale(0.9); opacity: 0.7; }
-    50% { transform: scale(1.35); opacity: 1; box-shadow: 0 0 12px #00F2FE; }
-  }
-  /* 3D Color Accents */
-  .bar-btn.book .bar-btn-inner {
-    border-color: rgba(245, 158, 11, 0.3);
-  }
-  .bar-btn.book .bar-icon-box {
-    color: #F59E0B;
-  }
-  .bar-btn.book .bar-sparkle {
-    color: #FBBF24;
-    text-shadow: 0 0 8px rgba(245, 158, 11, 0.9);
-  }
-  .bar-btn.book .bar-text {
-    color: #F59E0B;
-  }
-  .bar-btn.chat .bar-btn-inner {
-    border-color: rgba(0, 242, 254, 0.32);
-  }
-  .bar-btn.chat .bar-icon-box {
-    color: #00F2FE;
-  }
-  .bar-btn.chat .bar-sparkle {
-    color: #38BDF8;
-    text-shadow: 0 0 8px rgba(0, 242, 254, 0.9);
-  }
-  .bar-btn.chat .bar-text {
-    color: #00F2FE;
-  }
-  .bar-btn.whatsapp .bar-btn-inner {
-    border-color: rgba(37, 211, 102, 0.32);
-  }
-  .bar-btn.whatsapp .bar-icon-box {
-    color: #25D366;
-  }
-  .bar-btn.whatsapp .bar-sparkle {
-    color: #4ADE80;
-    text-shadow: 0 0 8px rgba(37, 211, 102, 0.9);
-  }
-  .bar-btn.whatsapp .bar-text {
-    color: #25D366;
   }
   .bar-text {
     font-size: 10px;
@@ -3454,6 +3557,18 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([data-src]) {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+  }
+  .bar-btn.book .bar-btn-inner {
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+  .bar-btn.chat .bar-btn-inner {
+    border-color: rgba(0, 242, 254, 0.32);
+  }
+  .bar-btn.whatsapp .bar-btn-inner {
+    border-color: rgba(37, 211, 102, 0.32);
+  }
+  .bar-btn.call .bar-btn-inner {
+    border-color: rgba(129, 140, 248, 0.3);
   }
 }
 
