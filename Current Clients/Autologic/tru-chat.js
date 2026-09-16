@@ -1,0 +1,1154 @@
+﻿/**
+ * TruChat UI core — premium glass + motion (web chat + WordPress widget).
+ * Depends on: qualifier.js + options.config (or TRUECARS_TRUCHAT_CONFIG / RAY_TRUCHAT_CONFIG).
+ */
+(function (root) {
+  "use strict";
+
+  var DEFAULT_LS_KEY = "ray_truchat_leads_v1";
+  var SESSION_KEY = "truchat_session_v1";
+  var STYLE_ID = "truchat-core-css";
+
+  function injectCss() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement("style");
+    s.id = STYLE_ID;
+    s.textContent = [
+      /* tokens */
+      ".tc-root{--tc-red:#A31016;--tc-red-dark:#7A3714;--tc-gold:#ffffff;--tc-gold-dim:rgba(255,255,255,.08);",
+      "--tc-bg:#08090f;--tc-panel:rgba(16,18,28,.92);--tc-border:rgba(255,255,255,.1);--tc-text:#f8fafc;",
+      "--tc-muted:#94a3b8;--tc-green:#34d399;--tc-user:rgba(168,83,36,.18);",
+      "--tc-ease:cubic-bezier(.22,1,.36,1);--tc-spring:cubic-bezier(.34,1.56,.64,1);",
+      "font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--tc-text);box-sizing:border-box;",
+      "-webkit-font-smoothing:antialiased}",
+      ".tc-root *,.tc-root *::before,.tc-root *::after{box-sizing:border-box}",
+      "@media(prefers-reduced-motion:reduce){.tc-root *,.tc-root *::before,.tc-root *::after{",
+      "animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}",
+
+      /* keyframes */
+      "@keyframes tcShellIn{from{opacity:0;transform:translateY(16px) scale(.96);filter:blur(4px)}",
+      "to{opacity:1;transform:none;filter:none}}",
+      "@keyframes tcGlow{0%,100%{opacity:.35}50%{opacity:.65}}",
+      "@keyframes tcWaIn{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:none}}",
+      "@keyframes tcBorderSpin{to{--tc-angle:360deg}}",
+      "@keyframes tcCarShine{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}",
+
+      /* shell — glass */
+      ".tc-shell{position:relative;display:flex;flex-direction:column;height:100%;min-height:0;",
+      "background:linear-gradient(165deg,rgba(28,20,16,.95) 0%,rgba(12,14,22,.97) 42%,rgba(10,12,18,.98) 100%);",
+      "border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;",
+      "box-shadow:0 28px 80px -24px rgba(0,0,0,.75),0 0 0 1px rgba(227,27,35,.12),inset 0 1px 0 rgba(255,255,255,.08);",
+      "backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);",
+      "animation:tcShellIn .45s var(--tc-ease) both}",
+      ".tc-shell::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;",
+      "background:radial-gradient(ellipse 90% 50% at 50% -10%,rgba(227,27,35,.22),transparent 55%),",
+      "radial-gradient(ellipse 40% 30% at 100% 100%,rgba(255,51,58,.08),transparent 50%)}",
+      ".tc-shell > *{position:relative;z-index:1}",
+
+      /* header */
+      ".tc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;",
+      "background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);",
+      "border-bottom:1px solid rgba(255,255,255,.08)}",
+      ".tc-who{display:flex;align-items:center;gap:11px;min-width:0}",
+      ".tc-avatar-wrap{position:relative;width:44px;height:44px;flex-shrink:0}",
+      ".tc-avatar-wrap::after{content:'';position:absolute;inset:-3px;border-radius:16px;",
+      "border:1.5px solid rgba(227,27,35,.45);animation:tcRing 2.4s ease-out infinite}",
+      ".tc-avatar{width:44px;height:44px;border-radius:14px;",
+      "background:linear-gradient(145deg,#1c1512,#0d131c);",
+      "display:grid;place-items:center;font-weight:800;font-size:15px;",
+      "border:1px solid rgba(227,27,35,.4);",
+      "box-shadow:0 8px 20px -6px rgba(227,27,35,.65);overflow:hidden}",
+      ".tc-avatar img{width:100%;height:100%;object-fit:contain;background:transparent;padding:3px;display:block}",
+      ".tc-name{font-weight:700;font-size:14px;line-height:1.2;letter-spacing:-.01em;",
+      "white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+      ".tc-name em{font-style:normal;background:linear-gradient(90deg,#fff 20%,#BD6432 100%);",
+      "-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}",
+      ".tc-status{font-size:11px;color:var(--tc-green);display:flex;align-items:center;margin-top:2px;font-weight:500}",
+      ".tc-status .tc-live{display:inline-block;width:7px;height:7px;border-radius:50%;",
+      "background:var(--tc-green);margin-right:7px;animation:tcLive 1.8s ease-in-out infinite}",
+      ".tc-status.off{color:var(--tc-muted)}.tc-status.off .tc-live{background:var(--tc-muted);animation:none}",
+      ".tc-head-acts{display:flex;gap:6px;flex-shrink:0}",
+      ".tc-iconbtn{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);",
+      "color:var(--tc-muted);border-radius:11px;width:36px;height:36px;cursor:pointer;font-size:15px;",
+      "transition:transform .2s var(--tc-spring),color .15s,background .15s,border-color .15s}",
+      ".tc-iconbtn:hover{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);transform:scale(1.08)}",
+      ".tc-iconbtn:active{transform:scale(.94)}",
+
+      /* history */
+      ".tc-history{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:11px;padding:16px 14px;",
+      "min-height:0;scroll-behavior:smooth}",
+      ".tc-history::-webkit-scrollbar{width:5px}",
+      ".tc-history::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}",
+
+      /* messages */
+      ".tc-msg{max-width:92%;padding:12px 14px;border-radius:16px;font-size:13.5px;line-height:1.55;word-wrap:break-word}",
+      ".tc-msg.bot{align-self:flex-start;background:rgba(20,22,32,.9);border:1px solid rgba(255,255,255,.09);",
+      "border-bottom-left-radius:6px;box-shadow:0 4px 16px -8px rgba(0,0,0,.4);",
+      "animation:tcMsgIn .42s var(--tc-ease) both}",
+      ".tc-msg.user{align-self:flex-end;background:linear-gradient(145deg,rgba(227,27,35,.38),rgba(227,27,35,.2));",
+      "border:1px solid rgba(227,27,35,.45);border-bottom-right-radius:6px;",
+      "box-shadow:0 6px 18px -10px rgba(227,27,35,.55);animation:tcMsgUser .38s var(--tc-ease) both}",
+      ".tc-msg strong{color:#fff;font-weight:700}",
+      ".tc-msg a{color:#BD6432}",
+
+      /* chips */
+      ".tc-sugs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}",
+      ".tc-sug{font-size:11.5px;font-weight:600;padding:8px 12px;border-radius:999px;cursor:pointer;",
+      "background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;",
+      "transition:transform .2s var(--tc-spring),filter .15s,background .15s,box-shadow .2s;",
+      "animation:tcFadeUp .45s var(--tc-ease) both}",
+      ".tc-sug:nth-child(1){animation-delay:.06s}.tc-sug:nth-child(2){animation-delay:.12s}",
+      ".tc-sug:nth-child(3){animation-delay:.18s}.tc-sug:nth-child(4){animation-delay:.24s}",
+      ".tc-sug:hover{filter:brightness(1.08);transform:translateY(-2px) scale(1.03);",
+      "background:rgba(255,255,255,.14);box-shadow:0 8px 18px -10px rgba(255,255,255,.2)}",
+      ".tc-sug:active{transform:scale(.96)}",
+
+      /* stock cards — with image support */
+      ".tc-cars{display:flex;flex-direction:column;gap:9px;align-self:flex-start;max-width:94%;width:100%}",
+      ".tc-car{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(22,24,34,.95),rgba(10,12,18,.98));",
+      "border:1px solid rgba(255,255,255,.1);border-radius:14px;",
+      "animation:tcFadeUp .45s var(--tc-ease) both;transition:border-color .25s,transform .25s var(--tc-ease),box-shadow .25s}",
+      ".tc-car:nth-child(1){animation-delay:.05s}.tc-car:nth-child(2){animation-delay:.12s}",
+      ".tc-car:nth-child(3){animation-delay:.19s}.tc-car:nth-child(4){animation-delay:.26s}",
+      ".tc-car:hover{border-color:rgba(227,27,35,.45);transform:translateY(-2px);",
+      "box-shadow:0 12px 28px -14px rgba(227,27,35,.4)}",
+      ".tc-car::after{content:'';position:absolute;top:0;left:0;width:40%;height:100%;",
+      "background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);",
+      "transform:translateX(-120%);pointer-events:none}",
+      ".tc-car:hover::after{animation:tcCarShine .7s ease}",
+      ".tc-car-img{width:100%;height:120px;object-fit:cover;display:block;border-radius:13px 13px 0 0}",
+      ".tc-car-body{position:relative;z-index:2;padding:10px 12px 11px}",
+      ".tc-car-body b{display:block;font-size:14px;margin-bottom:4px;letter-spacing:-.01em;color:#fff}",
+      ".tc-car-body .m{font-size:12px;color:#cbd5e1}",
+      ".tc-car-body .p{font-size:15px;font-weight:800;margin:8px 0 4px;color:#fff}",
+      ".tc-car-acts{display:flex;gap:7px;margin-top:10px}",
+      ".tc-car-acts button{flex:1;border:none;border-radius:10px;padding:9px;font-size:11px;font-weight:700;",
+      "cursor:pointer;transition:transform .18s var(--tc-spring),filter .15s,box-shadow .2s}",
+      ".tc-car-acts button:hover{transform:translateY(-2px);filter:brightness(1.08)}",
+      ".tc-car-acts button:active{transform:scale(.97)}",
+      ".tc-pri{background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));color:#fff;",
+      "box-shadow:0 6px 16px -8px rgba(227,27,35,.7)}",
+      ".tc-sec{background:rgba(255,255,255,.06);color:var(--tc-text);border:1px solid rgba(255,255,255,.12)!important}",
+
+      /* calendar */
+      ".tc-cal{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:14px;",
+      "padding:13px;width:100%;max-width:94%;align-self:flex-start;animation:tcFadeUp .4s var(--tc-ease)}",
+      ".tc-cal-t{font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase}",
+      ".tc-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}",
+      ".tc-grid button{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--tc-text);",
+      "border-radius:10px;padding:9px;font-size:11px;cursor:pointer;font-weight:600;",
+      "transition:border-color .15s,background .15s,transform .15s var(--tc-spring)}",
+      ".tc-grid button:hover{transform:scale(1.03);border-color:rgba(255,255,255,.2)}",
+      ".tc-grid button.sel{border-color:var(--tc-red);background:rgba(227,27,35,.22);box-shadow:0 0 0 1px rgba(227,27,35,.2)}",
+
+      /* typing */
+      ".tc-typing{font-size:11px;color:var(--tc-muted);min-height:20px;padding:0 16px 6px;display:flex;align-items:center;gap:8px}",
+      ".tc-typing.is-on .tc-dots{display:inline-flex;gap:4px;padding:6px 10px;background:rgba(255,255,255,.05);",
+      "border:1px solid rgba(255,255,255,.08);border-radius:12px}",
+      ".tc-dots{display:none}",
+      ".tc-dots i{width:6px;height:6px;border-radius:50%;background:linear-gradient(180deg,#fff,var(--tc-muted));",
+      "display:block;animation:tcDot 1.15s ease-in-out infinite}",
+      ".tc-dots i:nth-child(2){animation-delay:.15s}.tc-dots i:nth-child(3){animation-delay:.3s}",
+      ".tc-typing-txt{opacity:.85}",
+
+      /* composer */
+      ".tc-composer{display:flex;gap:8px;padding:12px 14px 14px;border-top:1px solid rgba(255,255,255,.08);",
+      "background:linear-gradient(180deg,transparent,rgba(0,0,0,.25))}",
+      ".tc-composer input{flex:1;border-radius:14px;border:1px solid rgba(255,255,255,.1);",
+      "background:rgba(0,0,0,.4);color:var(--tc-text);padding:13px 15px;font-size:14px;outline:none;",
+      "transition:border-color .2s,box-shadow .25s,background .2s}",
+      ".tc-composer input::placeholder{color:#64748b}",
+      ".tc-composer input:focus{border-color:rgba(227,27,35,.55);background:rgba(0,0,0,.5);",
+      "box-shadow:0 0 0 4px rgba(227,27,35,.18)}",
+      ".tc-composer button{border:none;border-radius:14px;min-width:52px;",
+      "background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));color:#fff;padding:0 16px;",
+      "font-weight:800;cursor:pointer;font-size:13px;letter-spacing:.02em;",
+      "box-shadow:0 8px 20px -8px rgba(227,27,35,.75);",
+      "transition:transform .2s var(--tc-spring),filter .15s,box-shadow .2s}",
+      ".tc-composer button:hover{filter:brightness(1.1);transform:scale(1.04);box-shadow:0 10px 24px -8px rgba(227,27,35,.85)}",
+      ".tc-composer button:active{transform:scale(.96)}",
+
+      ".tc-foot{text-align:center;font-size:10px;color:#64748b;padding:4px 10px 12px;",
+      "letter-spacing:.04em;text-transform:uppercase}",
+      ".tc-foot span{color:var(--tc-red);font-weight:700}",
+
+      /* WA bar */
+      ".tc-wa-bar{display:none;padding:10px 14px;gap:10px;align-items:center;",
+      "background:linear-gradient(90deg,rgba(16,185,129,.18),rgba(37,211,102,.1));",
+      "border-top:1px solid rgba(52,211,153,.3)}",
+      ".tc-wa-bar.show{display:flex;animation:tcWaIn .45s var(--tc-ease)}",
+      ".tc-wa-bar span{flex:1;font-size:11.5px;color:#bbf7d0;line-height:1.4;font-weight:500}",
+      ".tc-wa-bar button{border:none;border-radius:12px;background:linear-gradient(145deg,#34d399,#059669);",
+      "color:#042f1a;font-weight:800;font-size:12px;padding:10px 14px;cursor:pointer;white-space:nowrap;",
+      "box-shadow:0 8px 20px -8px rgba(16,185,129,.6);transition:transform .2s var(--tc-spring),filter .15s}",
+      ".tc-wa-bar button:hover{filter:brightness(1.08);transform:scale(1.05)}",
+
+      /* intro banner */
+      ".tc-intro{align-self:center;text-align:center;padding:8px 14px 4px;max-width:92%;",
+      "animation:tcFadeUp .5s var(--tc-ease) both}",
+      ".tc-intro .pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;",
+      "letter-spacing:.08em;text-transform:uppercase;color:#fbd38d;",
+      "background:rgba(227,27,35,.15);border:1px solid rgba(227,27,35,.35);padding:5px 10px;border-radius:999px;margin-bottom:6px}",
+
+      /* after-hours banner */
+      ".tc-after-hours{align-self:center;text-align:center;padding:8px 14px;max-width:92%;margin-bottom:4px;",
+      "font-size:12px;color:#fbbf24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);",
+      "border-radius:12px;line-height:1.5;animation:tcFadeUp .5s var(--tc-ease) both}",
+    ].join("");
+    document.head.appendChild(s);
+  }
+
+  function esc(s) {
+    return String(s || "").replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function detectVehicleFromPage() {
+    try {
+      var path = (location.pathname || "").toLowerCase();
+      if (path.indexOf("/vehicle/") === -1) return "";
+      var h = document.querySelector("h1");
+      if (h && h.textContent) return h.textContent.replace(/\s+/g, " ").trim().slice(0, 120);
+      var t = document.title || "";
+      return t.replace(/\s*[|\-–].*$/, "").trim().slice(0, 120);
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function loadLeads(lsKey) {
+    try {
+      return JSON.parse(localStorage.getItem(lsKey || DEFAULT_LS_KEY) || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveLeadEntry(entry, lsKey) {
+    var key = lsKey || DEFAULT_LS_KEY;
+    var list = loadLeads(key);
+    if (
+      list[0] &&
+      list[0].source === "chat" &&
+      ((entry.phone && list[0].phone === entry.phone) ||
+        (!entry.phone && list[0].name === entry.name && Date.now() - new Date(list[0].at).getTime() < 2 * 3600 * 1000))
+    ) {
+      list[0] = entry;
+    } else {
+      list.unshift(entry);
+    }
+    localStorage.setItem(key, JSON.stringify(list.slice(0, 50)));
+  }
+
+  function postWebhook(url, payload, apiKey) {
+    if (!url) return;
+    try {
+      var headers = { "Content-Type": "application/json", Accept: "application/json" };
+      if (apiKey) {
+        headers["x-api-key"] = apiKey;
+        headers["Authorization"] = "Bearer " + apiKey;
+      }
+      fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(payload),
+        mode: "cors",
+        keepalive: true,
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  function mount(container, options) {
+    options = options || {};
+    injectCss();
+    var CFG = options.config || root.TRUECARS_TRUCHAT_CONFIG || root.RAY_TRUCHAT_CONFIG || {};
+    var TQ = root.TruChatQualifier;
+    if (!TQ) throw new Error("TruChatQualifier missing — load qualifier.js first");
+
+    var LS_KEY = CFG.leadStorageKey || DEFAULT_LS_KEY;
+    var pageVehicle = options.vehicleInterest || CFG.pageVehicle || detectVehicleFromPage();
+    var bot = TQ.createQualifier({
+      assistantName: CFG.assistantName,
+      dealerName: CFG.dealerName,
+      address: CFG.address,
+      hoursText: CFG.hoursText,
+      afterHoursText: CFG.afterHoursText || "",
+      salesWhatsApp: CFG.personalWhatsApp || CFG.salesWhatsApp,
+      catalog: (CFG.catalog || []).slice(),
+      brandMap: CFG.brandMap || {},
+    });
+
+    if (pageVehicle) {
+      bot.getSession().vehicleInterest = pageVehicle;
+    }
+
+    container.classList.add("tc-root");
+    if (CFG.brandRed || CFG.brandPrimary) {
+      var primary = CFG.brandRed || CFG.brandPrimary;
+      var dark = CFG.brandRedDark || CFG.brandPrimaryDark || primary;
+      container.style.setProperty("--tc-red", primary);
+      container.style.setProperty("--tc-red-dark", dark);
+      container.style.setProperty("--tc-user", "color-mix(in srgb, " + primary + " 22%, transparent)");
+    }
+    container.innerHTML =
+      '<div class="tc-shell">' +
+      '<div class="tc-head">' +
+      '<div class="tc-who">' +
+      '<div class="tc-avatar-wrap"><div class="tc-avatar" id="tcAv"><img src="assets/brand/chat-icon.png" alt="AutoLogic AI" onerror="this.onerror=null;this.src=\'assets/brand/logo.svg\';" /></div></div>' +
+      "<div><div class=\"tc-name\"><em>" +
+      esc(CFG.assistantName || "Assistant") +
+      "</em> · " +
+      esc(CFG.dealerName || "Showroom") +
+      '</div><div class="tc-status" id="tcStatus"><span class="tc-live" aria-hidden="true"></span>Online · showroom assistant</div></div>' +
+      "</div>" +
+      '<div class="tc-head-acts">' +
+      (options.onClose
+        ? '<button type="button" class="tc-iconbtn" id="tcClose" aria-label="Close" title="Close">✕</button>'
+        : "") +
+      "</div></div>" +
+      '<div class="tc-history" id="tcHist" role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false" aria-label="Conversation with ' +
+      esc(CFG.assistantName || "the assistant") +
+      '"></div>' +
+      '<div class="tc-typing" id="tcTyping"><span class="tc-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="tc-typing-txt"></span></div>' +
+      '<div class="tc-wa-bar" id="tcWaBar"><span>You\'re ready — continue with the yard on WhatsApp</span>' +
+      '<button type="button" id="tcWaBtn">Open WhatsApp</button></div>' +
+      '<div class="tc-composer"><input id="tcIn" type="text" placeholder="Ask about stock, finance, trade-in…" autocomplete="off" enterkeyhint="send" />' +
+      '<button type="button" id="tcSend" aria-label="Send">Send</button></div>' +
+      (options.showFoot !== false
+        ? '<div class="tc-foot">' + esc(CFG.brandLine || CFG.dealerName || "") +
+          (CFG.showCredit === false ? "" : ' · <span>TruChat</span> by TruSaaS') + "</div>"
+        : "") +
+      "</div>";
+
+    if (CFG.logoUrl) {
+      container.querySelector("#tcAv").innerHTML =
+        '<img src="' + esc(CFG.logoUrl) + '" alt="' + esc(CFG.assistantName || "AutoLogic AI") + '" onerror="this.onerror=null;this.src=\'assets/brand/logo.svg\';" />';
+    }
+
+    var historyEl = container.querySelector("#tcHist");
+    var typingEl = container.querySelector("#tcTyping");
+    var input = container.querySelector("#tcIn");
+    var waBar = container.querySelector("#tcWaBar");
+    var lastSavedSig = "";
+    var destroyed = false;
+    var handoffPrompted = false;
+    var unreadCount = 0;
+    var idleTimer = null;
+    var lastActivity = Date.now();
+
+    var useBackend = !!CFG.chatApi;
+    var messages = [];
+    var remoteSession = {};
+    var waMessage = "";
+    var waPhone = "";
+
+    /* --- Session persistence --- */
+    var chatLog = [];
+
+    function saveSession() {
+      try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+          log: chatLog,
+          session: bot.getSession(),
+          handoffPrompted: handoffPrompted,
+          ts: Date.now()
+        }));
+      } catch (e) {}
+    }
+
+    function loadSession() {
+      try {
+        var raw = sessionStorage.getItem(SESSION_KEY);
+        if (!raw) return null;
+        var data = JSON.parse(raw);
+        if (Date.now() - data.ts > 30 * 60 * 1000) {
+          sessionStorage.removeItem(SESSION_KEY);
+          return null;
+        }
+        return data;
+      } catch (e) { return null; }
+    }
+
+    /* --- Unread badge (exposed to widget) --- */
+    function notifyUnread() {
+      unreadCount++;
+      if (typeof options.onUnread === "function") options.onUnread(unreadCount);
+    }
+
+    function clearUnread() {
+      unreadCount = 0;
+      if (typeof options.onUnread === "function") options.onUnread(0);
+    }
+
+    /* --- Idle nudge --- */
+    function resetIdleTimer() {
+      lastActivity = Date.now();
+      clearTimeout(idleTimer);
+      if (destroyed) return;
+      idleTimer = setTimeout(function () {
+        if (destroyed) return;
+        var nudge = bot.getIdleNudge();
+        if (nudge) {
+          addBotText(nudge.text, nudge.suggestions);
+          notifyUnread();
+          saveSession();
+        }
+      }, 45000);
+    }
+
+    function isOpenHours() {
+      var now = new Date();
+      var day = now.getDay();
+      var mins = now.getHours() * 60 + now.getMinutes();
+      if (day >= 1 && day <= 5) return mins >= 450 && mins <= 1050;
+      if (day === 6) return mins >= 450 && mins <= 780;
+      return false;
+    }
+
+    function updateStatus() {
+      var el = container.querySelector("#tcStatus");
+      if (!el) return;
+      if (isOpenHours()) {
+        el.className = "tc-status";
+        el.innerHTML = '<span class="tc-live" aria-hidden="true"></span>Online · showroom open';
+      } else {
+        el.className = "tc-status off";
+        el.innerHTML = '<span class="tc-live" aria-hidden="true"></span>After hours · still online';
+      }
+    }
+
+    function setTyping(on, label) {
+      if (on) {
+        typingEl.classList.add("is-on");
+        var t = typingEl.querySelector(".tc-typing-txt");
+        if (t) t.textContent = label || (CFG.assistantName || "Assistant") + " is typing";
+      } else {
+        typingEl.classList.remove("is-on");
+        var t2 = typingEl.querySelector(".tc-typing-txt");
+        if (t2) t2.textContent = "";
+      }
+    }
+
+    function persistLead(force) {
+      var s = bot.getSession();
+      var hasSignal =
+        force ||
+        s.qualified ||
+        (s.phone && s.phone.length > 5) ||
+        (s.tradeInDetails && s.tradeInDetails !== "Awaiting input...") ||
+        s.testDriveDate ||
+        s.inspectionDate ||
+        (s.vehicleInterest && s.vehicleInterest !== "Browsing");
+      if (!hasSignal) return;
+
+      var sig = [s.name, s.phone, s.email, s.vehicleInterest, s.qualified, s.testDriveDate, s.inspectionDate].join("|");
+      if (!force && sig === lastSavedSig) return;
+      lastSavedSig = sig;
+
+      var entry = {
+        at: new Date().toISOString(),
+        name: s.name,
+        phone: s.phone,
+        email: s.email || "",
+        vehicleInterest: s.vehicleInterest,
+        tradeInDetails: s.tradeInDetails,
+        testDriveDate: s.testDriveDate,
+        inspectionDate: s.inspectionDate,
+        financeInterest: s.financeInterest,
+        qualified: s.qualified,
+        ticket: bot.buildTicket(),
+        source: "chat",
+        pageUrl: location.href,
+        session: JSON.parse(JSON.stringify(s)),
+      };
+      saveLeadEntry(entry, LS_KEY);
+      if (s.qualified || force) {
+        var names = (s.name || "").trim().split(/\s+/);
+        var journey = (s.pathway || []).map(function (step) {
+          return { action: step.action, timestamp: step.time };
+        });
+        var transcript = [];
+        historyEl.querySelectorAll(".tc-msg").forEach(function (el) {
+          var role = el.classList.contains("user") ? "Customer" : (CFG.assistantName || "Bot");
+          transcript.push(role + ": " + el.textContent.trim());
+        });
+        var notesBody = entry.ticket || ("TruChat lead — interest: " + (s.vehicleInterest || "general"));
+        if (transcript.length) {
+          notesBody += "\n\n--- Chat transcript ---\n" + transcript.join("\n");
+        }
+        var leadUrl = CFG.leadWebhook || (CFG.flowUrl ? CFG.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead" : "");
+        if (leadUrl || CFG.dealerSlug) {
+          if (!leadUrl) leadUrl = "https://premium.trudealers.com/api/integration/webhook-lead";
+          var payload = {
+            dealerSlug: CFG.dealerSlug || "",
+            firstName: names[0] || "TruChat",
+            lastName: names.slice(1).join(" ") || "Lead",
+            phone: s.phone || "",
+            email: s.email || "",
+            source: "TruChat Widget",
+            notes: notesBody,
+            journey: journey,
+            digitalScore: bot.computeDigitalScore()
+          };
+          if (CFG.apiKey) {
+            payload.apiKey = CFG.apiKey;
+            payload.key = CFG.apiKey;
+          }
+          postWebhook(leadUrl, payload, CFG.apiKey);
+          try { window.dispatchEvent(new CustomEvent('tru:lead', { detail: { product: 'tru-chat', dealer: CFG.dealerSlug || '', data: payload } })); } catch(e) {}
+        }
+      }
+      if (typeof options.onLead === "function") options.onLead(entry);
+    }
+
+    function addBotText(text, suggestions) {
+      var div = document.createElement("div");
+      div.className = "tc-msg bot";
+      div.innerHTML = esc(text).replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      if (suggestions && suggestions.length) {
+        var sug = document.createElement("div");
+        sug.className = "tc-sugs";
+        suggestions.forEach(function (label) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "tc-sug";
+          b.textContent = label;
+          b.onclick = function () {
+            userSay(label);
+          };
+          sug.appendChild(b);
+        });
+        div.appendChild(sug);
+      }
+      historyEl.appendChild(div);
+      historyEl.scrollTop = historyEl.scrollHeight;
+      chatLog.push({ role: "bot", text: text, suggestions: suggestions || [] });
+      saveSession();
+    }
+
+    function addUserText(text) {
+      var div = document.createElement("div");
+      div.className = "tc-msg user";
+      div.textContent = text;
+      historyEl.appendChild(div);
+      historyEl.scrollTop = historyEl.scrollHeight;
+      chatLog.push({ role: "user", text: text });
+      saveSession();
+    }
+
+    function addCatalog(vehicles) {
+      var wrap = document.createElement("div");
+      wrap.className = "tc-cars";
+      (vehicles || []).forEach(function (v) {
+        var card = document.createElement("div");
+        card.className = "tc-car";
+        var label = v.year + " " + v.brand + " " + v.model;
+        var imgUrl = v.image || v.img || "";
+        var imgHtml = imgUrl
+          ? '<img class="tc-car-img" src="' + esc(imgUrl) + '" alt="' + esc(label) + '" loading="lazy" />'
+          : "";
+        card.innerHTML =
+          imgHtml +
+          '<div class="tc-car-body"><b>' +
+          esc(label) +
+          '</b><div class="m">' +
+          esc(v.km || "") +
+          (v.fuel ? " · " + esc(v.fuel) : "") +
+          '</div><div class="p">R ' +
+          Number(v.price || 0).toLocaleString("en-ZA") +
+          '</div><div class="tc-car-acts">' +
+          '<button type="button" class="tc-sec" data-a="finance">Finance</button>' +
+          '<button type="button" class="tc-pri" data-a="test_drive">Test drive</button></div></div>';
+        card.querySelectorAll("button").forEach(function (btn) {
+          btn.onclick = function () {
+            var a = btn.getAttribute("data-a");
+            if (useBackend) {
+              userSay(a === "finance" ? "I'd like finance options on the " + label : "I'd like to test drive the " + label);
+              return;
+            }
+            handleOut(bot.selectVehicleAction(label, a));
+          };
+        });
+        wrap.appendChild(card);
+      });
+      historyEl.appendChild(wrap);
+      historyEl.scrollTop = historyEl.scrollHeight;
+    }
+
+    function addScheduler(scheduleType, days) {
+      var box = document.createElement("div");
+      box.className = "tc-cal";
+      box.innerHTML =
+        '<div class="tc-cal-t">' +
+        (scheduleType === "test_drive" ? "Pick a test drive" : "Pick a valuation slot") +
+        '</div><div class="tc-grid" data-g="days"></div><div class="tc-grid" data-g="slots" style="display:none;margin-top:8px"></div>';
+      var grid = box.querySelector('[data-g="days"]');
+      var slots = box.querySelector('[data-g="slots"]');
+      (days || []).forEach(function (d) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = d.label;
+        b.onclick = function () {
+          grid.querySelectorAll("button").forEach(function (x) {
+            x.classList.remove("sel");
+          });
+          b.classList.add("sel");
+          slots.style.display = "grid";
+          slots.innerHTML = "";
+          bot.slotsFor(d.isSaturday).forEach(function (hr) {
+            var s = document.createElement("button");
+            s.type = "button";
+            s.textContent = hr;
+            s.onclick = function () {
+              slots.querySelectorAll("button").forEach(function (x) {
+                x.classList.remove("sel");
+              });
+              s.classList.add("sel");
+              box.style.opacity = "0.75";
+              box.style.pointerEvents = "none";
+              handleOut(bot.confirmSlot(scheduleType, d.label, hr));
+            };
+            slots.appendChild(s);
+          });
+        };
+        grid.appendChild(b);
+      });
+      historyEl.appendChild(box);
+      historyEl.scrollTop = historyEl.scrollHeight;
+    }
+
+    function handleOut(out) {
+      (out.replies || []).forEach(function (r) {
+        if (r.type === "text") { addBotText(r.text, r.suggestions); notifyUnread(); }
+        if (r.type === "catalog") addCatalog(r.vehicles);
+        if (r.type === "schedule") addScheduler(r.scheduleType, r.days);
+      });
+      persistLead(false);
+      if ((out.handoffReady || (bot.getSession() && bot.getSession().qualified)) && !handoffPrompted) {
+        handoffPrompted = true;
+        waBar.classList.add("show");
+        addBotText(
+          "Perfect — you're **qualified**. Tap **Open WhatsApp** and the yard gets your full ticket instantly.",
+          ["Continue on WhatsApp"]
+        );
+      } else if (bot.getSession() && bot.getSession().qualified) {
+        waBar.classList.add("show");
+      }
+    }
+
+    /* ---- Backend (LLM) mode -------------------------------------------- */
+
+    function remoteTicket() {
+      var s = remoteSession || {};
+      var dealer = (CFG.dealerName || "Your Car Guy").toUpperCase();
+      var msg = "🚗 *" + dealer + " — CHAT LEAD* 🚗\n\n";
+      if (s.name) msg += "👤 *Name:* " + s.name + "\n";
+      msg += "📞 *Phone:* " + (s.phone || "Not provided") + "\n";
+      if (s.email) msg += "✉️ *Email:* " + s.email + "\n";
+      if (s.vehicleInterest) msg += "⭐ *Interest:* " + s.vehicleInterest + "\n";
+      if (s.appointment) msg += "🗓️ *Booking:* " + s.appointment + "\n";
+      if (s.tradeInDetails) msg += "🔄 *Trade-in:* " + s.tradeInDetails + "\n";
+      if (s.financeInterest) msg += "💰 *Finance:* Interested\n";
+      if (CFG.showCredit !== false) msg += "\n— sent via *TruChat* by TruSaaS";
+      return msg;
+    }
+
+    function remoteWhatsappUrl() {
+      var phone = waPhone || String(CFG.personalWhatsApp || CFG.salesWhatsApp || "").replace(/\D/g, "");
+      var text = waMessage || remoteTicket();
+      return "https://api.whatsapp.com/send?phone=" + phone + "&text=" + encodeURIComponent(text);
+    }
+
+    function handleBackendResult(res) {
+      if (res.session) remoteSession = res.session;
+      var reply = res.reply || "";
+      var actions = res.actions || [];
+
+      if (reply) {
+        addBotText(reply, res.suggestions || []);
+        messages.push({ role: "assistant", content: reply });
+        notifyUnread();
+      }
+      actions.forEach(function (a) {
+        if (a.type === "stock" && a.vehicles) addCatalog(a.vehicles);
+        if (a.type === "whatsapp") {
+          if (a.text) waMessage = a.text;
+          if (a.phone) waPhone = a.phone;
+        }
+      });
+
+      var showWa = actions.some(function (a) {
+        return a.type === "whatsapp" || a.type === "booked" || a.type === "lead";
+      });
+      if (showWa) waBar.classList.add("show");
+
+      var qualified = (remoteSession && remoteSession.qualified) ||
+        actions.some(function (a) { return a.type === "booked" || a.type === "lead"; });
+      if (qualified && !handoffPrompted) {
+        handoffPrompted = true;
+        addBotText("You're all set — tap **Open WhatsApp** and the yard gets your full details instantly.", ["Continue on WhatsApp"]);
+      }
+    }
+
+    function sendToBackend(t) {
+      messages.push({ role: "user", content: t });
+      setTyping(true);
+      fetch(CFG.chatApi, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ messages: messages, session: remoteSession, catalog: CFG.catalog || [] }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (destroyed) return;
+          setTyping(false);
+          handleBackendResult(res);
+        })
+        .catch(function () {
+          if (destroyed) return;
+          setTyping(false);
+          handleOut(bot.process(t));
+        });
+    }
+
+    function userSay(text) {
+      if (destroyed || !text || !String(text).trim()) return;
+      var t = String(text).trim();
+      resetIdleTimer();
+      clearUnread();
+      if (t.toLowerCase() === "continue on whatsapp" || t.toLowerCase() === "open handoff") {
+        var url = useBackend ? remoteWhatsappUrl() : bot.whatsappHandoffUrl();
+        if (!useBackend) persistLead(true);
+        window.open(url, "_blank", "noopener");
+        return;
+      }
+      addUserText(t);
+      if (useBackend) {
+        sendToBackend(t);
+        return;
+      }
+      setTyping(true);
+      var delay = 420 + Math.min(400, t.length * 8);
+      setTimeout(function () {
+        if (destroyed) return;
+        setTyping(false);
+        handleOut(bot.process(t));
+      }, delay);
+    }
+
+    function send() {
+      userSay(input.value);
+      input.value = "";
+      input.focus();
+    }
+
+    container.querySelector("#tcSend").onclick = send;
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") send();
+    });
+    container.querySelector("#tcWaBtn").onclick = function () {
+      if (useBackend) {
+        window.open(remoteWhatsappUrl(), "_blank", "noopener");
+        return;
+      }
+      persistLead(true);
+      window.open(bot.whatsappHandoffUrl(), "_blank", "noopener");
+    };
+    var closeBtn = container.querySelector("#tcClose");
+    if (closeBtn && options.onClose) {
+      closeBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        options.onClose();
+      });
+    }
+
+    async function loadStock() {
+      var urls = [CFG.stockApi].concat(CFG.stockApiFallback || []).filter(Boolean);
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          var res = await fetch(urls[i], { cache: "no-store", mode: "cors" });
+          if (!res.ok) continue;
+          var data = await res.json();
+          var list = data.vehicles || [];
+          if (!list.length) continue;
+          var mapped = list.slice(0, 12).map(function (v) {
+            var imgs = v.images || [];
+            return {
+              id: v.stockNumber || v.id,
+              brand: String(v.make || "").toUpperCase(),
+              model: v.model || v.trim || "",
+              year: v.year,
+              price: v.price || v.retailPrice || 0,
+              km: (v.mileage || v.km || "") + (v.mileage ? " km" : ""),
+              fuel: v.fuelType || v.fuel || "",
+              image: imgs[0] || v.imageUrl || v.image || "",
+            };
+          });
+          if (mapped.length) {
+            bot.setCatalog(mapped);
+            return;
+          }
+        } catch (e) {}
+      }
+    }
+
+    function restoreSession(saved) {
+      if (!saved || !saved.log || !saved.log.length) return false;
+      if (saved.session && bot.setSession) bot.setSession(saved.session);
+      if (saved.handoffPrompted) handoffPrompted = true;
+
+      var intro = document.createElement("div");
+      intro.className = "tc-intro";
+      intro.innerHTML = '<div class="pill">✦ Conversation resumed</div>';
+      historyEl.appendChild(intro);
+
+      saved.log.forEach(function (entry) {
+        if (entry.role === "bot") {
+          var div = document.createElement("div");
+          div.className = "tc-msg bot";
+          div.innerHTML = esc(entry.text).replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+          historyEl.appendChild(div);
+        } else if (entry.role === "user") {
+          var div2 = document.createElement("div");
+          div2.className = "tc-msg user";
+          div2.textContent = entry.text;
+          historyEl.appendChild(div2);
+        }
+      });
+      chatLog = saved.log.slice();
+      historyEl.scrollTop = historyEl.scrollHeight;
+
+      if (bot.getSession().qualified) waBar.classList.add("show");
+      return true;
+    }
+
+    function startChat() {
+      var saved = loadSession();
+      if (restoreSession(saved)) {
+        resetIdleTimer();
+        return;
+      }
+
+      var intro = document.createElement("div");
+      intro.className = "tc-intro";
+      intro.innerHTML = '<div class="pill">✦ Live showroom assistant</div>';
+      historyEl.appendChild(intro);
+
+      if (!isOpenHours()) {
+        var ahText = CFG.afterHoursText ||
+          "We're currently closed but **" + (CFG.assistantName || "I") +
+          "** is still here to help. Leave your details and the team will follow up first thing.";
+        var ahDiv = document.createElement("div");
+        ahDiv.className = "tc-after-hours";
+        ahDiv.innerHTML = esc(ahText).replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        historyEl.appendChild(ahDiv);
+      }
+
+      var greet =
+        CFG.greeting ||
+        "Hi — I'm **" +
+          (CFG.assistantName || "your assistant") +
+          "** at **" +
+          (CFG.dealerName || "the showroom") +
+          "**. Stock, test drives, trade-ins, hours — what do you need?";
+      var sugs = CFG.suggestions || ["Browse stock", "Trade-in valuation", "Showroom hours", "Finance help"];
+      if (pageVehicle) {
+        greet =
+          "Hi — I'm **" +
+          (CFG.assistantName || "your assistant") +
+          "** at **" +
+          (CFG.dealerName || "the showroom") +
+          "**.\n\nYou're looking at **" +
+          pageVehicle +
+          "**. Want a test drive, finance options, or something else from the floor?";
+        sugs = ["Test drive this car", "Finance help", "Browse other stock", "Trade-in"];
+      }
+      setTimeout(function () {
+        addBotText(greet, sugs);
+        if (useBackend) messages.push({ role: "assistant", content: greet });
+        resetIdleTimer();
+      }, 180);
+    }
+
+    updateStatus();
+    var hourTimer = setInterval(updateStatus, 30000);
+    loadStock().finally(startChat);
+
+    return {
+      bot: bot,
+      focus: function () {
+        input.focus();
+        clearUnread();
+      },
+      clearUnread: clearUnread,
+      destroy: function () {
+        destroyed = true;
+        clearInterval(hourTimer);
+        clearTimeout(idleTimer);
+        container.innerHTML = "";
+      },
+    };
+  }
+
+  root.TruChatUI = {
+    mount: mount,
+    LS_KEY: DEFAULT_LS_KEY,
+    detectVehicleFromPage: detectVehicleFromPage,
+  };
+
+  /* Auto-mount standalone glassmorphic widget for AutoLogic PE */
+  if (typeof window !== "undefined") {
+    (function () {
+      var s =
+        document.currentScript ||
+        (function () {
+          var list = document.getElementsByTagName("script");
+          return list[list.length - 1];
+        })();
+
+      function attr(name, fb) {
+        return (s && s.getAttribute(name)) || fb;
+      }
+
+      var dealerName = attr("data-dealer", "AutoLogic PE");
+      var dealerSlug = attr("data-slug", "autologic-pe");
+      var flowUrl = attr("data-flow", "https://premium.trudealers.com");
+      var leadWebhook = attr("data-webhook", "");
+      var apiKey = attr("data-key", "") || attr("data-api-key", "") || attr("data-dms-key", "");
+      var waPhone = (attr("data-wa", "27726047878") || "").replace(/\D/g, "");
+      var accent = attr("data-accent", "#E31B23");
+      var position = attr("data-position", "left");
+      var bottom = attr("data-bottom", "24px");
+      var zIndex = attr("data-z", "2147300000");
+      var assistantName = attr("data-assistant", "AutoLogic AI");
+
+      // Qualifier fallback
+      if (!root.TruChatQualifier) {
+        root.TruChatQualifier = {
+          createQualifier: function () {
+            var session = {
+              name: "Customer",
+              phone: "",
+              email: "",
+              vehicleInterest: "Browsing",
+              tradeInDetails: "",
+              financeInterest: false,
+              qualified: false,
+              pathway: []
+            };
+            return {
+              getSession: function () { return session; },
+              setCatalog: function () {},
+              process: function (t) {
+                var str = String(t || "").toLowerCase();
+                var text =
+                  "I can help with our inspected inventory, financing options, trade-in valuations, or connecting directly with our sales specialists at 17b Burt Drive, Newton Park.";
+                var sugs = ["Browse stock", "Vehicle finance", "Trade-in", "WhatsApp sales"];
+
+                if (str.includes("finance") || str.includes("repay") || str.includes("afford") || str.includes("bank") || str.includes("deposit")) {
+                  text =
+                    "We structure vehicle finance through ABSA, WesBank, Standard Bank, Nedbank MFC, and Capitec with flexible terms and same-day pre-approval.";
+                  sugs = ["Calculate repayments", "Check affordability", "Under R4 000 / mo", "WhatsApp team"];
+                } else if (str.includes("stock") || str.includes("car") || str.includes("vehicle") || str.includes("price") || str.includes("browse")) {
+                  var vList = (window.TruShowroom && window.TruShowroom.vehicles) || [];
+                  if (vList.length > 0) {
+                    text =
+                      "We currently have " + vList.length + " inspected vehicles on our showroom floor at 17b Burt Drive. Every vehicle includes our multi-point condition report.";
+                    sugs = ["View all stock", "Calculate finance", "Book test drive"];
+                  } else {
+                    text =
+                      "Our hand-picked pre-owned inventory is updated daily. You can browse our showroom floor or tell me what make and budget you have in mind!";
+                    sugs = ["Browse stock", "Vehicle finance", "WhatsApp team"];
+                  }
+                } else if (str.includes("trade") || str.includes("valua") || str.includes("worth") || str.includes("sell")) {
+                  text =
+                    "We offer condition-adjusted market trade-in appraisals and competitive trade assistance. You can evaluate your vehicle on our Trade-In page.";
+                  sugs = ["Trade-In appraisal", "Showroom stock", "Contact sales"];
+                } else if (str.includes("hour") || str.includes("time") || str.includes("open") || str.includes("where") || str.includes("location") || str.includes("address") || str.includes("visit")) {
+                  text =
+                    "Our showroom is located at **17b Burt Drive, Newton Park, Gqeberha**.\n\n• Monday–Friday: 08:00 – 17:30\n• Saturday: 08:30 – 13:00\n• Sunday: Closed";
+                  sugs = ["Browse stock", "Book a test drive", "WhatsApp sales"];
+                } else if (/\b(0\d{9}|27\d{9}|\+27\d{9})\b/.test(str)) {
+                  session.phone = str.match(/\b(0\d{9}|27\d{9}|\+27\d{9})\b/)[0];
+                  session.qualified = true;
+                  text =
+                    "Thank you! I have noted your contact number **" + session.phone + "**. Davrin or Curt from our sales team will reach out to you shortly.";
+                  sugs = ["Continue on WhatsApp", "Browse stock"];
+                }
+                return { replies: [{ type: "text", text: text, suggestions: sugs }] };
+              },
+              getIdleNudge: function () {
+                return {
+                  text: "Still browsing? Let me know if you would like me to check vehicle availability, calculate monthly repayments, or arrange a test drive at 17b Burt Drive!",
+                  suggestions: ["Browse stock", "Finance calculator", "Trade-in valuation"]
+                };
+              },
+              whatsappHandoffUrl: function () {
+                return (
+                  "https://wa.me/" +
+                  waPhone +
+                  "?text=" +
+                  encodeURIComponent("Hi " + dealerName + "! I'm chatting on your website and would like assistance.")
+                );
+              },
+              buildTicket: function () { return "Chat lead for " + dealerName; },
+              computeDigitalScore: function () { return 75; }
+            };
+          }
+        };
+      }
+
+      function bootWidget() {
+        if (document.getElementById("truchat-floating-root")) return;
+
+        var CFG = {
+          assistantName: assistantName,
+          dealerName: dealerName,
+          brandLine: dealerName + " · Newton Park, Gqeberha",
+          address: "17b Burt Drive, Newton Park, Gqeberha",
+          siteUrl: window.location.origin,
+          logoUrl: "assets/brand/chat-icon.png",
+          brandPrimary: accent,
+          brandPrimaryDark: "#8C3D12",
+          brandRed: accent,
+          brandRedDark: "#8C3D12",
+          hoursText:
+            "*" + dealerName + " hours:*\n• Mon–Fri: 08:00 – 17:30\n• Saturday: 08:30 – 13:00\n• Sunday: Closed",
+          personalWhatsApp: waPhone,
+          salesWhatsApp: waPhone,
+          waBusinessNumber: waPhone,
+          dealerSlug: dealerSlug,
+          flowUrl: flowUrl,
+          leadWebhook: leadWebhook,
+          apiKey: apiKey,
+          greeting:
+            "Hi — I'm the **" +
+            dealerName +
+            "** AI assistant.\n\nI can help you browse our stock, calculate monthly finance repayments, value your trade-in, or connect directly with our sales specialists at 17b Burt Drive. What can I help you find?",
+          suggestions: [
+            "Browse stock",
+            "Calculate finance",
+            "Trade-in valuation",
+            "Showroom hours",
+            "Chat on WhatsApp"
+          ]
+        };
+
+        var rootEl = document.createElement("div");
+        rootEl.id = "truchat-floating-root";
+
+        var style = document.createElement("style");
+        style.id = "truchat-floating-style";
+        style.textContent = [
+          "#truchat-floating-root{position:fixed;z-index:" + zIndex + ";bottom:" + bottom + ";left:20px;pointer-events:none;font-family:Inter,system-ui,-apple-system,sans-serif}",
+          "#truchat-floating-root *{box-sizing:border-box}",
+          "#truchat-launcher{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:10px 18px 10px 12px;position:relative;overflow:hidden;",
+          "border-radius:100px;background:linear-gradient(135deg,rgba(255,255,255,.16) 0%,rgba(24,30,42,.45) 45%,rgba(13,19,28,.65) 100%);",
+          "border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;",
+          "box-shadow:0 16px 42px -10px rgba(0,0,0,.65),0 0 24px -6px " + accent + "59,inset 0 1.5px 1px rgba(255,255,255,.38),inset 0 -1px 1px rgba(0,0,0,.45);",
+          "backdrop-filter:blur(28px) saturate(200%);-webkit-backdrop-filter:blur(28px) saturate(200%);",
+          "transition:transform .35s cubic-bezier(.34,1.4,.64,1),box-shadow .35s ease,border-color .25s,background .25s;text-align:left}",
+          "#truchat-launcher::after{content:'';position:absolute;top:0;left:0;width:45%;height:100%;",
+          "background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),rgba(255,255,255,.32),rgba(255,255,255,.08),transparent);",
+          "transform:translateX(-160%) skewX(-20deg);animation:tcLauncherShine 5s ease-in-out infinite;pointer-events:none}",
+          "@keyframes tcLauncherShine{0%,35%{transform:translateX(-160%) skewX(-20deg)}65%,100%{transform:translateX(320%) skewX(-20deg)}}",
+          "#truchat-launcher:hover{transform:translateY(-4px) scale(1.02);background:linear-gradient(135deg,rgba(255,255,255,.24) 0%,rgba(32,40,56,.55) 45%,rgba(13,19,28,.72) 100%);border-color:rgba(255,255,255,.48);",
+          "box-shadow:0 22px 52px -10px rgba(0,0,0,.75),0 0 32px -4px " + accent + "8c,inset 0 2px 1.5px rgba(255,255,255,.55),inset 0 -1px 1px rgba(0,0,0,.5)}",
+          "#truchat-launcher:active{transform:scale(.97)}",
+          "#truchat-launcher .tc-pill-ico{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1c1512 0%,#0d131c 100%);position:relative;z-index:1;display:grid;place-items:center;border:1.5px solid " + accent + "8c;box-shadow:0 6px 18px -3px " + accent + "b3,inset 0 1px 1px rgba(255,255,255,.25);overflow:hidden}",
+          "#truchat-launcher .tc-pill-ico::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid " + accent + "73;animation:tcPulseAura 2.4s ease-out infinite;pointer-events:none}",
+          "@keyframes tcPulseAura{0%{transform:scale(1);opacity:.65}100%{transform:scale(1.45);opacity:0}}",
+          "#truchat-launcher .tc-pill-ico img{width:100%;height:100%;object-fit:contain;padding:4px;border-radius:50%;display:block}",
+          "#truchat-launcher .tc-pill-txt{display:flex;flex-direction:column;position:relative;z-index:1}",
+          "#truchat-launcher .tc-pill-title{font-size:13px;font-weight:700;line-height:1.2;letter-spacing:.01em;color:#fff}",
+          "#truchat-launcher .tc-pill-sub{font-size:10px;color:#A8A29E;line-height:1.35;margin-top:2px}",
+          "#truchat-panel{pointer-events:auto;display:none;position:fixed;left:20px;bottom:calc(" + bottom + " + 74px);width:min(420px,calc(100vw - 24px));height:min(640px,calc(100vh - 120px));",
+          "border-radius:22px;overflow:hidden;background:linear-gradient(165deg,rgba(20,26,38,.88) 0%,rgba(13,19,28,.94) 100%);",
+          "backdrop-filter:blur(32px) saturate(190%);-webkit-backdrop-filter:blur(32px) saturate(190%);border:1px solid rgba(255,255,255,.18);",
+          "box-shadow:0 32px 80px -20px rgba(0,0,0,.8),0 0 40px -12px " + accent + "4d,inset 0 1.5px 1px rgba(255,255,255,.2);z-index:" + zIndex + ";}",
+          "#truchat-panel.is-open{display:flex;flex-direction:column;animation:tcPanelSlideIn .38s cubic-bezier(.22,1,.36,1) both}",
+          "@keyframes tcPanelSlideIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}",
+          "#truchat-mount-inner{flex:1;min-height:0;display:flex;flex-direction:column}",
+          "#truchat-floating-root.is-open #truchat-launcher{display:none}",
+          "@media(max-width:768px){#truchat-panel{left:0!important;right:0!important;bottom:0!important;width:100%!important;max-width:100%!important;height:min(90vh,680px)!important;border-radius:22px 22px 0 0!important;border-bottom:none!important;box-shadow:0 -16px 48px rgba(0,0,0,.85)!important;animation:tcPanelSlideUp .35s cubic-bezier(.22,1,.36,1) both!important}}",
+          "@keyframes tcPanelSlideUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:none}}"
+        ].join("");
+        document.head.appendChild(style);
+
+        rootEl.innerHTML = [
+          '<div id="truchat-launcher" role="button" aria-label="Chat with ' + assistantName + '" tabindex="0">',
+            '<div class="tc-pill-ico">',
+              '<img src="assets/brand/chat-icon.png" alt="' + assistantName + '" onerror="this.onerror=null;this.src=\'assets/brand/logo.svg\';" />',
+            '</div>',
+            '<div class="tc-pill-txt">',
+              '<span class="tc-pill-title">' + assistantName + '</span>',
+              '<span class="tc-pill-sub">Live showroom assistant</span>',
+            '</div>',
+          '</div>',
+          '<div id="truchat-panel" role="dialog" aria-label="Chat with ' + assistantName + '">',
+            '<div id="truchat-mount-inner"></div>',
+          '</div>'
+        ].join("");
+
+        document.body.appendChild(rootEl);
+
+        var launcher = document.getElementById("truchat-launcher");
+        var panel = document.getElementById("truchat-panel");
+        var mountInner = document.getElementById("truchat-mount-inner");
+        var isOpen = false;
+        var chatUiInstance = null;
+
+        function toggleChat(openState) {
+          isOpen = typeof openState === "boolean" ? openState : !isOpen;
+          if (isOpen) {
+            rootEl.classList.add("is-open");
+            panel.classList.add("is-open");
+            if (!chatUiInstance) {
+              chatUiInstance = root.TruChatUI.mount(mountInner, {
+                config: CFG,
+                showFoot: true,
+                onClose: function () { toggleChat(false); }
+              });
+            }
+            setTimeout(function () {
+              if (chatUiInstance && chatUiInstance.focus) chatUiInstance.focus();
+            }, 100);
+          } else {
+            rootEl.classList.remove("is-open");
+            panel.classList.remove("is-open");
+          }
+        }
+
+        launcher.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleChat();
+        });
+
+        launcher.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleChat();
+          }
+        });
+
+        window.TruChatWidget = {
+          open: function () { toggleChat(true); },
+          close: function () { toggleChat(false); },
+          toggle: function () { toggleChat(); }
+        };
+        window.TruChat = window.TruChat || {};
+        window.TruChat.open = window.TruChatWidget.open;
+        window.TruChat.close = window.TruChatWidget.close;
+        window.TruChat.toggle = window.TruChatWidget.toggle;
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bootWidget);
+      } else {
+        bootWidget();
+      }
+    })();
+  }
+})(typeof window !== "undefined" ? window : globalThis);

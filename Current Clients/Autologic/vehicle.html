@@ -1,0 +1,401 @@
+﻿<!DOCTYPE html>
+<html lang="en-ZA" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Pre-Owned Vehicle Detail | AutoLogic PE</title>
+  <meta name="description" content="View vehicle specs, TruInspect VIR® inspection score, bank finance simulation, and trade-in valuation at AutoLogic PE in Newton Park, Gqeberha (PE).">
+
+  <meta property="og:locale" content="en_ZA">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AutoLogic PE">
+  <meta property="og:title" content="Quality Pre-Owned Vehicle | AutoLogic PE">
+  <meta property="og:description" content="Inspected vehicle for sale at AutoLogic PE, Gqeberha. Multi-bank finance approved.">
+  <meta property="og:image" content="https://autologicpe.co.za/og-card.jpg">
+
+  <link rel="stylesheet" href="assets/css/showroom.css">
+
+  <script src="tru-loader.js?v=4"
+          data-dealer="AutoLogic PE"
+          data-slug="autologic-pe"
+          data-flow="https://premium.trudealers.com"
+          data-wa="27826039334"
+          data-accent="#E31B23"
+          data-brand="AutoLogic PE"
+          data-theme="dark"
+          data-widgets="form,share,book,afford,repay,chat"
+          data-repay-target="#vdpFinanceCalc"
+          data-share-site="https://autologicpe.co.za"
+          data-share-vehicle-path="vehicle.html"></script>
+
+  <style>
+    .vdp-layout { 
+      display: grid; 
+      grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); 
+      gap: 36px; 
+      align-items: start; 
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .vdp-main {
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .vdp-gallery { background: var(--color-surface); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; position: relative; max-width: 100%; box-sizing: border-box; }
+    .vdp-hero-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: var(--bg-inset); display: block; }
+    .vdp-filmstrip { display: flex; gap: 10px; padding: 14px; overflow-x: auto; max-width: 100%; box-sizing: border-box; background: var(--bg-inset); border-top: 1px solid var(--rule); scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+    .vdp-thumb { width: 80px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; opacity: 0.7; transition: all 0.2s; flex-shrink: 0; }
+    .vdp-thumb.is-active, .vdp-thumb:hover { border-color: var(--accent); opacity: 1; }
+    
+    .vdp-rail { background: var(--color-surface); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; position: sticky; top: 90px; min-width: 0; max-width: 100%; box-sizing: border-box; }
+    .vdp-price { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; color: var(--ink-main); }
+    .vdp-repay { font-family: var(--font-mono); font-size: 0.95rem; color: var(--accent); font-weight: 600; margin-bottom: 20px; }
+    
+    .spec-grid-8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0; max-width: 100%; box-sizing: border-box; }
+    .spec-tile { background: var(--bg-inset); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; text-align: center; min-width: 0; }
+    .spec-tile-val { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--ink-main); word-break: break-word; }
+    .spec-tile-lbl { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-quiet); text-transform: uppercase; }
+
+    .vir-card { background: var(--color-dark-anchor); color: #fff; border-radius: 16px; padding: 28px; margin: 28px 0; }
+    .vir-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .vir-score-ring { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+
+    /* TruOrbit 360° Stage Elements */
+    .orbit-stage-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(23, 30, 38, 0.85);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 5;
+    }
+    
+    /* Sticky Top Deal Bar */
+    .sticky-deal-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--color-dark-anchor);
+      color: #fff;
+      z-index: 1000;
+      padding: 10px 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sticky-deal-bar.is-visible { display: flex; }
+    
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      place-items: center;
+      padding: 20px;
+    }
+    .modal-backdrop.is-open { display: grid; }
+    .modal-box {
+      background: var(--color-surface);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    .vir-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 960px) {
+      .vdp-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+      .vdp-rail { position: static; }
+      .spec-grid-8 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .sticky-deal-bar { display: none !important; }
+    }
+    @media (max-width: 540px) {
+      .vir-metrics-grid { grid-template-columns: 1fr; gap: 8px; }
+      .spec-grid-8 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .spec-tile-val { font-size: 0.9rem; word-break: break-word; }
+      .vir-card { padding: 20px 16px; }
+      .vdp-rail { padding: 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="coc-skip">Skip to main content</a>
+
+  <!-- Sticky Top Deal Bar -->
+  <div class="sticky-deal-bar" id="stickyDeal">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <strong id="stickyTitle" style="font-size: 0.95rem;">Vehicle Title</strong>
+      <span id="stickyPrice" style="color: var(--accent); font-family: var(--font-mono); font-weight: 800;">R 0</span>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a id="stickyWa" href="#" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>
+      <button type="button" class="btn btn-primary btn-sm" onclick="openModal('reserveModal')">Reserve Hold</button>
+    </div>
+  </div>
+
+  <div id="site-topbar"></div>
+  <div id="site-header"></div>
+
+  <main id="main-content" class="section">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-quiet); margin-bottom: 20px;">
+        <a href="index.html" style="color: var(--ink-quiet); text-decoration: none;">Home</a> &nbsp;/&nbsp;
+        <a href="stock.html" style="color: var(--ink-quiet); text-decoration: none;">Pre-Owned Stock</a> &nbsp;/&nbsp;
+        <span id="vdpBreadcrumbTitle" style="color: var(--accent);">Loading Vehicle...</span>
+      </div>
+
+      <div class="vdp-layout">
+        <!-- Main Column (Left) -->
+        <div class="vdp-main">
+          <!-- Media Mode Switcher (HD Photos primary vs 360 Walkaround secondary) -->
+          <div class="media-tabs" id="mediaTabs">
+            <button type="button" class="media-tab-btn is-active" data-tab="gallery" id="tabGallery">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span id="tabGalleryLabel">HD Photos</span>
+            </button>
+            <button type="button" class="media-tab-btn" data-tab="orbit" id="tabOrbit">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>360° Studio Walkaround</span>
+            </button>
+          </div>
+
+          <!-- Immersive Photo Gallery & Lightbox Trigger (Primary) -->
+          <div class="vdp-gallery-immersive" id="galleryContainer" style="margin-bottom: 20px;">
+            <div class="vdp-gallery-hero" id="galleryHero" role="button" tabindex="0" aria-label="Open full-screen gallery">
+              <img id="vdpMainImg" src="" alt="Vehicle Photo" onerror="this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80'">
+              <span class="vdp-gallery-count" id="vdpPhotoCount">1 photo</span>
+            </div>
+            <div id="vdpFilmstrip" class="vdp-filmstrip"></div>
+          </div>
+
+          <!-- TruOrbit 360 Player Container (Secondary) -->
+          <div id="orbitContainer" style="display: none; margin-bottom: 20px;"></div>
+
+          <!-- 8 Highlights Specs Grid -->
+          <div class="spec-grid-8">
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spYear">----</div>
+              <div class="spec-tile-lbl">Year Model</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spKm">-- km</div>
+              <div class="spec-tile-lbl">Mileage</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spTrans">----</div>
+              <div class="spec-tile-lbl">Transmission</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spFuel">----</div>
+              <div class="spec-tile-lbl">Fuel Type</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spBody">----</div>
+              <div class="spec-tile-lbl">Body Shape</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spColor">White</div>
+              <div class="spec-tile-lbl">Colour</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val" id="spVir">92 / 100</div>
+              <div class="spec-tile-lbl">VIR® Score</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-tile-val">Verified</div>
+              <div class="spec-tile-lbl">Title & History</div>
+            </div>
+          </div>
+
+          <!-- VIR Condition Assessment Card -->
+          <div class="vir-card">
+            <div class="vir-header">
+              <div>
+                <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: var(--color-primary-light); letter-spacing: 0.1em; margin-bottom: 4px;">
+                  <a href="https://trudealers.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">TruInspect Condition Report &rarr;</a>
+                </div>
+                <h3 style="color:#fff; font-size: 1.4rem;">TruInspect VIR® Verified</h3>
+              </div>
+              <div class="vir-score-ring" id="virRingVal">92</div>
+            </div>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6;">
+              This vehicle has passed our comprehensive mechanical, electrical, bodywork, and road safety evaluation at Gqeberha.
+            </p>
+            <div class="vir-metrics-grid">
+              <div>Mechanical: <strong style="color:var(--accent);">PASS</strong></div>
+              <div>Electrical: <strong style="color:var(--accent);">PASS</strong></div>
+              <div>Bodywork: <strong style="color:var(--accent);">PASS</strong></div>
+            </div>
+            <div style="margin-top: 18px; text-align: right;">
+              <a id="vdpFullReportBtn" href="https://wa.me/27826039334?text=Hi%20AutoLogic%20Auto!%20I'd%20like%20to%20request%20a%20vehicle%20inspection%20report" target="_blank" class="btn btn-outline btn-sm" style="color: #fff; border-color: rgba(255,255,255,0.3);">
+                Request Vehicle Inspection &rarr;
+              </a>
+            </div>
+          </div>
+
+          <!-- Description & Highlights -->
+          <div style="background: var(--color-surface); border: 1px solid var(--rule); border-radius: 16px; padding: 28px; margin-bottom: 28px;">
+            <h3 style="font-size: 1.25rem; margin-bottom: 12px;">Dealer Notes & Highlights</h3>
+            <p id="vdpNotes" style="color: var(--ink-quiet); line-height: 1.6;">
+              Hand-picked pre-owned vehicle in excellent condition. Full multi-point inspection verified. Financing available with ABSA, WesBank, Standard Bank, and Nedbank MFC. Trade-ins welcome.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sticky Sidebar Buy Rail (Right) -->
+        <aside class="vdp-rail">
+          <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-quiet); text-transform: uppercase; margin-bottom: 4px;" id="vdpStockNo">Stock # APX-001</div>
+          <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 14px; line-height: 1.2;" id="vdpTitle">Vehicle Title</h1>
+
+          <div class="vdp-price" id="vdpPrice">R 0</div>
+          <div class="vdp-repay" id="vdpRepay">Est. R 0 / mo</div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+            <a id="vdpWaBtn" href="#" target="_blank" class="btn btn-wa btn-lg" style="width:100%;">
+              WhatsApp About This Car
+            </a>
+            <button type="button" class="btn btn-primary btn-lg" style="width:100%;" onclick="openModal('reserveModal')">
+              48-Hour Priority Hold
+            </button>
+            <button type="button" class="btn btn-outline" style="width:100%;" onclick="openModal('priceAlertModal')">
+              Set Price Drop Alert
+            </button>
+            <button type="button" id="vdpShareBtn" class="btn btn-outline" style="width:100%;">
+              Share This Vehicle
+            </button>
+          </div>
+
+          <!-- Market Comparison Badge -->
+          <div style="background: var(--bg-inset); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 24px;">
+            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-quiet); text-transform: uppercase; display: block; margin-bottom: 4px;">TransUnion Appraisal</span>
+            <strong style="color: var(--accent); font-size: 0.95rem;">Competitive Market Price</strong>
+          </div>
+
+          <!-- In-Page Finance Calculator Target -->
+          <div id="vdpFinanceCalc"></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- 48-Hour Reserve Hold Modal -->
+  <div class="modal-backdrop" id="reserveModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.3rem; margin: 0;">48-Hour Priority Hold</h3>
+        <button type="button" onclick="closeModal('reserveModal')" style="background:none; border:none; font-size: 1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <p style="color: var(--ink-quiet); font-size: 0.9rem; margin-bottom: 20px;">
+        Place a priority hold on this vehicle while you schedule viewing or complete finance approval.
+      </p>
+      <form onsubmit="return submitReserve(event);">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+          <input type="text" id="resName" placeholder="Full Name" required class="trade-input">
+          <input type="tel" id="resCell" placeholder="WhatsApp / Cell Number" required class="trade-input">
+          <input type="email" id="resEmail" placeholder="Email Address" required class="trade-input">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Confirm Priority Hold &rarr;</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Price Drop Alert Modal -->
+  <div class="modal-backdrop" id="priceAlertModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.3rem; margin: 0;">Set Price Drop Alert</h3>
+        <button type="button" onclick="closeModal('priceAlertModal')" style="background:none; border:none; font-size: 1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <p style="color: var(--ink-quiet); font-size: 0.9rem; margin-bottom: 20px;">
+        Get notified instantly via WhatsApp if this vehicle drops in price or matching stock arrives.
+      </p>
+      <form onsubmit="return submitPriceAlert(event);">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+          <input type="text" id="altContact" placeholder="WhatsApp Number or Email" required class="trade-input">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Set Alert &rarr;</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/web3d-mock.js"></script>
+  <script src="assets/js/showroom-data.js"></script>
+  <script src="assets/js/showroom.js"></script>
+  <script src="assets/js/vdp-page.js"></script>
+
+  <script>
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('is-open');
+  }
+  function closeModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('is-open');
+  }
+  function submitReserve(e) {
+    e.preventDefault();
+    var nm = document.getElementById('resName').value;
+    var cl = document.getElementById('resCell').value;
+    var title = document.getElementById('vdpTitle').textContent;
+    var msg = "Hi AutoLogic PE! I'd like to place a 48-Hour Priority Hold on " + title + ". Name: " + nm + " (" + cl + ")";
+    window.open("https://wa.me/27826039334?text=" + encodeURIComponent(msg), "_blank");
+    closeModal('reserveModal');
+    return false;
+  }
+  function submitPriceAlert(e) {
+    e.preventDefault();
+    var alt = document.getElementById('altContact').value;
+    var title = document.getElementById('vdpTitle').textContent;
+    var msg = "Hi AutoLogic PE! Please alert me (" + alt + ") if " + title + " drops in price.";
+    window.open("https://wa.me/27826039334?text=" + encodeURIComponent(msg), "_blank");
+    closeModal('priceAlertModal');
+    return false;
+  }
+
+  // Scroll listener for Sticky Top Deal Bar
+  window.addEventListener('scroll', function() {
+    var bar = document.getElementById('stickyDeal');
+    if (!bar) return;
+    if (window.scrollY > 400) {
+      bar.classList.add('is-visible');
+    } else {
+      bar.classList.remove('is-visible');
+    }
+  });
+  </script>
+</body>
+</html>
