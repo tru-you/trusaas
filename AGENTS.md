@@ -1,6 +1,6 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-09-12 by Antigravity
+**Last updated:** 2026-09-15 by Antigravity
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
 
 ---
@@ -158,7 +158,111 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ---
 
-## 4. Recent Changes (2026-09-11)
+## 4. Recent Changes (2026-09-17)
+
+### 🔄 Photo Reordering in DMS, Modal Scroll Lock, 1–10 Condition VIR & Gallery Readiness Harmonization (2026-09-17)
+
+1. **Native Vehicle Image Reordering & Cover Selection in TruFlow DMS (`truflow-premium/src/components/VehicleDetailModal.tsx`)**:
+   - Dealers can now reorder vehicle photos directly in TruFlow Premium without needing to re-open TruLens.
+   - Added `handleMovePhoto(fromIndex, toIndex)` (◀ and ▶ buttons) and `handleSetCoverPhoto(index)` (`COVER` action pill on hover).
+   - Reordering updates `images: reordered` and consolidates `extrasPhotos: []` to guarantee the dealer's chosen order is faithfully preserved across the DMS, public API stock feed (`/api/public/stock`), and dealer website hero images.
+   - Added `COVER` badge on index 0 for immediate visual confirmation.
+   - Clean UI: Strictly text badges and Lucide icons; no emojis, no stars.
+
+2. **VehicleDetailModal Scroll Drop Bug Resolution (`truflow-premium/src/components/VehicleDetailModal.tsx`)**:
+   - Resolved the issue where scrolling inside the modal caused the modal container to drop into an empty space below.
+   - Added `overflow-hidden` on the modal overlay and locked modal card container height to `h-[100dvh] md:h-[92vh] max-h-[92vh]`.
+   - Added `overscroll-contain` and `md:flex-1 min-h-0` to the right-column scroll container.
+   - Added body scroll locking (`document.body.style.overflow = "hidden"` on mount, cleaned up on unmount).
+
+3. **1–10 Vehicle Condition VIR Score Rating (`truflow-premium/src/components/VehicleDetailModal.tsx`, `TruLens/src/components/PublishGate.tsx`, `truflow-premium/server.ts`)**:
+   - Replaced artificial VIR calculations and the previous hardcoded `90` cap with a direct, honest 1–10 scale ($1..10 \times 10 = \text{VIR}$, e.g. $8 \to \text{VIR } 80$, $10 \to \text{VIR } 100$).
+   - In `VehicleDetailModal.tsx` (`specs` tab), added quick 1–10 numbered rating pills.
+   - In `PublishGate.tsx`, added 1–10 numbered rating pills in review & publish mode.
+   - In `truflow-premium/server.ts`, updated `push-photos` endpoint to accept dealer-set `vehicleMeta.vir` directly without clamping to 90.
+
+4. **DMS Gallery Readiness Harmonization (`truflow-premium/src/lib/dmsReadiness.ts`, `tests/readiness.test.mjs`)**:
+   - Previously, vehicles with $< 10$ photos were tagged "incomplete / blocked" (causing pending operational tasks), even though `VehicleDetailModal` accepted 6 photos.
+   - Updated `computeDmsGalleryReadiness`: $\ge 6$ photos is now marked `level: "ready"`, `webReady: true`, with $\sim 10$ photos kept as a friendly recommendation rather than a blocking error.
+   - Passing test suite in `readiness.test.mjs` updated to verify $\ge 6$ photos as web-ready.
+
+5. **TruLens Auto-Slot Flexibility & Red Marks Removal (`TruLens/src/components/PublishGate.tsx`, `TruLens/src/components/CameraGuide.tsx`, `TruLens/server.ts`)**:
+   - Removed harsh red borders (`border-rose-500 bg-rose-950/30`), "Missing" error badges, and red checklist crosses.
+   - Replaced with subtle neutral card styling and friendly guidance recommending 10 photos.
+   - In `CameraGuide.tsx`, updated top viewfinder status to show clean shot count without rigid "Core" labeling.
+   - In `TruLens/server.ts` (`syncVehiclesFromDms`), updated sync logic so that when photos are reordered in the DMS, the new sequence synchronizes into TruLens slots automatically.
+
+---
+
+### 📸 TruLens & TruFlow DMS Bi-Directional Multi-Tenant Sync, Deletion Permanence & Slot Hygiene (2026-09-15)
+
+**Context & Core Architectural Fixes:**
+1. **Bi-Directional Multi-Tenant Stock Sync (TruFlow DMS &rarr; TruLens)**:
+   - `truflow-premium/server.ts`: Implemented privileged endpoint `GET /api/sync/vehicles?dealer=<slug>` authenticated via `x-tru-sync-key` (or admin bearer token). Returns all non-archived inventory vehicles (including unpublished / floor units) with cleaned photo paths.
+   - `TruLens/server.ts`: In `syncVehiclesFromDms(dealerSlug, force)` (debounced to 15s), queries `GET /api/sync/vehicles` with `x-tru-sync-key` (falling back to `/api/public/stock`).
+   - In `TruLens/server.ts`: `GET /api/inventory` runs `syncVehiclesFromDms(slug, force)` so that opening the photo studio or refreshing automatically pulls newly added DMS floor vehicles and their photos into TruLens template slots across all dealerships.
+   - New DMS vehicles populate their images into canonical template slots (`front_3_4`, `front_straight`, etc.).
+   - Existing vehicles in TruLens non-destructively receive DMS photos into unfilled slots while preserving all locally shot photos.
+2. **Photo Deletion Permanence & Anti-Resurrection Architecture (`TruLens/server.ts`, `truflow-premium/server.ts`)**:
+   - **Root Cause of Photo Resurrection**:
+     1. In `TruLens/src/components/PublishGate.tsx` line 111, `handleDeleteSlot` was calling `onVehicleUpdated?.({ ...vehicle, slotAssessment })` immediately after deleting the photo. Because `vehicle` was the stale component prop on mount, its `photos` still held the old photo, triggering `POST /api/inventory` which immediately resaved the deleted photo back onto the server!
+     2. In `TruLens/server.ts`, whenever DMS sync executed, it was pulling remote `images` and refilling the slots that were deleted.
+   - **Resolution**:
+     - Removed the stale `onVehicleUpdated` call from `PublishGate.tsx`. The optimistic state and server call in `handleDeletePhoto` (`App.tsx`) handle the deletion cleanly.
+     - In `TruLens/server.ts` (`delete-photo`), deleted slots are recorded in `deletedSlots: string[]`.
+     - In `syncVehiclesFromDms`, empty slots are ONLY populated if `!deletedSlots.has(slotId)`, preventing backfill resurrection permanently.
+     - Re-shooting or uploading a new photo to that slot in `upload-photo` removes `slotId` from `deletedSlots`.
+     - `delete-photo` notifies TruFlow DMS via `POST /api/sync/push-photos` with the updated photo set so the DMS drops the photo from its `images` array in real time.
+     - In `truflow-premium/server.ts` (`POST /api/sync/push-photos`), empty photo payloads `{}` for existing vehicles clear photos on the record rather than returning HTTP 400.
+3. **Slot Image Deduplication & Anti-Tripling Protection**:
+   - **Root Cause of Tripled / Duplicated Images**: Historical syncs without unique image checking assigned the same image URL across multiple template slots (e.g. `wheel_rear_left`, `roof_sunroof`, `boot_tailgate` all sharing the same hash). Deleting one slot left the exact duplicate in other slots.
+   - **Resolution**:
+     - Remote data repair removed 52 duplicate slot assignments across all vehicles in `/var/data/trusaas/lens/local-inventory.json`.
+     - `syncVehiclesFromDms` enforces `usedUrls = new Set(Object.values(mergedPhotos))` and deduplicates `uniqueDmsImages`, ensuring a photo URL is NEVER assigned to more than one slot.
+4. **CameraView Top Bar Polish (`TruLens/src/components/CameraGuide.tsx`)**:
+   - Removed duplicate `Review ({count})` button from the top navigation header.
+   - The prominent bottom action bar button (`Review photos (...)`) is now the single, unambiguous CTA for reviewing shots.
+5. **Persistent Photo Review State in `PublishGate`**:
+   - In `TruLens/src/components/PublishGate.tsx`, initialized the `reviewed` map from `vehicle.slotAssessment` so existing reviews are immediately recognized and persist across reloads.
+6. **App Header Brand Mark Alignment**:
+   - In `TruLens/src/components/InventoryList.tsx`, centered the 3D Hex Icon mark (`/icons/in-app-icon.png` / `h-9 w-9`) vertically with the dealership name, subtitle, and action buttons (`items-center`, removed `mt-0.5`).
+7. **Real-Time Photo Swap & Re-Ordering Synchronization Across TruLens, DMS & Website (`TruLens/server.ts`, `truflow-premium/server.ts`)**:
+   - **Root Cause**: `POST /api/inventory/swap-photos` in `TruLens/server.ts` was updating `local-inventory.json` locally, but never notified TruFlow DMS via `push-photos`. Consequently, TruFlow DMS's `images` and `extrasPhotos` arrays remained unchanged, and the public website feed (`/api/public/stock?dealer=<slug>`) continued serving the old photo order and old `heroImage`.
+   - **Resolution**:
+     - Added unified `syncPhotosToDms(existingData, photos, user)` helper in `TruLens/server.ts` triggered automatically on `POST /api/inventory/swap-photos`, `POST /api/inventory/upload-photo`, and `POST /api/inventory/delete-photo`.
+     - In `swap-photos`, dynamically maintained `deletedSlots` tracking so moving photos into or out of previously empty slots keeps deletion persistence accurate.
+     - In `truflow-premium/server.ts` (`POST /api/sync/push-photos`), normalized `matchStock` and `matchId` matching with case-insensitive and whitespace-tolerant comparisons.
+     - In `TruLens/src/components/PublishGate.tsx`, removed stale `onVehicleUpdated` call in `handleFileSelect` so manual uploads do not overwrite photos with stale component mount state.
+     - In `TruLens/src/App.tsx` (`handleUpdateVehicle`), defensively stripped `photos`, `quality`, and `closeups` from patch payloads, guaranteeing vehicle metadata edits can never clobber media arrays.
+     - Verified end-to-end on live Hetzner production: swapping slots in TruLens instantly updates `dealer-d2.json` in TruFlow DMS, and `/api/public/stock?dealer=cars-on-caledon` updates the gallery order and `heroImage` immediately.
+
+### 📱 Cars on Caledon & Showroom Mobile Standards & Grid Hygiene (2026-09-15)
+
+**Core Rules for All Dealer Showrooms on Mobile (`showroom.css`, `index.html`, `vehicle.html`, `stock.html`, `finance.html`, `trade-in.html`):**
+
+1. **Strict CSS Media Query Ordering (Desktop-Down Cascade)**:
+   - Media queries MUST be declared strictly from largest breakpoint to smallest:
+     `@media (max-width: 1024px)` &rarr; `@media (max-width: 768px)` &rarr; `@media (max-width: 640px)` &rarr; `@media (max-width: 480px)`.
+   - Never place a larger query (e.g. `1024px`) after a smaller one (`768px`), which overrides 1-column stock grids with 2 columns on phones.
+2. **Mandatory CSS Grid `min-width: 0` Constraints**:
+   - CSS Grid children have `min-width: auto` by default. Multi-photo filmstrips, thumbnail flex containers, and long vehicle titles (`#vdpTitle`) will blow out the entire grid to $1\,000\text{px}+$ width unless explicitly constrained.
+   - Always enforce `min-width: 0; width: 100%; box-sizing: border-box;` on all grid containers (`.vdp-layout`, `.stock-grid`, `.spec-grid-8`) and grid children (`.vdp-main-col`, `.vdp-gallery`, `.vdp-rail`, `.card`).
+   - Use `word-break: break-word; overflow-wrap: break-word;` on all dynamic vehicle title elements (`#vdpTitle`, `.hero-car-name`).
+3. **Refined Mobile Typography & Compact Button Hierarchy**:
+   - Standard buttons (`.btn`): `padding: 10px 18px; font-size: 0.86rem; border-radius: 8px;` (scaled to `9px 15px; 0.82rem` under 480px).
+   - Large buttons (`.btn-lg`): `padding: 12px 20px; font-size: 0.90rem; border-radius: 9px;`.
+   - Small buttons (`.btn-sm`): `padding: 6px 12px; font-size: 0.76rem; border-radius: 6px;`.
+   - Headings: `h1` clamped to `clamp(1.45rem, 5.5vw, 1.85rem)`, `h2` to `clamp(1.25rem, 4.8vw, 1.55rem)`, `h3` to `clamp(1.05rem, 4vw, 1.25rem)`.
+   - Section padding: `36px 0` on mobile with `20px` header margin.
+4. **Hero Featured Vehicle Badges**:
+   - Opposing diagonal corner pinning: VIR badge pinned to `top: 12px; left: 12px;`, Live Showroom status badge pinned to `bottom: 12px; right: 12px;` so badges never collide.
+5. **TruLoader Universal Widget Architecture**:
+   - When deploying dealer root sites, `data-layout` defaults to `"flat"` (loading `./tru-afford.js`, `./tru-repay.js`, `./tru-form.js`, `./tru-share.js`, `./tru-value.js`).
+   - `TruChat` stack loads sequentially (`<dealer>/config.js` &rarr; `qualifier.js` &rarr; `chat-core.js` &rarr; `widget.js`). The loader defaults to `truchat/<slug>/config.js` or `truchat/coc/config.js` if `data-chat-config` is omitted.
+   - Desktop floating vertical stacking: `TruChat` circular FAB at `bottom: 24px; right: 18px;`, `TruAfford` launcher pill at `bottom: 104px; right: 18px;` so both FABs stack cleanly without collision.
+   - On mobile screens (`<= 768px`), corner pills are cleanly suppressed in favor of the mobile bottom sticky navigation bar and drawer actions.
+
+---
 
 ### 💎 Apex Auto Investments Storefront & Widget System Polish (2026-09-11)
 

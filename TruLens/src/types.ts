@@ -54,6 +54,8 @@ export interface Vehicle {
   quality: Record<string, QualityReport>; // slotId -> report
   /** Publish to public website feed when true (default false until one-tap publish) */
   showOnWebsite?: boolean;
+  /** VIR Condition Score, 0-100 (1-10 scale in review screen * 10) */
+  vir?: number;
   /** Dealer branding for VIR / share (from settings) */
   dealerName?: string;
   dealerLogoDataUrl?: string;

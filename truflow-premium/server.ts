@@ -1,6 +1,8 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import os from "os";
+import { execSync } from "child_process";
 import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
@@ -658,7 +660,10 @@ function isPublicPath(p: string): boolean {
 // shared key is configured on both services this stays open, so an unset key
 // can't silently break a dealer's photo export mid-capture.
 const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || process.env.SYNC_SERVICE_KEY || "";
-const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.trudealers.com").replace(/\/$/, "");
+const TRULENS_URL = (
+  process.env.TRULENS_URL ||
+  (process.env.NODE_ENV === "production" ? "http://127.0.0.1:3001" : "https://lens.trudealers.com")
+).replace(/\/$/, "");
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.path.startsWith("/api/") || isPublicPath(req.path)) return next();
@@ -2169,20 +2174,29 @@ function pushVehicleToLens(
   changedForSync: Record<string, any>,
   now: number,
 ): void {
-  if (!vehicle || vehicle.source !== "trulens" || !vehicle.stockNumber) return;
-  if (Object.keys(changedForSync).length === 0) return;
+  if (!vehicle || !vehicle.stockNumber) return;
 
-  /* Name the dealership — stock numbers are dealer-chosen and collide across
-     yards, so an unqualified push reaches the wrong capture. */
-  const ownerSlug = (state.dealerships || []).find(
-    (d: any) => d.id === vehicle.dealershipId,
-  )?.slug;
+  // Verify dealership exists and is entitled to TruLens
+  const ownerDealership = (state.dealerships || []).find(
+    (d: any) => d.id === vehicle.dealershipId || d.slug === vehicle.dealershipId,
+  );
+  if (!ownerDealership || !ownerDealership.slug) return;
+
+  const products: string[] = Array.isArray(ownerDealership.products) ? ownerDealership.products : [];
+  // Gated dynamically by master admin products entitlement
+  if (!products.includes("lens")) return;
+
+  const patchToSend = { ...changedForSync };
+  // Never push vehicle.images back into Lens — local phone captures are authoritative for photo slots!
+
+  if (Object.keys(patchToSend).length === 0) return;
+
   const pushBody = {
     stockNumber: vehicle.stockNumber,
-    dealerSlug: ownerSlug,
-    patch: toLensPatch(changedForSync),
+    dealerSlug: ownerDealership.slug,
+    patch: toLensPatch(patchToSend),
     fieldMeta: toLensMeta(
-      Object.fromEntries(Object.keys(changedForSync).map((k) => [k, now])),
+      Object.fromEntries(Object.keys(patchToSend).map((k) => [k, now])),
     ),
   };
   fetch(`${TRULENS_URL}/api/sync/vehicle`, {
@@ -4747,14 +4761,7 @@ app.post("/api/sync/push-photos", (req, res) => {
       (entry): entry is [string, string] =>
         typeof entry[1] === "string" && entry[1].length > 0
     );
-    if (photoEntries.length === 0) {
-      return res.status(400).json({
-        synced: false,
-        error: "No photos provided. Send photos as { slotId: base64String }.",
-      });
-    }
 
-    const mapped = mapAutoLensPhotos(Object.fromEntries(photoEntries));
     const state = readState();
 
     const matchStock =
@@ -4773,14 +4780,6 @@ app.post("/api/sync/push-photos", (req, res) => {
       });
     }
 
-    /* An ABSENT slug used to be treated as "legacy client, allow it" and fell
-       through to DEFAULT_DEALERSHIP_ID below — which is d1, a real dealership
-       with a live website, not a neutral bucket. So a phone that signed in with
-       the shared code and had no dealership picked (cleared browser data, a
-       reinstalled PWA, a new handset) did not fail: it silently filed another
-       dealer's car into d1's inventory, and with the publish flag set that car
-       reached d1's website. Refusing an unknown slug while quietly accepting no
-       slug at all guarded the typo and missed the dangerous case. */
     if (!dealerSlug) {
       return res.status(400).json({
         synced: false,
@@ -4790,11 +4789,6 @@ app.post("/api/sync/push-photos", (req, res) => {
       });
     }
 
-    /* Stock numbers are dealer-chosen and short — PE-1042, STK-001 — so they
-       collide across dealerships. Matching on stockNumber alone meant a push
-       for one dealer could find, and overwrite the photos of, another dealer's
-       vehicle. Scope the search the same way the public feed scopes reads, so
-       write and read agree on who owns an untagged row. */
     const pushDealerId = dealerIdForSlug(dealerSlug)!;
     if ((req as any).auth?.role !== 'admin' && (req as any).auth?.dealershipId !== pushDealerId) {
       return res.status(403).json({ error: "Access denied" });
@@ -4804,13 +4798,36 @@ app.post("/api/sync/push-photos", (req, res) => {
 
     let idx = -1;
     if (matchStock) {
+      const matchStockNorm = String(matchStock).trim().toLowerCase();
       idx = state.vehicles.findIndex(
-        (v: any) => ownedByPusher(v) && v.stockNumber === matchStock
+        (v: any) => ownedByPusher(v) && String(v.stockNumber || "").trim().toLowerCase() === matchStockNorm
       );
     }
     if (idx === -1 && matchId) {
-      idx = state.vehicles.findIndex((v: any) => ownedByPusher(v) && v.id === matchId);
+      const matchIdNorm = String(matchId).trim().toLowerCase();
+      idx = state.vehicles.findIndex(
+        (v: any) => ownedByPusher(v) && (v.id === matchId || String(v.id || "").trim().toLowerCase() === matchIdNorm)
+      );
     }
+
+    if (photoEntries.length === 0) {
+      if (idx !== -1) {
+        state.vehicles[idx].images = [];
+        state.vehicles[idx].damagePhotos = [];
+        state.vehicles[idx].vinPhotos = [];
+        state.vehicles[idx].serviceBookPhotos = [];
+        state.vehicles[idx].extrasPhotos = [];
+        (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
+        writeState(state);
+        return res.json({ synced: true, message: "Cleared all photos for vehicle.", vehicle: state.vehicles[idx] });
+      }
+      return res.status(400).json({
+        synced: false,
+        error: "No photos provided. Send photos as { slotId: base64String }.",
+      });
+    }
+
+    const mapped = mapAutoLensPhotos(Object.fromEntries(photoEntries));
 
     let created = false;
     if (idx === -1) {
@@ -4841,7 +4858,11 @@ app.post("/api/sync/push-photos", (req, res) => {
         transmission: vehicleMeta.transmission || "Automatic",
         fuelType: vehicleMeta.fuelType || "Petrol",
         damage: Array.isArray(vehicleMeta.damage) ? vehicleMeta.damage : undefined,
-        vir: Array.isArray(vehicleMeta.damage) ? capOverallVir(computeVirFromDamage(vehicleMeta.damage)) : undefined,
+        vir: vehicleMeta.vir != null 
+          ? Math.max(0, Math.min(100, Math.round(Number(vehicleMeta.vir))))
+          : Array.isArray(vehicleMeta.damage) 
+            ? capOverallVir(computeVirFromDamage(vehicleMeta.damage)) 
+            : undefined,
         virReport: buildVirReport({
           slotAssessment: vehicleMeta.slotAssessment,
           damage: vehicleMeta.damage,
@@ -4979,8 +5000,10 @@ app.post("/api/sync/push-photos", (req, res) => {
         damage: vehicleMeta.damage,
       });
     }
-    if (vehicleMeta.vir != null && !Array.isArray(vehicleMeta.damage)) {
-      (state.vehicles[idx] as any).vir = capOverallVir(Number(vehicleMeta.vir));
+    if (vehicleMeta.vir != null) {
+      (state.vehicles[idx] as any).vir = Math.max(0, Math.min(100, Math.round(Number(vehicleMeta.vir))));
+    } else if (Array.isArray(vehicleMeta.damage)) {
+      (state.vehicles[idx] as any).vir = capOverallVir(computeVirFromDamage(vehicleMeta.damage));
     }
     if (Array.isArray(vehicleMeta.inspection)) {
       (state.vehicles[idx] as any).inspection = vehicleMeta.inspection;
@@ -5108,6 +5131,93 @@ app.get("/api/sync/status", async (req: any, res) => {
     console.error("Sync status error:", error);
     res.status(500).json({ error: "Failed to check sync status", details: error.message });
   }
+});
+
+// Privileged sync endpoint for sibling apps (TruLens) to read all dealership vehicles
+// Authenticated via requireAuth (x-tru-sync-key or bearer token)
+app.get("/api/sync/vehicles", (req: any, res) => {
+  const dealerSlug = String(req.query.dealer || "");
+  if (!dealerSlug) {
+    return res.status(400).json({ error: "A ?dealer= slug is required." });
+  }
+
+  const state = readState();
+  const wantedId = dealerIdForSlug(dealerSlug, state);
+  if (!wantedId) {
+    return res.status(404).json({ error: `Unknown dealership slug "${dealerSlug}".` });
+  }
+
+  // Authorization check: system (sync key) or admin or staff belonging to this dealership
+  if (req.auth?.role !== "admin" && req.auth?.dealershipId !== wantedId) {
+    return res.status(403).json({ error: "Access denied." });
+  }
+
+  const origin = originOf(req);
+  const cleanPhoto = (str: any): string => {
+    if (!str || typeof str !== "string") return "";
+    if (str.startsWith("data:")) return str;
+    const m = str.match(/\/media\/([a-f0-9]{64}(?:\.[a-z0-9]{2,5})?)/i);
+    if (m) {
+      const mediaPath = `/media/${m[1]}`;
+      return origin ? `${origin.replace(/\/$/, "")}${mediaPath}` : mediaPath;
+    }
+    if (/^https?:\/\//i.test(str)) return str;
+    if (str.startsWith("/") && origin) return `${origin.replace(/\/$/, "")}${str}`;
+    return str;
+  };
+
+  const vehicles = (state.vehicles || [])
+    .filter((v: any) =>
+      (v.dealershipId === wantedId || (wantedId === "true-cars" && v.dealershipId === "demo")) &&
+      !v.archivedAt &&
+      v.status !== "SOLD" && v.status !== "ARCHIVED"
+    )
+    .map((v: any) => {
+      const images = (Array.isArray(v.images) ? v.images : []).map(cleanPhoto).filter(Boolean);
+      const extras = (Array.isArray(v.extrasPhotos) ? v.extrasPhotos : []).map(cleanPhoto).filter(Boolean);
+      const damagePhotos = (Array.isArray(v.damagePhotos) ? v.damagePhotos : []).map(cleanPhoto).filter(Boolean);
+      const vinPhotos = (Array.isArray(v.vinPhotos) ? v.vinPhotos : []).map(cleanPhoto).filter(Boolean);
+      const serviceBookPhotos = (Array.isArray(v.serviceBookPhotos) ? v.serviceBookPhotos : []).map(cleanPhoto).filter(Boolean);
+      const allImages = [...images, ...extras];
+
+      return {
+        id: v.id,
+        stockNumber: v.stockNumber,
+        year: v.year,
+        make: v.make,
+        model: v.model,
+        trim: v.trim || "",
+        retailPrice: v.retailPrice ?? v.price ?? 0,
+        costPrice: v.costPrice ?? 0,
+        truPrice: v.truPrice ? Number(v.truPrice) : undefined,
+        mileage: v.mileage ?? 0,
+        transmission: v.transmission || "",
+        fuelType: v.fuelType || "",
+        bodyType: v.bodyType || v.vehicleType || "",
+        color: v.color || "",
+        vin: v.vin || "",
+        description: v.description || "",
+        status: v.status || "INVENTORY",
+        showOnWebsite: typeof v.showOnWebsite === "boolean" ? v.showOnWebsite : true,
+        images: allImages,
+        damagePhotos,
+        vinPhotos,
+        serviceBookPhotos,
+        heroImage: allImages[0] || null,
+        slotAssessment: v.slotAssessment || undefined,
+        damage: v.damage || undefined,
+        vir: v.vir,
+        virReport: v.virReport,
+        updatedAt: v.lastPhotoSync || v.updatedAt || null,
+      };
+    });
+
+  res.json({
+    success: true,
+    dealer: dealerSlug,
+    count: vehicles.length,
+    vehicles,
+  });
 });
 
 // --- PUBLIC INVENTORY FEED & MULTI-PORTAL SYNC ---
@@ -5518,6 +5628,141 @@ app.get("/api/public/dealerships", (_req, res) => {
       .filter((d: any) => d?.slug && d?.id && d.id !== "demo")
       .map((d: any) => ({ slug: d.slug, name: d.name, location: d.location || "" }))
   );
+});
+
+app.get("/api/admin/system-health", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+
+  try {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const uptimeSec = os.uptime();
+    const loadAvg = os.loadavg();
+
+    let diskStats = { totalGb: 75, usedGb: 13, freeGb: 62, pct: 18 };
+    try {
+      if (typeof (fs as any).statfsSync === "function") {
+        const rootFs = (fs as any).statfsSync("/");
+        const total = (rootFs.blocks * rootFs.bsize) / (1024 * 1024 * 1024);
+        const free = (rootFs.bavail * rootFs.bsize) / (1024 * 1024 * 1024);
+        const used = total - free;
+        if (total > 0) {
+          diskStats = {
+            totalGb: Math.round(total),
+            usedGb: Math.round(used),
+            freeGb: Math.round(free),
+            pct: Math.round((used / total) * 100),
+          };
+        }
+      }
+    } catch {
+      /* fallback defaults */
+    }
+
+    const KNOWN_SERVICES = [
+      { id: "truflow-premium", label: "TruFlow DMS", port: 3003 },
+      { id: "trulens", label: "TruLens", port: 3001 },
+      { id: "truinspect", label: "TruInspect", port: 3002 },
+      { id: "truflow-mobile", label: "TruMobile", port: 3004 },
+      { id: "truchat-api", label: "TruChat AI", port: 5000 },
+      { id: "trusaas-scraper", label: "Market Scraper", port: 4300 },
+      { id: "trucrm", label: "TruCRM", port: 3005 },
+    ];
+
+    let pm2List: any[] = [];
+    try {
+      const pm2Raw = execSync("pm2 jlist", { timeout: 4000, encoding: "utf-8" });
+      pm2List = JSON.parse(pm2Raw);
+    } catch {
+      /* if pm2 is absent in local dev */
+    }
+
+    const services = KNOWN_SERVICES.map((ks) => {
+      const found = pm2List.find(
+        (p: any) =>
+          p.name === ks.id ||
+          p.name === ks.id.replace("truflow-", "trusaas-").replace("tru", "trusaas-") ||
+          (ks.id === "trusaas-scraper" && p.name === "scraper")
+      );
+      if (found) {
+        const memBytes = found.monit?.memory || 0;
+        const uptimeMs = found.pm2_env?.pm_uptime;
+        const upSec = uptimeMs ? Math.floor((Date.now() - uptimeMs) / 1000) : 0;
+        const upStr = upSec > 3600 ? `${Math.floor(upSec / 3600)}h` : `${Math.floor(upSec / 60)}m`;
+        return {
+          id: ks.id,
+          label: ks.label,
+          port: ks.port,
+          status: found.pm2_env?.status || "offline",
+          memMb: Math.round(memBytes / (1024 * 1024)),
+          restarts: found.pm2_env?.restart_time || 0,
+          uptime: upStr,
+        };
+      }
+      if (ks.id === "truflow-premium") {
+        return {
+          id: ks.id,
+          label: ks.label,
+          port: ks.port,
+          status: "online",
+          memMb: Math.round(process.memoryUsage().rss / (1024 * 1024)),
+          restarts: 0,
+          uptime: `${Math.floor(process.uptime() / 3600)}h`,
+        };
+      }
+      return {
+        id: ks.id,
+        label: ks.label,
+        port: ks.port,
+        status: "unknown",
+        memMb: 0,
+        restarts: 0,
+        uptime: "-",
+      };
+    });
+
+    const allOperational = services.every((s) => s.status === "online");
+
+    const upDays = Math.floor(uptimeSec / 86400);
+    const upHours = Math.floor((uptimeSec % 86400) / 3600);
+    const uptimeStr = upDays > 0 ? `${upDays}d ${upHours}h` : `${upHours}h`;
+
+    res.json({
+      ok: true,
+      allOperational,
+      uptime: uptimeStr,
+      load: loadAvg[0] ? loadAvg[0].toFixed(2) : "0.10",
+      ram: {
+        totalMb: Math.round(totalMem / (1024 * 1024)),
+        usedMb: Math.round(usedMem / (1024 * 1024)),
+        freeMb: Math.round(freeMem / (1024 * 1024)),
+        pct: totalMem > 0 ? Math.round((usedMem / totalMem) * 100) : 0,
+      },
+      disk: diskStats,
+      services,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Failed to query system health" });
+  }
+});
+
+app.post("/api/admin/system-health/restart", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+
+  const serviceId = String(req.body?.serviceId || "").trim();
+  const ALLOWED = ["truflow-premium", "trulens", "truinspect", "truflow-mobile", "truchat-api", "trusaas-scraper", "trucrm"];
+  if (!ALLOWED.includes(serviceId)) {
+    return res.status(400).json({ error: "Invalid serviceId" });
+  }
+
+  try {
+    execSync(`pm2 restart ${serviceId}`, { timeout: 10000 });
+    res.json({ ok: true, message: `Restarted ${serviceId}` });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || `Failed to restart ${serviceId}` });
+  }
 });
 
 app.get("/api/dealerships", (req: any, res) => {

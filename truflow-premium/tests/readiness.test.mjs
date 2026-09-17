@@ -59,7 +59,7 @@ test("a complete 10-shot core capture reads as web-ready", async () => {
   assert.equal(r.level, "ready");
 });
 
-test("a genuinely thin gallery is still held back", async () => {
+test("a genuinely thin gallery is still held back (< 6 photos)", async () => {
   const { computeDmsGalleryReadiness } = await loadReadiness();
 
   assert.equal(computeDmsGalleryReadiness({ status: "INVENTORY" }).level, "capture");
@@ -69,9 +69,9 @@ test("a genuinely thin gallery is still held back", async () => {
     "three photos is not a web gallery"
   );
   assert.equal(
-    computeDmsGalleryReadiness({ images: img(8), status: "INVENTORY" }).webReady,
-    false,
-    "exterior-only, below target, must not read as ready"
+    computeDmsGalleryReadiness({ images: img(6), status: "INVENTORY" }).webReady,
+    true,
+    "six photos reaches minimum web-ready threshold"
   );
 });
 

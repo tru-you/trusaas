@@ -4,7 +4,7 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { initializeApp, getApps, App } from 'firebase-admin/app';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
 import {
@@ -299,13 +299,16 @@ function normalizeVehicle(raw: any): any {
   const photosIn = raw.photos && typeof raw.photos === 'object' ? raw.photos : {};
   const photos: Record<string, string> = {};
   for (const [k, v] of Object.entries(photosIn)) {
-    if (isValidPhotoData(v)) {
-      let src = v as string;
-      // Repair JPEG/PNG payloads that lost their data: prefix
-      if (!src.startsWith('data:') && !src.startsWith('http') && src.length > 200) {
-        src = `data:image/jpeg;base64,${src.replace(/^[^A-Za-z0-9+/=]+/, '')}`;
+    if (typeof v === 'string') {
+      // Normalize any absolute or loopback media URLs (e.g. from Flow DMS 127.0.0.1:3003) to clean relative /media/ paths
+      let src = v.replace(/^https?:\/\/(?:127\.0\.0\.1|localhost|premium\.trudealers\.com|lens\.trudealers\.com)(?::\d+)?(\/media\/[a-f0-9]{64}\.[a-z0-9]+)/i, '$1');
+      if (isValidPhotoData(src)) {
+        // Repair JPEG/PNG payloads that lost their data: prefix
+        if (!src.startsWith('data:') && !src.startsWith('http') && !src.startsWith('/media/') && src.length > 200) {
+          src = `data:image/jpeg;base64,${src.replace(/^[^A-Za-z0-9+/=]+/, '')}`;
+        }
+        photos[k] = src;
       }
-      photos[k] = src;
     }
   }
   return {
@@ -867,6 +870,7 @@ const FLOW_EDITABLE_FIELDS = [
   'make', 'model', 'year', 'trim', 'vin', 'color',
   'mileage', 'transmission', 'fuelType', 'vehicleType',
   'price', 'showOnWebsite', 'description', 'status', 'stockNumber',
+  'photos', 'images',
 ] as const;
 
 async function saveVehicle(vehicle: any): Promise<any> {
@@ -1496,6 +1500,13 @@ app.get('/api/public/stock', async (req, res) => {
 // 1. Get all vehicles
 app.get('/api/inventory', authenticate, async (req: any, res) => {
   try {
+    const slug = req.user?.dealerSlug;
+    const force = req.query.refresh === '1' || req.query.refresh === 'true';
+    // Sync from DMS (debounced to 15s, or forced with ?refresh=1)
+    // Deleted photos are protected by deletedSlots so they never resurrect.
+    if (slug && slug !== 'demo' && !slug.startsWith('demo-')) {
+      await syncVehiclesFromDms(slug, force).catch((e) => console.warn('[inventory] sync error:', e?.message));
+    }
     const vehicles = await listVehicles(req.user);
     res.json(vehicles);
   } catch (error) {
@@ -1574,6 +1585,42 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
   }
 });
 
+// Helper to push photo updates to TruFlow DMS in real-time
+async function syncPhotosToDms(existingData: any, photos: Record<string, string>, user?: any): Promise<void> {
+  const dealerSlug = user?.dealerSlug || existingData.dealerSlug;
+  if (!existingData.stockNumber || !dealerSlug || dealerSlug === 'demo' || dealerSlug.startsWith('demo-')) {
+    return;
+  }
+  const dmsUrl = `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/sync/push-photos`;
+  try {
+    const res = await fetch(dmsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(SYNC_KEY ? { 'x-tru-sync-key': SYNC_KEY } : {}),
+      },
+      body: JSON.stringify({
+        stockNumber: existingData.stockNumber,
+        dealerSlug,
+        photos,
+        vehicle: {
+          id: existingData.id,
+          stockNumber: existingData.stockNumber,
+          year: existingData.year,
+          make: existingData.make,
+          model: existingData.model,
+        },
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.warn(`[syncPhotosToDms] DMS responded ${res.status}: ${errText}`);
+    }
+  } catch (e: any) {
+    console.warn('[syncPhotosToDms] DMS photo sync error:', e?.message);
+  }
+}
+
 // 3. Upload/Save photo for a specific vehicle slot
 app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
   try {
@@ -1622,12 +1669,15 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
       status = 'Ready';
     }
 
+    const deletedSlots = (((existingData as any).deletedSlots || []) as string[]).filter((s) => s !== slotId);
+
     const updated = {
       ...existingData,
       photos,
       quality,
       slotAssessment,
       closeups: existingCloseups,
+      deletedSlots,
       status,
       updatedAt: now,
     };
@@ -1636,6 +1686,10 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
        client back the full base64 it had just uploaded — which it then held in
        memory until its next fetch, on a phone, for every shot in the capture. */
     const saved = await saveVehicle(updated);
+
+    // Synchronize photo upload to TruFlow DMS in real-time
+    syncPhotosToDms(existingData, saved.photos || photos, req.user);
+
     res.json({ success: true, vehicle: saved });
   } catch (error) {
     console.error('POST /api/inventory/upload-photo - Error:', error);
@@ -1665,6 +1719,14 @@ app.post('/api/inventory/swap-photos', authenticate, async (req: any, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    const photos = { ...(existingData.photos || {}) };
+    const quality = { ...(existingData.quality || {}) };
+    const slotAssessment = { ...((existingData as any).slotAssessment || {}) };
+    const closeups = { ...((existingData as any).closeups || {}) };
+
+    const hadPhotoA = !!photos[slotA];
+    const hadPhotoB = !!photos[slotB];
+
     const swapField = (obj: Record<string, any>) => {
       const valA = obj[slotA];
       const valB = obj[slotB];
@@ -1672,15 +1734,24 @@ app.post('/api/inventory/swap-photos', authenticate, async (req: any, res) => {
       if (valA !== undefined) { obj[slotB] = valA; } else { delete obj[slotB]; }
     };
 
-    const photos = { ...(existingData.photos || {}) };
-    const quality = { ...(existingData.quality || {}) };
-    const slotAssessment = { ...((existingData as any).slotAssessment || {}) };
-    const closeups = { ...((existingData as any).closeups || {}) };
-
     swapField(photos);
     swapField(quality);
     swapField(slotAssessment);
     swapField(closeups);
+
+    // Update deletedSlots set: if a slot now has a photo, it's not deleted.
+    // If a photo was moved away leaving a slot empty, track it in deletedSlots.
+    const deletedSlots = new Set<string>((existingData as any).deletedSlots || []);
+    if (photos[slotA]) {
+      deletedSlots.delete(slotA);
+    } else if (hadPhotoA) {
+      deletedSlots.add(slotA);
+    }
+    if (photos[slotB]) {
+      deletedSlots.delete(slotB);
+    } else if (hadPhotoB) {
+      deletedSlots.add(slotB);
+    }
 
     const updated = {
       ...existingData,
@@ -1688,13 +1759,102 @@ app.post('/api/inventory/swap-photos', authenticate, async (req: any, res) => {
       quality,
       slotAssessment,
       closeups,
+      deletedSlots: Array.from(deletedSlots),
       updatedAt: new Date().toISOString(),
     };
 
     const saved = await saveVehicle(updated);
+
+    // Synchronize swapped photos to TruFlow DMS in real-time
+    syncPhotosToDms(existingData, saved.photos || photos, req.user);
+
     res.json({ success: true, vehicle: saved });
   } catch (error) {
     console.error('POST /api/inventory/swap-photos - Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// 3c. Delete photo from a specific vehicle slot
+app.post('/api/inventory/delete-photo', authenticate, async (req: any, res) => {
+  try {
+    const { vehicleId, slotId } = req.body;
+    const userId = req.user.uid;
+
+    if (!vehicleId || !slotId) {
+      return res.status(400).json({ error: 'vehicleId and slotId are required' });
+    }
+
+    const existingData = await getVehicle(vehicleId, req.user);
+    if (!existingData) {
+      return res.status(404).json({ error: 'Vehicle not found' });
+    }
+    if (
+      !LOCAL_MODE &&
+      existingData.ownerId &&
+      existingData.ownerId !== userId
+    ) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const photos = { ...(existingData.photos || {}) };
+    const quality = { ...(existingData.quality || {}) };
+    const slotAssessment = { ...((existingData as any).slotAssessment || {}) };
+    const closeups = { ...((existingData as any).closeups || {}) };
+
+    const deletedSlots = Array.from(new Set([...((existingData as any).deletedSlots || []), slotId]));
+
+    delete photos[slotId];
+    delete quality[slotId];
+    delete slotAssessment[slotId];
+    delete closeups[slotId];
+
+    const now = new Date().toISOString();
+    const requiredSlots = TRULENS_CORE_SLOT_IDS;
+    const hasAllRequired = requiredSlots.every((slot) => !!photos[slot]);
+    let status = existingData.status;
+    if (!hasAllRequired && status === 'Ready') {
+      status = 'In-Progress';
+    }
+
+    const updated = {
+      ...existingData,
+      photos,
+      quality,
+      slotAssessment,
+      closeups,
+      deletedSlots,
+      status,
+      updatedAt: now,
+    };
+
+    if (LOCAL_MODE || !fdb) {
+      const store = readLocalStore();
+      const idx = store.vehicles.findIndex((v) => v.id === vehicleId);
+      if (idx !== -1) {
+        store.vehicles[idx] = updated;
+        writeLocalStore(store);
+      }
+    } else {
+      // In Firestore, FieldValue.delete() is mandatory to remove nested map keys,
+      // as set(..., { merge: true }) preserves existing keys.
+      await fdb.collection('vehicles').doc(vehicleId).update({
+        [`photos.${slotId}`]: FieldValue.delete(),
+        [`quality.${slotId}`]: FieldValue.delete(),
+        [`slotAssessment.${slotId}`]: FieldValue.delete(),
+        [`closeups.${slotId}`]: FieldValue.delete(),
+        deletedSlots,
+        status,
+        updatedAt: now,
+      });
+    }
+
+    // Synchronize photo deletion to TruFlow DMS so DMS also drops the deleted photo
+    syncPhotosToDms(existingData, photos, req.user);
+
+    res.json({ success: true, vehicle: updated });
+  } catch (error) {
+    console.error('POST /api/inventory/delete-photo - Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -2005,6 +2165,29 @@ app.put('/api/sync/vehicle', (req, res) => {
         now,
       );
 
+      // Handle photos / images push from Flow DMS
+      if (Array.isArray(normalised.images) && normalised.images.length > 0) {
+        const templateSlots = DEFAULT_TEMPLATE.slots.map((s) => s.id);
+        const updatedPhotos = { ...(target.photos || {}) };
+        normalised.images.forEach((imgUrl: string, idx: number) => {
+          if (typeof imgUrl === 'string') {
+            const cleanUrl = imgUrl.replace(/^https?:\/\/(?:127\.0\.0\.1|localhost|premium\.trudealers\.com|lens\.trudealers\.com)(?::\d+)?(\/media\/[a-f0-9]{64}\.[a-z0-9]+)/i, '$1');
+            const slotId = templateSlots[idx] || `photo_${idx + 1}`;
+            updatedPhotos[slotId] = cleanUrl;
+          }
+        });
+        fieldsToApply.photos = updatedPhotos;
+      } else if (normalised.photos && typeof normalised.photos === 'object') {
+        const updatedPhotos = { ...(target.photos || {}) };
+        for (const [k, v] of Object.entries(normalised.photos)) {
+          if (typeof v === 'string') {
+            const cleanUrl = v.replace(/^https?:\/\/(?:127\.0\.0\.1|localhost|premium\.trudealers\.com|lens\.trudealers\.com)(?::\d+)?(\/media\/[a-f0-9]{64}\.[a-z0-9]+)/i, '$1');
+            updatedPhotos[k] = cleanUrl;
+          }
+        }
+        fieldsToApply.photos = updatedPhotos;
+      }
+
       if (Object.keys(fieldsToApply).length === 0) {
         /* Every incoming field lost the timestamp comparison — Lens's copy is
            already newer, so nothing to do. Still a success, not a 409. */
@@ -2032,8 +2215,8 @@ app.put('/api/sync/vehicle', (req, res) => {
 
 // 4d. Backfill inventory from TruFlow DMS into TruLens local store
 app.post('/api/sync/backfill-from-dms', async (req, res) => {
-  const dealer = String(req.query.dealer || req.body?.dealer || 'cars-on-caledon');
-  const result = await backfillVehiclesFromDms(dealer);
+  const dealer = String(req.query.dealer || req.body?.dealer || LENS_DEFAULT_DEALER_SLUG);
+  const result = await syncVehiclesFromDms(dealer, true);
   res.json({ success: true, dealer, ...result });
 });
 
@@ -2747,18 +2930,51 @@ async function restoreCorruptedDemoVehicles() {
   }
 }
 
-async function backfillVehiclesFromDms(dealerSlug = 'cars-on-caledon') {
+const lastSyncBySlug = new Map<string, number>();
+
+async function syncVehiclesFromDms(dealerSlug: string, force = false): Promise<{ count: number; added: number; updated: number; error?: string }> {
+  if (!dealerSlug || dealerSlug === 'demo' || dealerSlug.startsWith('demo-')) {
+    return { count: 0, added: 0, updated: 0 };
+  }
+
+  const now = Date.now();
+  const lastSync = lastSyncBySlug.get(dealerSlug) || 0;
+  if (!force && now - lastSync < 15000) {
+    // Debounce: synced less than 15 seconds ago
+    return { count: 0, added: 0, updated: 0 };
+  }
+  lastSyncBySlug.set(dealerSlug, now);
+
   try {
-    const url = `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/public/stock?dealer=${encodeURIComponent(dealerSlug)}`;
-    const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    if (!r.ok) {
-      console.warn(`[backfill] DMS stock fetch returned ${r.status} for ${dealerSlug}`);
-      return { count: 0, added: 0, updated: 0 };
+    let dmsVehicles: any[] = [];
+    // 1. Try privileged sync endpoint first (returns all dealership stock including unpublished)
+    const syncUrl = `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/sync/vehicles?dealer=${encodeURIComponent(dealerSlug)}`;
+    try {
+      const sr = await fetch(syncUrl, {
+        headers: { ...(SYNC_KEY ? { 'x-tru-sync-key': SYNC_KEY } : {}) },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (sr.ok) {
+        const sdata = await sr.json();
+        if (Array.isArray(sdata?.vehicles)) {
+          dmsVehicles = sdata.vehicles;
+        }
+      }
+    } catch {
+      // Fall through to public feed
     }
-    const data = await r.json();
-    const dmsVehicles = data?.vehicles || [];
+
+    // 2. Fall back to public stock feed if sync endpoint was unavailable
+    if (!dmsVehicles.length) {
+      const publicUrl = `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/public/stock?dealer=${encodeURIComponent(dealerSlug)}`;
+      const pr = await fetch(publicUrl, { signal: AbortSignal.timeout(15000) });
+      if (pr.ok) {
+        const pdata = await pr.json();
+        dmsVehicles = pdata?.vehicles || [];
+      }
+    }
+
     if (!Array.isArray(dmsVehicles) || dmsVehicles.length === 0) {
-      console.log(`[backfill] No DMS vehicles returned for ${dealerSlug}`);
       return { count: 0, added: 0, updated: 0 };
     }
 
@@ -2771,21 +2987,28 @@ async function backfillVehiclesFromDms(dealerSlug = 'cars-on-caledon') {
       const stockNum = String(dv.stockNumber || '').trim();
       const existingIdx = store.vehicles.findIndex(
         (v: any) =>
-          (v.dealerSlug === dealerSlug || (!v.dealerSlug && dealerSlug === 'cars-on-caledon')) &&
+          (v.dealerSlug === dealerSlug || (!v.dealerSlug && dealerSlug === LENS_DEFAULT_DEALER_SLUG)) &&
           ((stockNum && String(v.stockNumber || '').trim().toLowerCase() === stockNum.toLowerCase()) ||
             (dv.id && v.id === dv.id) ||
             (dv.vin && v.vin && v.vin.toLowerCase() === dv.vin.toLowerCase()))
       );
 
-      // Build photos mapping from images array
-      const photos: Record<string, string> = {};
-      const quality: Record<string, any> = {};
-      const images: string[] = Array.isArray(dv.images) ? dv.images : (dv.heroImage ? [dv.heroImage] : []);
+      // Clean photo URLs from DMS to relative /media/ paths and deduplicate
+      const rawImages: string[] = Array.isArray(dv.images) ? dv.images : (dv.heroImage ? [dv.heroImage] : []);
+      const uniqueDmsImages = Array.from(new Set(
+        rawImages.map((src: string) =>
+          typeof src === 'string'
+            ? src.replace(/^https?:\/\/(?:127\.0\.0\.1|localhost|premium\.trudealers\.com|lens\.trudealers\.com)(?::\d+)?(\/media\/[a-f0-9]{64}\.[a-z0-9]+)/i, '$1')
+            : ''
+        ).filter(Boolean)
+      ));
 
-      images.forEach((imgUrl: string, idx: number) => {
+      const photosFromDms: Record<string, string> = {};
+      const qualityFromDms: Record<string, any> = {};
+      uniqueDmsImages.forEach((imgUrl: string, idx: number) => {
         const slotId = templateSlots[idx] || `photo_${idx + 1}`;
-        photos[slotId] = imgUrl;
-        quality[slotId] = {
+        photosFromDms[slotId] = imgUrl;
+        qualityFromDms[slotId] = {
           overallScore: 92,
           lightingCheck: { status: 'Perfect', brightness: 128, contrast: 125, feedback: 'Studio daylight standard' },
           angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Standard lot alignment' },
@@ -2794,28 +3017,78 @@ async function backfillVehiclesFromDms(dealerSlug = 'cars-on-caledon') {
 
       if (existingIdx >= 0) {
         const existing = store.vehicles[existingIdx];
-        const existingPhotosCount = Object.keys(existing.photos || {}).length;
-        const mergedPhotos = existingPhotosCount >= images.length ? existing.photos : { ...photos, ...(existing.photos || {}) };
+        const existingPhotos = { ...(existing.photos || {}) };
+        const deletedSlots = new Set<string>((existing as any).deletedSlots || []);
+
+        // Intelligently merge photos:
+        // 1. Clean existing duplicates if any image URL was previously assigned to multiple slots
+        const cleanedExistingPhotos: Record<string, string> = {};
+        const seenUrls = new Set<string>();
+        for (const [sId, url] of Object.entries(existingPhotos)) {
+          if (!deletedSlots.has(sId) && !seenUrls.has(url)) {
+            cleanedExistingPhotos[sId] = url;
+            seenUrls.add(url);
+          }
+        }
+
+        let mergedPhotos: Record<string, string> = {};
+        let mergedQuality: Record<string, any> = { ...(existing.quality || {}) };
+
+        // Check if the set of photos matches (e.g. reordered/swapped in DMS)
+        const localPhotoUrls = Object.values(cleanedExistingPhotos);
+        const dmsPhotoUrls = uniqueDmsImages;
+        const samePhotoSet = localPhotoUrls.length > 0 &&
+          localPhotoUrls.length === dmsPhotoUrls.length &&
+          localPhotoUrls.every(u => dmsPhotoUrls.includes(u));
+
+        if (samePhotoSet) {
+          // Dealer reordered photos in TruFlow DMS — sync the exact sequence into Lens slots
+          mergedPhotos = { ...photosFromDms };
+          mergedQuality = { ...qualityFromDms };
+        } else if (Object.keys(cleanedExistingPhotos).length === 0 && deletedSlots.size === 0) {
+          // If vehicle in Lens has NO photos at all and no deletions, populate all DMS photos
+          mergedPhotos = { ...photosFromDms };
+          mergedQuality = { ...qualityFromDms };
+        } else {
+          // Preserve local photos
+          mergedPhotos = { ...cleanedExistingPhotos };
+          const usedUrls = new Set(Object.values(mergedPhotos));
+
+          // Fill empty slots from DMS ONLY if slot is NOT in deletedSlots and image is NOT already used
+          for (const [slotId, url] of Object.entries(photosFromDms)) {
+            if (!mergedPhotos[slotId] && !deletedSlots.has(slotId) && !usedUrls.has(url)) {
+              mergedPhotos[slotId] = url;
+              mergedQuality[slotId] = qualityFromDms[slotId] || {
+                overallScore: 90,
+                lightingCheck: { status: 'Perfect', brightness: 128, contrast: 125, feedback: 'Imported from DMS' },
+                angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Standard lot alignment' },
+              };
+              usedUrls.add(url);
+            }
+          }
+        }
+
         store.vehicles[existingIdx] = {
           ...existing,
           dealerSlug,
-          make: existing.make || dv.make || '',
-          model: existing.model || dv.model || '',
-          trim: existing.trim || dv.trim || '',
-          year: Number(existing.year || dv.year) || new Date().getFullYear(),
-          price: Number(existing.price || dv.price) || 0,
-          truPrice: dv.truPrice ? Number(dv.truPrice) : existing.truPrice,
-          mileage: Number(existing.mileage || dv.mileage) || 0,
-          transmission: existing.transmission || dv.transmission || '',
-          fuelType: existing.fuelType || dv.fuelType || '',
-          vehicleType: existing.vehicleType || dv.bodyType || dv.vehicleType || '',
-          color: existing.color || dv.color || '',
-          vin: existing.vin || dv.vin || '',
-          description: existing.description || dv.description || '',
-          status: dv.status === 'SOLD' ? 'Sold' : 'Ready',
-          showOnWebsite: true,
+          // Flow specs take precedence if present
+          make: dv.make || existing.make || '',
+          model: dv.model || existing.model || '',
+          trim: dv.trim ?? existing.trim ?? '',
+          year: Number(dv.year || existing.year) || new Date().getFullYear(),
+          price: Number(dv.price ?? dv.retailPrice ?? existing.price) || 0,
+          truPrice: dv.truPrice !== undefined ? Number(dv.truPrice) : existing.truPrice,
+          mileage: Number(dv.mileage ?? existing.mileage) || 0,
+          transmission: dv.transmission || existing.transmission || '',
+          fuelType: dv.fuelType || existing.fuelType || '',
+          vehicleType: dv.bodyType || dv.vehicleType || existing.vehicleType || '',
+          color: dv.color || existing.color || '',
+          vin: dv.vin || existing.vin || '',
+          description: dv.description || existing.description || '',
+          status: dv.status === 'SOLD' ? 'Sold' : (existing.status || 'Ready'),
+          showOnWebsite: typeof dv.showOnWebsite === 'boolean' ? dv.showOnWebsite : (existing.showOnWebsite ?? true),
           photos: mergedPhotos,
-          quality: { ...quality, ...(existing.quality || {}) },
+          quality: mergedQuality,
           vir: dv.vir ?? existing.vir,
           virReport: dv.virReport ?? existing.virReport,
           damage: dv.damage ?? existing.damage,
@@ -2832,8 +3105,8 @@ async function backfillVehiclesFromDms(dealerSlug = 'cars-on-caledon') {
           make: dv.make || '',
           model: dv.model || '',
           trim: dv.trim || '',
-          price: Number(dv.price) || 0,
-          truPrice: dv.truPrice ? Number(dv.truPrice) : undefined,
+          price: Number(dv.price ?? dv.retailPrice) || 0,
+          truPrice: dv.truPrice !== undefined ? Number(dv.truPrice) : undefined,
           mileage: Number(dv.mileage) || 0,
           transmission: dv.transmission || '',
           fuelType: dv.fuelType || '',
@@ -2842,9 +3115,10 @@ async function backfillVehiclesFromDms(dealerSlug = 'cars-on-caledon') {
           vin: dv.vin || '',
           description: dv.description || '',
           status: dv.status === 'SOLD' ? 'Sold' : 'Ready',
-          showOnWebsite: true,
-          photos,
-          quality,
+          showOnWebsite: typeof dv.showOnWebsite === 'boolean' ? dv.showOnWebsite : true,
+          photos: photosFromDms,
+          quality: qualityFromDms,
+          deletedSlots: [],
           vir: dv.vir,
           virReport: dv.virReport,
           damage: dv.damage,
@@ -2861,11 +3135,11 @@ async function backfillVehiclesFromDms(dealerSlug = 'cars-on-caledon') {
 
     if (added > 0 || updated > 0) {
       writeLocalStore(store);
-      console.log(`[backfill] Synced ${dmsVehicles.length} DMS vehicles for ${dealerSlug} (Added: ${added}, Updated: ${updated}).`);
+      console.log(`[sync-from-dms] Synced ${dmsVehicles.length} DMS vehicles for ${dealerSlug} (Added: ${added}, Updated: ${updated}).`);
     }
     return { count: dmsVehicles.length, added, updated };
   } catch (err: any) {
-    console.error(`[backfill] Error backfilling vehicles for ${dealerSlug}:`, err?.message || err);
+    console.error(`[sync-from-dms] Error syncing vehicles for ${dealerSlug}:`, err?.message || err);
     return { count: 0, added: 0, updated: 0, error: err?.message || String(err) };
   }
 }
@@ -2930,7 +3204,6 @@ async function startServer() {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(` PWA: ${PORT === 443 || process.env.HTTPS ? 'https' : 'http'}://<this-host>:${PORT}  → Add to Home Screen on phone`);
     restoreCorruptedDemoVehicles().catch((err) => console.error('[restore] failed to run recovery:', err));
-    backfillVehiclesFromDms('cars-on-caledon').catch((err) => console.error('[backfill] failed on startup:', err));
   });
 }
 

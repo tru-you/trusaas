@@ -341,6 +341,33 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     });
   };
 
+  useEffect(() => {
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, []);
+
+  const handleMovePhoto = async (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= imagesList.length || toIndex >= imagesList.length) return;
+    const reordered = [...imagesList];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+
+    // Unify reordered list into vehicle.images and clear extrasPhotos so ordering is strictly preserved on website feed
+    await onUpdateVehicle(vehicle.id, {
+      images: reordered,
+      extrasPhotos: [],
+    } as any);
+    setActiveImageIndex(toIndex);
+  };
+
+  const handleSetCoverPhoto = async (index: number) => {
+    if (index === 0 || index < 0 || index >= imagesList.length) return;
+    await handleMovePhoto(index, 0);
+  };
+
   const handleDeletePhoto = async (indexToDelete: number) => {
     // The gallery is a flattened view over several arrays, so a position in it
     // says nothing about where the photo actually lives. Resolve it first.
@@ -363,11 +390,11 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const safeIndex = Math.min(activeImageIndex, Math.max(0, imagesList.length - 1));
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-0 md:p-3 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-0 md:p-3 overflow-hidden">
       {/* Full-bleed on mobile (edge-to-edge, full height) so the sheet uses the
           whole screen instead of a narrow card inside a scrim; a framed card
           from md up. */}
-      <div className="bg-[color:var(--ink)] border-0 md:border border-white/10 rounded-none md:rounded-2xl w-full max-w-none md:max-w-[1600px] shadow-2xl overflow-hidden flex flex-col h-[100dvh] md:h-auto max-h-[100dvh] md:max-h-[94vh]">
+      <div className="bg-[color:var(--ink)] border-0 md:border border-white/10 rounded-none md:rounded-2xl w-full max-w-none md:max-w-[1600px] shadow-2xl overflow-hidden flex flex-col h-[100dvh] md:h-[92vh] max-h-[92vh]">
         {/* Title bar — desktop only. On mobile the name/back/pill/counter are
             overlaid on the photo header below (hidden md:flex). */}
         <div className="hidden md:flex items-center justify-between gap-3 px-5 py-3.5 border-b border-white/10 bg-[color:var(--ink)] shrink-0">
@@ -505,28 +532,72 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             {imagesList.map((img, idx) => (
               <div
                 key={idx}
-                className={`relative w-16 h-12 rounded-[10px] overflow-hidden flex-shrink-0 group/thumb transition-all ${
-                  idx === safeIndex ? "ring-2 ring-[color:var(--cyan)]" : "opacity-60 hover:opacity-100"
+                className={`relative w-20 h-14 rounded-[10px] overflow-hidden flex-shrink-0 group/thumb transition-all ${
+                  idx === safeIndex ? "ring-2 ring-[color:var(--cyan)]" : "opacity-75 hover:opacity-100"
                 }`}
               >
                 <button
+                  type="button"
                   onClick={() => setActiveImageIndex(idx)}
                   className="w-full h-full block cursor-pointer"
                   title={`Photo ${idx + 1}`}
                 >
-                  <img src={img} alt="Thumb" className="w-full h-full object-cover" />
+                  <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
                 </button>
-                {/* Per-thumbnail delete — always shown on mobile so it's tappable,
-                    fades in on hover on desktop. stopPropagation so it does not
-                    also switch to the photo it is removing. */}
+
+                {/* Cover badge / Set as cover action */}
+                {idx === 0 ? (
+                  <div className="absolute top-1 left-1 bg-[color:var(--cyan)] text-black text-[9px] font-bold font-mono px-1 py-0.2 rounded shadow select-none">
+                    COVER
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleSetCoverPhoto(idx); }}
+                    aria-label={`Make photo ${idx + 1} cover photo`}
+                    title="Make cover photo"
+                    className="absolute top-1 left-1 bg-black/80 hover:bg-[color:var(--cyan)] hover:text-black text-[color:var(--cyan)] text-[9px] font-bold font-mono px-1 py-0.2 rounded opacity-0 group-hover/thumb:opacity-100 transition-opacity cursor-pointer shadow"
+                  >
+                    COVER
+                  </button>
+                )}
+
+                {/* Move Controls: Left / Right */}
+                <div className="absolute bottom-0.5 inset-x-0.5 flex items-center justify-between pointer-events-none opacity-0 group-hover/thumb:opacity-100 transition-opacity">
+                  {idx > 0 ? (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleMovePhoto(idx, idx - 1); }}
+                      aria-label="Move left"
+                      title="Move left"
+                      className="pointer-events-auto h-4 w-4 rounded bg-black/80 hover:bg-[color:var(--cyan)] hover:text-black text-white flex items-center justify-center cursor-pointer shadow"
+                    >
+                      <ChevronLeft size={10} />
+                    </button>
+                  ) : <span />}
+
+                  {idx < imagesList.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleMovePhoto(idx, idx + 1); }}
+                      aria-label="Move right"
+                      title="Move right"
+                      className="pointer-events-auto h-4 w-4 rounded bg-black/80 hover:bg-[color:var(--cyan)] hover:text-black text-white flex items-center justify-center cursor-pointer shadow"
+                    >
+                      <ChevronRight size={10} />
+                    </button>
+                  ) : <span />}
+                </div>
+
+                {/* Delete button */}
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); handleDeletePhoto(idx); }}
                   aria-label={`Delete photo ${idx + 1}`}
                   title="Delete this photo"
-                  className="absolute -top-0.5 -right-0.5 h-3 w-3 md:h-5 md:w-5 grid place-items-center rounded-full bg-black/60 text-white/60 opacity-0 group-hover/thumb:opacity-100 md:opacity-0 md:group-hover/thumb:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute top-1 right-1 h-4 w-4 rounded bg-black/80 text-rose-300 hover:bg-rose-600 hover:text-white flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity cursor-pointer shadow"
                 >
-                  <X size={6} className="md:hidden" />
-                  <X size={10} className="hidden md:block" />
+                  <X size={10} />
                 </button>
               </div>
             ))}
@@ -534,7 +605,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               title="Add photos"
-              className="w-16 h-12 shrink-0 rounded-[10px] flex flex-col items-center justify-center gap-0.5 text-[color:var(--white-dim)] hover:text-[color:var(--white)] cursor-pointer disabled:opacity-50"
+              className="w-20 h-14 shrink-0 rounded-[10px] flex flex-col items-center justify-center gap-0.5 text-[color:var(--white-dim)] hover:text-[color:var(--white)] cursor-pointer disabled:opacity-50"
               style={{ border: "1px dashed rgba(232,234,230,0.25)" }}
             >
               {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
@@ -554,7 +625,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
         </div>
 
         {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
-        <div className="md:w-1/2 max-md:flex-1 max-md:min-h-0 p-5 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
+        <div className="md:w-1/2 md:flex-1 max-md:flex-1 min-h-0 p-5 md:p-6 flex flex-col justify-between overflow-y-auto overscroll-contain border-t md:border-t-0 md:border-l border-white/10">
           <div>
             {/* Header (car name, trim, stock, close, return-to-stock) moved to
                 the modal's top title bar so the detail panel opens straight on
@@ -934,7 +1005,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     </div>
                     {[
                       { key: "color",     label: "Colour",    type: "text" },
-                      { key: "condition", label: "Condition", type: "text" },
                       { key: "location",  label: "Location",  type: "text" },
                       { key: "mileage",   label: "KM In",     type: "number" },
                     ].map((f) => (
@@ -954,6 +1024,43 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         />
                       </div>
                     ))}
+                    <div className="flex flex-col col-span-2 bg-white/[0.02] border border-white/5 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] uppercase tracking-wider">
+                          Condition Rating (VIR Score)
+                        </label>
+                        <span className="text-[12px] font-mono font-semibold text-[color:var(--cyan)]">
+                          {vehicle.vir ? `VIR ${vehicle.vir}/100` : "Not rated"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                          const currentScore = vehicle.vir != null ? Math.round(vehicle.vir / 10) : null;
+                          const isSelected = currentScore === num;
+                          return (
+                            <button
+                              key={num}
+                              type="button"
+                              onClick={() => {
+                                const newVir = num * 10;
+                                onUpdateVehicle(vehicle.id, { vir: newVir, condition: `${num}/10` } as Partial<Vehicle>);
+                              }}
+                              className={`flex-1 min-w-[32px] h-8 rounded-lg text-[13px] font-semibold font-mono flex items-center justify-center transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-[color:var(--cyan)] text-neutral-950 shadow-sm"
+                                  : "bg-white/5 border border-white/10 text-neutral-300 hover:border-cyan-400/50 hover:text-white"
+                              }`}
+                              title={`Condition ${num}/10 (VIR ${num * 10})`}
+                            >
+                              {num}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[11px] text-[color:var(--muted)]">
+                        Simple 1 to 10 scale (Score × 10 = VIR on website, e.g. 8 = VIR 80, 10 = VIR 100).
+                      </p>
+                    </div>
                     <div className="flex flex-col">
                       <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Showroom Category</label>
                       <select

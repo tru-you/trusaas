@@ -55,23 +55,11 @@ export function computeDmsGalleryReadiness(v: {
   }
 
   if (photoCount < MIN_USEFUL_GALLERY) {
-    reasons.push(`Only ${photoCount} photos — keep shooting in TruLens`);
+    reasons.push(`Only ${photoCount} photos — capture at least ${MIN_USEFUL_GALLERY} photos for web listing`);
     return {
       level: "partial",
-      label: `${photoCount} photos · incomplete`,
+      label: `${photoCount} photos · needs more`,
       color: "#F97316",
-      photoCount,
-      webReady: false,
-      reasons,
-    };
-  }
-
-  if (photoCount < WEB_GALLERY_TARGET) {
-    reasons.push(`Aim for ~${WEB_GALLERY_TARGET}+ guided shots for full web pack`);
-    return {
-      level: "partial",
-      label: `${photoCount} photos · almost ready`,
-      color: "#EAB308",
       photoCount,
       webReady: false,
       reasons,
@@ -89,16 +77,21 @@ export function computeDmsGalleryReadiness(v: {
     };
   }
 
+  const isRecommendedPack = photoCount >= WEB_GALLERY_TARGET;
+  if (!isRecommendedPack) {
+    reasons.push(`${photoCount} photos (web-ready). ~${WEB_GALLERY_TARGET}+ recommended for ideal showroom pack`);
+  } else if (v.lastPhotoSync) {
+    reasons.push(`Synced ${new Date(v.lastPhotoSync).toLocaleDateString(locale)}`);
+  } else {
+    reasons.push("Ready for website (confirm publish in TruLens / settings)");
+  }
+
   return {
     level: "ready",
-    label: "Gallery web-ready",
-    /* Brand system: good/live reads cyan — no traffic-light green. Matches the
-       sold state's cyan family one step brighter. */
+    label: isRecommendedPack ? "Gallery web-ready" : `${photoCount} photos · web-ready`,
     color: "#4FE3DC",
     photoCount,
     webReady: true,
-    reasons: v.lastPhotoSync
-      ? [`Synced ${new Date(v.lastPhotoSync).toLocaleDateString(locale)}`]
-      : ["Ready for website (confirm publish in TruLens / settings)"],
+    reasons,
   };
 }

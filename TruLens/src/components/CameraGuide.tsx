@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Camera, ChevronLeft,
   Check, Upload, HelpCircle, Images, X,
-  RotateCcw, SkipForward} from 'lucide-react';
+  RotateCcw, SkipForward, Eye, Trash2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useVertical } from './VerticalContext';
@@ -13,12 +13,13 @@ interface CameraGuideProps {
   onBack: () => void;
   onComplete?: () => void;
   onPhotoCaptured: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
+  onDeletePhoto?: (slotId: string) => Promise<Vehicle | null>;
   onEditRequested?: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onBulkPhotosUploaded: (updatedVehicle: Vehicle) => void;
   onOpenGuide?: () => void;
 }
 
-export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded, onOpenGuide }: CameraGuideProps) {
+export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptured, onDeletePhoto, onEditRequested, onBulkPhotosUploaded, onOpenGuide }: CameraGuideProps) {
   // A just-taken shot awaiting Redo / Keep. This is the whole point: shoot,
   // glance, keep or redo — no forced save-and-edit between every angle.
   const [pendingShot, setPendingShot] = React.useState<{ slotId: string; base64: string; report: QualityReport; kind: 'photo' | 'video' } | null>(null);
@@ -59,8 +60,29 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   const [simRoll, setSimRoll] = React.useState(0); // Roll (Phone horizontal level)
   const simBrightness = 130; // constant — there is no live light metering behind it
   const [customFile, setCustomFile] = React.useState<string | null>(null);
+  const [deletingSlot, setDeletingSlot] = React.useState(false);
+  const [currentSlotBroken, setCurrentSlotBroken] = React.useState(false);
 
-  // Auto-level assistant toggle
+  React.useEffect(() => {
+    setCurrentSlotBroken(false);
+  }, [selectedSlotId]);
+
+  const handleDeleteCurrentSlot = async () => {
+    if (!onDeletePhoto || !photos[selectedSlotId]) return;
+    if (!window.confirm(`Delete existing photo for "${activeSlot.name}"?`)) return;
+    setDeletingSlot(true);
+    try {
+      await onDeletePhoto(selectedSlotId);
+      setCustomFile(null);
+      setCurrentSlotBroken(false);
+      setCaptureHint(`Deleted · ${activeSlot.name}`);
+      setTimeout(() => setCaptureHint(null), 1500);
+    } catch (e) {
+      console.error('Delete slot failed:', e);
+    } finally {
+      setDeletingSlot(false);
+    }
+  };
 
   // Live bulk-upload progress — drives the auto-assign "Upload photos (bulk)"
   // path below. The old per-photo slot-mapping modal was retired, so this is
@@ -609,23 +631,23 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                 {vehicle.year} {vehicle.make} {vehicle.model}
               </p>
               <p className="text-[12px] font-mono text-[#4FE3DC]">
-                {listingReady
-                  ? `Listing-ready · ${completedSlots.length}/${allSlots.length} shots`
-                  : `Core ${coreDone}/${coreSlots.length} · ${completedSlots.length}/${allSlots.length} shots`}
+                {completedSlots.length >= 10
+                  ? `Showroom pack ready · ${completedSlots.length} shots`
+                  : completedSlots.length >= 6
+                  ? `Web-ready · ${completedSlots.length} shots (10 recommended)`
+                  : `${completedSlots.length} shots captured · 6 minimum`}
               </p>
             </div>
-            <button onClick={onOpenGuide} className="pointer-events-auto cursor-pointer" aria-label="How do I…?">
-              <HelpCircle size={16} className="text-neutral-300" />
-            </button>
+            <div className="flex items-center gap-2 pointer-events-auto">
+              <button onClick={onOpenGuide} className="cursor-pointer h-9 w-9 rounded-xl flex items-center justify-center hover:bg-white/10" aria-label="How do I…?">
+                <HelpCircle size={16} className="text-neutral-300" />
+              </button>
+            </div>
           </div>
-          {/* Was a 19-segment tick strip — three indicators counting the same
-              thing. One 3px bar now. */}
-          {/* Bar tracks CORE progress — the goal is a listing-ready car, and the
-              optional shots beyond core shouldn't make the bar look unfinished. */}
           <div className="mt-2 h-[3px] rounded-full bg-[rgba(232,234,230,0.14)] overflow-hidden">
             <div
               className="h-full bg-[#4FE3DC] transition-all duration-300"
-              style={{ width: `${Math.round((coreDone / Math.max(coreSlots.length, 1)) * 100)}%` }}
+              style={{ width: `${Math.min(100, Math.round((completedSlots.length / 10) * 100))}%` }}
             />
           </div>
         </div>
@@ -638,12 +660,19 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
 
         {/* Render Viewfinder Feed */}
         {isCameraActive ? (
-          <video 
-            ref={videoRef} 
-            autoPlay 
-            playsInline 
-            className="w-full h-full object-cover select-none"
-          />
+          <div className="relative w-full h-full">
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              className="w-full h-full object-cover select-none"
+            />
+            {photos[selectedSlotId] && (
+              <div className="absolute top-20 right-4 z-20 px-2.5 py-1 rounded-full bg-black/60 border border-amber-500/40 text-amber-300 text-[11px] font-semibold backdrop-blur">
+                Retaking slot
+              </div>
+            )}
+          </div>
         ) : customFile ? (
           <img 
             src={customFile} 
@@ -651,6 +680,75 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             className="w-full h-full object-cover select-none"
             referrerPolicy="no-referrer"
           />
+        ) : photos[selectedSlotId] ? (
+          currentSlotBroken ? (
+            <div className="w-full h-full bg-neutral-900 flex flex-col items-center justify-center p-6 text-center space-y-3">
+              <div className="p-4 rounded-full bg-red-500/10 border border-red-500/30 text-red-400">
+                <AlertTriangle size={36} strokeWidth={1.5} />
+              </div>
+              <div className="space-y-1.5 max-w-[280px]">
+                <p className="text-[15px] font-bold text-red-200">Image missing from server</p>
+                <p className="text-[12px] text-neutral-400 leading-relaxed">
+                  The file was not found (404, e.g. after server migration). Delete this slot or take/upload a replacement.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 w-full max-w-[220px] pt-2">
+                <button
+                  type="button"
+                  onClick={() => startCamera()}
+                  className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-black text-[13px] font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                  <Camera size={14} />
+                  Retake with camera
+                </button>
+                {onDeletePhoto && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteCurrentSlot}
+                    disabled={deletingSlot}
+                    className="w-full py-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/30 text-red-300 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {deletingSlot ? <RefreshCw size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                    Delete missing slot
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="relative w-full h-full bg-black flex items-center justify-center">
+              <img 
+                src={photos[selectedSlotId]} 
+                alt={activeSlot.name} 
+                onError={() => setCurrentSlotBroken(true)}
+                className="w-full h-full object-cover select-none"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute top-20 right-4 z-20 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => startCamera()}
+                  className="px-3 py-1.5 rounded-xl bg-black/70 hover:bg-black/90 border border-white/20 text-neutral-200 text-[12px] font-semibold flex items-center gap-1.5 backdrop-blur cursor-pointer shadow"
+                >
+                  <Camera size={13} />
+                  <span>Retake</span>
+                </button>
+                {onDeletePhoto && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteCurrentSlot}
+                    disabled={deletingSlot}
+                    className="px-3 py-1.5 rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 text-[12px] font-semibold flex items-center gap-1.5 backdrop-blur cursor-pointer shadow disabled:opacity-50"
+                  >
+                    {deletingSlot ? <RefreshCw size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                    <span>Delete</span>
+                  </button>
+                )}
+              </div>
+              <div className="absolute top-20 left-4 z-20 px-2.5 py-1 rounded-full bg-black/60 border border-emerald-500/40 text-emerald-400 text-[11px] font-semibold backdrop-blur">
+                Saved shot
+              </div>
+            </div>
+          )
         ) : (
           /* Empty Viewport Placeholder when no camera/file — PC upload path */
           <div className="w-full h-full bg-neutral-900 flex flex-col items-center justify-center p-6 text-center space-y-3">
@@ -854,6 +952,19 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             <SkipForward size={18} />
             <span className="text-[12px]">Skip</span>
           </button>
+
+          {photos[selectedSlotId] && onDeletePhoto && (
+            <button
+              type="button"
+              onClick={handleDeleteCurrentSlot}
+              disabled={deletingSlot}
+              className="tru-btn-secondary w-[52px] h-[52px] flex flex-col items-center justify-center gap-0.5 cursor-pointer text-red-400 hover:text-red-300 hover:border-red-500/50 disabled:opacity-40"
+              title="Delete photo from this slot"
+            >
+              {deletingSlot ? <RefreshCw size={18} className="animate-spin" /> : <Trash2 size={18} />}
+              <span className="text-[12px]">Delete</span>
+            </button>
+          )}
         </div>
         )}
 
@@ -884,7 +995,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           </div>
         )}
 
-        {listingReady && (
+        {completedSlots.length > 0 && (
           <button
             type="button"
             onClick={onComplete || onBack}
@@ -893,7 +1004,9 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             <Check size={16} />{' '}
             {progressPercentage === 100
               ? 'All shots captured — review & publish'
-              : 'Core shots done — review & publish'}
+              : listingReady
+              ? 'Core shots done — review & publish'
+              : `Review photos (${completedSlots.length} captured)`}
           </button>
         )}
 

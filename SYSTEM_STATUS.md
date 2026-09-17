@@ -54,8 +54,22 @@ All six microservices across the TruSaaS ecosystem are online in PM2, communicat
   10. `odometer`
   *(Followed by mechanical/extra slots: `bonnet`, `engine_bay`, `spare_wheel`, `roof_sunroof`, etc.)*
 - **Re-Export Verification**: Tested `POST /api/export/dms` for vehicle `v_lens_1785857184107` (Volkswagen Polo). Synced all 23 photo references to Flow with `200 OK { ok: true, synced: true }`.
+- **Photo Workflow & VIR Upgrade (2026-09-17)**:
+  - Removed rigid required-slot constraints and red error crosses; replaced with neutral, clean 10-shot recommendation.
+  - Added simple 1–10 vehicle condition rating in review mode ($1..10 \times 10 = \text{VIR}$ on client websites).
+  - Bi-directional sync in `syncVehiclesFromDms` automatically accepts photo reorderings made in TruFlow DMS.
 
-### B. TruFlow Mobile (Companion App — Port 3004)
+### B. TruFlow Premium DMS (Full Dealer Management — Port 3003)
+- **Photo Reordering & Cover Selection**:
+  - `VehicleDetailModal.tsx` now supports native photo reordering (move left / move right) and single-tap `COVER` selection.
+  - Reordering saves to `images` and clears `extrasPhotos` to ensure consistent gallery order on public feeds and website hero car views.
+  - Fixed modal container scroll-drop bug by locking outer overlay to `overflow-hidden`, setting fixed modal card height, and locking body scroll.
+- **DMS Gallery Readiness**:
+  - Harmonized readiness in `dmsReadiness.ts` so $\ge 6$ photos qualifies as Web-Ready, while $\sim 10$ photos is surfaced as an optional recommendation without creating pending task warnings.
+- **1–10 Condition VIR**:
+  - Direct 1–10 numbered pill selector in Specs tab; updates `vir` directly without clamping to 90.
+
+### C. TruFlow Mobile (Companion App — Port 3004)
 - **Environment & Routing**: Configured in `/var/www/trusaas/truflow-mobile/.env` with `API_TARGET=http://127.0.0.1:3003`, `CHAT_API=http://127.0.0.1:5000`, and `TRUFLOW_SYNC_KEY=[REDACTED — set via server environment]`.
 - **Authentication**: Logging in with `6SY-WJH-5KY` yields an auth session with `GET /api/state` streaming all 36 live vehicles.
 
