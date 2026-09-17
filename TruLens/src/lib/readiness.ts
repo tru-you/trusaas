@@ -32,34 +32,38 @@ function overallScore(vehicle: Vehicle): number | null {
   return Math.round(sum / reports.length);
 }
 
+export const MIN_LISTING_PHOTOS = 6;
+export const RECOMMENDED_LISTING_PHOTOS = 10;
+
 /** Shared Ready-for-web rules across TruLens → DMS → website */
 export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
   const photos = vehicle.photos || {};
+  const photoCount = Object.keys(photos).length;
 
-  // Core = the honest listing minimum (the exterior lap + interior + odometer).
+  // Core = template slots; photoCount >= 6 is now Web Ready!
   const core = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core');
   const coreTaken = core.filter((s) => !!photos[s.id]).length;
   const missingCore = core.filter((s) => !photos[s.id]).map((s) => s.name);
   const conditionDeclared = vehicle.conditionDeclaration != null;
-  /* Listing-ready = the core photo set (10 shots, uploaded or taken). The
-     condition declaration is a separate, optional step that feeds the website's
-     "No damage reported" line — it no longer gates readiness. */
-  const listingReady = missingCore.length === 0;
+  /* Listing-ready = 6+ photos captured (Harmonized with TruFlow DMS).
+     6 photos is Web Ready; ~10 photos is an optimal recommendation. */
+  const listingReady = photoCount >= MIN_LISTING_PHOTOS;
 
   const score = overallScore(vehicle);
   const reasons: string[] = [];
 
-  if (missingCore.length) {
-    reasons.push(`${missingCore.length} core shot${missingCore.length === 1 ? '' : 's'} still to take`);
+  if (photoCount < MIN_LISTING_PHOTOS) {
+    const remaining = MIN_LISTING_PHOTOS - photoCount;
+    reasons.push(`${remaining} more photo${remaining === 1 ? '' : 's'} needed for Web Ready`);
   }
   if (score !== null && score < 70) {
     reasons.push(`Photo-quality score ${score}/100 is below 70`);
   }
-  if (!Object.keys(photos).length) {
+  if (!photoCount) {
     reasons.push('No photos captured');
   }
 
-  const hasPhotos = Object.keys(photos).length > 0;
+  const hasPhotos = photoCount > 0;
   const scoreOk = score === null || score >= 70;
   // Export stays permissive by design — a light shoot must sync as cleanly as a
   // full one — so this gates on photos, not on core/declaration.
@@ -79,13 +83,13 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
     color = '#4FE3DC';
   } else if (hasPhotos && scoreOk && vehicle.showOnWebsite === true) {
     level = 'web-ready';
-    label = listingReady ? 'Published to web' : 'Published to web · finish core shots';
+    label = listingReady ? 'Published to web' : `Published to web · ${MIN_LISTING_PHOTOS - photoCount} to web-ready`;
     color = '#4FE3DC';
   } else if (hasPhotos && scoreOk) {
     level = 'ready';
     label = listingReady
-      ? 'Listing-ready'
-      : `Getting there · ${missingCore.length} core shot${missingCore.length === 1 ? '' : 's'} to take`;
+      ? 'Web-ready'
+      : `Getting there · ${photoCount}/${MIN_LISTING_PHOTOS} photos captured`;
     color = listingReady ? '#4FE3DC' : '#8B8D89';
     if (vehicle.showOnWebsite !== true && listingReady) {
       reasons.push('Not published to website yet');
@@ -96,8 +100,8 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
     level,
     label,
     color,
-    coreTotal: core.length,
-    coreTaken,
+    coreTotal: MIN_LISTING_PHOTOS,
+    coreTaken: Math.min(photoCount, MIN_LISTING_PHOTOS),
     missingCore,
     conditionDeclared,
     listingReady,

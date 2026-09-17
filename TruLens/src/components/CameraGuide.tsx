@@ -101,10 +101,10 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   // Core = the honest listing minimum; the rest sit behind an "add more" toggle
   // so onboarding a car reads as ~10 guided shots, not 27 fields.
   const coreSlots = allSlots.filter((s) => s.tier === 'core');
-  const moreSlots = allSlots.filter((s) => s.tier !== 'core');
   const coreDone = coreSlots.filter((s) => !!photos[s.id]).length;
   const moreDone = moreSlots.filter((s) => !!photos[s.id]).length;
-  const listingReady = coreSlots.length > 0 && coreDone === coreSlots.length;
+  const totalCaptured = coreDone + moreDone;
+  const listingReady = totalCaptured >= 6;
   const [showMore, setShowMore] = React.useState(false);
   const chipStripRef = React.useRef<HTMLDivElement>(null);
 
@@ -1005,7 +1005,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             {progressPercentage === 100
               ? 'All shots captured — review & publish'
               : listingReady
-              ? 'Core shots done — review & publish'
+              ? 'Web ready (6+ photos) — review & publish'
               : `Review photos (${completedSlots.length} captured)`}
           </button>
         )}

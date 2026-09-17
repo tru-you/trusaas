@@ -1003,6 +1003,7 @@ export default function App() {
   };
 
   const handleUpdateVehicle = async (id: string, updates: Partial<Vehicle>) => {
+    setSelectedDetailVehicle((prev) => (prev && prev.id === id ? { ...prev, ...updates } : prev));
     await updateVehicle(id, updates);
     loadAllState();
   };

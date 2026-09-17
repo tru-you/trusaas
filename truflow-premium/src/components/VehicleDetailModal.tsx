@@ -297,7 +297,11 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   /* Mirrors what readState does on the server: a row that predates the flag is
      backfilled to true, so "not explicitly false" is genuinely published. The
      public feed itself tests === true. */
-  const isPublished = vehicle.showOnWebsite !== false;
+  const [isPublished, setIsPublished] = useState<boolean>(vehicle.showOnWebsite !== false);
+  useEffect(() => {
+    setIsPublished(vehicle.showOnWebsite !== false);
+  }, [vehicle.showOnWebsite]);
+
   const webReadyHint =
     photoCount >= 6
       ? { label: "Gallery ready for web", color: "var(--cyan)" }
@@ -1847,9 +1851,30 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           {/* Footer — a clean row: publish toggle on the left (Light-style,
               no big cyan CTA), utility actions on the right. */}
           <div className="shrink-0 pt-3 mt-3 border-t border-white/10 flex flex-col gap-2">
-            <label
-              className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-[color:var(--glass)] border border-white/5 cursor-pointer select-none"
-              title={isPublished ? "On website — tap to unpublish" : "Publish this vehicle to the dealer website"}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isPublished}
+              disabled={publishing}
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (publishing) return;
+                const nextState = !isPublished;
+                setIsPublished(nextState);
+                setPublishing(true);
+                try {
+                  await onUpdateVehicle(vehicle.id, { showOnWebsite: nextState } as Partial<Vehicle>);
+                  notify("Website Status", nextState ? "Vehicle is now live on your website." : "Vehicle unpublished from website.", "info");
+                } catch (err: any) {
+                  setIsPublished(!nextState);
+                  notify("Update Failed", err?.message || "Could not update website status", "error");
+                } finally {
+                  setPublishing(false);
+                }
+              }}
+              className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-[color:var(--glass)] border border-white/5 cursor-pointer select-none text-left transition-colors hover:bg-white/5"
+              title={isPublished ? "On website — click to unpublish" : "Publish this vehicle to the dealer website"}
             >
               <span className="flex items-center gap-2 text-[13px] text-[color:var(--white)] font-semibold">
                 <Globe size={14} className={isPublished ? "text-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.55)]"} />
@@ -1868,21 +1893,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   }
                 />
               </span>
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={isPublished}
-                disabled={publishing}
-                onChange={async () => {
-                  setPublishing(true);
-                  try {
-                    await onUpdateVehicle(vehicle.id, { showOnWebsite: !isPublished } as Partial<Vehicle>);
-                  } finally {
-                    setPublishing(false);
-                  }
-                }}
-              />
-            </label>
+            </button>
             {/* Open in TruLens / Remove — desktop only. On mobile these move to
                 the fixed action bar (Shoot) and are otherwise a desk job. */}
             <div className="hidden md:grid grid-cols-2 gap-2">

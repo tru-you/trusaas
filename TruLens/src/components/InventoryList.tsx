@@ -162,11 +162,14 @@ export default function InventoryList({
    */
   const fleet = React.useMemo(() => {
     const rows = vehicles.map(v => ({ v, r: computeWebReadiness(v) }));
-    // Listing-readiness is the 10-shot CORE set now. Every slot is optional, so
-    // the old missingRequired[] was always empty and read every car as "done".
+    // Listing-readiness is 6+ photos (Web Ready standard).
     const shortOfPublish = rows
       .filter(({ r }) => !r.listingReady)
-      .sort((a, b) => a.r.missingCore.length - b.r.missingCore.length);
+      .sort((a, b) => {
+        const countA = Object.keys(a.v.photos || {}).length;
+        const countB = Object.keys(b.v.photos || {}).length;
+        return countB - countA;
+      });
     const readyToExport = rows.filter(({ v, r }) => r.listingReady && !v.lastDmsExportAt);
     const done = rows.filter(({ r }) => r.listingReady).length;
     return { rows, shortOfPublish, readyToExport, done, total: rows.length };
@@ -179,20 +182,21 @@ export default function InventoryList({
     }
     if (fleet.shortOfPublish.length > 0) {
       const nearest = fleet.shortOfPublish[0];
-      const missing = nearest.r.missingCore;
+      const count = Object.keys(nearest.v.photos || {}).length;
+      const needed = Math.max(1, 6 - count);
       const name = `${nearest.v.year} ${nearest.v.make} ${nearest.v.model}`.trim();
       return {
-        head: `${fleet.shortOfPublish.length} ${fleet.shortOfPublish.length === 1 ? 'vehicle is' : 'vehicles are'} short of publishing`,
-        body: `Closest: ${name} — ${missing.length === 1 ? missing[0] : `${missing.length} shots, starting with ${missing[0]}`}.`,
+        head: `${fleet.shortOfPublish.length} ${fleet.shortOfPublish.length === 1 ? 'vehicle is' : 'vehicles are'} short of web-ready`,
+        body: `Closest: ${name} — ${needed} more photo${needed === 1 ? '' : 's'} needed for 6 web-ready photos.`,
       };
     }
     if (fleet.readyToExport.length > 0) {
       return {
         head: `${fleet.readyToExport.length} ready to send to TruFlow`,
-        body: 'Every core shot is captured. Export to publish them.',
+        body: 'Web-ready photo threshold reached. Export to publish them.',
       };
     }
-    return { head: 'Everything captured', body: `All ${fleet.total} vehicles are listing-ready.` };
+    return { head: 'All vehicles web-ready', body: `All ${fleet.total} vehicles meet the 6+ photo web-ready standard.` };
   }, [fleet]);
 
   // Settings state (persisted for VIR / share branding)
@@ -1672,29 +1676,23 @@ export default function InventoryList({
                   <div className="mt-1 pt-2 border-t border-neutral-900 flex flex-col gap-3">
                     <div className="flex-1">
                       <div className="flex justify-between text-[13px] text-neutral-400 mb-1 font-mono">
-                        {/* The chip above keeps the raw count; this line is the
-                            percentage the bar draws — CORE shots, not the old
-                            all-optional "required" set that always read 100%. */}
-                        <span>Core photos</span>
-                        <span className="font-bold text-neutral-200">
-                          {totalCore > 0 ? Math.round((coreTaken / totalCore) * 100) : 0}%
+                        <span>Photos (6 web ready)</span>
+                        <span className={`font-bold ${takenCount >= 6 ? 'text-emerald-400' : 'text-neutral-200'}`}>
+                          {takenCount >= 6 ? 'Web Ready' : `${takenCount}/6 photos`}
                         </span>
                       </div>
                       <div className="w-full bg-[rgba(232,234,230,0.08)] h-[3px] rounded-full overflow-hidden relative">
                         <div
                           className={`h-full rounded-full transition-all duration-500 relative overflow-hidden ${
-                            coreTaken === totalCore ? 'bg-emerald-500' : 'bg-indigo-500'
-                          } ${coreTaken > 0 && coreTaken < totalCore ? 'tl-progress-sheen' : ''}`}
-                          style={{ width: `${totalCore > 0 ? Math.round((coreTaken / totalCore) * 100) : 0}%` }}
+                            takenCount >= 6 ? 'bg-emerald-500' : 'bg-cyan-500'
+                          } ${takenCount > 0 && takenCount < 6 ? 'tl-progress-sheen' : ''}`}
+                          style={{ width: `${Math.min(100, Math.round((takenCount / 6) * 100))}%` }}
                         />
                       </div>
                     </div>
 
-                    {/* One primary (the job), a 3-up ghost row (the extras). Was a
-                        cyan fill, two grey fills and a blue fill at equal weight,
-                        which said nothing on the card was the job. */}
                     <div className="flex flex-col gap-2">
-                      <div className={`grid ${takenCount > 0 && onReviewVehicle ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
+                      <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => onSelectVehicle(vehicle)}
@@ -1703,14 +1701,14 @@ export default function InventoryList({
                         >
                           <Camera size={15} /> {takenCount > 0 ? 'Camera' : 'Take pictures'}
                         </button>
-                        {takenCount > 0 && onReviewVehicle && (
+                        {onReviewVehicle && (
                           <button
                             type="button"
                             onClick={() => onReviewVehicle(vehicle)}
                             className="tru-btn-secondary flex items-center justify-center gap-2 text-[14px] font-semibold text-cyan-300 border-cyan-500/30 hover:border-cyan-500/60 bg-cyan-950/30 hover:bg-cyan-950/60 cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2"
                             title="Review, replace or delete photos"
                           >
-                            <ImageIcon size={15} /> Review ({takenCount})
+                            <ImageIcon size={15} /> Review {takenCount > 0 ? `(${takenCount})` : 'photos'}
                           </button>
                         )}
                       </div>

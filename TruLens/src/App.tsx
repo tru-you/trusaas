@@ -123,7 +123,7 @@ export default function App() {
   const [activeSlotId, setActiveSlotId] = React.useState<string | null>(null);
   const [activeImageSrc, setActiveImageSrc] = React.useState<string | null>(null);
   const [activeQualityReport, setActiveQualityReport] = React.useState<QualityReport | null>(null);
-  const [damageReturnTo, setDamageReturnTo] = React.useState<'camera' | 'inventory'>('inventory');
+  const [damageReturnTo, setDamageReturnTo] = React.useState<'camera' | 'inventory' | 'publish-gate'>('inventory');
   const [damageInitialSlot, setDamageInitialSlot] = React.useState<string | undefined>(undefined);
   
   // Sync status state
@@ -158,13 +158,14 @@ export default function App() {
   const [uploadError, setUploadError] = React.useState<string | null>(null);
 
   // Load inventory from server
-  const fetchInventory = async () => {
+  const fetchInventory = async (force = false) => {
     if (!user) return;
     setSyncStatus('syncing');
     setLoadError(null);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/inventory', {
+      const url = force ? '/api/inventory?refresh=1' : '/api/inventory';
+      const res = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -425,8 +426,8 @@ export default function App() {
     await uploadPhotoToServer(activeVehicleId, targetSlot, processedImage, updatedReport, assessment, closeupPhotos);
   };
 
-  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport?: QualityReport, assessment?: PointResult, closeupPhotos?: string[]) => {
-    if (!user) return;
+  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport?: QualityReport, assessment?: PointResult, closeupPhotos?: string[]): Promise<Vehicle | null> => {
+    if (!user) return null;
     setSyncStatus('syncing');
     setUploadError(null);
     try {
@@ -446,14 +447,74 @@ export default function App() {
         const saved = normalizeVehicle(result.vehicle);
         setVehicles(prev => prev.map(v => v.id === vehicleId ? saved : v));
         setSyncStatus('synced');
+        return saved;
       } else {
         setSyncStatus('error');
         setUploadError(`Could not save that photo (server said ${res.status}). It has NOT been kept — try again.`);
+        return null;
       }
     } catch (e) {
       console.error('Failed to upload photo:', e);
       setSyncStatus('error');
       setUploadError('Could not reach the server to save that shot. It has NOT been kept — check signal and try again.');
+      return null;
+    }
+  };
+
+  /** Delete a photo from a specific slot on the vehicle */
+  const handleDeletePhoto = async (vehicleId: string, slotId: string): Promise<Vehicle | null> => {
+    if (!user) return null;
+    setSyncStatus('syncing');
+    setUploadError(null);
+
+    // Optimistic local update
+    setVehicles(prev => prev.map(v => {
+      if (v.id !== vehicleId) return v;
+      const nextPhotos = { ...(v.photos || {}) };
+      delete nextPhotos[slotId];
+      const nextQuality = { ...(v.quality || {}) };
+      delete nextQuality[slotId];
+      const nextAssessment = { ...(v.slotAssessment || {}) };
+      delete nextAssessment[slotId];
+      const nextCloseups = { ...(v.closeups || {}) };
+      delete nextCloseups[slotId];
+      return {
+        ...v,
+        photos: nextPhotos,
+        quality: nextQuality,
+        slotAssessment: nextAssessment,
+        closeups: nextCloseups,
+      };
+    }));
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/inventory/delete-photo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ vehicleId, slotId }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        const saved = normalizeVehicle(result.vehicle);
+        setVehicles(prev => prev.map(v => v.id === vehicleId ? saved : v));
+        setSyncStatus('synced');
+        return saved;
+      } else {
+        setSyncStatus('error');
+        setUploadError(`Could not delete photo (server said ${res.status}).`);
+        fetchInventory();
+        return null;
+      }
+    } catch (e) {
+      console.error('Failed to delete photo:', e);
+      setSyncStatus('error');
+      setUploadError('Could not reach the server to delete photo.');
+      fetchInventory();
+      return null;
     }
   };
 
@@ -464,9 +525,10 @@ export default function App() {
     try {
       const token = await user.getIdToken();
       const { photos, quality, closeups, ...vehicleWithoutMedia } = vehicle;
+      const { photos: _p, quality: _q, closeups: _c, ...safePatch } = patch as any;
       const next = {
         ...vehicleWithoutMedia,
-        ...patch,
+        ...safePatch,
         id: vehicle.id,
         updatedAt: new Date().toISOString(),
       };
@@ -508,6 +570,20 @@ export default function App() {
     }
   };
 
+  // Open the Review & publish screen for a vehicle directly
+  const handleReviewVehicle = (vehicle: Vehicle) => {
+    try {
+      const safe = normalizeVehicle(vehicle);
+      setVehicles((prev) => prev.map((v) => (v.id === safe.id ? safe : v)));
+      setActiveVehicleId(safe.id);
+      setActiveView('publish-gate');
+      setLoadError(null);
+    } catch (e) {
+      console.error('Failed to open vehicle review:', e);
+      setLoadError(e instanceof Error ? e.message : 'Could not open vehicle review');
+    }
+  };
+
   // Open the inspection Report for a vehicle
   const handleViewReport = (vehicle: Vehicle) => {
     try {
@@ -538,18 +614,20 @@ export default function App() {
   if (loading) return <div className="h-full w-full flex items-center justify-center bg-black text-[#E8EAE6]">Loading Auth...</div>;
 
   const activeVehicle = activeVehicleId
-    ? vehicles.find(v => v.id === activeVehicleId) || null
+    ? vehicles.find((v) => v.id === activeVehicleId) || null
     : null;
 
   return (
-    <MobileDevice>
+    <MobileDevice 
+      onHome={() => {
+        setActiveView('inventory');
+        setActiveVehicleId(null);
+      }}
+      dealerConfirmed={dealerConfirmed}
+      onConfirmedChange={setDealerConfirmed}
+    >
       {!user ? (
         <Login />
-        /* Demo never sees the dealer picker: a prospect has no yard to pick,
-           and the picker's whole job was the legacy shared-code era where the
-           app had to ASK which dealership this was. Per-dealer codes pin it
-           server-side now, and demo is scoped to its own sandbox — routing a
-           prospect into a list of our real clients leaked the customer list. */
       ) : !dealerConfirmed && !isDemo ? (
         <DealerSelect
           onSelected={(slug) => {
@@ -562,21 +640,25 @@ export default function App() {
         <>
           {activeView === 'inventory' && (
             <>
+              {/* Load error banner — dismissible, so a temporary outage doesn't
+                  permanently block the screen once the network recovers. */}
               {loadError && (
-                <div className="absolute top-2 left-2 right-2 z-50 mx-auto max-w-sm rounded-lg border border-red-500/40 bg-red-950/90 px-3 py-2 text-[13px] text-red-200 shadow-lg">
-                  <strong className="block mb-0.5">Load error</strong>
-                  {loadError}
+                <div
+                  role="alert"
+                  className="mb-3 rounded-xl border border-[#B86A6A]/40 bg-[#B86A6A]/[0.12] px-4 py-3 flex items-start gap-3"
+                >
+                  <p className="text-[13px] text-[#DFB6B6] leading-snug flex-1">{loadError}</p>
                   <button
                     type="button"
-                    className="mt-1 underline text-red-100"
-                    onClick={() => { setLoadError(null); fetchInventory(); }}
+                    onClick={() => setLoadError(null)}
+                    className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] shrink-0"
                   >
-                    Retry
+                    Dismiss
                   </button>
                 </div>
               )}
-              {/* A failed save has to be seen. The pending shot is already gone
-                  by the time this renders, so without it the loss is invisible
+              {/* Upload failure banner — shown on inventory so an error during
+                  capture isn't swallowed when the photographer leaves the camera,
                   and the dealer keeps shooting into a void. */}
               {uploadError && (
                 <div
@@ -596,13 +678,14 @@ export default function App() {
               <InventoryList
                 vehicles={vehicles}
                 onSelectVehicle={handleSelectVehicle}
+                onReviewVehicle={handleReviewVehicle}
                 onViewReport={handleViewReport}
                 onAddVehicle={handleAddVehicle}
                 onDeleteVehicle={handleDeleteVehicle}
                 onExportToDms={handleExportToDms}
                 onUpdateVehicle={handleUpdateVehicle}
                 syncStatus={syncStatus}
-                onForceSync={fetchInventory}
+                onForceSync={() => fetchInventory(true)}
                 onOpenGuide={() => setGuideOpen(true)}
                 onOpenDealerAssist={() => setAssistOpen(true)}
                 setupStatus={setupCardHidden ? null : setupStatus}
@@ -618,6 +701,7 @@ export default function App() {
             <ReportPreview
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
+              onOpenReview={() => setActiveView('publish-gate')}
               onVehicleUpdated={async (v) => {
                 const saved = await handleUpdateVehicle(activeVehicle, v);
                 if (!saved) {
@@ -656,7 +740,20 @@ export default function App() {
               vehicle={activeVehicle}
               onBack={() => setActiveView('camera')}
               onPublish={() => setActiveView('report')}
-              onTagDamage={() => setActiveView('damage')}
+              onTagDamage={(slotId) => {
+                setDamageReturnTo('publish-gate');
+                setDamageInitialSlot(slotId);
+                setActiveView('damage');
+              }}
+              onDeletePhoto={(slotId) => handleDeletePhoto(activeVehicle.id, slotId)}
+              onUploadPhoto={async (slotId, base64) => {
+                const defaultReport: QualityReport = {
+                  overallScore: 90,
+                  lightingCheck: { status: 'Perfect', brightness: 135, contrast: 120, feedback: 'Manual upload.' },
+                  angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Manual upload.' },
+                };
+                return uploadPhotoToServer(activeVehicle.id, slotId, base64, defaultReport);
+              }}
               onSwapPhotos={async (slotA, slotB) => {
                 try {
                   const token = await user.getIdToken();
@@ -675,6 +772,12 @@ export default function App() {
                   return null;
                 } catch { return null; }
               }}
+              onVehicleUpdated={async (v) => {
+                const saved = await handleUpdateVehicle(activeVehicle, v);
+                if (!saved) {
+                  setVehicles((prev) => prev.map((x) => (x.id === v.id ? normalizeVehicle(v) : x)));
+                }
+              }}
               onExport={async () => {
                 const r = await handleExportToDms(activeVehicle);
                 if (r.success) setActiveView('inventory');
@@ -689,10 +792,12 @@ export default function App() {
               onBack={() => setActiveView('inventory')}
               onComplete={() => setActiveView('publish-gate')}
               onPhotoCaptured={handlePhotoCaptured}
+              onDeletePhoto={(slotId) => handleDeletePhoto(activeVehicle.id, slotId)}
               onEditRequested={handleEditSlot}
               onOpenGuide={() => setGuideOpen(true)}
               onBulkPhotosUploaded={(updatedVehicle) => {
                 setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
+                setActiveView('publish-gate');
               }}
             />
           )}

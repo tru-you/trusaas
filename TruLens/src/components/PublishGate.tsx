@@ -11,7 +11,7 @@ interface PublishGateProps {
   onBack: () => void;
   onPublish: () => void;
   onExport: () => Promise<{ success: boolean; error?: string }>;
-  onTagDamage?: () => void;
+  onTagDamage?: (slotId?: string) => void;
   onSwapPhotos?: (slotA: string, slotB: string) => Promise<Vehicle | null>;
   onDeletePhoto?: (slotId: string) => Promise<Vehicle | null>;
   onUploadPhoto?: (slotId: string, base64Image: string) => Promise<Vehicle | null>;
@@ -20,6 +20,10 @@ interface PublishGateProps {
 
 export default function PublishGate({ vehicle, onBack, onPublish, onExport, onTagDamage, onSwapPhotos, onDeletePhoto, onUploadPhoto, onVehicleUpdated }: PublishGateProps) {
   const readiness = computeWebReadiness(vehicle);
+  const [currentVir, setCurrentVir] = React.useState<number | null>(vehicle.vir != null ? vehicle.vir : null);
+  React.useEffect(() => {
+    if (vehicle.vir != null) setCurrentVir(vehicle.vir);
+  }, [vehicle.vir]);
   const [exporting, setExporting] = React.useState(false);
   const [exportErr, setExportErr] = React.useState<string | null>(null);
   // Review state — initialized from vehicle's saved slotAssessments
@@ -140,8 +144,8 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport, onTa
 
   const conditions: { label: string; met: boolean }[] = [
     {
-      label: `${readiness.coreTaken} of ${readiness.coreTotal} core shots captured`,
-      met: readiness.coreTotal > 0 && readiness.coreTaken === readiness.coreTotal,
+      label: `${Math.min(filledSlots.length, 6)} of 6 photos captured (Web Ready)`,
+      met: filledSlots.length >= 6,
     },
     {
       label: readiness.conditionDeclared
@@ -270,17 +274,17 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport, onTa
                 Overall Condition (VIR Rating)
               </span>
               <p className="text-[13px] font-medium text-[#E8EAE6] mt-0.5">
-                {vehicle.vir ? `VIR ${vehicle.vir}/100 Rating` : "Select vehicle condition"}
+                {currentVir != null ? `VIR ${currentVir}/100 Rating` : "Select vehicle condition"}
               </p>
             </div>
             <span className="text-[14px] font-mono font-bold text-cyan-400">
-              {vehicle.vir ? `${Math.round(vehicle.vir / 10)}/10` : "Not set"}
+              {currentVir != null ? `${Math.round(currentVir / 10)}/10` : "Not set"}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
-              const currentScore = vehicle.vir != null ? Math.round(vehicle.vir / 10) : null;
+              const currentScore = currentVir != null ? Math.round(currentVir / 10) : null;
               const isSelected = currentScore === num;
               return (
                 <button
@@ -288,6 +292,7 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport, onTa
                   type="button"
                   onClick={() => {
                     const newVir = num * 10;
+                    setCurrentVir(newVir);
                     onVehicleUpdated?.({
                       ...vehicle,
                       vir: newVir,
@@ -314,17 +319,15 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport, onTa
         {/* Friendly Photo Guidance Note */}
         <div className="rounded-xl px-4 py-3 border border-white/10 bg-white/[0.02] flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`w-2 h-2 rounded-full shrink-0 ${filledSlots.length >= 10 ? 'bg-cyan-400' : filledSlots.length >= 6 ? 'bg-amber-400' : 'bg-neutral-500'}`} />
+            <div className={`w-2 h-2 rounded-full shrink-0 ${filledSlots.length >= 6 ? 'bg-cyan-400' : 'bg-amber-400'}`} />
             <p className="text-[13px] text-[#E8EAE6] truncate">
-              {filledSlots.length >= 10
-                ? `${filledSlots.length} photos captured · Ideal showroom pack`
-                : filledSlots.length >= 6
-                ? `${filledSlots.length} photos · Web-ready (10 photos recommended)`
-                : `${filledSlots.length} photos · Capture at least 6 for web listing`}
+              {filledSlots.length >= 6
+                ? `${filledSlots.length} photos captured · Web Ready`
+                : `${filledSlots.length} of 6 photos captured · ${6 - filledSlots.length} more recommended`}
             </p>
           </div>
           <span className="text-[12px] font-mono text-cyan-400 shrink-0">
-            {filledSlots.length}/10
+            {filledSlots.length >= 6 ? 'Web Ready' : `${filledSlots.length}/6`}
           </span>
         </div>
 
@@ -545,7 +548,7 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport, onTa
               {onTagDamage && (
                 <button
                   type="button"
-                  onClick={() => { setActiveSlot(null); onTagDamage(); }}
+                  onClick={() => { const s = activeSlot; setActiveSlot(null); onTagDamage(s || undefined); }}
                   className="min-h-[46px] rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[12px] font-semibold flex items-center justify-center gap-1.5"
                   title="Tag damage on this photo"
                 >

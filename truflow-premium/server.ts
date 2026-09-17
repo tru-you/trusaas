@@ -4994,7 +4994,7 @@ app.post("/api/sync/push-photos", (req, res) => {
 
     if (Array.isArray(vehicleMeta.damage)) {
       (state.vehicles[idx] as any).damage = vehicleMeta.damage;
-      (state.vehicles[idx] as any).vir = capOverallVir(computeVirFromDamage(vehicleMeta.damage));
+      (state.vehicles[idx] as any).vir = computeVirFromDamage(vehicleMeta.damage);
       (state.vehicles[idx] as any).virReport = buildVirReport({
         slotAssessment: vehicleMeta.slotAssessment,
         damage: vehicleMeta.damage,
@@ -5003,7 +5003,7 @@ app.post("/api/sync/push-photos", (req, res) => {
     if (vehicleMeta.vir != null) {
       (state.vehicles[idx] as any).vir = Math.max(0, Math.min(100, Math.round(Number(vehicleMeta.vir))));
     } else if (Array.isArray(vehicleMeta.damage)) {
-      (state.vehicles[idx] as any).vir = capOverallVir(computeVirFromDamage(vehicleMeta.damage));
+      (state.vehicles[idx] as any).vir = computeVirFromDamage(vehicleMeta.damage);
     }
     if (Array.isArray(vehicleMeta.inspection)) {
       (state.vehicles[idx] as any).inspection = vehicleMeta.inspection;
@@ -5297,7 +5297,7 @@ function computeVirFromDamage(damage: { severity: number }[]): number {
  *  Per-panel scores in virReport are NOT capped — a clean panel is
  *  honestly 100 on its own row. */
 function capOverallVir(score: number): number {
-  return Math.min(90, score);
+  return Math.min(100, Math.max(0, score));
 }
 
 /** Build virReport sections. Each entry describes a panel's inspection
