@@ -618,14 +618,7 @@ export default function App() {
     : null;
 
   return (
-    <MobileDevice 
-      onHome={() => {
-        setActiveView('inventory');
-        setActiveVehicleId(null);
-      }}
-      dealerConfirmed={dealerConfirmed}
-      onConfirmedChange={setDealerConfirmed}
-    >
+    <MobileDevice>
       {!user ? (
         <Login />
       ) : !dealerConfirmed && !isDemo ? (

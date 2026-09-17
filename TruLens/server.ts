@@ -2441,10 +2441,12 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     for (const [slotId, value] of Object.entries(storedPhotos)) {
       if (!value) continue;
       const uri = asDataUri(value);
+      const strVal = typeof value === "string" ? value : "";
+      const isRef = isStoredRef(value);
       if (uri) {
         photos[slotId] = uri;
-      } else if (typeof value === "string" && (isStoredRef(value) || /^https?:\/\//i.test(value) || value.startsWith("/media/"))) {
-        photos[slotId] = value;
+      } else if (strVal && (isRef || /^https?:\/\//i.test(strVal) || strVal.startsWith("/media/"))) {
+        photos[slotId] = strVal;
       }
     }
     const photoCount = Object.keys(photos).length;
@@ -3048,8 +3050,9 @@ async function syncVehiclesFromDms(dealerSlug: string, force = false): Promise<{
         // 1. Clean existing duplicates if any image URL was previously assigned to multiple slots
         const cleanedExistingPhotos: Record<string, string> = {};
         const seenUrls = new Set<string>();
-        for (const [sId, url] of Object.entries(existingPhotos)) {
-          if (!deletedSlots.has(sId) && !seenUrls.has(url)) {
+        for (const [sId, rawUrl] of Object.entries(existingPhotos)) {
+          const url = String(rawUrl || '');
+          if (!deletedSlots.has(sId) && url && !seenUrls.has(url)) {
             cleanedExistingPhotos[sId] = url;
             seenUrls.add(url);
           }

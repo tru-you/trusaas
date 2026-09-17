@@ -1,6 +1,7 @@
 import React from 'react';
 import { Lock, AlertCircle, Loader2, Monitor, ShieldOff, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { isServerSecured } from './auth-check';
 import trudealerWordmark from '../assets/images/trudealer-wordmark.png';
 
 /**

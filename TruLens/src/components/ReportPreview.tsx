@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, Download, Printer, Award, AlertTriangle, CheckCircle2,
-  Camera, FileText, ClipboardList, Clock, Check, MessageCircle, Box,
+  Camera, FileText, ClipboardList, Clock, Check, MessageCircle, Box, Eye,
 } from 'lucide-react';
 import { Vehicle, QualityReport, DamageFinding } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
@@ -16,6 +16,7 @@ import trudealerLockup from '../assets/images/trudealer-logo-3d-horizontal.png';
 interface ReportPreviewProps {
   vehicle: Vehicle;
   onBack: () => void;
+  onOpenReview?: () => void;
   onVehicleUpdated?: (v: Vehicle) => void;
 }
 
@@ -77,7 +78,7 @@ function computeCondition(vehicle: Vehicle) {
   return { stars, label, findings: all, hasInput };
 }
 
-export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
+export default function ReportPreview({ vehicle, onBack, onOpenReview, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
   const money = useMoney();
   const market = useMarket();
@@ -324,6 +325,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <ArrowLeft size={16} /> Back
           </button>
           <div className="flex flex-wrap items-center gap-2">
+            {onOpenReview && (
+              <button
+                type="button"
+                onClick={onOpenReview}
+                className="flex items-center gap-1.5 px-3 py-2 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg text-[13px] font-bold text-cyan-300 cursor-pointer transition-colors"
+                title="Review, edit, replace or delete vehicle photos"
+              >
+                <Eye size={13} /> Photos
+              </button>
+            )}
             <span
               className="text-[13px] font-bold px-2 py-1 rounded-full border"
               style={{ color: condColor, borderColor: condColor + '55', background: condColor + '18' }}

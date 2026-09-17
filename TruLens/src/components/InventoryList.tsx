@@ -164,14 +164,14 @@ export default function InventoryList({
     const rows = vehicles.map(v => ({ v, r: computeWebReadiness(v) }));
     // Listing-readiness is 6+ photos (Web Ready standard).
     const shortOfPublish = rows
-      .filter(({ r }) => !r.listingReady)
+      .filter(({ v, r }) => !r.listingReady && v.status !== 'Listed')
       .sort((a, b) => {
         const countA = Object.keys(a.v.photos || {}).length;
         const countB = Object.keys(b.v.photos || {}).length;
         return countB - countA;
       });
-    const readyToExport = rows.filter(({ v, r }) => r.listingReady && !v.lastDmsExportAt);
-    const done = rows.filter(({ r }) => r.listingReady).length;
+    const readyToExport = rows.filter(({ v, r }) => (r.listingReady || v.status === 'Ready') && !v.lastDmsExportAt && v.status !== 'Listed');
+    const done = rows.filter(({ v, r }) => r.listingReady || v.status === 'Listed').length;
     return { rows, shortOfPublish, readyToExport, done, total: rows.length };
   }, [vehicles]);
 
@@ -760,7 +760,9 @@ export default function InventoryList({
         <div className="flex items-center gap-2.5 min-w-0">
           <img src="/icons/icon-192.png" alt="TruLens" className="h-7 w-7 rounded-[7px] shrink-0" />
           <div className="min-w-0">
-            <h1 className="text-[17px] font-semibold text-[#E8EAE6] truncate leading-tight">{dealershipName}</h1>
+            <h1 className="text-[17px] font-semibold text-[#E8EAE6] truncate leading-tight">
+              {dealershipName || (dealerSlug ? dealerSlug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) : 'TruLens')}
+            </h1>
             <p className="text-[13px] text-neutral-400 leading-tight truncate mt-0.5">
               {fleet.total === 0
                 ? 'No vehicles yet'
@@ -1545,8 +1547,8 @@ export default function InventoryList({
                         ) : (
                           <Car size={20} className="text-neutral-600" />
                         )}
-                        <span className="absolute bottom-0 right-0 bg-black/80 px-1 text-[13px] font-mono font-bold text-neutral-300">
-                          {takenCount}/{totalCount}
+                        <span className="absolute bottom-0 right-0 bg-black/80 px-1.5 py-0.5 text-[11px] font-mono font-bold text-neutral-300 rounded-tl">
+                          {takenCount >= 6 ? (takenCount >= 10 ? `${takenCount}` : `${takenCount}/10`) : `${takenCount}/6`}
                         </span>
                       </div>
 
@@ -1823,38 +1825,42 @@ export default function InventoryList({
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[13px] font-semibold text-[#4FE3DC]">
-                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0))} ready
+                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'Ready' || v.status === 'Listed' ? (Number(v.price) || 0) : 0), 0))} ready &amp; listed
                 </span>
                 <span className="text-[12px] text-[rgba(232,234,230,0.55)]">
-                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0))} pending
+                  {money(vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? (Number(v.price) || 0) : 0), 0))} pending
                 </span>
               </div>
             </div>
 
             {/* Performance KPIs */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
-                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Catalogue</span>
+            <div className="grid grid-cols-4 gap-1.5">
+              <div className="bg-neutral-950 p-2 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[11px] text-[rgba(232,234,230,0.55)] truncate">Catalogue</span>
                 <span className="text-[16px] font-semibold text-[#E8EAE6]">{vehicles.length}</span>
               </div>
-              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
-                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Ready</span>
-                <span className="text-[16px] font-semibold text-[#4FE3DC]">{vehicles.filter(v => v.status === 'Ready').length}</span>
+              <div className="bg-neutral-950 p-2 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[11px] text-[rgba(232,234,230,0.55)] truncate">Listed</span>
+                <span className="text-[16px] font-semibold text-[#4FE3DC]">{vehicles.filter(v => v.status === 'Listed').length}</span>
               </div>
-              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
-                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Pending</span>
+              <div className="bg-neutral-950 p-2 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[11px] text-[rgba(232,234,230,0.55)] truncate">Ready</span>
+                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready').length}</span>
+              </div>
+              <div className="bg-neutral-950 p-2 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[11px] text-[rgba(232,234,230,0.55)] truncate">In progress</span>
                 <span className="text-[16px] font-semibold text-[#E8EAE6]">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
-                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Capture rate</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Capture rate (6 web ready)</span>
                 <span className="text-[16px] font-semibold text-[#4FE3DC]">
-                  {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * DEFAULT_TEMPLATE.slots.length || 1)) * 100)}%
+                  {Math.round((vehicles.filter(v => Object.keys(v.photos || {}).length >= 6).length / (vehicles.length || 1)) * 100)}%
                 </span>
               </div>
               <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
-                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Photos</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Photos taken</span>
                 <span className="text-[16px] font-semibold text-[#4FE3DC]">
                   {vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0)}
                 </span>
@@ -1865,15 +1871,16 @@ export default function InventoryList({
             <div className="grid grid-cols-2 gap-2">
               {/* Readiness */}
               <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3 h-48 flex flex-col">
-                <span className="text-[12px] text-[rgba(232,234,230,0.55)]  mb-2">Readiness</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Readiness</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Ready', value: vehicles.filter(v => v.status === 'Ready').length },
-                          { name: 'In-Progress', value: vehicles.filter(v => v.status === 'In-Progress').length }
-                        ]}
+                          { name: 'Listed', value: vehicles.filter(v => v.status === 'Listed').length, fill: '#4FE3DC' },
+                          { name: 'Ready', value: vehicles.filter(v => v.status === 'Ready').length, fill: '#10B981' },
+                          { name: 'In-Progress', value: vehicles.filter(v => v.status === 'In-Progress').length, fill: '#8B8D89' }
+                        ].filter(d => d.value > 0)}
                         cx="50%"
                         cy="50%"
                         innerRadius={25}
@@ -1881,8 +1888,13 @@ export default function InventoryList({
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        <Cell fill="#4FE3DC" />
-                        <Cell fill="#8B8D89" />
+                        {[
+                          { name: 'Listed', fill: '#4FE3DC' },
+                          { name: 'Ready', fill: '#10B981' },
+                          { name: 'In-Progress', fill: '#8B8D89' }
+                        ].map((entry) => (
+                          <Cell key={entry.name} fill={entry.fill} />
+                        ))}
                       </Pie>
                       <RechartsTooltip 
                         contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #262626', fontSize: '13px', borderRadius: '8px' }}
@@ -1891,15 +1903,16 @@ export default function InventoryList({
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex justify-center gap-4 text-[12px] text-[rgba(232,234,230,0.55)]">
-                  <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#4FE3DC]"/> Ready</span>
+                <div className="flex justify-center gap-2 text-[11px] text-[rgba(232,234,230,0.55)] flex-wrap">
+                  <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#4FE3DC]"/> Listed</span>
+                  <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#10B981]"/> Ready</span>
                   <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#8B8D89]"/> Pending</span>
                 </div>
               </div>
 
               {/* Weekly Capture Volume */}
               <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3 h-48 flex flex-col">
-                <span className="text-[12px] text-[rgba(232,234,230,0.55)]  mb-2">Weekly activity</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Weekly activity</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={[
@@ -1912,11 +1925,6 @@ export default function InventoryList({
                       { name: 'Sun', photos: 4 },
                     ]}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#262626" />
-                      {/* Was fontSize 7 on #737373 — the day labels under this chart
-                          were the smallest type in the app by a wide margin, well
-                          under the 12px floor brand.css sets, and the grey sat
-                          around 3.5:1 on the panel. Recharts writes these as inline
-                          SVG attributes, so no stylesheet rule reaches them. */}
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'rgba(232,234,230,0.55)' }} />
                       <YAxis hide />
                       <RechartsTooltip 
@@ -1933,38 +1941,42 @@ export default function InventoryList({
             {/* Critical Action Items */}
             <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3">
               <div className="flex items-center justify-between mb-2">
-                {/* "Attention Required" and "Action Needed" side by side said the
-                    same thing twice and neither said what to do. The heading now
-                    names the work; the count is the urgency. */}
                 <span className="text-[13px] font-semibold text-[#E8EAE6]">Still to shoot</span>
                 <span className="text-[13px] text-[rgba(232,234,230,0.55)] font-medium">
-                  {vehicles.filter(v => v.status === 'In-Progress').length}
+                  {vehicles.filter(v => v.status === 'In-Progress' || Object.keys(v.photos || {}).length < 6).length}
                 </span>
               </div>
               <div className="space-y-2">
-                {vehicles.filter(v => v.status === 'In-Progress').length === 0 ? (
+                {vehicles.filter(v => v.status === 'In-Progress' || Object.keys(v.photos || {}).length < 6).length === 0 ? (
                   <div className="text-center py-2">
-                    <p className="text-[13px] text-[rgba(232,234,230,0.55)]">All vehicles shot.</p>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.55)]">All vehicles web-ready.</p>
                   </div>
                 ) : (
-                  vehicles.filter(v => v.status === 'In-Progress').slice(0, 3).map(v => {
-                    const missingCount = DEFAULT_TEMPLATE.slots.filter(s => s.required && !(v.photos || {})[s.id]).length;
+                  vehicles.filter(v => v.status === 'In-Progress' || Object.keys(v.photos || {}).length < 6).slice(0, 3).map(v => {
+                    const photosCount = Object.keys(v.photos || {}).length;
+                    const needed = Math.max(1, 6 - photosCount);
                     return (
                       <div key={v.id} className="flex items-center justify-between p-2 bg-neutral-900/40 rounded-lg border border-neutral-850/50">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded bg-[rgba(232,234,230,0.055)] flex items-center justify-center">
-                            <Car size={12} className="text-[rgba(232,234,230,0.55)]" />
+                            <Camera size={12} className="text-[#4FE3DC]" />
                           </div>
                           <div>
-                            <p className="text-[13px] font-medium text-[#E8EAE6]">{v.year} {v.make}</p>
-                            <p className="text-[13px] text-neutral-500">Missing {missingCount} required shots</p>
+                            <p className="text-[13px] font-medium text-[#E8EAE6]">{v.year} {v.make} {v.model}</p>
+                            <p className="text-[12px] text-neutral-400 font-mono">
+                              {photosCount} of 6 photos captured ({needed} more needed)
+                            </p>
                           </div>
                         </div>
                         <button 
-                          onClick={() => onSelectVehicle(v)}
-                          className="text-[13px] font-medium text-[#4FE3DC] hover:text-[#4FE3DC]/80"
+                          type="button"
+                          onClick={() => {
+                            setCurrentTab('catalog');
+                            onSelectVehicle(v);
+                          }}
+                          className="px-3 py-1 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg text-[12px] font-bold text-cyan-300 cursor-pointer transition-colors"
                         >
-                          Complete →
+                          Shoot
                         </button>
                       </div>
                     );

@@ -101,6 +101,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   // Core = the honest listing minimum; the rest sit behind an "add more" toggle
   // so onboarding a car reads as ~10 guided shots, not 27 fields.
   const coreSlots = allSlots.filter((s) => s.tier === 'core');
+  const moreSlots = allSlots.filter((s) => s.tier !== 'core');
   const coreDone = coreSlots.filter((s) => !!photos[s.id]).length;
   const moreDone = moreSlots.filter((s) => !!photos[s.id]).length;
   const totalCaptured = coreDone + moreDone;

@@ -603,6 +603,7 @@ export async function fetchSerpListings(make: string, model: string, year: strin
     // 2. Fallback: Bright Data SERP
     else if (getSerpProvider() === "brightdata") {
       const googleUrl = `https://${cfg.googleDomain}/search?q=${encodeURIComponent(q)}&${cfg.googleGl}&num=20&brd_json=1`;
+      const country = cfg.googleGl?.replace('gl=', '') || 'za';
       const res = await fetch(getSerpApiUrl() || "https://api.brightdata.com/request", {
         method: "POST",
         headers: { Authorization: `Bearer ${getSerpApiKey()}`, "Content-Type": "application/json" },
