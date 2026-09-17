@@ -1,5 +1,5 @@
 /* TruLens PWA service worker — app shell cache; never cache API photo payloads */
-const CACHE_VERSION = 'truinspect-2026-09-13-wm';
+const CACHE_VERSION = 'truinspect-2026-09-17-login-sync';
 const SHELL = [
   '/',
   '/index.html',

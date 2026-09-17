@@ -107,7 +107,7 @@ export default function Login() {
             className="w-52 max-w-full object-contain mx-auto mb-3 brand-3d-glow"
           />
           <span className="pill-cyan-shimmer">
-            TruInspect Condition
+            TruInspect Condition & VIR
           </span>
         </div>
 
