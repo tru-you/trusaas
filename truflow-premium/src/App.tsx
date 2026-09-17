@@ -1472,7 +1472,7 @@ export default function App() {
       >
         <div className="mb-6 flex flex-col items-center">
           <div className="w-full flex items-center justify-center px-1">
-            <img src="/icons/in-app-icon-512.png" alt="TruFlow" className="h-16 w-16 object-contain rounded-xl drop-shadow-[0_4px_16px_rgba(79,227,220,0.35)] shadow-[0_2px_8px_rgba(0,0,0,0.5)] border border-white/10" />
+            <img src="/icons/icon-192.png" alt="TruFlow" className="h-14 w-14 rounded-xl object-contain" />
           </div>
           {/* Admin dealer context switcher — pick a dealer to see their world. */}
           {isMasterAdmin && state?.dealerships && state.dealerships.length > 0 && (

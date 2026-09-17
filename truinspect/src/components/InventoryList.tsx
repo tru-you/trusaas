@@ -769,7 +769,7 @@ export default function InventoryList({
           quiet ghost action. */}
       <div className="px-4 pt-4 pb-1 flex items-start justify-between gap-3 shrink-0">
         <div className="flex items-start gap-2.5 min-w-0">
-          <img src="/icons/in-app-icon.png" alt="TruInspect" className="h-9 w-9 rounded-[9px] object-contain shrink-0 mt-0.5 shadow-[0_2px_8px_rgba(0,0,0,0.5)] border border-white/10" />
+          <img src="/icons/icon-192.png" alt="TruInspect" className="h-7 w-7 rounded-[7px] shrink-0 mt-0.5" />
           <div className="min-w-0">
             <h1 className="text-[17px] font-semibold text-[#E8EAE6] truncate leading-tight">{dealershipName}</h1>
             <p className="text-[13px] text-neutral-400 leading-tight truncate mt-0.5">

@@ -8,7 +8,6 @@ const SHELL = [
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
   '/icons/apple-touch-icon.png',
-  '/icons/in-app-icon.png',
   '/trudealer-wordmark.png',
 ];
 

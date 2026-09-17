@@ -24,6 +24,7 @@ import type { RegLookupResult } from '../../../packages/reg-lookup';
 interface InventoryListProps {
   vehicles: Vehicle[];
   onSelectVehicle: (vehicle: Vehicle) => void;
+  onReviewVehicle?: (vehicle: Vehicle) => void;
   onViewReport?: (vehicle: Vehicle) => void;
   onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>, initialPhotos?: Record<string, string>) => void;
   onDeleteVehicle: (id: string) => void;
@@ -53,6 +54,7 @@ const DMS_URL = 'https://premium.trudealers.com';
 export default function InventoryList({
   vehicles,
   onSelectVehicle,
+  onReviewVehicle,
   onViewReport,
   onAddVehicle,
   onDeleteVehicle,
@@ -750,9 +752,9 @@ export default function InventoryList({
       {/* App header — the .tl-appbar is retired (62px of chrome that said what
           one line of type says better: whose stock this is, how much is left).
           A plain page title, a count, and three quiet ghost actions. */}
-      <div className="px-4 pt-4 pb-1 flex items-start justify-between gap-3 shrink-0">
-        <div className="flex items-start gap-2.5 min-w-0">
-          <img src="/icons/in-app-icon.png" alt="TruLens" className="h-9 w-9 rounded-[9px] object-contain shrink-0 mt-0.5 shadow-[0_2px_8px_rgba(0,0,0,0.5)] border border-white/10" />
+      <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <img src="/icons/icon-192.png" alt="TruLens" className="h-7 w-7 rounded-[7px] shrink-0" />
           <div className="min-w-0">
             <h1 className="text-[17px] font-semibold text-[#E8EAE6] truncate leading-tight">{dealershipName}</h1>
             <p className="text-[13px] text-neutral-400 leading-tight truncate mt-0.5">
@@ -1516,7 +1518,19 @@ export default function InventoryList({
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
                       {/* Photo Preview Miniature Thumbnail or Car icon */}
-                      <div className="w-12 h-12 bg-neutral-900 rounded-lg border border-neutral-800 flex items-center justify-center overflow-hidden shrink-0 relative">
+                      <div 
+                        onClick={() => {
+                          if (takenCount > 0 && onReviewVehicle) {
+                            onReviewVehicle(vehicle);
+                          } else {
+                            onSelectVehicle(vehicle);
+                          }
+                        }}
+                        className={`w-12 h-12 bg-neutral-900 rounded-lg border border-neutral-800 flex items-center justify-center overflow-hidden shrink-0 relative cursor-pointer hover:border-cyan-500/50 transition-colors ${
+                          takenCount > 0 ? 'ring-1 ring-cyan-500/20' : ''
+                        }`}
+                        title={takenCount > 0 ? `Review ${takenCount} photos` : "Take pictures"}
+                      >
                         {thumb ? (
                           <img
                             src={thumb}
@@ -1680,14 +1694,26 @@ export default function InventoryList({
                         cyan fill, two grey fills and a blue fill at equal weight,
                         which said nothing on the card was the job. */}
                     <div className="flex flex-col gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onSelectVehicle(vehicle)}
-                        className="btn-primary on-fill flex items-center justify-center gap-2 text-[15px] cursor-pointer whitespace-nowrap w-full min-h-[44px] px-2 py-2"
-                        title="Open camera guide and take pictures"
-                      >
-                        <Camera size={15} /> Take pictures
-                      </button>
+                      <div className={`grid ${takenCount > 0 && onReviewVehicle ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
+                        <button
+                          type="button"
+                          onClick={() => onSelectVehicle(vehicle)}
+                          className="btn-primary on-fill flex items-center justify-center gap-2 text-[14px] cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2"
+                          title="Open camera guide and take pictures"
+                        >
+                          <Camera size={15} /> {takenCount > 0 ? 'Camera' : 'Take pictures'}
+                        </button>
+                        {takenCount > 0 && onReviewVehicle && (
+                          <button
+                            type="button"
+                            onClick={() => onReviewVehicle(vehicle)}
+                            className="tru-btn-secondary flex items-center justify-center gap-2 text-[14px] font-semibold text-cyan-300 border-cyan-500/30 hover:border-cyan-500/60 bg-cyan-950/30 hover:bg-cyan-950/60 cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2"
+                            title="Review, replace or delete photos"
+                          >
+                            <ImageIcon size={15} /> Review ({takenCount})
+                          </button>
+                        )}
+                      </div>
 
                       <div className="grid grid-cols-3 gap-2">
                         <button

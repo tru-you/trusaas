@@ -11,7 +11,6 @@ var CORE = [
   "/icon-192.png",
   "/icon-512.png",
   "/apple-touch-icon.png",
-  "/in-app-icon.png",
   "/trudealer-wordmark.png",
   "/trudealer-logo-3d-horizontal.png"
 ];
