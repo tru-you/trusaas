@@ -192,6 +192,13 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
    - In `CameraGuide.tsx`, updated top viewfinder status to show clean shot count without rigid "Core" labeling.
    - In `TruLens/server.ts` (`syncVehiclesFromDms`), updated sync logic so that when photos are reordered in the DMS, the new sequence synchronizes into TruLens slots automatically.
 
+6. **Follow-Up Stability & Harmonization Fixes (2026-09-17)**:
+   - **TruFlow Unpublish Blank Screen**: Replaced buggy `<label>` checkbox with an explicit `<button type="button" role="switch">` containing `stopPropagation` and synchronized `[isPublished, setIsPublished]` state. Optimistically updated `selectedDetailVehicle` in `App.tsx` so toggling website visibility updates cleanly without blank screen crashes.
+   - **TruLens Condition VIR Rating Unlocked**: Resolved the issue where VIR was locked at 9 (90) by providing local state in `PublishGate.tsx`, prioritizing `vehicle.vir` over automated averages in `TruLens/server.ts`, and removing the 90-cap in `capOverallVir` on `truflow-premium/server.ts`.
+   - **Damage Tagger Handover & Return Navigation**: `PublishGate.tsx` now passes the focused `activeSlot` to `onTagDamage`, and `App.tsx` sets `damageReturnTo = 'publish-gate'`, allowing inspectors to tag damage on a specific photo and return directly to review rather than bouncing out to the inventory list.
+   - **Always-Visible "Review Photos" Button**: In `TruLens/src/components/InventoryList.tsx`, vehicle cards always render both `Camera` and `Review` buttons, allowing manual upload and slot management even for vehicles with 0 photos.
+   - **Dashboard To-Do & Core Photos Tied to 6-Photo Rule**: In `readiness.ts`, `listingReady` now triggers when $\ge 6$ photos are present. Updated `fleet`, `nextAction` ("Do next" card), and vehicle card progress bars in `InventoryList.tsx` to align with the 6-photo Web Ready standard.
+
 ---
 
 ### 📸 TruLens & TruFlow DMS Bi-Directional Multi-Tenant Sync, Deletion Permanence & Slot Hygiene (2026-09-15)
